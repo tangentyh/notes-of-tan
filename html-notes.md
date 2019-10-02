@@ -8,6 +8,7 @@
 # Character Entities
 
 1. common special characters
+
    | Character | Description | Entity Name | Entity Number |
    | --------- | ----------- | ----------- | ------------- |
    | “ ” | non-breaking space | `&nbsp;` | `&#160;` |
