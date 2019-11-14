@@ -199,7 +199,29 @@
 
 1. Select multiple items that are listed together -- Click the first item, then press the Shift key and click the last item. All items in between are included in the selection.
 
-1. View menu
+1. View in menu
+
+# pkg and brew
+
+1. sha
+   ```shell
+   openssl dgst -sha256 ./file
+   ```
+
+1. pkg -- `pkgutil`
+   - uninstall
+     ```shell
+     pkgutil --pkgs # list all installed packages
+     pkgutil --files the-package-name.pkg # list installed files
+     pkgutil --pkg-info the-package-name.pkg # check the location
+     cd / # assuming the package is rooted at /...
+     pkgutil --only-files --files the-package-name.pkg | tr '\n' '\0' | xargs -n 1 -0 sudo rm -f
+     pkgutil --only-dirs --files the-package-name.pkg | tail -r | tr '\n' '\0' | xargs -n 1 -0 sudo rmdir
+     sudo pkgutil --forget the-package-name.pkg
+     ```
+
+1. `brew cask` -- apps
+   - `overwrite` -- `brew cask install --force`
 
 # Chrome
 
