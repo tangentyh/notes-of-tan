@@ -10,8 +10,6 @@
 
 # Commons
 
-1. del -- `fn` `delete`
-
 1. right click -- `^` `click`
 
 1. home / end
@@ -34,7 +32,8 @@
    - `command` `g` -- find next, with `shift` to find previous
      - `command` `e` in Chrome -- use selection for find
    - `option` `command` `esc` -- in the Apple menu
-   - `command` `space`
+   - `command` `space` -- Spotlight
+     - `command` `l` -- dictionary
    - `^` `command` `space` -- emojis and symbols
    - `^` `command` `d` -- the definition of the selected word
    - Spelling
@@ -46,27 +45,34 @@
    - `shift` `command` `?` -- help
 
 1. edit
+   - del -- `fn` `delete`
    - `option` `delete`, `option` `backspace` -- delete word
    - `^` `h`, `^` `d`
      - if no character when `^` `d` -- `exit`
    - `^` `u`, `^` `k`
      - `^` `u` generally only in Terminal
+     - `^` `y` -- yank
    - `^` `a`, `^` `e`
    - `^` `f`, `^` `b`
    - `^` `l` -- Center the cursor or selection in the visible area
      - `clear` in Terminal
    - `^` `p`, `^` `n`
-   - `^` `o` -- Insert a new line after the insertion point
+   - `^` `o` -- Insert a new line after the insertion point, cursor stays
    - `^` `t` -- swap character
-   - Terminal only
-     - `^` `i` -- tab
-     - `^` `j` -- enter
-     - `^` `v` -- control sequence, `^` `v` + `^` `h` types "^H", a literal backspace
+   - Terminal only -- `bindkey`
+     - `^` `i` -- `\t`
+     - `^` `m` -- `\r`
+     - `^` `j` -- `\n`
+     - `^` `v` -- quoted-insert, control sequence, `^` `v` + `^` `h` types "^H", a literal backspace
+     - `^` `q` -- push-line, zsh only
+     - `^` `w`
      - search
        - `^` `r` -- reverse search, a second `^` `r` recalls the previous search
        - `^` `s` -- search forwards
        - `^` `g` -- Abort the research and restore the original line
        - `^` `o` -- Executes the found command from history, and fetch the next line relative to the current line from the history for editing
+     - `^` `x`
+       - `^` `b` -- vi-match-bracket
    <!-- - align
      - `^` `[` -- left align
      - `^` `]` -- right align
@@ -81,14 +87,14 @@
      - hide dock -- `option` `command` `d`
 
 1. windows
-   - `Command-H` -- Hide the windows of the front app. Press `Command-Option-H` to view the front app but hide all other apps.
+   - `command` `h` -- Hide the windows of the front app. Press `Command-Option-H` to view the front app but hide all other apps.
      - invisible in mission control
-   - `Command-M` -- Minimize the front window to the Dock. Press `Command-Option-M` to minimize all windows of the front app.
+   - `command` `m` -- Minimize the front window to the Dock. Press `Command-Option-M` to minimize all windows of the front app.
      - `command` `tab` can switch to a minimized app but windows of the app will stay minimized
      - invisible in mission control
    - `command` `w`
-     - `command` `option` `w` -- all windows
-     - `command` `shift` `w` -- all tabs of this window
+     - `option` `command` `w` -- all windows
+     - `shift` `command` `w` -- all tabs of this window
    - `^` `command` `f` -- fullscreen
    - `command` `tab` -- app switcher
      - can use arrow keys to switch and show application windows
@@ -114,6 +120,8 @@
    <!-- - change order of input sources -- &#x2318; -->
    - change order of input sources -- tbd
    - emoji, Keyboard viewer -- in the input menu, or `^` `command` `space`
+   - popup for accented alphabet -- hold the key
+     - disable popup -- `defaults write -g ApplePressAndHoldEnabled -bool false`
    - alternative keyboard -- hold `option`
      - show alternative keyboard layout -- System Preferences > Keyboard > Input Sources, hold `option` key
      - [dead key](https://en.wikipedia.org/wiki/Dead_key)
@@ -128,6 +136,10 @@
    - login items
    - plist -- `launchctl list`, `launchctl unload`
      - Apple daemons, agents only -- `/System/Library/LaunchDaemons`, `/System/Library/LaunchAgents`
+       - stop Apple Music from responding to media play button (also affects other apps when using external keyboard)
+         ```shell
+         launchctl unload -w /System/Library/LaunchAgents/com.apple.rcd.plist
+         ```
      - 3rd party processes -- `/Library/LaunchDaemons`
      - 3rd agents -- `/Library/LaunchAgents`, `~/Library/LaunchAgents`
      - obsolete -- `/Library/StartupItems` and `/System/Library/StartupItems`
@@ -141,10 +153,23 @@
 
 1. screenshot
    - with `^` to save to clipboard
-   - `command` `shift` `5` -- general
-   - `command` `shift` `6` -- touch bar
+   - `shift` `command` `5` -- general
+   - `shift` `command` `6` -- touch bar
 
-1. `defaults`
+1. cli
+   - `open` -- opens each file using the default application for that file
+     ```shell
+     open [-e] [-t] [-f] [-W] [-R] [-n] [-g] [-h] [-s <partial SDK name>][-b <bundle identifier>] [-a <application>] [filenames] [--args arguments]
+     ```
+     - open in Finder if directory
+     - `-a <application>` -- Opens with the specified application
+       ```shell
+       open -a Preview file # open in preview
+       ```
+     - `-e` -- Opens with TextEdit
+   - `defaults` -- like registry in Windows
+     - mouse acceleration -- `defaults write .GlobalPreferences com.apple.mouse.scaling -1`
+     - hidden files -- `defaults write com.apple.finder AppleShowAllFiles -bool true`
 
 ## Accessibility
 
@@ -180,9 +205,12 @@
 1. basic operations
    - rename -- `enter`
    - open -- `command` `o`
-
-1. preview -- `space` or `^` `y`
-   - with `option` to preview in fullscreen
+   - del -- `command` `del`
+   - get info -- `command` `i`
+   - show origin of alias -- `command` `r`
+   - preview -- `space` or `^` `y`
+     - with `option` to preview in fullscreen
+   - new folder -- `shift` `command` `N`
 
 1. move around folder tree
    - `command` `up arrow`
@@ -220,8 +248,10 @@
      sudo pkgutil --forget the-package-name.pkg
      ```
 
-1. `brew cask` -- apps
-   - `overwrite` -- `brew cask install --force`
+1. Homebrew
+   - `brew cask` -- apps
+     - `overwrite` -- `brew cask install --force`
+   - `brew cleanup`
 
 # Chrome
 
