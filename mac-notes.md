@@ -4,6 +4,8 @@
    - [Mac keyboard shortcuts - Apple Support](https://support.apple.com/en-us/HT201236)
    - [Mac tips for Windows switchers - Apple Support](https://support.apple.com/en-us/HT204216)
    - [What’s it called on my Mac? - Apple Support](https://support.apple.com/guide/mac-help/whats-it-called-on-my-mac-cpmh0038/mac)
+   - [zsh: Table of Contents](http://zsh.sourceforge.net/Doc/Release/zsh_toc.html)
+     - [zsh/Completion/Base/Widget at master · johan/zsh](https://github.com/johan/zsh/tree/master/Completion/Base/Widget)
 
 1. customize
    - [pqrs-org/Karabiner-Elements: Karabiner-Elements is a powerful utility for keyboard customization on macOS Sierra (10.12) or later.](https://github.com/pqrs-org/Karabiner-Elements)
@@ -45,38 +47,133 @@
    - `shift` `command` `?` -- help
 
 1. edit
-   - del -- `fn` `delete`
-   - `option` `delete`, `option` `backspace` -- delete word
-   - `^` `h`, `^` `d`
-     - if no character when `^` `d` -- `exit`
-   - `^` `u`, `^` `k`
-     - `^` `u` generally only in Terminal
-     - `^` `y` -- yank
-   - `^` `a`, `^` `e`
-   - `^` `f`, `^` `b`
-   - `^` `l` -- Center the cursor or selection in the visible area
-     - `clear` in Terminal
-   - `^` `p`, `^` `n`
-   - `^` `o` -- Insert a new line after the insertion point, cursor stays
-   - `^` `t` -- swap character
-   - Terminal only -- `bindkey`
-     - `^` `i` -- `\t`
-     - `^` `m` -- `\r`
-     - `^` `j` -- `\n`
-     - `^` `v` -- quoted-insert, control sequence, `^` `v` + `^` `h` types "^H", a literal backspace
-     - `^` `q` -- push-line, zsh only
-     - `^` `w`
-     - search
-       - `^` `r` -- reverse search, a second `^` `r` recalls the previous search
-       - `^` `s` -- search forwards
-       - `^` `g` -- Abort the research and restore the original line
-       - `^` `o` -- Executes the found command from history, and fetch the next line relative to the current line from the history for editing
-     - `^` `x`
-       - `^` `b` -- vi-match-bracket
-   <!-- - align
+   - backspace (`^?`) and delete
+     - del -- `fn` `delete`
+     - `option` `delete`, `option` `backspace` -- delete word
+   - align
      - `^` `[` -- left align
      - `^` `]` -- right align
-     - `shift` `^` `\` -- center align -->
+     - `shift` `^` `\` -- center align
+   - from emacs
+     - `^` `h`, `^` `d` -- backward-delete-char, delete-char-or-list
+       - in Terminal if no character when `^` `d` -- `exit`
+     - `^` `k`
+     - `^` `y` -- yank
+     - `^` `a`, `^` `e` -- beginning-of-line, end-of-line
+     - `^` `f`, `^` `b` -- backward-char, forward-char
+     - `^` `l` -- Center the cursor or selection in the visible area
+       - `clear` in Terminal
+     - `^` `p`, `^` `n`
+     - `^` `o` -- Insert a new line after the insertion point, cursor stays
+     - `^` `t` -- swap character
+
+1. edit in Terminal -- `bindkey -M main`, `option` or `esc` (`^[`) as meta key
+   - docs
+     - [zsh: 18 Zsh Line Editor](http://zsh.sourceforge.net/Doc/Release/Zsh-Line-Editor.html)
+     - [ANSI escape code - Wikipedia](https://en.wikipedia.org/wiki/ANSI_escape_code)
+   - arguments -- most commands support argument for repeating
+     - `option` `number` -- digit-argument
+     - `option` `-` -- neg-argument
+   - movement
+     - `^` `b`, `^` `f` -- backward-char, forward-char
+     - `^x` `^` `f` -- vi-find-next-char
+     - `option` `shift` `|` (vim: `|`) -- vi-goto-column, use with number argument
+     - `option` `b`, `option` `f` -- backward-word, forward-word
+     - `^` `a`, `^` `e` -- beginning-of-line, end-of-line
+     - `^` `n`, `^` `p` -- down-line-or-history, up-line-or-history
+     - `^x` `^` `b` -- vi-match-bracket
+   - history
+     - `option` `shift` `<` (vim: `gg`), `option` `shift` `>` -- beginning-of-buffer-or-history, end-of-buffer-or-history
+     - `^` `n`, `^` `p` -- down-line-or-history, up-line-or-history
+     - `option` `p`, `option` `n` -- history-search-backward, history-search-forward
+     - `^x` `^` `n` -- infer-next-history, search in the history list for a line matching the current one and fetch the event following it
+     - `option` `.`, `option` `-` -- insert-last-word, use with positive and negative (can be `-0`) argument
+     - `option` `,`, `option` `/` -- _history-complete-newer, _history-complete-older, Complete words from the history
+     - search
+       - keymap -- `bindkey -M isearch`
+       - `^` `r`, `^x` `r` -- history-incremental-search-backward, reverse search, a second `^` `r` recalls the previous search
+       - `^` `s`, `^x` `s` -- history-incremental-search-forward
+       - supported functions
+         - accept-*
+         - backward kill or delete
+         - history-incremental-search-forward, history-incremental-search-backward -- find next occurrence or invert search
+         - quote-insert
+         - vi prefixed version of the above and vi-cmd-mode, vi-repeat-search, vi-rev-repeat-search
+         - exit -- send-break restore, movement commands retain
+   - modifying text
+     - kill
+       - `^` `h`, `^` `d` -- backward-delete-char, delete-char-or-list
+       - `^` `w` or `option` `^` `h`, `option` `d` -- backward-kill-word, kill-word
+       - `^` `k`, `^` `u` -- kill-line, kill-whole-line (remapped to backward-kill-line)
+       - `^x` `^` `k` -- kill-buffer
+     - paste
+       - `^` `y` -- yank
+       - `option` `y` -- yank-pop, cycle though
+     - transpose
+       - `^` `t` -- transpose-chars
+       - `option` `t` -- transpose-words
+     - case
+       - `option` `c`, `option` `l` (remapped to `ls^J`) -- capitalize-word, down-case-word
+       - `option` `u` -- up-case-word
+     - join
+       - `^x` `^` `j` -- vi-join
+     - selection region
+       - `option` `w` -- copy-region-as-kill
+       - `^x`, `^` `x` -- exchange-point-and-mark
+       - `option` `"` -- quote-region
+       - `^` `@` -- set-mark-command, Set the mark at the cursor position
+   - insert
+     - `^` `i`, `option` `^` `i` -- expand-or-complete, self-insert-unmeta, `\t`
+     - `^` `m`, `option` `^` `m` -- accept-line, self-insert-unmeta, `\r`
+     - `^` `j`, `option` `^` `j` -- accept-line, self-insert-unmeta, `\n`
+     - `^` `v` -- quoted-insert, control sequence, `^` `v` + `^` `h` types "^H", a literal backspace
+     - `option` `.`, `option` `-` -- insert-last-word
+     - `option` `^` `-` -- copy-prev-word
+     - `option` `m` -- copy-prev-shell-word
+     - `option` `"` -- quote-region
+     - `option` `'` -- quote-line
+     - `^x` `^` `r` -- [_read_comp](https://github.com/johan/zsh/blob/master/Completion/Base/Widget/_read_comp)
+     - `^x` `m` -- _most_recent_file, supports globbing
+   - mode
+     - `^x` `^` `o` -- overwrite-mode
+     - `^x` `^` `v` -- vi-cmd-mode
+     - `^x` `^` `e` -- edit-command-line, edit line in vim
+     - `option` `x` -- execute-named-cmd, keymap `bindkey -M command`
+       - `option` `z` -- execute-last-named-cmd
+     - `^` `g`, `option` `^` `g` -- send-break, Abort the current editor function: Abort the research and restore the original line
+     - `^` `l` -- clear-screen
+     - buffer -- registers in vim
+       - the ‘yank’ buffer `"0`, the nine ‘queued’ buffers `"1` to `"9` -- If no buffer is specified for a cut or change command, `"1` is used, and the contents of `"1` to `"8` are each shifted along one buffer; the contents of `"9` is lost. If no buffer is specified for a yank command, `"0` is used
+       - the 26 ‘named’ buffers `"a` to `"z` -- If a named buffer is specified using a capital, the newly cut text is appended to the buffer instead of overwriting it
+       - the ‘black hole’ buffer `"_` -- When using the `"_` buffer, nothing happens. This can be useful for deleting text without affecting any buffers
+   - completion
+     - `^` `d` -- delete-char-or-list, If the cursor is at the end of the line, list possible completions for the current word
+     - `option` `^` `d` -- list-choices
+     - `tab`, `^` `i` -- expand-or-complete
+     - `^x` `n` -- _next_tags, basically same as `tab`?
+     - `^` `@` -- autosuggest-accept (also mapped to `^` `space`)
+       - deprecated, use `option` `p` instead
+     - spelling
+       - `option` `$`, `option` `s` -- spell-word, Attempt spelling correction on the current word
+       - `^x` `c` -- _correct_word, spell correction
+   - expand or print
+     - `tab` -- expand-or-complete
+     - `option` `space`, `option` `!` -- expand-history (`!!` for example)
+     - `^x` `shift` `*`, `^x` `e` -- expand-word (`$PATH` expands to the path), _expand_word (with completion selection)
+     - `^x` `g`, `^x` `d` -- list-expand, _list_expansions, `echo` that word
+     - `^x` `a` -- _expand_alias
+     - `^x` `=` -- `ga` in vim, what-cursor-position, print char code
+   - accept or buffer stack
+     - `^` `m`, `^` `j` -- accept-line
+     - `^` `o` -- accept-line-and-down-history, Executes the found command from history, and fetch the next line relative to the current line from the history for editing
+     - `option` `a` -- accept-and-hold, Push the contents of the buffer on the buffer stack and execute it
+     - `^` `q`, `option` `q` -- push-line, remapped to push-line-or-edit
+     - `option` `h` -- run-help, Push the buffer onto the buffer stack, and execute the command `run-help cmd`, where cmd is the current command, `run-help` is normally aliased to `man`
+     - `option` `shift` `?` -- which-command, push current and `which-command cmd`, `which-command` is normally aliased to `whence`
+     - `option` `g` -- get-line, Pop the top line off the buffer stack and insert it at the cursor position
+   - undo
+     - `^` `-`, `^x` `u`, `^x` `^` `u` -- undo
+     - `^` `r` in vim -- redo
 
 # System
 
@@ -181,6 +278,7 @@
 1. meta key
 
 1. zsh
+   - `upgrade_oh_my_zsh`
 
 1. [tbd](https://zhuanlan.zhihu.com/p/34497527)
 
