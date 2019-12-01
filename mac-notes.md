@@ -2,6 +2,8 @@
 
 1. docs
    - [Mac keyboard shortcuts - Apple Support](https://support.apple.com/en-us/HT201236)
+     - [Mac startup key combinations - Apple Support](https://support.apple.com/en-us/HT201255)
+     - [Mac accessibility shortcuts - Apple Support](https://support.apple.com/en-us/HT204434)
    - [Mac tips for Windows switchers - Apple Support](https://support.apple.com/en-us/HT204216)
    - [What’s it called on my Mac? - Apple Support](https://support.apple.com/guide/mac-help/whats-it-called-on-my-mac-cpmh0038/mac)
    - [zsh: Table of Contents](http://zsh.sourceforge.net/Doc/Release/zsh_toc.html)
@@ -36,6 +38,8 @@
    - `option` `command` `esc` -- in the Apple menu
    - `command` `space` -- Spotlight
      - `command` `l` -- dictionary
+     - `command` -- show path
+     - [Spotlight keyboard shortcuts on Mac - Apple Support](https://support.apple.com/guide/mac-help/spotlight-keyboard-shortcuts-mh26783/mac)
    - `^` `command` `space` -- emojis and symbols
    - `^` `command` `d` -- the definition of the selected word
    - Spelling
@@ -45,6 +49,8 @@
    - `option` `command` `i` -- Show or hide the inspector window
    - `command` `+`, `command` `-`, `command` `0` -- zoom
    - `shift` `command` `?` -- help
+
+## Edit
 
 1. edit
    - backspace (`^?`) and delete
@@ -56,7 +62,6 @@
      - `shift` `^` `\` -- center align
    - from emacs
      - `^` `h`, `^` `d` -- backward-delete-char, delete-char-or-list
-       - in Terminal if no character when `^` `d` -- `exit`
      - `^` `k`
      - `^` `y` -- yank
      - `^` `a`, `^` `e` -- beginning-of-line, end-of-line
@@ -102,11 +107,11 @@
          - exit -- send-break restore, movement commands retain
    - modifying text
      - kill
-       - `^` `h`, `^` `d` -- backward-delete-char, delete-char-or-list
+       - `^` `h`, `^` `d` -- backward-delete-char, delete-char-or-list, in Terminal `exit` if no character when `^` `d`
        - `^` `w` or `option` `^` `h`, `option` `d` -- backward-kill-word, kill-word
        - `^` `k`, `^` `u` -- kill-line, kill-whole-line (remapped to backward-kill-line)
        - `^x` `^` `k` -- kill-buffer
-     - paste
+     - yank
        - `^` `y` -- yank
        - `option` `y` -- yank-pop, cycle though
      - transpose
@@ -210,6 +215,7 @@
      - click -- page up / down
      - `option` and click -- scroll to
    - [rectangle](https://github.com/rxhanson/Rectangle) app
+   - virtual desktops
 
 1. force quit app -- `option` `command` `esc`
 
@@ -228,6 +234,7 @@
        - `option` `i` -- â, ê, î, ô, û
        - `option` `n` -- ã, õ, ñ
        - `option` `c` -- ç
+   - unicode hex input -- hold `option` to input chars by unicode hex
 
 1. boot start
    - login items
@@ -253,6 +260,18 @@
    - `shift` `command` `5` -- general
    - `shift` `command` `6` -- touch bar
 
+## Accessibility
+
+1. tts
+   - `option` `esc`
+
+# Terminal
+
+1. meta key
+
+1. zsh
+   - `upgrade_oh_my_zsh`
+
 1. cli
    - `open` -- opens each file using the default application for that file
      ```shell
@@ -268,19 +287,25 @@
      - mouse acceleration -- `defaults write .GlobalPreferences com.apple.mouse.scaling -1`
      - hidden files -- `defaults write com.apple.finder AppleShowAllFiles -bool true`
 
-## Accessibility
-
-1. tts
-   - `alt` `esc`
-
-# Terminal
-
-1. meta key
-
-1. zsh
-   - `upgrade_oh_my_zsh`
-
-1. [tbd](https://zhuanlan.zhihu.com/p/34497527)
+1. command utilities
+   - `say` -- text to speech
+   - `killall` -- kill processes by name (e.g. Finder)
+   - `pmset` -- manipulate power management settings
+     - `displaysleepnow`
+     - `sleepnow`
+   - `caffeinate` -- prevent the system from sleeping on behalf of a utility (the assertion releases after the exit of the utility)
+     - `-t timeout`
+     - `-w pid`
+     - `-i utility arguments...`
+     - `-s utility arguments...` -- the assertion is valid only when on AC power
+   - `chflags` -- change file flags
+     - `hidden`
+     - `schg` -- system immutable flag
+     - `uchg` -- user immutable flag
+   - launchpad icon number per row and column
+     ```shell
+     defaults write com.apple.dock springboard-columns -int 8; defaults write com.apple.dock springboard-rows -int 7; defaults write com.apple.dock ResetLaunchPad -bool TRUE; killall Dock
+     ```
 
 1. clear
    - clear to previous mark -- `command` `l`
@@ -327,6 +352,8 @@
 
 1. View in menu
 
+1. search -- [Narrow your search results on Mac - Apple Support](https://support.apple.com/guide/mac-help/narrow-search-results-mh15155/10.15/mac/10.15)
+
 # pkg and brew
 
 1. sha
@@ -348,11 +375,10 @@
 
 1. Homebrew
    - `brew cask` -- apps
-     - `overwrite` -- `brew cask install --force`
+     - overwrite -- `brew cask install --force`
    - `brew cleanup`
+   - `brew tap buo/cask-upgrade` for `brew cu`
 
 # Chrome
 
 1. drag text -- hold for a while
-
-# 3rd party Apps
