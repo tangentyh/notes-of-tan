@@ -3190,6 +3190,11 @@
    ```
    - returned by `Executors.newScheduledThreadPool(int)`, `Executors.newSingleThreadScheduledExecutor()`
 
+1. `java.util.concurrent.ForkJoinPool`
+   ```java
+   public class ForkJoinPool extends AbstractExecutorService
+   ```
+
 1. `java.util.concurrent.Executors` -- factory and utility methods
    - thread pools
      - `static ExecutorService newCachedThreadPool()` -- new threads are created as needed; idle threads are kept for 60 seconds  

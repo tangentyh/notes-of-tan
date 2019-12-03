@@ -1,7 +1,9 @@
 # Philosophy
 
-1. Content categories
-   - [MDN](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories)
+1. [Content categories - Developer guides | MDN](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories)
+
+1. tools
+   - [Front-End-Performance-Checklist/README.md at master · thedaviddias/Front-End-Performance-Checklist](https://github.com/thedaviddias/Front-End-Performance-Checklist/blob/master/README.md#html)
 
 1. user agent stylesheet — see CSS notes
 

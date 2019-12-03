@@ -4,8 +4,8 @@
    - [CSS Generator](https://cssgenerator.org/)
    - [Browser support table search](https://caniuse.com)
    - [auto prefixer](https://github.com/postcss/autoprefixer)
-   - [flex bug and work around](https://github.com/philipwalton/flexbugs)
    - [image compression](https://tinypng.com/)
+   - [Front-End-Performance-Checklist/README.md at master · thedaviddias/Front-End-Performance-Checklist](https://github.com/thedaviddias/Front-End-Performance-Checklist/blob/master/README.md)
 
 # Use CSS
 
@@ -1979,6 +1979,7 @@
    - direct children of the flex container become flex items
    - child elements will become the same height by default
    - main axis, cross axis
+   - [philipwalton/flexbugs: A community-curated list of flexbox issues and cross-browser workarounds for them.](https://github.com/philipwalton/flexbugs)
 
 1. `flex-flow`
    ```
@@ -2343,8 +2344,9 @@
 
 # Animation
 
-1. animatable properties
-   - [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_animated_properties)
+1. docs and resources
+   - [Animatable CSS properties - CSS: Cascading Style Sheets | MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_animated_properties)
+   - [daneden/animate.css: 🍿 A cross-browser library of CSS animations. As easy to use as an easy thing.](https://github.com/daneden/animate.css)
 
 ## transition
 
@@ -2397,7 +2399,11 @@
 
 1. `@keyframes`
 
-# IE Quirks
+# Browser Quirks
+
+1. utilities
+   - [necolas/normalize.css: A modern alternative to CSS resets](https://github.com/necolas/normalize.css)
+   - see [Flex](#Flex)
 
 1. fix `<main>` inline by default
    ```CSS
