@@ -20,15 +20,13 @@
    - `fn` `←` and `→`
    - `⌘` `←` and `→` — move the insertion point
      - backwards / forwards in Chrome
-     - `⌥` `↑` and `↓` — see below
+   - `⌥` `↑` and `↓` — `ctrl` home / end when edit
+     - first / last item in Finder
    - `⌘` `↑` and `↓` — `ctrl` `home` or `ctrl` `end` in Windows
+     - move around folder in Finder
 
 1. page up / down
    - `fn` `↑` and `↓`
-   - `⌥` `↑` and `↓`
-     - home / end when edit
-     - first / last item in Finder
-     - next / previous item in Previewer
 
 1. `ctrl` `arrow` in Windows — `⌥` `←` and `→`
 
@@ -80,19 +78,18 @@
      - `⌥` `number` — digit-argument
      - `⌥` `-` — neg-argument
    - movement
-     - `⌃` `b`, `⌃` `f` — backward-char, forward-char
      - `^x` `⌃` `f` — vi-find-next-char
+     - `^x` `⌃` `b` — vi-match-bracket
      - `⌥` `⇧` `|` (vim: `|`) — vi-goto-column, use with number argument
      - `⌥` `b`, `⌥` `f` — backward-word, forward-word
      - `⌃` `a`, `⌃` `e` — beginning-of-line, end-of-line
      - `⌃` `n`, `⌃` `p` — down-line-or-history, up-line-or-history
-     - `^x` `⌃` `b` — vi-match-bracket
    - history
      - `⌥` `⇧` `<` (vim: `gg`), `⌥` `⇧` `>` — beginning-of-buffer-or-history, end-of-buffer-or-history
      - `⌃` `n`, `⌃` `p` — down-line-or-history, up-line-or-history
      - `⌥` `p`, `⌥` `n` — history-search-backward, history-search-forward
      - `^x` `⌃` `n` — infer-next-history, search in the history list for a line matching the current one and fetch the event following it
-     - `⌥` `.`, `⌥` `-` — insert-last-word, use with positive and negative (can be `-0`) argument
+     - `⌥` `.`, `⌥` `-` — insert-last-word, use with positive and negative (can be `-0`) argument, loop through previous lines when used consecutively
      - `⌥` `,`, `⌥` `/` — _history-complete-newer, _history-complete-older, Complete words from the history
      - search
        - keymap — `bindkey -M isearch`
@@ -104,7 +101,7 @@
          - history-incremental-search-forward, history-incremental-search-backward — find next occurrence or invert search
          - quote-insert
          - vi prefixed version of the above and vi-cmd-mode, vi-repeat-search, vi-rev-repeat-search
-         - exit — send-break restore, movement commands retain
+         - exit — send-break restores, movement commands retains
    - modifying text
      - kill
        - `⌃` `h`, `⌃` `d` — backward-delete-char, delete-char-or-list, in Terminal `exit` if no character when `⌃` `d`
@@ -113,7 +110,7 @@
        - `^x` `⌃` `k` — kill-buffer
      - yank
        - `⌃` `y` — yank
-       - `⌥` `y` — yank-pop, cycle though
+       - `⌥` `y` — yank-pop, cycle though previously yanked
      - transpose
        - `⌃` `t` — transpose-chars
        - `⌥` `t` — transpose-words
@@ -126,18 +123,18 @@
        - `⌥` `w` — copy-region-as-kill
        - `^x`, `⌃` `x` — exchange-point-and-mark
        - `⌥` `"` — quote-region
-       - `⌃` `@` — set-mark-command, Set the mark at the cursor position
+       - `⌃` `@` — set-mark-command, Set the mark at the cursor position, also mapped to `⌃` `␣`
    - insert
      - `⌃` `i`, `⌥` `⌃` `i` — expand-or-complete, self-insert-unmeta, `\t`
      - `⌃` `m`, `⌥` `⌃` `m` — accept-line, self-insert-unmeta, `\r`
      - `⌃` `j`, `⌥` `⌃` `j` — accept-line, self-insert-unmeta, `\n`
      - `⌃` `v` — quoted-insert, control sequence, `⌃` `v` + `⌃` `h` types "^H", a literal backspace
-     - `⌥` `.`, `⌥` `-` — insert-last-word
+     - `⌥` `.`, `⌥` `-` — insert-last-word, use with positive and negative (can be `-0`) argument, loop through previous lines when used consecutively
      - `⌥` `⌃` `-` — copy-prev-word
      - `⌥` `m` — copy-prev-shell-word
      - `⌥` `"` — quote-region
      - `⌥` `'` — quote-line
-     - `^x` `⌃` `r` — [_read_comp](https://github.com/johan/zsh/blob/master/Completion/Base/Widget/_read_comp)
+     - `^x` `⌃` `r` — [_read_comp](https://github.com/johan/zsh/blob/master/Completion/Base/Widget/_read_comp), set the variable `_read_comp` or insert if already set
      - `^x` `m` — _most_recent_file, supports globbing
    - mode
      - `^x` `⌃` `o` — overwrite-mode
@@ -157,10 +154,12 @@
      - `tab`, `⌃` `i` — expand-or-complete
      - `^x` `n` — _next_tags, basically same as `tab`?
      - `⌃` `@` — autosuggest-accept (also mapped to `⌃` `␣`)
-       - deprecated, use `⌥` `p` instead
+       - deprecated — use below instead
+       - accept — history-search-backward, forward-char, end-of-line
+       - partial accept — forward-word
      - spelling
        - `⌥` `$`, `⌥` `s` — spell-word, Attempt spelling correction on the current word
-       - `^x` `c` — _correct_word, spell correction
+       - `^x` `c` — _correct_word, spell correction, with choice selection
    - expand or print
      - `tab` — expand-or-complete
      - `⌥` `␣`, `⌥` `!` — expand-history (`!!` for example)
@@ -187,6 +186,11 @@
    - menu bar navigation — `⌃` `F2`
    - dock navigation — `⌃` `F3`
      - hide dock — `⌥` `⌘` `d`
+   - move focus to active or next window — `^` `F4`
+   - move focus to window toolbar -- `^` `F5`
+   - move focus to the floating window -- `^` `F6`
+   - change the way Tab moves focus -- `^` `F7`
+   - move focus to status bar -- `^` `F8`
 
 1. windows
    - `⌘` `h` — Hide the windows of the front app. Press `Command-Option-H` to view the front app but hide all other apps.
@@ -206,6 +210,7 @@
      - switch between windows of the same app
      - switch backwards when `⌘` `tab`
    - `⌃` `arrow`
+     - mission control
      - application windows — snap aware
    - open new via double clicking
      - with `⌘` — in a new tab / window
@@ -224,7 +229,7 @@
    - emoji, Keyboard viewer — in the input menu, or `⌃` `⌘` `␣`
    - popup for accented alphabet — hold the key
      - disable popup — `defaults write -g ApplePressAndHoldEnabled -bool false`
-   - alternative keyboard — hold `⌥`
+   - alternative keyboard — hold `⌥`, optionally `shift`
      - show alternative keyboard layout — System Preferences > Keyboard > Input Sources, hold `⌥` key
      - [dead key](https://en.wikipedia.org/wiki/Dead_key)
        - `⌥` `e` — á, é, í, ó, ú
@@ -256,6 +261,8 @@
 
 1. screenshot
    - with `⌃` to save to clipboard
+   - `⇧` `⌘` `3` — whole screen
+   - `⇧` `⌘` `4` — selection
    - `⇧` `⌘` `5` — general
    - `⇧` `⌘` `6` — touch bar
 
@@ -283,6 +290,7 @@
        ```
      - `-e` — Opens with TextEdit
    - `defaults` — like registry in Windows
+     - location — `~/Library/Preferences`, `/Library/Preferences`
      - mouse acceleration — `defaults write .GlobalPreferences com.apple.mouse.scaling -1`
      - hidden files — `defaults write com.apple.finder AppleShowAllFiles -bool true`
 
