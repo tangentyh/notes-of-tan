@@ -3113,6 +3113,7 @@
    public interface Future<V>
    ```
    - `V get()` -- block until finish or exception
+     - throws `InterruptedException`, `ExecutionException`
    - `V get(long timeout, TimeUnit unit)` -- `TimeoutException` when timeout
    - `boolean cancel(boolean mayInterruptIfRunning)`
    - `boolean isCancelled()`
@@ -3124,7 +3125,7 @@
    extends Delayed, Future<V>
    ```
 
-1. `java.util.concurrent.FutureTask` -- wrapper for `Callable` or `Runnable`
+1. `java.util.concurrent.FutureTask` -- A cancellable asynchronous computation, or wrapper for `Callable` or `Runnable`
    ```java
    public class FutureTask<V> extends Object
    implements RunnableFuture<V>
@@ -3137,6 +3138,54 @@
    - constructors
      - `FutureTask(Callable<V> callable)`
      - `FutureTask(Runnable runnable, V result)`
+
+1. `java.util.concurrent.ForkJoinTask` -- see [Fork-Join](#Fork-Join)
+
+1. `java.util.concurrent.CompletableFuture` -- A `Future` that may be explicitly completed (setting its value and status), and may be used as a `CompletionStage`, supporting dependent functions and actions that trigger upon its completion (`Promise.then` in JS), can be async
+   ```java
+   public class CompletableFuture<T> extends Object
+   implements Future<T>, CompletionStage<T>
+   ```
+   - `async` suffixed methods -- use `ForkJoinPool.commonPool`, or the `Executor` argument, all generated asynchronous tasks are instances of the marker interface `CompletableFuture.AsynchronousCompletionTask`
+   - non-`async` methods -- actions performed by the thread that completes the current `CompletableFuture`, or by any other caller of a completion method
+   - static methods
+     - `static CompletableFuture<Void> allOf(CompletableFuture<?>... cfs)`
+     - `static CompletableFuture<Object> anyOf(CompletableFuture<?>... cfs)`
+     - `static <U> CompletableFuture<U> completedFuture(U value)` -- `Promise.resolve`
+     - `static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier)`
+   - explicitly complete
+     - `boolean cancel(boolean mayInterruptIfRunning)`
+     - `boolean complete(T value)`
+     - `boolean completeExceptionally(Throwable ex)`
+     - `void obtrudeException(Throwable ex)`
+     - `void obtrudeValue(T value)`
+   - `Promise.prototype.then`
+     - `CompletableFuture<Void> thenAccept(Consumer<? super T> action)`
+       - `acceptEither`
+       - `thenAcceptBoth`
+     - `<U> CompletableFuture<U> thenApply(Function<? super T,? extends U> fn)`
+       - `applyToEither`
+     - `CompletableFuture<Void> thenRun(Runnable action)`
+       - `runAfterBoth`
+       - `runAfterEither`
+     - `<U,V> CompletableFuture<V> thenCombine(CompletionStage<? extends U> other, BiFunction<? super T,? super U,? extends V> fn)`
+     - `<U> CompletableFuture<U> thenCompose(Function<? super T,? extends CompletionStage<U>> fn)`
+   - `Promise.prototype.catch`
+     - `CompletableFuture<T> exceptionally(Function<Throwable,? extends T> fn)`
+   - `catch` and `then`
+     - `<U> CompletableFuture<U> handle(BiFunction<? super T,Throwable,? extends U> fn)`
+     - `CompletableFuture<T> whenComplete(BiConsumer<? super T,? super Throwable> action)`
+   - get
+     - `T get()`
+     - `T get(long timeout, TimeUnit unit)`
+     - `T getNow(T valueIfAbsent)`
+     - `T join()`
+   - manage
+     - `int getNumberOfDependents()` -- estimated
+     - `boolean isCancelled()`
+     - `boolean isCompletedExceptionally()`
+     - `boolean isDone()`
+   - more
 
 ## Executors
 
@@ -3158,7 +3207,11 @@
      `Future<?> submit(Runnable task)`  
      `<T> Future<T> submit(Runnable task, T result)`
    - `boolean awaitTermination(long timeout, TimeUnit unit)`
-   - `invokeAll`, `invokeAny`
+   - `invokeAll`, `invokeAny`, with timeout version
+     - `<T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks)`  
+       `<T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)`
+     - `<T> T invokeAny(Collection<? extends Callable<T>> tasks)`  
+       `<T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)`
    - `void shutdown()`  
      `List<Runnable> shutdownNow()`
    - `java.util.concurrent.AbstractExecutorService` -- default implementations of `ExecutorService` execution methods
@@ -3166,6 +3219,20 @@
      public abstract class AbstractExecutorService extends Object
      implements ExecutorService
      ```
+
+1. `java.util.concurrent.ExecutorCompletionService` -- lightweight blocking queue that decouples the production of new asynchronous tasks from the consumption of the results of completed tasks
+   ```java
+   public class ExecutorCompletionService<V> extends Object
+   implements CompletionService<V>
+   ```
+   - constructors
+     - `ExecutorCompletionService(Executor executor)`
+     - `ExecutorCompletionService(Executor executor, BlockingQueue<Future<V>> completionQueue)`
+   - `Future<V> poll()` -- `null` if none are present  
+     `Future<V> poll(long timeout, TimeUnit unit)`
+   - `Future<V> submit(Callable<V> task)`  
+     `Future<V> submit(Runnable task, V result)`
+   - `Future<V> take()` -- wait if none are present
 
 1. `java.util.concurrent.ScheduledExecutorService` -- `ExecutorService` that can schedule commands to run after a given delay, or to execute periodically
    ```java
@@ -3190,10 +3257,7 @@
    ```
    - returned by `Executors.newScheduledThreadPool(int)`, `Executors.newSingleThreadScheduledExecutor()`
 
-1. `java.util.concurrent.ForkJoinPool`
-   ```java
-   public class ForkJoinPool extends AbstractExecutorService
-   ```
+1. `java.util.concurrent.ForkJoinPool` -- see [Fork-Join](#Fork-Join)
 
 1. `java.util.concurrent.Executors` -- factory and utility methods
    - thread pools
@@ -3207,6 +3271,8 @@
        `static ExecutorService newSingleThreadExecutor(ThreadFactory threadFactory)`
      - `static ScheduledExecutorService newSingleThreadScheduledExecutor()` -- scheduled version of `newSingleThreadExecutor`
        `static ScheduledExecutorService newSingleThreadScheduledExecutor(ThreadFactory threadFactory)`
+     - `static ExecutorService newWorkStealingPool()`-- `ForkJoinPool`  
+       `static ExecutorService newWorkStealingPool(int parallelism)`
      - `java.util.concurrent.ThreadFactory`
        ```java
        public interface ThreadFactory {
@@ -3215,4 +3281,88 @@
        ```
    - more
 
-<!-- TODO: ForkJoinPool, Executors.newWorkStealingPool -->
+### Fork-Join
+
+1. fork-join framework
+   - work stealing
+     - task queue -- each thread has a deque for tasks, and pushes subtasks onto the head
+     - work stealing -- when a worker thread is idle, it “steals” a task from the tail of another deque
+       - Since large subtasks are at the tail, such stealing is rare
+     - `ForkJoinPool` employing work stealing -- efficient for recursive tasks, and event-style tasks (especially `asyncMode` for the latter)
+   - use and limitations
+     - high volume -- Huge numbers of tasks and subtasks may be hosted by a small number of actual threads in a `ForkJoinPool`. The pool attempts to maintain enough active (or available) threads by dynamically adding, suspending, or resuming internal worker threads, even if some tasks are stalled waiting to join others
+     - no side effect -- main use as computational tasks calculating pure functions or operating on purely isolated objects
+     - avoid `synchronized` methods or blocks -- should minimize other blocking synchronization apart from joining other tasks or using synchronizers such as Phasers. Subdividable tasks should also not perform blocking I/O, and should ideally access variables that are completely independent of those accessed by other running tasks
+     - define and use `ForkJoinTasks` that may block -- three further considerations
+       - independent -- completion of few other tasks should be dependent on a task that blocks on external synchronization or I/O
+       - small blocking tasks -- to minimize resource impact, tasks should be small; ideally performing only the (possibly) blocking action
+       - ensure progress -- ensure the number of possibly blocked tasks fewer than `ForkJoinPool.getParallelism()`, or use `ForkJoinPool.ManagedBlocker`
+     - loosely enforced guideline -- by not permitting checked exceptions such as `IOExceptions` to be thrown
+     - like a call (fork) and return (join) from a parallel recursive function -- `a.fork(); b.fork(); b.join(); a.join();` is likely to be substantially more efficient than `a.join(); b.join()`
+     - task size rule of thumb -- a task should perform more than 100 and less than 10000 basic computational steps
+
+1. `java.util.concurrent.ForkJoinTask` -- tasks that run within a `ForkJoinPool`, a thread-like entity but much lighter, lightweight form of `Future`
+   ```java
+   public abstract class ForkJoinTask<V> extends Object
+   implements Future<V>, Serializable
+   ```
+   - constructors (adaptors)
+     - `static <T> ForkJoinTask<T> adapt(Callable<? extends T> callable)`
+     - `static ForkJoinTask<?> adapt(Runnable runnable)`
+     - `static <T> ForkJoinTask<T> adapt(Runnable runnable, T result)`
+   - exceptions -- may still encounter unchecked exceptions, which are rethrown to callers join them
+     - `RejectedExecutionException` -- internal resource exhaustion
+   - awaiting completion and extracting results
+     - `ForkJoinTask<V> fork()` -- Arranges to asynchronously execute this task in the pool the current task is running in, if applicable, or using the `ForkJoinPool.commonPool()` if not `inForkJoinPool()`.
+     - `V join()` -- Returns the result of the computation when it is done
+     - `get` from `Future`, but throws checked exception
+     - `V invoke()` -- semantically equivalent to `fork(); join()` but always attempts to begin execution in the current thread
+     - `invokeAll`
+       - `static <T extends ForkJoinTask<?>> Collection<T> invokeAll(Collection<T> tasks)` -- forking a set of tasks and joining them all
+       - `static void invokeAll(ForkJoinTask<?>... tasks)`
+       - `static void invokeAll(ForkJoinTask<?> t1, ForkJoinTask<?> t2)`
+     - quietly -- do not extract results or report exceptions, useful when expecting delayed processing of results or exceptions until all complete
+       - `void quietlyComplete()`
+       - `void quietlyInvoke()`
+       - `void quietlyJoin()`
+   - execution status
+     - `boolean isCancelled()` -- in which case `getException()` returns a `CancellationException`
+     - `boolean isCompletedAbnormally()`
+     - `boolean isCompletedNormally()`
+     - `boolean isDone()` -- normally, abnormally or cancelled
+   - manage circular dependency
+     - `void complete(V value)`  
+       `void completeExceptionally(Throwable ex)`
+     - `static void helpQuiesce()` -- Possibly executes tasks until the pool hosting the current task is quiescent.
+   - extending -- extend one of the abstract classes that support a particular style of fork/join processing, defines a `compute` method that somehow uses the control methods supplied by this base class
+     - tags -- for use of specialized subclasses
+     - base `final` support methods -- should minimally implement protected methods
+     - `java.util.concurrent.RecursiveAction` -- A recursive resultless `ForkJoinTask`
+       ```java
+       public abstract class RecursiveAction extends ForkJoinTask<Void>
+       ```
+     - `java.util.concurrent.RecursiveTask` -- A recursive result-bearing `ForkJoinTask`
+       ```java
+       public abstract class RecursiveTask<V> extends ForkJoinTask<V>
+       ```
+     - `java.util.concurrent.CountedCompleter` -- completed actions trigger other actions
+       ```java
+       public abstract class CountedCompleter<T> extends ForkJoinTask<T>
+       ```
+       - tbd <!-- TODO -->
+
+1. `java.util.concurrent.ForkJoinPool` -- provides the entry point for submissions from non-`ForkJoinTask` clients, as well as management and monitoring operations
+   ```java
+   public class ForkJoinPool extends AbstractExecutorService
+   ```
+   - `static ForkJoinPool commonPool()` -- used by any `ForkJoinTask` that is not explicitly submitted to a specified pool, threads are slowly reclaimed during periods of non-use, and reinstated upon subsequent use
+   - `static void managedBlock(ForkJoinPool.ManagedBlocker blocker)`
+   - `ForkJoinPool.ManagedBlocker`
+     ```java
+     public static interface ManagedBlocker {
+         boolean block() throws InterruptedException;
+         boolean isReleasable();
+     }
+     ```
+
+## Synchronizers
