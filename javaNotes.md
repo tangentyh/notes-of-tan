@@ -1401,6 +1401,8 @@
 
 ## Collections and Maps
 
+1. concurrent collections -- see [Thread-Safe Collections](#Thread-Safe-Collections), and `SynchronousQueue`
+
 1. `Iterable`
    ```java
    public interface Iterable<T>
@@ -2759,7 +2761,7 @@
 1. synchronization
    - race condition -- when a system's substantive behavior is dependent on the sequence or timing of other uncontrollable events
    - atomic
-   - preference -- concurrent collections with non-blocking mechanism > underlying locks in `java.util.concurrent` > `synchronized` > `Lock`
+   - preference -- concurrent collections with non-blocking mechanism, synchronizers > underlying locks in `java.util.concurrent` > `synchronized` > `Lock`
      - client-side locking -- discouraged
    - when to use
      > If you write a variable which may next be read by another thread, or you read a variable which may have last been written by another thread, you must use synchronization.
@@ -2904,7 +2906,7 @@
      - cache coherence -- threads running in different processors may see different values for the same memory location
      - reorder?? -- a memory value can be changed by another thread, but compilers assume memory values are only changed with explicit instructions, and compilers reorder instructions to maximize throughput
    - compiler will insert the appropriate code to ensure that a change to the a variable in one thread is visible from any other thread that reads the variable
-     - [happens-before order](https://docs.oracle.com/javase/specs/jls/se11/html/jls-17.html#jls-17.4.5) -- a write to a volatile field is visible to and ordered before every subsequent read of that field
+     - [happen-before order](https://docs.oracle.com/javase/specs/jls/se11/html/jls-17.html#jls-17.4.5) -- a write to a volatile field is visible to and ordered before every subsequent read of that field
    - atomicity -- volatile variables do not provide any atomicity, but makes read and write to `long` and `double` atomic
 
 1. `java.util.concurrent.atomic` -- use efficient machine-level instructions to guarantee atomicity without using locks
@@ -3366,3 +3368,117 @@
      ```
 
 ## Synchronizers
+
+1. Memory consistency effects -- happen-before, see [volatile](#volatile-and-Atomics)
+
+### Count
+
+1. `java.util.concurrent.Semaphore` -- Allows a set of threads to wait until permits are available for proceeding, often used to restrict the number of threads than can access some (physical or logical) resource
+   ```java
+   public class Semaphore extends Object
+   implements Serializable
+   ```
+   - use
+     - permit -- a count, can be acquired or released, by any caller
+     - binary semaphore -- mutex lock, but without ownership
+     - multiple permits methods -- increased risk of indefinite postponement when used without `true` fairness
+   - constructors
+     - `Semaphore(int permits)`
+     - `Semaphore(int permits, boolean fair)`
+   - release -- Releases a permit, returning it to the semaphore
+     - `void release()`
+     - `void release(int permits)`
+   - acquire -- Acquires a permit from this semaphore, blocking until one is available, or the thread is interrupted
+     - `void acquire()`
+     - `void acquire(int permits)`
+     - `boolean tryAcquire()`
+     - `boolean tryAcquire(int permits)`
+     - `boolean tryAcquire(int permits, long timeout, TimeUnit unit)`
+     - `boolean tryAcquire(long timeout, TimeUnit unit)`
+
+1. `java.util.concurrent.CountDownLatch` -- Allows a set of threads to wait until a count has been decremented to 0, and the count cannot be increased
+   ```java
+   public class CountDownLatch extends Object
+   ```
+   - constructor -- `CountDownLatch(int count)`
+   - `void await()` -- Causes the current thread to wait until the latch has counted down to zero and return immediately upon subsequent call, unless the thread is interrupted  
+     `boolean await(long timeout, TimeUnit unit)`
+   - `void countDown()` -- decrements the count of the latch, releasing all waiting threads if the count reaches zero
+   - `long getCount()`
+
+1. `java.util.concurrent.CyclicBarrier` -- Allows a set of threads to wait until a predefined count of them has reached a common barrier, and then optionally executes a barrier action
+   ```java
+   public class CyclicBarrier extends Object
+   ```
+   - all-or-none -- If a thread leaves a barrier point prematurely and exceptionally, all other threads waiting at that barrier point will also leave abnormally via `BrokenBarrierException` (or `InterruptedException` if they too were interrupted at about the same time)
+   - constructors
+     - `CyclicBarrier(int parties)`
+     - `CyclicBarrier(int parties, Runnable barrierAction)`
+   - `int await()` -- Waits until all parties have invoked `await` on this barrier, returns the arrival index of that thread at the barrier  
+     `int await(long timeout, TimeUnit unit)`
+   - `int getNumberWaiting()`
+   - `int getParties()` -- the number of parties required to trip this barrier
+   - `boolean isBroken()` -- Queries if this barrier is in a broken state
+   - `void reset()`
+
+1. `java.util.concurrent.Phaser` -- Like a cyclic barrier, but with a mutable party count, and can have multiple phases with phase number cycling from 0 to `Integer.MAX_VALUE`
+   ```java
+   public class Phaser extends Object
+   ```
+   - constructors
+     - `Phaser()` -- 0 parties, phase number 0
+     - `Phaser(int parties)`
+     - `Phaser(Phaser parent)`
+     - `Phaser(Phaser parent, int parties)`
+   - registration -- change number of parties
+     - `int register()` -- Adds a new unarrived party to this phaser
+     - `int bulkRegister(int parties)` -- Adds the given number of new unarrived parties to this phaser
+   - tree tiering -- children automatically register with and deregister from their parents according to the their numbers of registered parties
+     - `Phaser getParent()` -- Returns the parent of this phaser, or null if none
+     - `Phaser getRoot()` -- Returns the root ancestor of this phaser, which is the same as this phaser if it has no parent
+   - arrive -- When the final party for a given phase arrives, an optional `onAdvance` is performed and the phase advances (phase number +1)
+     - `int arrive()` -- Arrives at this phaser, without waiting for others to arrive
+     - `int arriveAndAwaitAdvance()` -- Arrives at this phaser and awaits others
+     - `int arriveAndDeregister()` -- Arrives at this phaser and deregisters from it without waiting for others to arrive
+   - await -- wait at a specific phase, returns when the phaser advances to (or is already at) a different phase
+     - `int awaitAdvance(int phase)` -- Awaits the phase of this phaser to advance from the given phase value, returning immediately if the current phase is not equal to the given phase value or this phaser is terminated
+     - `int awaitAdvanceInterruptibly(int phase)`
+     - `int awaitAdvanceInterruptibly(int phase, long timeout, TimeUnit unit)`
+   - termination -- triggered when `onAdvance` returns `true`. Upon termination, all synchronization methods immediately return a negative integer and registration takes no effect
+     - `void forceTermination()` -- Forces this phaser to enter termination state
+     - `boolean isTerminated()` -- Returns true if this phaser has been terminated
+   - monitoring
+     - `int getArrivedParties()` -- Returns the number of registered parties that have arrived at the current phase of this phaser
+     - `int getPhase()` -- Returns the current phase number
+     - `int getRegisteredParties()` -- Returns the number of parties registered at this phaser
+     - `int getUnarrivedParties()` -- Returns the number of registered parties that have not yet arrived at the current phase of this phaser
+   - `protected boolean onAdvance(int phase, int registeredParties)` -- Overridable method to perform an action upon impending phase advance, and to control termination
+     ```java
+     return registeredParties == 0; // default implementation
+     ```
+
+### Data Exchange
+
+1. `java.util.concurrent.Exchanger` -- Allows two threads to exchange objects when both are ready for the exchange, a bidirectional form of a `SynchronousQueue`
+   ```java
+   public class Exchanger<V> extends Object
+   ```
+   - `V exchange(V x)` -- Waits for another thread to arrive at this exchange point (unless the current thread is interrupted), and then transfers the given object to it, receiving its object in return
+   - `V exchange(V x, long timeout, TimeUnit unit)`
+
+1. `java.util.concurrent.SynchronousQueue` -- a mechanism that pairs up producer and consumer threads, a blocking queue in which each insert operation must wait for a corresponding remove operation by another thread, and vice versa
+   ```java
+   public class SynchronousQueue<E>
+   extends AbstractQueue<E>
+   implements BlockingQueue<E>, Serializable
+   ```
+   - empty queue -- no internal capacity
+   - non-null
+   - constructors
+     - `SynchronousQueue()` -- LIFO for non-fair mode
+     - `SynchronousQueue(boolean fair)` -- FIFO for fairness, performance is similar for this collection
+   - `E poll()`  
+     `E poll(long timeout, TimeUnit unit)`
+   - `boolean offer(E e)`  
+     `boolean offer(E e, long timeout, TimeUnit unit)`
+   - other inherited methods
