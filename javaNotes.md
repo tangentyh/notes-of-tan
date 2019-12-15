@@ -19,8 +19,6 @@
    - resource bundles — Localized applications contain locale-specific information in resource bundles
    - localized messages — A message may contain placeholders: `{0}` , `{1}`
 
-1. `java.util.Spliterator` — both sequential and parallel data processing
-
 # CLI
 
 1. `javac` — compile
@@ -433,6 +431,8 @@
      - `String replace(CharSequence oldString, CharSequence newString)`
      - `String toLowerCase()` `String toUpperCase()`
      - `String trim()`
+     - `String[] split(String regex)`  
+       `String[] split(String regex, int limit)`
    - construct
      - `static String format(String format, Object... args)`
      - `static String join(CharSequence delimiter, CharSequence... elements)`
@@ -940,19 +940,88 @@
 
 ### Common Functional Interfaces
 
-1. `java.util.function` package
+1. `java.util.function` package, all `@FunctionalInterface`
+
+1. `java.util.function.Function<T, R>`
+   - `R apply(T t)`
+   - `static <T> Function<T,T> identity()`
+   - chaining
+     - `default <V> Function<T,V> andThen(Function<? super R,? extends V> after)`
+     - `default <V> Function<V,R> compose(Function<? super V,? extends T> before)`
+   - variants
+     - `java.util.function.DoubleFunction<R>` -- `R apply(double value)`
+     - `java.util.function.DoubleToIntFunction`
+     - `java.util.function.DoubleToLongFunction`
+     - `java.util.function.IntFunction<R>`
+     - `java.util.function.IntToDoubleFunction`
+     - `java.util.function.IntToLongFunction`
+     - `java.util.function.LongFunction<R>`
+     - `java.util.function.LongToDoubleFunction`
+     - `java.util.function.LongToIntFunction`
+     - `java.util.function.ToDoubleFunction<T>`
+     - `java.util.function.ToIntFunction<T>`
+     - `java.util.function.ToLongFunction<T>`
+   - variants with two parameters
+     - `java.util.function.BiFunction<T,U,R>` -- `R apply(T t, U u)`
+     - `java.util.function.ToDoubleBiFunction<T,U>`
+     - `java.util.function.ToIntBiFunction<T,U>`
+     - `java.util.function.ToLongBiFunction<T,U>`
+
+1. operator -- `Function` with type parameters of the same type
+   ```java
+   @FunctionalInterface
+   public interface UnaryOperator<T>
+   extends Function<T,T>
+   ```
+   - unary
+     - `java.util.function.UnaryOperator<T>`
+       - `static <T> UnaryOperator<T> identity()`
+     - `java.util.function.DoubleUnaryOperator`
+     - `java.util.function.IntUnaryOperator`
+     - `java.util.function.LongUnaryOperator`
+   - binary
+     - `java.util.function.BinaryOperator<T>`
+       - `static <T> BinaryOperator<T> maxBy(Comparator<? super T> comparator)`
+       - `static <T> BinaryOperator<T> minBy(Comparator<? super T> comparator)`
+     - `java.util.function.DoubleBinaryOperator` -- `double applyAsDouble(double left, double right)`
+     - `java.util.function.IntBinaryOperator`
+     - `java.util.function.LongBinaryOperator`
 
 1. `java.util.function.Supplier<T>`
    - `T get()`
-   - primitive equivalent — `TypeSupplier`
-     - `type getAsType()`
+   - variants
+     - `java.util.function.BooleanSupplier` -- `boolean getAsBoolean()`
+     - `java.util.function.DoubleSupplier`
+     - `java.util.function.IntSupplier`
+     - `java.util.function.LongSupplier`
 
 1. `java.util.function.Consumer<T>`
    - `void accept(T t)`
    - `default Consumer<T> andThen(Consumer<? super T> after)` — chaining
      ```java
-     return (T t) -> { accept(t); after.accept(t); };
+     return (T t) -> { accept(t); after.accept(t); }; // default implementation
      ```
+   - variants
+     - `java.util.function.DoubleConsumer` -- `void accept(double value)`
+     - `java.util.function.IntConsumer`
+     - `java.util.function.LongConsumer`
+   - variants with two parameters
+     - `java.util.function.BiConsumer<T, U>` -- `void accept(T t, U u)`
+     - `java.util.function.ObjDoubleConsumer<T>`
+     - `java.util.function.ObjIntConsumer<T>`
+     - `java.util.function.ObjLongConsumer<T>`
+
+1. `java.util.function.Predicate<T>`
+   - `default Predicate<T> and(Predicate<? super T> other)`
+   - `static <T> Predicate<T> isEqual(Object targetRef)`
+   - `default Predicate<T> negate()`
+   - `default Predicate<T> or(Predicate<? super T> other)`
+   - `boolean test(T t)`
+   - variants
+     - `java.util.function.DoublePredicate`
+     - `java.util.function.IntPredicate`
+     - `java.util.function.LongPredicate`
+     - `java.util.function.BiPredicate<T,U>`
 
 ## Inner Class
 
@@ -1225,6 +1294,8 @@
 
 # IO
 
+## Console
+
 1. get `Console` from `System.console()`
    - `java.lang.System`
      - `static Console console()`
@@ -1262,6 +1333,8 @@
    - `println()`
    - `PrintStream printf(String format, Object... args)`
      - [formats](https://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html#syntax)
+
+## tbd
 
 1. `PrintWriter`
    ```java
@@ -1342,6 +1415,7 @@
      - `static <T> List<T> asList(T... a)` — `return new ArrayList<>(a);`
        - `ArrayList` here is `Arrays$ArrayList` which implements `List`, a view on the original array with fixed size
        - if real `ArrayList` is desired — use this `Arrays$ArrayList` to construct
+     - stream methods
    - `static int binarySearch(type[] a, type v)`  
      `static int binarySearch(type[] a, int start, int end, type v)`
      - `Object[]` actually needs to be `Comparable[]`
@@ -1424,6 +1498,8 @@
    - `boolean hasNext()`
    - `void remove()` — remove the element last returned by `next()`
    - `default void forEachRemaining(Consumer<? super E> action)`
+
+1. `java.util.Spliterator` — both sequential and parallel data processing, the parallel analogue of an `Iterator`
 
 1. `java.util.Collection`
    ```java
@@ -1985,6 +2061,202 @@
    - export and import
    - more
 
+## Stream
+
+1. stream
+   - characteristics
+     - no store -- elements stored in an underlying collection or generated on demand, should not mutate upon terminal operation
+     - does not mutate source -- new stream on every call
+     - lazy
+     - one-time -- may throw `IllegalStateException` if it detects that the stream is being reused
+     - sequential or parallel -- in parallel mode when the terminal method executes, all intermediate stream operations will be parallelized, using `ForkJoinPool`
+     - ordered or not -- streams that arise from ordered collections (arrays and lists), from ranges, generators, and iterators, or from calling `Stream::sorted`
+       - order and parallelism -- ordering does not preclude efficient parallelism, but some operations can be more effectively parallelized without requiring order
+   - stream creation
+     - from collections and `Arrays` -- `Collection::stream`, `Collection::parallelStream`, `Arrays::stream`
+       - under the hood -- `StreamSupport::stream`, which uses `Spliterator`
+     - static methods in `Stream`
+     - `Pattern::splitAsStream`
+     - `Files::lines`
+     - `Stream.Builder`
+     - `Random::ints`, `Random::doubles`, `Random::longs` for primitive variants
+     - `CharSequence::codepoints`
+   - generic and primitive variants exist
+
+1. `java.util.stream.BaseStream`
+   ```java
+   public interface BaseStream<T,S extends BaseStream<T,S>>
+   extends AutoCloseable
+   ```
+   - `void close()`
+   - `boolean isParallel()`
+   - `Iterator <T> iterator()`
+   - `Spliterator <T> spliterator()`
+   - `S onClose(Runnable closeHandler)`
+   - `S parallel()`
+   - `S sequential()`
+   - `S unordered()`
+
+1. `java.util.stream.StreamSupport` -- for library writers presenting stream views of data structures
+   ```java
+   public final class StreamSupport extends Object
+   ```
+
+1. `java.util.stream.IntStream`, `java.util.stream.LongStream`, `java.util.stream.DoubleStream`
+   ```java
+   public interface IntStream
+   extends BaseStream<Integer,IntStream>
+   ```
+   - see `Stream`
+   - creation -- partial `range()` in Python
+     - `static IntStream range(int startInclusive, int endExclusive)`
+     - `static IntStream rangeClosed(int startInclusive, int endInclusive)`
+     - `static LongStream range(long startInclusive, long endExclusive)`
+     - `static LongStream rangeClosed(long startInclusive, long endInclusive)`
+   - transformation
+     - `DoubleStream asDoubleStream()`  
+       `LongStream asLongStream()`
+     - `Stream<Integer> boxed()`  
+       `Stream<Double> boxed()`  
+       `Stream<Long> boxed()`
+     - `LongSummaryStatistics summaryStatistics()`  
+       `IntSummaryStatistics summaryStatistics()`  
+       `DoubleSummaryStatistics summaryStatistics()`
+
+1. `java.util.stream.Stream`
+   ```java
+   public interface Stream<T>
+   extends BaseStream<T,Stream<T>>
+   ```
+   - creation
+     - `static <T> Stream<T> of(T... values)`  
+       `static <T> Stream<T> of(T t)`
+     - `static <T> Stream<T> empty()`
+     - `static <T> Stream<T> generate(Supplier<T> s)` -- Returns an infinite sequential unordered stream where each element is generated by the provided Supplier.
+     - `static <T> Stream<T> iterate(T seed, UnaryOperator<T> f)` -- Returns an infinite sequential ordered Stream produced by iterative application of a function `f` to an initial element seed, producing a Stream consisting of seed, `f(seed)`, `f(f(seed))`, etc.
+     - `static <T> Stream<T> concat(Stream<? extends T> a, Stream<? extends T> b)`
+     - `static <T> Stream.Builder<T> builder()`
+       ```java
+       public static interface Stream.Builder<T>
+       extends Consumer<T>
+       ```
+       - `void accept(T t)`  
+         `default Stream.Builder<T> add(T t)`
+       - `Stream<T> build()`
+   - transformation
+     - `BaseStream` methods
+     - `Stream<T> filter(Predicate<? super T> predicate)`
+     - `<R> Stream<R> map(Function<? super T,? extends R> mapper)`  
+       `DoubleStream mapToDouble(ToDoubleFunction<? super T> mapper)`  
+       `IntStream mapToInt(ToIntFunction<? super T> mapper)`  
+       `LongStream mapToLong(ToLongFunction<? super T> mapper)`
+     - `<R> Stream<R> flatMap(Function<? super T,? extends Stream<? extends R>> mapper)`  
+       `DoubleStream flatMapToDouble(Function<? super T,? extends DoubleStream> mapper)`  
+       `IntStream flatMapToInt(Function<? super T,? extends IntStream> mapper)`  
+       `LongStream flatMapToLong(Function<? super T,? extends LongStream> mapper)`
+   - query -- order matters
+     - `Stream<T> limit(long maxSize)`
+     - `Stream<T> skip(long n)`
+     - `Stream<T> distinct()` -- uses `Object::equals`, the first occurrence when ordered
+     - `Stream<T> sorted()`  
+       `Stream<T> sorted(Comparator<? super T> comparator)`
+   - reduction (terminal operation)
+     - `Optional<T> max(Comparator<? super T> comparator)`
+     - `Optional<T> min(Comparator<? super T> comparator)`
+     - `long count()`
+     - `Optional<T> findAny()` -- effective when parallel
+     - `Optional<T> findFirst()`
+     - `boolean allMatch(Predicate<? super T> predicate)`
+     - `boolean anyMatch(Predicate<? super T> predicate)`
+     - `boolean noneMatch(Predicate<? super T> predicate)`
+     - `T reduce(T identity, BinaryOperator<T> accumulator)`
+     - `<U> U reduce(U identity, BiFunction<U,? super T,U> accumulator, BinaryOperator<U> combiner)`
+   - result (terminal operation)
+     - `BaseStream` methods
+     - `Stream<T> peek(Consumer<? super T> action)`
+     - `void forEach(Consumer<? super T> action)`
+     - `void forEachOrdered(Consumer<? super T> action)` -- when in parallel and ordre matters
+     - `Object[] toArray()`  
+       `<A> A[] toArray(IntFunction<A[]> generator)`
+     - `<R,A> R collect(Collector<? super T,A,R> collector)`  
+       `<R> R collect(Supplier<R> supplier, BiConsumer<R,? super T> accumulator, BiConsumer<R,R> combiner)` -- `Collector` shortcut
+       ```java
+       List<String> asList = stringStream.collect(ArrayList::new, ArrayList::add,
+                                                  ArrayList::addAll);
+       String concat = stringStream.collect(StringBuilder::new, StringBuilder::append,
+                                            StringBuilder::append)
+                                   .toString();
+       ```
+     - iterator methods from `BaseStream`
+
+1. `java.util.stream.Collector` -- A mutable reduction operation that accumulates input elements into a mutable result container
+   ```java
+   public interface Collector<T,A,R>
+   ```
+   - process
+     - creation of a new result container (`Supplier<A> supplier()`)
+     - incorporating a new data element into a result container (`BiConsumer<A,T> accumulator()`)
+     - combining two result containers into one (`BinaryOperator<A> combiner()`)
+     - performing an optional final transform on the container (`Function<A,R> finisher()`)
+   - `Set<Collector.Characteristics> characteristics()`
+     - `CONCURRENT` -- Indicates that this collector is concurrent, meaning that the result container can support the accumulator function being called concurrently with the same result container from multiple threads.
+     - `IDENTITY_FINISH` -- Indicates that the finisher function is the identity function and can be elided.
+       - `Function.identity()`
+     - `UNORDERED` -- Indicates that the collection operation does not commit to preserving the encounter order of input elements.
+   - creation
+     - `static <T,A,R> Collector<T,A,R> of(Supplier<A> supplier, BiConsumer<A,T> accumulator, BinaryOperator<A> combiner, Function<A,R> finisher, Collector.Characteristics... characteristics)`
+     - `static <T,R> Collector<T,R,R> of(Supplier<R> supplier, BiConsumer<R,T> accumulator, BinaryOperator<R> combiner, Collector.Characteristics... characteristics)`
+     - `Collectors`
+
+1. `java.util.stream.Collectors`
+   - statics
+     - `static <T> Collector<T,?,Double> averagingDouble(ToDoubleFunction<? super T> mapper)`  
+       `static <T> Collector<T,?,Double> averagingInt(ToIntFunction<? super T> mapper)`  
+       `static <T> Collector<T,?,Double> averagingLong(ToLongFunction<? super T> mapper)`
+     - `static <T> Collector<T,?,Long> counting()`
+     - `static <T> Collector<T,?,Optional<T>> maxBy(Comparator<? super T> comparator)`
+     - `static <T> Collector<T,?,Optional<T>> minBy(Comparator<? super T> comparator)`
+     - `static <T> Collector<T,?,DoubleSummaryStatistics> summarizingDouble(ToDoubleFunction<? super T> mapper)`  
+       `static <T> Collector<T,?,IntSummaryStatistics> summarizingInt(ToIntFunction<? super T> mapper)`  
+       `static <T> Collector<T,?,LongSummaryStatistics> summarizingLong(ToLongFunction<? super T> mapper)`
+     - `static <T> Collector<T,?,Double> summingDouble(ToDoubleFunction<? super T> mapper)`  
+       `static <T> Collector<T,?,Integer> summingInt(ToIntFunction<? super T> mapper)`  
+       `static <T> Collector<T,?,Long> summingLong(ToLongFunction<? super T> mapper)`
+   - collector chaining
+     - `static <T,A,R,RR> Collector<T,A,RR> collectingAndThen(Collector<T,A,R> downstream, Function<R,RR> finisher)` -- add finisher
+     - `static <T,U,A,R> Collector<T,?,R> mapping(Function<? super T,? extends U> mapper, Collector<? super U,A,R> downstream)` -- preprocess with `T -> U` function for collector accepting `U`
+     - `groupingBy`
+     - `groupingByConcurrent`
+     - `partitioningBy`
+   - group (defaults to using `HashMap` and `ConcurrentHashMap`)
+     - `static <T,K> Collector<T,?,Map<K,List<T>>> groupingBy(Function<? super T,? extends K> classifier)`  
+       `static <T,K,A,D> Collector<T,?,Map<K,D>> groupingBy(Function<? super T,? extends K> classifier, Collector<? super T,A,D> downstream)`  
+       `static <T,K,D,A,M extends Map<K,D>> Collector<T,?,M> groupingBy(Function<? super T,? extends K> classifier, Supplier<M> mapFactory, Collector<? super T,A,D> downstream)`
+     - `static <T,K> Collector<T,?,ConcurrentMap<K,List<T>>> groupingByConcurrent(Function<? super T,? extends K> classifier)`  
+       `static <T,K,A,D> Collector<T,?,ConcurrentMap<K,D>> groupingByConcurrent(Function<? super T,? extends K> classifier, Collector<? super T,A,D> downstream)`  
+       `static <T,K,A,D,M extends ConcurrentMap<K,D>> Collector<T,?,M> groupingByConcurrent(Function<? super T,? extends K> classifier, Supplier<M> mapFactory, Collector<? super T,A,D> downstream)`
+     - `static <T> Collector<T,?,Map<Boolean,List<T>>> partitioningBy(Predicate<? super T> predicate)`  
+       `static <T,D,A> Collector<T,?,Map<Boolean,D>> partitioningBy(Predicate<? super T> predicate, Collector<? super T,A,D> downstream)`
+   - to map (`HashMap` and `ConcurrentHashMap`)
+     - `static <T,K,U> Collector<T,?,ConcurrentMap<K,U>> toConcurrentMap(Function<? super T,? extends K> keyMapper, Function<? super T,? extends U> valueMapper)`  
+       `static <T,K,U> Collector<T,?,ConcurrentMap<K,U>> toConcurrentMap(Function<? super T,? extends K> keyMapper, Function<? super T,? extends U> valueMapper, BinaryOperator<U> mergeFunction)`  
+       `static <T,K,U,M extends ConcurrentMap<K,U>> Collector<T,?,M> toConcurrentMap(Function<? super T,? extends K> keyMapper, Function<? super T,? extends U> valueMapper, BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier)`
+     - `static <T,K,U> Collector<T,?,Map<K,U>> toMap(Function<? super T,? extends K> keyMapper, Function<? super T,? extends U> valueMapper)`  
+       `static <T,K,U> Collector<T,?,Map<K,U>> toMap(Function<? super T,? extends K> keyMapper, Function<? super T,? extends U> valueMapper, BinaryOperator<U> mergeFunction)`  
+       `static <T,K,U,M extends Map<K,U>> Collector<T,?,M> toMap(Function<? super T,? extends K> keyMapper, Function<? super T,? extends U> valueMapper, BinaryOperator<U> mergeFunction, Supplier<M> mapSupplier)`
+   - to collection
+     - `static <T,C extends Collection<T>> Collector<T,?,C> toCollection(Supplier<C> collectionFactory)`
+     - `static <T> Collector<T,?,List<T>> toList()`
+     - `static <T> Collector<T,?,Set<T>> toSet()`
+   - join
+     - `static Collector<CharSequence,?,String> joining()`
+     - `static Collector<CharSequence,?,String> joining(CharSequence delimiter)`
+     - `static Collector<CharSequence,?,String> joining(CharSequence delimiter, CharSequence prefix, CharSequence suffix)`
+   - reduce
+     - `static <T> Collector<T,?,Optional<T>> reducing(BinaryOperator<T> op)`
+     - `static <T> Collector<T,?,T> reducing(T identity, BinaryOperator<T> op)`
+     - `static <T,U> Collector<T,?,U> reducing(U identity, Function<? super T,? extends U> mapper, BinaryOperator<U> op)`
+
 ## SPI (Service Loader)
 
 1. SPI
@@ -2024,6 +2296,51 @@
 ## tbd
 
 <!-- TODO -->
+
+1. `java.util.Optional` -- A container object which may or may not contain a non-null value, a better `null`
+   ```java
+   public final class Optional<T> extends Object
+   ```
+   - fallback to `null
+     - `boolean isPresent()`
+     - `T get()`
+   - transformation
+     - `void ifPresent(Consumer<? super T> consumer)`
+     - `<U> Optional<U> map(Function<? super T,? extends U> mapper)`
+     - `<U> Optional<U> flatMap(Function<? super T,Optional<U>> mapper)`
+     - `Optional<T> filter(Predicate<? super T> predicate)`
+     - `T orElse(T other)`
+     - `T orElseGet(Supplier<? extends T> other)`
+     - `<X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier)`
+   - creation
+     - `static <T> Optional<T> empty()`
+     - `static <T> Optional<T> of(T value)`
+     - `static <T> Optional<T> ofNullable(T value)`
+   - variants
+     - `java.util.OptionalInt`
+     - `java.util.OptionalDouble`
+     - `java.util.OptionalLong`
+
+1. `java.util.LongSummaryStatistics`, `java.util.IntSummaryStatistics`, `java.util.DoubleSummaryStatistics`
+   ```java
+   public class LongSummaryStatistics extends Object
+   implements LongConsumer, IntConsumer
+   ```
+   - use
+     - `Collectors::summarizingLong`, `Collectors::summarizingDouble`, `Collectors::summarizingInt`
+     - with out collector
+       ```java
+       LongSummaryStatistics stats = longStream.collect(LongSummaryStatistics::new,
+                                                        LongSummaryStatistics::accept,
+                                                        LongSummaryStatistics::combine);
+       ```
+   - statics
+     - `double getAverage()`
+     - `long getCount()`
+     - `long|int|double getMax()`
+     - `long|int|double getMin()`
+     - `long|double getSum()`
+     - `String toString()`
 
 # Error Handling
 
@@ -3482,3 +3799,11 @@
    - `boolean offer(E e)`  
      `boolean offer(E e, long timeout, TimeUnit unit)`
    - other inherited methods
+
+# Regex
+
+1. the category of Unicode letters
+   - [UTS #18: Unicode Regular Expressions](http://unicode.org/reports/tr18/#General_Category_Property)
+   - [Regex Tutorial - Unicode Characters and Properties](https://www.regular-expressions.info/unicode.html)
+
+1. `"\\PL"` is equivalent to `"\\P{L}"`
