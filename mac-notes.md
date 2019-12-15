@@ -386,6 +386,8 @@
    - `brew cleanup`
    - `brew tap buo/cask-upgrade` for `brew cu`
 
+1. appleID association to app -- `/path_to_app/Contents/_MASReceipt`
+
 # Chrome
 
 1. drag text — hold for a while
