@@ -209,7 +209,7 @@
      - `Double.POSITIVE_INFINITY` , `Double.NEGATIVE_INFINITY` , and `Double.NaN`
      - `Double.isNaN()`
 
-1. `char`
+1. `char` -- describes a code unit in the UTF-16 encoding
    - single quote
    - `\u0fff` — inside and outside quotes
      ```Java
@@ -221,8 +221,12 @@
      ```
      - Unicode escape sequences are processed before the code is parsed
    - `\b`, `\t`, `\n`, `\r`
-   - UTF-16
+   - code unit -- a 16-bit value
+     - supplementary characters -- encoded as consecutive pairs of code units, each of the values in such an encoding pair falls into a range of 2048 unused values of the basic multilingual plane
+     - surrogates area -- `U+D800` to `U+DBFF` for the first code unit, `U+DC00` to `U+DFFF` for the second code unit
+   - usage
      - recommendation is not to use the `char` type unless you are actually manipulating UTF-16 code units
+     - use `String`
 
 1. `boolean`
    - cannot convert between integers and boolean values
@@ -412,7 +416,59 @@
 
 1. inside `java.lang` package
 
+1. `System`
+   ```java
+   public final class System extends Object
+   ```
+   - std
+     - `static InputStream in`
+     - `static PrintStream err`
+     - `static PrintStream out`
+     - `static Console console()`
+     - `static void setErr(PrintStream err)`
+     - `static void setIn(InputStream in)`
+     - `static void setOut(PrintStream out)`
+   - util
+     - `static void arraycopy(Object src, int srcPos, Object dest, int destPos, int length)`
+     - `static long currentTimeMillis()`
+     - `static long nanoTime()`
+     - `static int identityHashCode(Object x)`
+   - system property
+     - `static Properties getProperties()`
+     - `static String getProperty(String key)`
+     - `static String getProperty(String key, String def)`
+     - `static void setProperties(Properties props)`
+     - `static String setProperty(String key, String value)`
+     - `static String clearProperty(String key)`
+     - `static String lineSeparator()` -- equivalent to `System.getProperty("line.separator")`
+   - environment
+     - `static Map<String,String> getenv()`
+     - `static String getenv(String name)`
+   - JVM
+     - `static void exit(int status)`
+     - `static void gc()` -- run garbage collector
+     - `static SecurityManager getSecurityManager()`
+     - `static Channel inheritedChannel()` -- the channel inherited from the entity that created this Java virtual machine
+     - `static void load(String filename)`
+     - `static void loadLibrary(String libname)`
+     - `static String mapLibraryName(String libname)`
+     - `static void runFinalization()`
+     - `static void setSecurityManager(SecurityManager s)`
+
+1. `SecurityManager` -- check permissions, like read / write on certain files
+
 ### String
+
+1. `CharSequence` -- provides uniform, read-only access to many different kinds of char sequences
+   ```java
+   public interface CharSequence
+   ```
+   - `char charAt(int index)`
+   - `default IntStream chars()`
+   - `default IntStream codePoints()`
+   - `int length()`
+   - `CharSequence subSequence(int start, int end)`
+   - `String toString()`
 
 1. `String`
    ```java
@@ -496,6 +552,8 @@
      - `StringBuilder delete(int startIndex, int endIndex)`
    - output
      - `String toString()`
+
+1. `java.util.Formatter` -- tbd
 
 ### Object Wrappers
 
@@ -1296,14 +1354,27 @@
 
 ## Console
 
-1. get `Console` from `System.console()`
-   - `java.lang.System`
-     - `static Console console()`
-   - `java.io.Console`
-     - `static char[] readPassword(String prompt, Object... args)`
-     - `static String readLine(String prompt, Object... args)`
+1. `java.io.Console` -- synchronized
+   ```java
+   public final class Console extends Object
+   implements Flushable
+   ```
+   - get instance
+     - `System.console()`
+   - write
+     - `void flush()`
+     - `Console format(String fmt, Object... args)`
+     - `Console printf(String format, Object... args)`
+   - read
+     - `String readLine()`  
+       `String readLine(String fmt, Object... args)`
+     - `char[] readPassword()`  
+       `char[] readPassword(String fmt, Object... args)`
+   - get underlying stream
+     - `Reader reader()`
+     - `PrintWriter writer()`
 
-1. `java.util.Scanner`
+1. `java.util.Scanner` -- not synchronized
    ```java
    public final class Scanner extends Object
    implements Iterator<String>, Closeable
@@ -1327,6 +1398,9 @@
      - `boolean hasNext()`
      - `boolean hasNextInt()`
      - `boolean hasNextDouble()`
+   - more
+
+1. `BufferedReader` -- synchronized
 
 1. `System.out`, `static PrintStream`
    - `print()`
@@ -1334,7 +1408,90 @@
    - `PrintStream printf(String format, Object... args)`
      - [formats](https://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html#syntax)
 
-## tbd
+## IO Stream
+
+1. IO streams
+   - byte oriented -- `InputStream`, `OutputStream`
+   - based on two-byte `char` values (UTF-16 codepoints) -- `Reader`, `Writer`
+
+1. IO interfaces
+   - `java.io.Closeable` -- idempotent variant with `IOException` compared to `AutoCloseable` with `Exception`: no effect if already closed, whereas `AutoCloseable::close` may have side effects
+     ```java
+     public interface Closeable
+     extends AutoCloseable
+     ```
+   - `java.io.Flushable` -- write any buffered output to the underlying stream
+     ```java
+     public interface Flushable {
+         void flush() throws IOException;
+     }
+     ```
+   - `Readable`
+     ```java
+     public interface Readable {
+         public int read(java.nio.CharBuffer cb) throws IOException;
+     }
+     ```
+   - `Appendable` -- to which char sequences and values can be appended, must be implemented by any class whose instances are intended to receive formatted output from a `java.util.Formatter`
+     ```java
+     public interface Appendable {
+         Appendable append(char c) throws IOException;
+         Appendable append(CharSequence csq) throws IOException;
+         Appendable append(CharSequence csq, int start, int end) throws IOException;
+     }
+     ```
+
+1. `java.io.InputStream`
+   ```java
+   public abstract class InputStream extends Object
+   implements Closeable
+   ```
+   - lifecycle
+     - `int available()` -- an estimate of the number of bytes that can be read (or skipped over) without blocking
+     - `abstract int read()` -- block if necessary, read next byte (0 ~ 255), `-1` if at end, used by some other methods so only one method to implementing when inheriting  
+       `int read(byte[] b)`  
+       `int read(byte[] b, int off, int len)` -- reads up to `len` bytes of data from the offset into byte buffer `b`
+     - `long skip(long n)` -- returns the actual number of bytes skipped
+     - `void close()`
+   - mark -- the stream somehow remembers all the bytes read after the call to `mark` and stands ready to supply those same bytes again if and whenever the method `reset` is called, as long as within `readlimit`
+     - `boolean markSupported()`
+     - `void mark(int readlimit)`
+     - `void reset()`
+
+1. `java.io.OutputStream`
+   ```java
+   public abstract class OutputStream extends Object
+   implements Closeable, Flushable
+   ```
+   - `abstract void write(int b)` -- block if necessary  
+     `void write(byte[] b)`  
+     `void write(byte[] b, int off, int len)`
+   - `void flush()`
+   - `void close()` -- automatically `flush()` before close
+
+1. `java.io.Reader` -- see `InputStream`
+   ```java
+   public abstract class Reader extends Object
+   implements Readable, Closeable
+   ```
+   - lifecycle
+     - `boolean ready()`
+     - `abstract int read(char[] cbuf, int off, int len)` -- 0 ~ 65535 or -1  
+       `int read()`  
+       `int read(char[] cbuf)`  
+       `int read(CharBuffer target)`
+     - `long skip(long n)`
+     - `abstract void close()`
+   - mark
+     - `boolean markSupported()`
+     - `void mark(int readAheadLimit)`
+     - `void reset()`
+
+1. `java.io.Writer` -- see `OutputStream`
+   ```java
+   public abstract class Writer extends Object
+   implements Appendable, Closeable, Flushable
+   ```
 
 1. `PrintWriter`
    ```java
@@ -1356,37 +1513,9 @@
    ```
    - `static Path get(String first, String... more)` — Converts a path string, or a sequence of strings that when joined form a path string, to a Path.
 
-1. `java.io.OutputStream`
-
 1. `java.io.FileOutputStream`
 
 # Utils
-
-1. `java.util.Objects` — null-safe
-   - `static <T> int compare(T a, T b, Comparator<? super T> c)` — `return (a == b) ? 0 : c.compare(a, b);`
-   - `static boolean deepEquals(Object a, Object b)` — Returns `true` if the arguments are deeply equal to each other and `false` otherwise.
-   - `static boolean equals(Object a, Object b)` — `return (a == b) || (a != null && a.equals(b));`
-   - `static int hash(Object... values)` — `return Arrays.hashCode(values);`
-   - `static int hashCode(Object o)` — `return o != null ? o.hashCode() : 0;`
-   - `static boolean isNull(Object obj)` — `return obj == null;`
-   - `static boolean nonNull(Object obj)` — `return obj != null;`
-   - `static <T> T requireNonNull(T obj)`  
-     `static <T> T requireNonNull(T obj, String message)`  
-     `static <T> T requireNonNull(T obj, Supplier<String> messageSupplier)` — Checks that the specified object reference is not null and throws a customized `NullPointerException` if it is.
-   - `static String toString(Object o)` — `return String.valueOf(o);` &rarr; `return (obj == null) ? "null" : obj.toString();`
-   - `static String toString(Object o, String nullDefault)` — `return (o != null) ? o.toString() : nullDefault;`
-
-1. `java.util.Random` — generate a stream of pseudorandom numbers, `Math.random()` simpler to use
-   ```java
-   public class Random extends Object
-   implements Serializable
-   ```
-   - constructors
-     - `Random()`
-     - `Random(long seed)`
-   - next
-     - `int nextInt()`
-     - `int nextInt(int bound)`
 
 ## Time
 
@@ -1423,6 +1552,7 @@
      - `static void fill(type[] a, type v)`
      - `static type[] copyOf(type[] original, int newLength)`
      - `static type[] copyOfRange(type[] a, int start, int end)`
+     - `System::arraycopy`
      - `static void setAll(double[] array, IntToDoubleFunction generator)` -- generator takes indices as parameter  
        `static void setAll(int[] array, IntUnaryOperator generator)`  
        `static void setAll(long[] array, IntToLongFunction generator)`  
@@ -2293,9 +2423,35 @@
    - `Iterator<S> iterator()` -- Lazily loads the available providers of this loader's service.
    - `static <S> ServiceLoader<S> load(Class<S> service)` -- Creates a new service loader for the given service type, using the current thread's context class loader.
 
-## tbd
+## Other (tbd)
 
 <!-- TODO -->
+
+1. `java.util.Objects` — null-safe
+   - `static <T> int compare(T a, T b, Comparator<? super T> c)` — `return (a == b) ? 0 : c.compare(a, b);`
+   - `static boolean deepEquals(Object a, Object b)` — Returns `true` if the arguments are deeply equal to each other and `false` otherwise.
+   - `static boolean equals(Object a, Object b)` — `return (a == b) || (a != null && a.equals(b));`
+   - `static int hash(Object... values)` — `return Arrays.hashCode(values);`
+   - `static int hashCode(Object o)` — `return o != null ? o.hashCode() : 0;`
+   - `static boolean isNull(Object obj)` — `return obj == null;`
+   - `static boolean nonNull(Object obj)` — `return obj != null;`
+   - `static <T> T requireNonNull(T obj)`  
+     `static <T> T requireNonNull(T obj, String message)`  
+     `static <T> T requireNonNull(T obj, Supplier<String> messageSupplier)` — Checks that the specified object reference is not null and throws a customized `NullPointerException` if it is.
+   - `static String toString(Object o)` — `return String.valueOf(o);` &rarr; `return (obj == null) ? "null" : obj.toString();`
+   - `static String toString(Object o, String nullDefault)` — `return (o != null) ? o.toString() : nullDefault;`
+
+1. `java.util.Random` — generate a stream of pseudorandom numbers, `Math.random()` simpler to use
+   ```java
+   public class Random extends Object
+   implements Serializable
+   ```
+   - constructors
+     - `Random()`
+     - `Random(long seed)`
+   - next
+     - `int nextInt()`
+     - `int nextInt(int bound)`
 
 1. `java.util.Optional` -- A container object which may or may not contain a non-null value, a better `null`
    ```java
