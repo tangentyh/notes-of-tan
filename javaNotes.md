@@ -441,6 +441,7 @@
      - `static String setProperty(String key, String value)`
      - `static String clearProperty(String key)`
      - `static String lineSeparator()` -- equivalent to `System.getProperty("line.separator")`
+       - see `File` for other separators
    - environment
      - `static Map<String,String> getenv()`
      - `static String getenv(String name)`
@@ -1408,11 +1409,19 @@
    - `PrintStream printf(String format, Object... args)`
      - [formats](https://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html#syntax)
 
-## IO Stream
+## Basic IO Stream
 
 1. IO streams
    - byte oriented -- `InputStream`, `OutputStream`
-   - based on two-byte `char` values (UTF-16 codepoints) -- `Reader`, `Writer`
+     - deal with bytes -- `FilterInputStream`, `FilterOutputStream` and their derivatives
+     - buffer -- use `BufferedInputStream` and `BufferedOutputStream` as an intermediate stream
+   - based on two-byte `char` values (UTF-16 codepoints) -- `Reader`, `Writer`, can be converted from byte streams
+   - usage -- combination, filter streams as wrappers
+     ```java
+     DataInputStream din = new DataInputStream(
+         new BufferedInputStream(
+             new FileInputStream("employee.dat")));
+     ```
 
 1. IO interfaces
    - `java.io.Closeable` -- idempotent variant with `IOException` compared to `AutoCloseable` with `Exception`: no effect if already closed, whereas `AutoCloseable::close` may have side effects
@@ -1492,6 +1501,288 @@
    public abstract class Writer extends Object
    implements Appendable, Closeable, Flushable
    ```
+   - `Writer append(char c)`  
+     `Writer append(CharSequence csq)`  
+     `Writer append(CharSequence csq, int start, int end)`
+   - `abstract void write(char[] cbuf, int off, int len)`  
+     `void write(char[] cbuf)`  
+     `void write(int c)`  
+     `void write(String str)`  
+     `void write(String str, int off, int len)`
+   - `abstract void flush()`
+   - `abstract void close()`
+
+1. convert stream to reader / writer
+   - `java.io.InputStreamReader`
+     ```java
+     public class InputStreamReader
+     extends Reader
+     ```
+     - constructors
+       - `InputStreamReader(InputStream in)`
+       - `InputStreamReader(InputStream in, Charset cs)`
+       - `InputStreamReader(InputStream in, CharsetDecoder dec)`
+       - `InputStreamReader(InputStream in, String charsetName)`
+     - `String getEncoding()`
+   - `java.io.OutputStreamWriter`
+     ```java
+     public class OutputStreamWriter
+     extends Writer
+     ```
+     - constructors
+       - `OutputStreamWriter(OutputStream out)`
+       - `OutputStreamWriter(OutputStream out, Charset cs)`
+       - `OutputStreamWriter(OutputStream out, CharsetEncoder enc)`
+       - `OutputStreamWriter(OutputStream out, String charsetName)`
+     - `String getEncoding()`
+
+## Filter Stream
+
+1. filter stream -- contains some other stream, which it uses as its basic source / sink of data, possibly transforming the data along the way or providing additional functionality
+   - `java.io.FilterInputStream`
+     ```java
+     public class FilterInputStream
+     extends InputStream
+     ```
+     - constructor -- `protected FilterInputStream(InputStream in)`
+   - `java.io.FilterOutputStream`
+     ```java
+     public class FilterOutputStream
+     extends OutputStream
+     ```
+     - constructor -- `FilterOutputStream(OutputStream out)`
+   - `java.io.FilterReader`
+     ```java
+     public abstract class FilterReader
+     extends Reader
+     ```
+   - `java.io.FilterWriter`
+     ```java
+     public abstract class FilterWriter
+     extends Writer
+     ```
+
+1. buffer -- the ability to buffer the input and to support the mark and reset methods
+   - `java.io.BufferedInputStream`
+     ```java
+     public class BufferedInputStream
+     extends FilterInputStream
+     ```
+     - constructors
+       - `BufferedInputStream(InputStream in)`
+       - `BufferedInputStream(InputStream in, int size)`
+   - `java.io.BufferedOutputStream`
+     ```java
+     public class BufferedOutputStream
+     extends FilterOutputStream
+     ```
+     - constructors
+       - `BufferedOutputStream(OutputStream out)`
+       - `BufferedOutputStream(OutputStream out, int size)`
+   - `java.io.BufferedReader`
+     ```java
+     public class BufferedReader
+     extends Reader
+     ```
+   - `java.io.BufferedWriter`
+     ```java
+     public class BufferedWriter
+     extends Writer
+     ```
+
+1. data input -- conversation between bytes from a binary stream and Java data types
+   - [modified UTF-8](https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8) -- Hoffman tree
+   - `java.io.DataInput`
+     ```java
+     public interface DataInput
+     ```
+     - `void readFully(byte[] b)`
+     - `void readFully(byte[] b, int off, int len)`
+     - `boolean readBoolean()`
+     - `byte readByte()`
+     - `char readChar()`
+     - `double readDouble()`
+     - `float readFloat()`
+     - `int readInt()`
+     - `String readLine()`
+     - `long readLong()`
+     - `short readShort()`
+     - `int readUnsignedByte()` -- 0 ~ 255
+     - `int readUnsignedShort()` -- 0 ~ 65535
+     - `String readUTF()` -- modified UTF-8 encoded string
+     - `int skipBytes(int n)`
+   - `java.io.DataOutput`
+     ```java
+     public interface DataOutput
+     ```
+   - `java.io.DataInputStream`
+     ```java
+     public class DataInputStream
+     extends FilterInputStream
+     implements DataInput
+     ```
+     - constructor -- `DataInputStream(InputStream in)`
+   - `java.io.DataOutputStream`
+     ```java
+     public class DataOutputStream
+     extends FilterOutputStream
+     implements DataOutput
+     ```
+     - constructor -- `DataOutputStream(OutputStream out)`
+
+1. peek -- push back stream
+   - `java.io.PushbackInputStream`
+     ```java
+     public class PushbackInputStream
+     extends FilterInputStream
+     ```
+     - constructors
+       - `PushbackInputStream(InputStream in)`
+       - `PushbackInputStream(InputStream in, int size)`
+     - push back
+       - `void unread(byte[] b)`
+       - `void unread(byte[] b, int off, int len)`
+       - `void unread(int b)`
+   - `java.io.PushbackReader`
+     ```java
+     public class PushbackReader
+     extends FilterReader
+     ```
+
+## Files
+
+1. `java.io.File` -- an abstract representation of file and directory pathnames
+   ```java
+   public class File extends Object
+   implements Serializable, Comparable<File>
+   ```
+   - separators -- `System.getProperty("file.separator")`, `System.getProperty("path.separator")`
+     - `static String separator`
+     - `static char separatorChar`
+     - `static String pathSeparator`
+     - `static char pathSeparatorChar`
+   - permissions
+     - `boolean canExecute()`
+     - `boolean canRead()`
+     - `boolean canWrite()`
+     - `boolean isHidden()`
+     - `boolean setExecutable(boolean executable)
+     - `boolean setExecutable(boolean executable, boolean ownerOnly)
+     - `boolean setReadable(boolean readable)
+     - `boolean setReadable(boolean readable, boolean ownerOnly)
+     - `boolean setReadOnly()
+     - `boolean setWritable(boolean writable)
+     - `boolean setWritable(boolean writable, boolean ownerOnly)
+   - inherited
+     - `int compareTo(File pathname)` -- lexicographically
+   - CRUD
+     - `static File createTempFile(String prefix, String suffix)`
+     - `static File createTempFile(String prefix, String suffix, File directory)`
+     - `boolean createNewFile()`
+     - `boolean mkdir()`
+     - `boolean mkdirs()`
+     - `boolean delete()`
+     - `void deleteOnExit()`
+     - `boolean exists()`
+     - `boolean renameTo(File dest)`
+   - metadata and list
+     - `boolean isDirectory()`
+     - `boolean isFile()`
+     - `long lastModified()`
+     - `boolean setLastModified(long time)`
+     - `long length()`
+     - `String[] list()`  
+       `String[] list(FilenameFilter filter)`
+     - `File[] listFiles()`  
+       `File[] listFiles(FileFilter filter)`  
+       `File[] listFiles(FilenameFilter filter)`
+     - `static File[] listRoots()`
+   - path
+     - `File getAbsoluteFile()`
+     - `String getAbsolutePath()`
+     - `File getCanonicalFile()`
+     - `String getCanonicalPath()`
+     - `String getName()`
+     - `String getParent()`
+     - `File getParentFile()`
+     - `String getPath()`
+     - `boolean isAbsolute()`
+     - `String toString()`
+     - `URI toURI()`
+   - space -- the partition named by this abstract pathname
+     - `long getFreeSpace()`
+     - `long getTotalSpace()`
+     - `long getUsableSpace()`
+   - file filters
+     - `java.io.FilenameFilter`
+       ```java
+       @FunctionalInterface
+       public interface FilenameFilter {
+           boolean accept(File dir, String name);
+       }
+       ```
+     - `java.io.FileFilter`
+       ```java
+       @FunctionalInterface
+       public interface FileFilter {
+           boolean accept(File pathname);
+       }
+       ```
+   - `java.io.FileDescriptor` -- used in file streams
+      ```java
+      public final class FileDescriptor extends Object
+      ``
+
+1. file streams
+   - `java.io.FileInputStream`
+      ```java
+      public class FileInputStream
+      extends InputStream
+      ```
+      - constructors
+        - `FileInputStream(File file)`
+        - `FileInputStream(FileDescriptor fdObj)`
+        - `FileInputStream(String name)`
+      - methods beyond `InputStream`
+        - `protected void finalize()`
+        - `FileChannel getChannel()` -- ensures that the close method of this file input stream is called when there are no more references to it
+        - `FileDescriptor getFD()`
+   - `java.io.FileOutputStream`
+     ```java
+     public class FileOutputStream
+     extends OutputStream
+     ```
+     - constructors
+       - `FileOutputStream(File file)`
+       - `FileOutputStream(File file, boolean append)`
+       - `FileOutputStream(FileDescriptor fdObj)`
+       - `FileOutputStream(String name)`
+       - `FileOutputStream(String name, boolean append)`
+     - see `FileInputStream`
+
+1. char based file streams
+   - `java.io.FileReader`
+     ```java
+     public class FileReader
+     extends InputStreamReader
+     ```
+     - constructors
+       - `FileReader(File file)`
+       - `FileReader(FileDescriptor fd)`
+       - `FileReader(String fileName)`
+   - `java.io.FileWriter`
+     ```java
+     public class FileWriter
+     extends OutputStreamWriter
+     ```
+     - constructors
+       - `FileWriter(File file)`
+       - `FileWriter(File file, boolean append)`
+       - `FileWriter(FileDescriptor fd)`
+       - `FileWriter(String fileName)`
+       - `FileWriter(String fileName, boolean append)`
+
+## TODO
 
 1. `PrintWriter`
    ```java
@@ -1512,8 +1803,6 @@
    public final class Paths extends Object
    ```
    - `static Path get(String first, String... more)` — Converts a path string, or a sequence of strings that when joined form a path string, to a Path.
-
-1. `java.io.FileOutputStream`
 
 # Utils
 
