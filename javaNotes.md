@@ -358,15 +358,14 @@
      - `Runtime.addShutdownHook`
 
 1. access modifiers
-   - `public` — can be used by any class
-   - `private`
-     - class-based — a method can access the private data of all objects of its class
+   - `public` — no access limit
+   - `private` -- accessible only when the class is the same
+     - use in fields -- fields would better be marked `private`
    - `protected` — can be accessed by subclasses and within the same package
-     - not recommendation for fields
-     - in a subclass, `obj.protectedField` is OK when `obj` is of the same class, but not accessible when superclass
-   - if not specified `public`, `private` or `protected`
-     - can be accessed by all methods in the same package
-     - fields would better be marked `private`
+     - use in fields -- not recommended for fields
+     - superclass limitation to subclass -- when not within the same package, `protected` fields of superclass objects are not accessible to subclass
+   - default package access -- when no access modifiers specified, can be accessed within the same package
+     - use in fields -- not recommended for fields
 
 1. other modifiers
    - `final` fields must be initialized and cannot be modified, methods cannot be overloaded, classes cannot be inherited
@@ -494,7 +493,16 @@
      - `static String format(String format, Object... args)`
      - `static String join(CharSequence delimiter, CharSequence... elements)`
      - `String concat(String str)`
-     - `new String(int[] codePoints, int offset, int count)`
+     - `String(byte[] bytes)`  
+       `String(byte[] bytes, Charset charset)`  
+       `String(byte[] bytes, int offset, int length)`  
+       `String(byte[] bytes, int offset, int length, Charset charset)`
+     - `String(int[] codePoints, int offset, int count)`
+     - `String(char[] value)`  
+       `String(char[] value, int offset, int count)`
+     - `String(String original)`
+     - `String(StringBuffer buffer)`
+     - `String(StringBuilder builder)`
    - comparaison
      - `int hashCode()`
        ```java
@@ -532,7 +540,7 @@
        `int lastIndexOf(int cp)`  
        `int lastIndexOf(int cp, int fromIndex)`
 
-1. `StringBuilder` — mutable, single thread `StringBuffer`, build a string from many small pieces
+1. `StringBuilder` — mutable, not synchronized `StringBuffer`, build a string from many small pieces
    ```java
    public final class StringBuilder extends Object
    implements Serializable, CharSequence
@@ -1389,19 +1397,57 @@
      - `Scanner(Path source)`
      - `Scanner(Path source, String charsetName)`
      - `Scanner(String source)`
-     - more
+     - `Scanner(Readable source)`
+     - `Scanner(ReadableByteChannel source)`
+     - `Scanner(ReadableByteChannel source, String charsetName)`
+   - settings -- delimiter, locale, regex
+     - `Scanner reset()`
+     - `Scanner useDelimiter(Pattern pattern)`
+     - `Scanner useDelimiter(String pattern)`
+     - `Pattern delimiter()`
+     - `Scanner useLocale(Locale locale)`
+     - `Locale locale()`
+     - `Scanner useRadix(int radix)`
+     - `int radix()`
    - read
-     - `String nextLine()`
      - `String next()`
-     - `int nextInt()`
+     - `String next(Pattern pattern)`
+     - `String next(String pattern)`
+     - `BigDecimal nextBigDecimal()`
+     - `BigInteger nextBigInteger()`
+     - `BigInteger nextBigInteger(int radix)`
+     - `boolean nextBoolean()`
+     - `byte nextByte()`
+     - `byte nextByte(int radix)`
      - `double nextDouble()`
-   - test
-     - `boolean hasNext()`
-     - `boolean hasNextInt()`
-     - `boolean hasNextDouble()`
-   - more
+     - `float nextFloat()`
+     - `int nextInt()`
+     - `int nextInt(int radix)`
+     - `String nextLine()`
+     - `long nextLong()`
+     - `long nextLong(int radix)`
+     - `short nextShort()`
+     - `short nextShort(int radix)`
+   - test -- `hasNext` version of read methods
+   - find
+     - `String findInLine(Pattern pattern)`
+     - `String findInLine(String pattern)`
+     - `String findWithinHorizon(Pattern pattern, int horizon)`
+     - `String findWithinHorizon(String pattern, int horizon)`
+   - skip
+     - `Scanner skip(Pattern pattern)`
+     - `Scanner skip(String pattern)`
+   - `MatchResult match()`
+   - `IOException ioException()` -- Returns the `IOException` last thrown by this Scanner's underlying `Readable`.
 
-1. `BufferedReader` -- synchronized
+1. `java.io.BufferedReader` -- synchronized
+   ```java
+   public class BufferedReader
+   extends Reader
+   ```
+   - `Stream<String> lines()`
+   - `String readLine()`
+   - `Reader` methods
 
 1. `System.out`, `static PrintStream`
    - `print()`
@@ -1512,7 +1558,7 @@
    - `abstract void flush()`
    - `abstract void close()`
 
-1. convert stream to reader / writer
+1. convert stream to reader / writer, uses `Charset.defaultCharset()` if not specified
    - `java.io.InputStreamReader`
      ```java
      public class InputStreamReader
@@ -1590,8 +1636,8 @@
      extends Writer
      ```
 
-1. data input -- conversation between bytes from a binary stream and Java data types
-   - [modified UTF-8](https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8) -- Hoffman tree
+1. data input -- conversation between bytes from a binary stream and Java data types, big endian
+   - [modified UTF-8](https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8) -- UTF-8 encoded UTF-16
    - `java.io.DataInput`
      ```java
      public interface DataInput
@@ -1744,8 +1790,8 @@
         - `FileInputStream(FileDescriptor fdObj)`
         - `FileInputStream(String name)`
       - methods beyond `InputStream`
-        - `protected void finalize()`
-        - `FileChannel getChannel()` -- ensures that the close method of this file input stream is called when there are no more references to it
+        - `protected void finalize()` -- ensures that the close method of this file input stream is called when there are no more references to it
+        - `FileChannel getChannel()`
         - `FileDescriptor getFD()`
    - `java.io.FileOutputStream`
      ```java
@@ -1759,8 +1805,10 @@
        - `FileOutputStream(String name)`
        - `FileOutputStream(String name, boolean append)`
      - see `FileInputStream`
+   - print streams
+   - `Scanner`, `BufferedReader`
 
-1. char based file streams
+1. char based file streams -- default encoding as `InputStreamReader`, `OutputStreamWriter`
    - `java.io.FileReader`
      ```java
      public class FileReader
@@ -1781,22 +1829,52 @@
        - `FileWriter(FileDescriptor fd)`
        - `FileWriter(String fileName)`
        - `FileWriter(String fileName, boolean append)`
+   - print streams
 
-## TODO
+## Print Stream
 
-1. `PrintWriter`
+1. print streams -- add the ability to print representations of various data values conveniently
+   - never throws an `IOException` -- only `checkError()`
+   - support auto flush, defaults to `false`
+     - for `PrintStream` -- after a byte array is written, or a `\n` is written
+     - for `PrintWriter` -- after the invoke of `println`, `printf`, or `format`
+
+1. `java.io.PrintStream` -- print into bytes
+   ```java
+   public class PrintStream
+   extends FilterOutputStream
+   implements Appendable, Closeable
+   ```
+   - constructors
+     - `PrintStream(File file)`
+     - `PrintStream(File file, String csn)`
+     - `PrintStream(OutputStream out)`
+     - `PrintStream(OutputStream out, boolean autoFlush)`
+     - `PrintStream(OutputStream out, boolean autoFlush, String encoding)`
+     - `PrintStream(String fileName)`
+     - `PrintStream(String fileName, String csn)`
+   - `print` and `println` methods -- `void`, supports primitive types, `char[]` and `Object`
+   - `printf`
+     - `PrintStream printf(Locale l, String format, Object... args)`
+     - `PrintStream printf(String format, Object... args)`
+   - `boolean checkError()`
+
+1. `java.io.PrintWriter` -- print into text (chars)
    ```java
    public class PrintWriter
    extends Writer
    ```
    - constructors
-     - `PrintWriter(String fileName)`
-     - `PrintWriter(String fileName, String csn)`
-     - more
-   - print
-     - `print()`
-     - `println()`
-     - `PrintWriter printf(String format, Object... args)`
+     - `PrintWriter(File file)`
+     - `PrintWriter(File file, String csn)`
+     - `PrintWriter(OutputStream out)`
+     - `PrintWriter(OutputStream out, boolean autoFlush)`
+     - `PrintWriter(String fileName)`
+     - `PrintWriter(String fileName, String csn)`
+     - `PrintWriter(Writer out)`
+     - `PrintWriter(Writer out, boolean autoFlush)`
+   - methods -- see `PrintStream`
+     - difference -- `PrintStream::write` methods allow `int` and `byte[]`
 
 1. `java.nio.file.Paths`
    ```java
@@ -2379,7 +2457,7 @@
      $ java -XshowSettings:properties --version
      Property settings: # only a portion is available on all platforms
          awt.toolkit = sun.awt.windows.WToolkit
-         file.encoding = GBK
+         file.encoding = GBK # not an official property, use Charset.defaultCharset() instead
          file.separator = \
          java.awt.graphicsenv = sun.awt.Win32GraphicsEnvironment
          java.class.path =
@@ -2496,7 +2574,7 @@
        - under the hood -- `StreamSupport::stream`, which uses `Spliterator`
      - static methods in `Stream`
      - `Pattern::splitAsStream`
-     - `Files::lines`
+     - `Files::lines`, `BufferedReader::lines`
      - `Stream.Builder`
      - `Random::ints`, `Random::doubles`, `Random::longs` for primitive variants
      - `CharSequence::codepoints`
