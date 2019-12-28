@@ -108,6 +108,8 @@
 
 1. `jmap` and `jhat` for heap dump and examining dump
 
+1. `serialver` -- get serial version ID
+
 ## JAR
 
 1. `jar` -- creates an archive for classes and resources, and can manipulate or restore individual classes or resources from an archive
@@ -851,7 +853,8 @@
    - never have instance fields
    - `implements` keyword
      - can be generic — `class Employee implements Comparable<Employee>`
-   - supports `instanceof`, `extend`
+   - supports `instanceof`, `extend`, multiple inheritance
+     - diamond problem -- when `default` methods of parent interfaces clash, either re-implement the method or compile error
    - initialized when they are first accessed, typically by reading a field that is not a compile time constant
 
 1. default methods
@@ -1695,9 +1698,37 @@
      extends FilterReader
      ```
 
+### ZIP Streams
+
+1. inflate and deflate
+   - `java.util.zip.InflaterInputStream`
+     ```java
+     public class InflaterInputStream
+     extends FilterInputStream
+     ```
+   - `java.util.zip.DeflaterOutputStream`
+     ```java
+     public class DeflaterOutputStream
+     extends FilterOutputStream
+     ```
+
+1. zip stream
+   - `java.util.zip.ZipInputStream`
+     ```java
+     public class ZipInputStream
+     extends InflaterInputStream
+     ```
+   - `java.util.zip.ZipOutputStream`
+     ```java
+     public class ZipOutputStream
+     extends DeflaterOutputStream
+     ```
+
 ## Files
 
-1. `java.io.File` -- an abstract representation of file and directory pathnames
+### Describe Files
+
+1. `java.io.File` -- an abstract representation of file and directory pathnames, the old school way
    ```java
    public class File extends Object
    implements Serializable, Comparable<File>
@@ -1779,6 +1810,8 @@
       public final class FileDescriptor extends Object
       ``
 
+### File Stream
+
 1. file streams
    - `java.io.FileInputStream`
       ```java
@@ -1807,6 +1840,30 @@
      - see `FileInputStream`
    - print streams
    - `Scanner`, `BufferedReader`
+   - `java.io.RandomAccessFile` -- both reading and writing to a random access file, which has a file pointer
+     ```java
+     public class RandomAccessFile extends Object
+     implements DataOutput, DataInput, Closeable
+     ```
+     - mode -- `"r"`, `"rw"`, `"rws"` (file content or metadata synchronized with storage), or `"rwd"` (only file content synchronized)
+     - constructors
+       - `RandomAccessFile(File file, String mode)`
+       - `RandomAccessFile(String name, String mode)`
+     - file info
+       - `FileChannel getChannel()`
+       - `FileDescriptor getFD()`
+       - `long length()`
+     - file pointer -- cursor for read / write
+       - `long getFilePointer()`
+       - `void seek(long pos)` -- Sets the file-pointer offset, measured from the beginning of this file, at which the next read or write occurs.
+       - `void setLength(long newLength)`
+       - `int skipBytes(int n)`
+     - read
+       - `int read()`
+       - `int read(byte[] b)`
+       - `int read(byte[] b, int off, int len)`
+       - `DataInput` methods
+     - write -- `DataOutput` methods
 
 1. char based file streams -- default encoding as `InputStreamReader`, `OutputStreamWriter`
    - `java.io.FileReader`
@@ -1881,6 +1938,118 @@
    public final class Paths extends Object
    ```
    - `static Path get(String first, String... more)` — Converts a path string, or a sequence of strings that when joined form a path string, to a Path.
+
+## Other Streams
+
+1. byte array streams -- save the data in an internal buffer (byte array), no effect for `close()` and no `IOException` afterwards
+   - `java.io.ByteArrayInputStream`
+     ```java
+     public class ByteArrayInputStream
+     extends InputStream
+     ```
+   - `java.io.ByteArrayOutputStream`
+     ```java
+     public class ByteArrayOutputStream
+     extends OutputStream
+     ```
+
+## Serialization
+
+1. `transient` -- mark fields not part of the persistent state, which is skipped in serialization
+
+1. `java.io.Serializable` -- mark only data fields serializable, not superclass data or any other class information not included
+   ```java
+   public interface Serializable
+   ```
+   - deserialize fields of classes not `Serializable` -- initialized using the public or protected no-arg constructor
+   - serialize subclasses whose parents are not `Serializable` -- serialize the super types only when they have accessible no-arg constructor
+   - override default read and write behavior, special handling during the serialization and deserialization -- implement methods below
+     ```java
+     private void writeObject(java.io.ObjectOutputStream out) throws IOException
+     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException
+     private void readObjectNoData() throws ObjectStreamException
+     ```
+   - version ID -- used during deserialization to verify that the sender and receiver of a serialized object have loaded classes compatible with serialization, `InvalidClassException` if no match
+     - declare explicitly
+       ```java
+       MODIFIER static final long serialVersionUID = 42L; // private is recommended
+       ```
+     - by default, not recommended -- the serialization runtime will calculate a default `serialVersionUID` value for that class based on various aspects of the class (fingerprint), which may vary depending on compiler implementations
+     - not applicable to array classes -- cannot declare explicitly, and the requirement for matching `serialVersionUID` values is waived for array classes
+     - get version ID via CLI -- `serialver ClassName`
+     - auto conversation when version ID match -- for data fields, skip when type is different, ignore additional, set absent to default
+   - use another object
+     - when writing to stream -- implement `writeReplace`
+       ```java
+       MODIFIER Object writeReplace() throws ObjectStreamException;
+       ```
+     - when reading from stream -- implement `readResolve`
+       ```java
+       MODIFIER Object readResolve() throws ObjectStreamException;
+       ```
+   - serial number -- associate the object a number in encounter order and save / read the object data when first encounter, only save the serial number / read the object reference when encountered afterwards
+   - file structure
+     - magic number -- `ACED`
+     - version number of the object serialization format -- `0005` for JDK 8
+     - object sequences
+       - strings saved in modified UTF-8
+       - fingerprint stored in class -- first 8 bytes of SHA
+     - more details
+
+1. `java.io.Externalizable` -- complete control over the format and contents of the stream for an object and its superclasses
+   ```java
+   public interface Externalizable
+   extends Serializable
+   ```
+   - order -- If the object supports `Externalizable`, the `writeExternal` method is called. If the object does not support `Externalizable` and does implement `Serializable`, the object is saved using `ObjectOutputStream`
+   - no-arg constructor when reconstructing -- when reading, creates an object with the no-argument constructor and then calls the `readExternal` method
+   - use another object -- support `writeReplace` and `readResolve` methods
+   - `void readExternal(ObjectInputStream in) throws IOException, ClassNotFoundException`
+   - `void writeExternal(ObjectOutputStream out) throws IOException`
+
+1. interfaces for object streams
+   - `java.io.ObjectStreamConstants` -- Constants written into the Object Serialization Stream
+     ```java
+     public interface ObjectStreamConstants
+     ```
+   - `java.io.ObjectOutput`
+     ```java
+     public interface ObjectOutput
+     extends DataOutput, AutoCloseable
+     ```
+     - inherited methods
+     - `void flush()`
+     - `void writeObject(Object obj)`
+   - `java.io.ObjectInput`
+     ```java
+     public interface ObjectInput
+     extends DataInput, AutoCloseable
+     ```
+     - inherited methods
+     - `int available()`
+     - `int read()`  
+       `int read(byte[] b)`  
+       `int read(byte[] b, int off, int len)`
+     - `Object readObject()`
+     - `long skip(long n)`
+
+1. `java.io.ObjectInputStream`
+   ```java
+   public class ObjectInputStream
+   extends InputStream
+   implements ObjectInput, ObjectStreamConstants
+   ```
+   - constructor -- `ObjectInputStream(InputStream in)`
+   - `void defaultReadObject()`
+
+1. `java.io.ObjectOutputStream`
+   ```java
+   public class ObjectOutputStream
+   extends OutputStream
+   implements ObjectOutput, ObjectStreamConstants
+   ```
+   - constructor -- `ObjectOutputStream(OutputStream out)`
+   - `void defaultWriteObject()`
 
 # Utils
 
@@ -4139,7 +4308,7 @@
        - independent -- completion of few other tasks should be dependent on a task that blocks on external synchronization or I/O
        - small blocking tasks -- to minimize resource impact, tasks should be small; ideally performing only the (possibly) blocking action
        - ensure progress -- ensure the number of possibly blocked tasks fewer than `ForkJoinPool.getParallelism()`, or use `ForkJoinPool.ManagedBlocker`
-     - loosely enforced guideline -- by not permitting checked exceptions such as `IOExceptions` to be thrown
+     - loosely enforced guideline -- by not permitting checked exceptions such as `IOException` to be thrown
      - like a call (fork) and return (join) from a parallel recursive function -- `a.fork(); b.fork(); b.join(); a.join();` is likely to be substantially more efficient than `a.join(); b.join()`
      - task size rule of thumb -- a task should perform more than 100 and less than 10000 basic computational steps
 
