@@ -1712,7 +1712,7 @@
      extends FilterOutputStream
      ```
 
-1. zip stream
+1. ZIP stream
    - `java.util.zip.ZipInputStream`
      ```java
      public class ZipInputStream
@@ -1724,9 +1724,11 @@
      extends DeflaterOutputStream
      ```
 
+1. ZIP file system -- `FileSystems.newFileSystem(Paths.get(zipname), null)`
+
 ## Files
 
-### Describe Files
+### File Classes
 
 1. `java.io.File` -- an abstract representation of file and directory pathnames, the old school way
    ```java
@@ -1785,6 +1787,7 @@
      - `String getPath()`
      - `boolean isAbsolute()`
      - `String toString()`
+     - `Path toPath()`
      - `URI toURI()`
    - space -- the partition named by this abstract pathname
      - `long getFreeSpace()`
@@ -1809,6 +1812,138 @@
       ```java
       public final class FileDescriptor extends Object
       ``
+
+1. `java.nio.file.Path` -- represents a system dependent file path, immutable
+   ```java
+   public interface Path
+   extends Comparable<Path>, Iterable<Path>, Watchable
+   ```
+   - creation
+     - `java.nio.file.Paths`
+       ```java
+       public final class Paths extends Object
+       ```
+       - `static Path get(String first, String... more)` -- join
+       - `static Path get(URI uri)`
+     - `File::toPath`
+   - components methods
+   - relative, absolute, real path methods
+   - `File toFile()`
+   - `URI toUri()`
+   - inherited methods
+
+1. `java.nio.file.Files` -- static methods take `Path` as arguments, operate its underlying files, usually atomically
+   ```java
+   public final class Files extends Object
+   ```
+   - limit -- some read / write methods are intended for text files of moderate length, use stream methods such as `newInputStream` for large or binary files
+   - glop pattern -- extended syntax, extended `**`, see [File Operations (The Java™ Tutorials > Essential Classes > Basic I/O)](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob), and [`FileSystem::getPathMatcher`](https://docs.oracle.com/javase/8/docs/api/java/nio/file/FileSystem.html#getPathMatcher-java.lang.String-)
+
+1. utility classes
+   - `java.nio.file.DirectoryStream` -- an object to iterate over the entries in a directory, supports only a single `Iterator`
+     ```java
+     public interface DirectoryStream<T>
+     extends Closeable, Iterable<T>
+     ```
+   - `java.nio.file.SimpleFileVisitor` -- a simple visitor of files with default behavior to visit all files and to re-throw I/O errors
+     ```java
+     public class SimpleFileVisitor<T> extends Object
+     implements FileVisitor<T>
+     ```
+     - `public interface java.nio.file.FileVisitor<T>`
+     - prevent termination by exceptions -- override `postVisitDirectory` to return `FileVisitResult.CONTINUE` and `visitFileFailed` to return `FileVisitResult.SKIP_SUBTREE`
+   - `java.nio.file.PathMatcher`
+     ```java
+     @FunctionalInterface
+     public interface PathMatcher
+     ```
+
+1. `java.nio.file.FileStore` -- a storage pool, device, partition, volume, concrete file system or other implementation specific means of file storage
+   ```java
+   public abstract class FileStore extends Object
+   ```
+
+1. `java.nio.file.FileSystem`
+   ```java
+   public abstract class FileSystem extends Object
+   implements Closeable
+   ```
+   - `abstract Path getPath(String first, String... more)`
+   - `abstract Iterable<Path> getRootDirectories()`
+   - `abstract boolean isOpen()`
+   - `abstract boolean isReadOnly()`
+   - `abstract Iterable<FileStore> getFileStores()`
+   - `abstract PathMatcher getPathMatcher(String syntaxAndPattern)`
+   - `abstract String getSeparator()`
+   - `abstract UserPrincipalLookupService getUserPrincipalLookupService()`
+   - `abstract WatchService newWatchService()`
+   - `abstract FileSystemProvider provider()`
+   - `abstract Set<String> supportedFileAttributeViews()`
+   - creation -- `FileSystems`
+
+1. `java.nio.file.FileSystems` -- factory methods for file systems
+   - initialization -- The first invocation of any of the methods defined by this class causes the default `FileSystemProvider` to be loaded. The default provider, identified by the URI scheme "file", creates the `FileSystem` that provides access to the file systems accessible to the JVM
+   - `static FileSystem getDefault()`
+   - `static FileSystem getFileSystem(URI uri)`
+   - `static FileSystem newFileSystem(Path path, ClassLoader loader)` -- constructs a new `FileSystem` to access the contents of a file as a file system, supports ZIP files
+   - `static FileSystem newFileSystem(URI uri, Map<String,?> env)`
+   - `static FileSystem newFileSystem(URI uri, Map<String,?> env, ClassLoader loader)`
+
+1. `java.nio.file.spi.FileSystemProvider` -- file system service provider, methods in `Files` under the hood
+   ```java
+   public abstract class FileSystemProvider extends Object
+   ```
+
+### File Options and Attributes
+
+1. options
+   - `interface java.nio.file.OpenOption` -- mark interface
+   - `interface java.nio.file.CopyOption` -- mark interface
+   - `java.nio.file.LinkOption.NOFOLLOW_LINKS` -- Do not follow symbolic links
+     ```java
+     public enum LinkOption extends Enum<LinkOption>
+     implements OpenOption, CopyOption
+     ```
+   - `java.nio.file.StandardOpenOption`
+     ```java
+     public enum StandardOpenOption extends Enum<StandardOpenOption>
+     implements OpenOption
+     ```
+     - `READ`
+     - `CREATE`
+     - `CREATE_NEW`
+     - `DELETE_ON_CLOSE`
+     - `SPARSE` -- a hint to the file system that this file will be sparse
+     - `SYNC`, `DSYNC`
+     - `WRITE`
+     - `APPEND`
+     - `TRUNCATE_EXISTING`
+   - `java.nio.file.StandardCopyOption`
+     ```java
+     public enum StandardCopyOption extends Enum<StandardCopyOption>
+     implements CopyOption
+     ```
+     - `ATOMIC_MOVE`
+     - `COPY_ATTRIBUTES`
+     - `REPLACE_EXISTING`
+   - `java.nio.file.FileVisitOption.FOLLOW_LINKS` -- Follow symbolic links, neither `OpenOption` nor `CopyOption`
+
+1. file attributes -- `java.nio.file.attribute`
+   - `java.nio.file.attribute.UserPrincipal` -- a Principal representing an identity used to determine access rights to objects in a file system
+     ```java
+     public interface UserPrincipal extends Principal
+     ```
+   - `interface java.nio.file.attribute.BasicFileAttributes` -- basic file attributes, including times, file or dir or link, size, file key
+     - file key -- an object of some class, specific to the file system, that may or may not uniquely identify a file
+     - read attributes -- `Files::readAttributes`
+     - sub-interfaces
+       - `java.nio.file.attribute.DosFileAttributes`
+       - `java.nio.file.attribute.PosixFileAttributes`
+   - `java.nio.file.attribute.FileTime` -- a file's time stamp attribute
+     ```java
+     public final class FileTime extends Object
+     implements Comparable<FileTime>
+     ```
 
 ### File Stream
 
@@ -3164,7 +3299,7 @@
      - `throw` checked exceptions manually
        - a method without a `throws` specifier may not throw any checked exceptions at all
    - if not declared — If your method fails to faithfully declare all checked exceptions or handle them, the compiler will issue an error message
-   - if caught — no need for `throws` specification
+   - if caught — no need for `throws`
    - when overriding a method
      - exception specification cannot be more general
      - OK to throw more specific exceptions, or not to throw any exceptions in the subclass method
@@ -3194,6 +3329,7 @@
    - rethrow — `throw` in `catch` block
      - exception wrapping — use `Throwable::initCause` to throw as another wrapped type and `Throwable::getCause` for original failure
      - bypass exception specification limit — rethrow a wrapped `RuntimeException` if a method cannot throw checked exception
+       - for example, `java.io.UncheckedIOException` is designed to wrap `IOException`
    - smart narrowing — when rethrow any exception
      ```java
      public void updateRecord() throws SQLException {
