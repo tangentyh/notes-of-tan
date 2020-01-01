@@ -1894,6 +1894,49 @@
    public abstract class FileSystemProvider extends Object
    ```
 
+1. `java.nio.channels.FileChannel` -- reading, writing, mapping, locking, transferring and manipulating a file
+   ```java
+   public abstract class FileChannel
+   extends AbstractInterruptibleChannel
+   implements SeekableByteChannel, GatheringByteChannel, ScatteringByteChannel
+   ```
+   - creation
+     - `static FileChannel open(Path path, OpenOption... options)`
+     - `static FileChannel open(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs)`
+     - `FileInputStream::getChannel`, `FileOutputStream::getChannel`, `RandomAccessFile::getChannel`
+   - `abstract MappedByteBuffer map(FileChannel.MapMode mode, long position, long size)` -- maps a region of this channel's file directly into memory, recommended only for large files
+   - `java.nio.MappedByteBuffer` -- a direct byte buffer whose content is a memory-mapped region of a file
+     ```java
+     public abstract class MappedByteBuffer
+     extends ByteBuffer
+     ```
+   - lock -- lock the given region of this channel's file
+     - `FileLock lock()` -- blocks, equivalent to `lock(0L, Long.MAX_VALUE, false)`  
+       `abstract FileLock lock(long position, long size, boolean shared)`
+     - `FileLock tryLock()` -- `null` if not available, equivalent to `tryLock(0L, Long.MAX_VALUE, false)`  
+       `abstract FileLock tryLock(long position, long size, boolean shared)`
+
+1. `java.nio.channels.FileLock` -- a lock on a region of a file, on behalf of the JVM
+   ```java
+   public abstract class FileLock extends Object
+   implements AutoCloseable
+   ```
+   - region is fixed -- the region stays fixed, the file can have uncovered portion or can grow beyond the region
+     - `boolean overlaps(long position, long size)`
+     - `long position()`
+     - `long size()`
+   - lock on behalf of the JVM -- not for multithreading, but for multiprocessing
+   - shared lock -- allow other programs to acquire overlapping shared locks while not allowing exclusive locks
+     - `shared` for read, exclusive for write -- `true` to request a shared lock, in which case this channel must be open for reading (and possibly writing); `false` to request an exclusive lock, in which case this channel must be open for writing (and possibly reading)
+   - OS dependent
+     - lock support -- On some systems, file locking is merely advisory
+     - shared support -- a request for a shared lock is automatically converted into a request for an exclusive lock if not supported
+     - memory map support -- on some systems, you cannot simultaneously lock a file and map it into memory
+     - avoid multiple channels on the same locked file -- on some systems, closing a channel releases all locks on the underlying file
+     - avoid locking files on a networked file system
+   - `abstract void release()`  
+     `void close()`
+
 ### File Options and Attributes
 
 1. options
@@ -1975,7 +2018,7 @@
      - see `FileInputStream`
    - print streams
    - `Scanner`, `BufferedReader`
-   - `java.io.RandomAccessFile` -- both reading and writing to a random access file, which has a file pointer
+   - `java.io.RandomAccessFile` -- both reading and writing to a random access file, which has a file pointer, suitable for small and moderate files
      ```java
      public class RandomAccessFile extends Object
      implements DataOutput, DataInput, Closeable
@@ -2185,6 +2228,87 @@
    ```
    - constructor -- `ObjectOutputStream(OutputStream out)`
    - `void defaultWriteObject()`
+
+## nio
+
+1. file related -- see [File Classes](#File-Classes)
+
+1. `java.nio.ByteOrder`
+   ```java
+   public final class ByteOrder extends Object
+   ```
+   - `static ByteOrder BIG_ENDIAN`
+   - `static ByteOrder LITTLE_ENDIAN`
+   - `static ByteOrder nativeOrder()` -- the native byte order of the underlying platform
+   - for buffers -- `ByteBuffer::order`
+
+1. `java.nio.Buffer` -- finite sequence of elements, not thread-safe
+   ```java
+   public abstract class Buffer extends Object
+   ```
+   - underlying array
+     - `abstract Object array()` -- Returns the array that backs this buffer  (optional operation).
+     - `abstract int arrayOffset()` -- Returns the offset within this buffer's backing array of the first element of the buffer  (optional operation).
+     - `abstract boolean hasArray()`
+   - indices
+     - `int capacity()`
+     - `int limit()` -- the index of the first element that should not be read or written
+     - `int position()` -- the index of the next element to be read or written
+     - relative operations -- from position
+     - absolute operations -- from explicit index
+   - change indices
+     - `Buffer clear()` -- for `put` or related, sets the limit to the capacity and the position to zero
+     - `Buffer flip()` -- for `get` or related, sets the limit to the current position and then sets the position to zero
+     - `Buffer rewind()` -- for re-read, sets the position to zero
+     - `Buffer limit(int newLimit)`
+     - `Buffer position(int newPosition)`
+     - mark and reset
+       - `Buffer mark()` -- set the current as the index to which its position will be set when `reset()`, otherwise `InvalidMarkException`
+       - `Buffer reset()`
+   - remaining
+     - `int remaining()` -- from position to limit
+     - `boolean hasRemaining()`
+   - attributes
+     - direct buffers
+       - no intermediate buffer -- JVM will attempt to avoid copying the buffer's content to (or from) an intermediate buffer before (or after) each invocation of one of the underlying operating system's native I/O operations
+       - higher overhead -- have somewhat higher allocation and deallocation costs than non-direct buffers
+       - gc problems -- the contents of direct buffers may reside outside of the normal garbage-collected heap
+       - usage -- best to allocate direct buffers only when they yield a measurable gain in program performance
+       - creation -- `ByteBuffer::allocateDirect`, `FileChannel::map`, view buffers on direct buffers
+     - `abstract boolean isDirect()`
+     - `abstract boolean isReadOnly()`
+
+1. `java.nio.ByteBuffer` -- byte buffer with absolute and relative, bulk and not bulk `get` and `put`, not bulk `get` and `put` with other types, as well as views and other manipulating
+   ```java
+   public abstract class ByteBuffer
+   extends Buffer
+   implements Comparable<ByteBuffer>
+   ```
+   - view buffers -- another buffer whose content is backed by the byte buffer, changes on either one will be reflected on both
+   - get and put methods
+   - creation
+     - `static ByteBuffer allocate(int capacity)`
+     - `static ByteBuffer allocateDirect(int capacity)`
+     - `static ByteBuffer wrap(byte[] array)`
+     - `static ByteBuffer wrap(byte[] array, int offset, int length)`
+   - manipulate
+     - `abstract ByteBuffer compact()`
+     - `abstract ByteBuffer duplicate()`
+     - `abstract ByteBuffer slice()`
+
+1. `java.nio.CharBuffer`
+   ```java
+   public abstract class CharBuffer
+   extends Buffer
+   implements Comparable<CharBuffer>, Appendable, CharSequence, Readable
+   ```
+
+1. `java.nio.ShortBuffer`, `java.nio.LongBuffer`, `java.nio.IntBuffer`, `java.nio.FloatBuffer`, `java.nio.DoubleBuffer`
+   ```java
+   public abstract class DoubleBuffer
+   extends Buffer
+   implements Comparable<DoubleBuffer>
+   ```
 
 # Utils
 
@@ -3168,6 +3292,13 @@
      - `long|int|double getMin()`
      - `long|double getSum()`
      - `String toString()`
+
+1. `java.util.zip.CRC32`
+   ```java
+   public class CRC32 extends Object
+   implements Checksum
+   ```
+   - `interface java.util.zip.Checksum`
 
 # Error Handling
 
