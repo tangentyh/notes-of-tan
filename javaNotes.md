@@ -3,17 +3,11 @@
 1. docs
    - [oracle JDK 1.8](https://docs.oracle.com/javase/8/docs/api/index.html)
    - [jshell](https://docs.oracle.com/javase/9/jshell/toc.htm)
+   - [download](https://www.oracle.com/technetwork/java/javase/downloads/index.html)
 
 1. [specification](http://docs.oracle.com/javase/specs)
 
-1. [errata](http://horstmann.com/corejava/bugs10.html#CJ10V1)
-
-1. official documentations can be [downloaded](https://www.oracle.com/technetwork/java/javase/downloads/index.html)
-
 # Miscellanea
-
-1. vararg parameter — `...`
-   - if only an array passed, then that array is used, without nesting
 
 1. localization
    - resource bundles — Localized applications contain locale-specific information in resource bundles
@@ -106,7 +100,7 @@
 
 1. `jconsole` — Java Monitoring and Management Console
 
-1. `jmap` and `jhat` for heap dump and examining dump
+1. `jmap` and `jhat` (deprecated) for heap dump and examining dump -- see [Debugging](#Debugging)
 
 1. `serialver` -- get serial version ID
 
@@ -564,6 +558,12 @@
    - output
      - `String toString()`
 
+1. `StringBuffer`
+   ```java
+   public final class StringBuffer extends Object
+   implements Serializable, CharSequence
+   ```
+
 1. `java.util.Formatter` -- tbd
 
 ### Object Wrappers
@@ -586,8 +586,6 @@
      Double x = 2.0;
      System.out.println(true ? n : x); // Prints 1.0
      ```
-   - common methods
-     - `static int compare(type x, type y)`
 
 1. `Integer`
    ```java
@@ -613,6 +611,38 @@
      - `static Integer valueOf(int i)`  
        `static Integer valueOf(String s)`  
        `static Integer valueOf(String s, int radix)`
+
+1. `Character`
+   ```java
+   public final class Character extends Object
+   implements Serializable, Comparable<Character>
+   ```
+   - general category in the [Unicode specification](http://unicode.org/reports/tr44/#General_Category_Values)
+     - defined in static fields as `byte`
+     - `static int getType(char ch)`
+     - `static int getType(int codePoint)`
+   - wrapping and outboxing
+     - `Character(char value)`
+     - `static Character valueOf(char c)`
+     - `char charValue()`
+   - more
+   - `Character.UnicodeScript`
+     ```java
+     public static enum UnicodeScript
+     ```
+     - script names -- enum constants
+     - `static Character.UnicodeScript forName(String scriptName)`
+     - `static Character.UnicodeScript of(int codePoint)`
+   - `Character.UnicodeBlock`
+     ```java
+     public static final class Character.UnicodeBlock
+     extends Character.Subset
+     ```
+     - Unicode character block names -- static fields
+     - `static Character.UnicodeBlock forName(String blockName)`
+     - `static Character.UnicodeBlock of(char c)`
+     - `static Character.UnicodeBlock of(int codePoint)`
+   - `Character.Subset` -- for extending, represents particular subsets of the Unicode character set
 
 # Control Flow
 
@@ -641,6 +671,9 @@
 1. `for (variable : collection) statement`
    - `collection` — an array or an object of a class that implements the `Iterable` interface
    - see [Collections](#Collections)
+
+1. vararg parameter — `...`
+   - if only an array passed, then that array is used, without nesting
 
 # Package
 
@@ -4759,10 +4792,273 @@
      `boolean offer(E e, long timeout, TimeUnit unit)`
    - other inherited methods
 
-# Regex
+# Text
 
-1. the category of Unicode letters
-   - [UTS #18: Unicode Regular Expressions](http://unicode.org/reports/tr18/#General_Category_Property)
+1. `String` -- see [`String`](#String)
+
+1. `Character` -- see [Object Wrappers](#Object-Wrappers)
+
+## Regex
+
+### Regex Syntax
+
+#### Characters and Character Classes
+
+1. characters
+   - `\0n`, `\0nn`, `\0mnn` -- ASCII (0~255 or 0~0o377) in octal
+   - `\xhh`, `\uhhhh`, `\x{h...h}` -- hexadecimal unicode
+   - `\t`, `\n`, `\r`
+   - `\f` -- form feed `\x0c`
+   - `\a` -- alert (bell), `\x07`
+   - `\e` -- escape, `\x1b`
+   - `\cx` -- control character, `\ch` for `ctrl-h` (backspace, `\x08`)
+   - `\R` (matcher) -- any Unicode line break sequence, is equivalent to `\r\n|[\n\u000B\f\r\u0085\u2028\u2029]`
+
+1. character classes
+   - `[a-zA-Z]` -- a through z or A through Z, inclusive (range)
+   - `[a-d[m-p]]` -- a through d, or m through p: [a-dm-p] (union)
+   - `[a-z&&[def]]` -- d, e, or f (intersection)
+   - `[a-z&&[^bc]]` -- a through z, except for b and c: [ad-z] (subtraction)
+   - `[a-z&&[^m-p]]` -- a through z, and not m through p: [a-lq-z] (subtraction)
+   - `[\p{L}&&[^\p{Lu}]]` -- any letter except an uppercase letter (subtraction)
+   - predefined non `\p`
+     - `.` -- any character, including line terminators if `DOTALL`
+     - `\d` -- a digit: `[0-9]`  
+       `\D` -- a non-digit: `[^0-9]`
+     - `\h` -- a horizontal whitespace character: `[ \t\xA0\u1680\u180e\u2000-\u200a\u202f\u205f\u3000]`  
+       `\H` -- a non-horizontal whitespace character: `[^\h]`
+     - `\s` -- a whitespace character: `[ \t\n\x0B\f\r]`  
+       `\S` -- a non-whitespace character: `[^\s]`
+     - `\v` -- a vertical whitespace character: `[\n\x0B\f\r\x85\u2028\u2029]`  
+       `\V` -- a non-vertical whitespace character: `[^\v]`
+     - `\w` -- a word character: `[a-zA-Z_0-9]`  
+       `\W` -- a non-word character: `[^\w]`
+
+1. predefined character classes -- `\p{prop}`, `\P{prop}` for negation, can be `\pX` if `prop` only takes one letter
    - [Regex Tutorial - Unicode Characters and Properties](https://www.regular-expressions.info/unicode.html)
+   - predefined POSIX ASCII, `\p{ASCII}` -- all ASCII:`[\x00-\x7F]`
+     - `\p{Print}` -- a printable character: `[\p{Graph}\x20]`
+       - `\p{Graph}` -- a visible character: `[\p{Alnum}\p{Punct}]`
+         - `\p{Punct}` -- punctuation: One of `!"#$%&'()*+,-./:;<=>?@[\]^_{|}~` and backtick
+         - `\p{Alnum}` -- an alphanumeric character:`[\p{Alpha}\p{Digit}]`
+           - `\p{Digit}` -- a decimal digit: `[0-9]` or `\d`
+           - `\p{XDigit}` -- a hexadecimal digit: `[0-9a-fA-F]`
+           - `\p{Alpha}` -- an alphabetic character:`[\p{Lower}\p{Upper}]`
+             - `\p{Lower}` -- a lower-case alphabetic character: `[a-z]`
+             - `\p{Upper}` -- an upper-case alphabetic character:`[A-Z]`
+     - `\p{Blank}` -- a space or a tab: `[ \t]`
+     - `\p{Cntrl}` -- a control character: `[\x00-\x1F\x7F]`
+     - `\p{Space}` -- a whitespace character: `[ \t\n\x0B\f\r]`
+   - predefined by `Character` methods
+     - `\p{javaLowerCase}` -- Equivalent to `Character.isLowerCase()`
+     - `\p{javaUpperCase}` -- Equivalent to `Character.isUpperCase()`
+     - `\p{javaWhitespace}` -- Equivalent to `Character.isWhitespace()`
+     - `\p{javaMirrored}` -- Equivalent to `Character.isMirrored()`
+     - more
+   - predefined Unicode properties
+     - `\p{IsLatin}` -- a Latin script character (prefix `Is` with `Character.UnicodeScript` enum value)
+     - `\p{InGreek}` -- a character in the Greek block (prefix `In` with `Character.UnicodeBlock` static fields)
+     - `\p{Lu}`, `\p{gc=Lu}` -- an uppercase letter ([general category](http://unicode.org/reports/tr44/#General_Category_Values), also static fields of `Character`)
+     - `\P{InGreek}` -- any character except one in the Greek block (negation)
+     - `\p{IsAlphabetic}` -- an alphabetic character (binary property, `Is` prefix with below), conform with POSIX character classes when `UNICODE_CHARACTER_CLASS`
+        - `Alphabetic`
+        - `Ideographic`
+        - `Letter`
+        - `Lowercase` -- granted to conform with `\p{Lower}` when `UNICODE_CHARACTER_CLASS`
+        - `Uppercase`
+        - `Titlecase`
+        - `Punctuation`
+        - `Control`
+        - `White_Space`
+        - `Digit`
+        - `Hex_Digit`
+        - `Join_Control`
+        - `Noncharacter_Code_Point`
+        - `Assigned`
 
-1. `"\\PL"` is equivalent to `"\\P{L}"`
+1. compound character -- `\R` -- any Unicode line break sequence, is equivalent to `\r\n|[\n\u000B\f\r\u0085\u2028\u2029]`
+
+#### Matchers, Quantifiers and Others
+
+1. line break matcher `\R` -- any Unicode line break sequence, is equivalent to `\r\n|[\n\u000B\f\r\u0085\u2028\u2029]`
+   - `\u000B` -- a vertical tab
+   - `\u0085` -- a next-line character
+   - `\u2028` -- a line-separator character
+   - `\u2029` -- a paragraph-separator character
+   - line terminator
+     - `\n`, `\r`, `\r\n`
+     - `\u0085`, `\u2028`, `\u2029`
+   - line terminator when `UNIX_LINES` -- `\n`
+
+1. Boundary matchers
+   - `^` `$` -- ignore line terminators and only match at the beginning and the end, respectively, of the entire input sequence; respect line terminators when `MULTILINE`
+   - `\b` -- A word boundary
+   - `\B` -- A non-word boundary
+   - `\A` -- The beginning of the input
+   - `\G` -- The end of the previous match
+   - `\Z` -- The end of the input but for the final terminator, if any
+   - `\z` -- The end of the input
+
+1. quantifiers
+   - Greedy quantifiers
+   - Reluctant quantifiers -- non-greedy
+   - Possessive quantifiers -- greedy quantifiers that do not backtrack (no turning back to accommodate other parts of the pattern once matched)
+     ```java
+     Pattern.matches(".*+foo", "xfooxxxxxxfoo")
+     // $1 ==> false
+     Pattern.matches(".*foo", "xfooxxxxxxfoo")
+     // $2 ==> true
+     ```
+     - `X?+`
+     - `X*+`
+     - `X++`
+     - `X{n}+`
+     - `X{n,}+`
+     - `X{n,m}+`
+
+1. Logical operators
+   - `XY` -- X followed by Y
+   - `X|Y` -- Either X or Y
+   - `(X)` -- X, as a capturing group
+
+1. Back references
+   - `\n` -- Whatever the nth capturing group matched
+   - `\k<name>` -- Whatever the named-capturing group "name" matched
+
+1. capturing group and flags
+   - `((A)(B(C)))` -- numbered by counting their opening parentheses from left to right
+     ```
+     1    ((A)(B(C)))
+     2    (A)
+     3    (B(C))
+     4    (C)
+     ```
+     - `\0` -- stands for the entire expression
+     - if quantification -- most recently matched
+   - `(?<name>X)` -- X, as a named-capturing group, name matches `\p{Alpha}\p{Alnum}*`
+   - `(?idmsuxU-idmsuxU)` -- Nothing, but turns match flags `i` `d` `m` `s` `u` `x` `U` on - off
+   - `(?:X)` -- X, as a non-capturing group
+     - `(?idmsux-idmsux:X)` -- X, as a non-capturing group with the given flags i d m s u x on - off
+   - `(?>X)` -- X, as an independent, non-capturing group, similar to possessive quantifiers
+     ```java
+     Pattern.matches("a(?>bc|b)c", "abc")
+     // $1 ==> false
+     Pattern.matches("a(?>bc|b)c", "abcc")
+     // $2 ==> true
+     ```
+     - optimization -- more performance for patterns like `(?>.*\/)(.*)`, `\b(integer|insert|in)\b`
+     - order -- for "insert", `\b(?>integer|insert|in)\b` matches but `\b(?>in|integer|insert)\b` does not match
+
+1. Quotation
+   - `\` -- Nothing, but quotes the following character
+   - `\Q...\E` -- Nothing, but quotes all characters until \E
+
+1. assertion
+   - `(?=X)` -- X, via zero-width positive lookahead
+   - `(?!X)` -- X, via zero-width negative lookahead
+   - `(?<=X)` -- X, via zero-width positive lookbehind
+   - `(?<!X)` -- X, via zero-width negative lookbehind
+
+### Regex Classes
+
+1. `java.util.regex.Pattern`
+   ```java
+   public final class Pattern extends Object
+   implements Serializable
+   ```
+   - flags -- bit vector
+     - encoding and case
+       - `static int CANON_EQ` -- canonical equivalence, e.g. `a\u030A` and `å`
+       - `static int CASE_INSENSITIVE` -- `(?i)`, only for US ASCII
+       - `static int UNICODE_CASE` - `(?u)`, also Unicode-aware case folding when `i`
+       - `static int UNICODE_CHARACTER_CLASS` -- `(?U)`, implies `u`, select Unicode character classes instead of POSIX, see before
+     - line terminator
+       - `static int DOTALL` -- `(?s)`, make `.` match line terminators
+       - `static int MULTILINE` -- `(?m)`, make `^` and `$` match multiple lines
+       - `static int UNIX_LINES` -- `(?d)`, only `\n` as line terminator for `.`, `^`, `$`
+     - literal and comments
+       - `static int LITERAL` -- literal parsing of metacharacters or escape sequences, only `u` and `i` flag work in this mode
+       - `static int COMMENTS` -- `(?x)`, ignore white spaces and comments which start with `#`
+   - creation
+     - `static Pattern compile(String regex)`
+     - `static Pattern compile(String regex, int flags)`
+     - `static String quote(String s)` -- quote with `\Q...\E`
+   - use
+     - `static boolean matches(String regex, CharSequence input)`
+     - `String::split`
+     - `String[] split(CharSequence input)`
+     - `String[] split(CharSequence input, int limit)`
+     - `Stream<String> splitAsStream(CharSequence input)`
+     - `Matcher matcher(CharSequence input)`
+     - `Predicate<String> asPredicate()`
+   - get info
+     - `int flags()`
+     - `String pattern()`
+     - `String toString()`
+
+1. `interface java.util.regex.MatchResult` -- group related, defaults to using group 0, available if match succeeds
+   - starting index and the past-the-end index
+     - `int end()`
+     - `int end(int group)`
+     - `int start()`
+     - `int start(int group)`
+   - group
+     - `String group()`
+     - `String group(int group)`
+     - `int groupCount()`
+
+1. `java.util.regex.Matcher`
+   ```java
+   public final class Matcher extends Object
+   implements MatchResult
+   ```
+   - match operation -- `MatchResult` available if succeeds
+     - `boolean matches()` -- match the entire region
+     - `boolean lookingAt()` -- `matches()` but does not require the entire region be matched
+     - `boolean find()` -- find from the first character not matched by the previous match
+     - `boolean find(int start)` -- reset and find from `start`
+     - replace methods
+     - `boolean hitEnd()`
+   - reset -- discards its explicit state information and sets the append position to zero
+     - `boolean find(int start)` -- reset and find from `start`
+     - `Matcher reset()`
+     - `Matcher reset(CharSequence input)` -- reset with a new input sequence
+   - `MatchResult`
+     - methods in `MatchResult`
+     - `int end(String name)`
+     - `String group(String name)`
+     - `int start(String name)`
+     - `MatchResult toMatchResult()` -- result unaffected by subsequent operations
+     - `boolean requireEnd()` -- whether more input could change a positive match into a negative one
+   - region -- the region of input to match against
+     - `Matcher region(int start, int end)`
+     - `int regionEnd()`
+     - `int regionStart()`
+     - `Matcher useAnchoringBounds(boolean b)` -- defaults to using anchoring bounds, the boundaries of the region match anchors such as `^` and `$`
+     - `boolean hasAnchoringBounds()`
+     - `Matcher useTransparentBounds(boolean b)` -- defaults to using opaque bounds, the boundaries of the region are opaque, to lookahead, lookbehind, and boundary matching constructs that may try to see beyond them
+     - `boolean hasTransparentBounds()`
+   - replace
+     - `Matcher appendReplacement(StringBuffer sb, String replacement)` -- used by `replaceAll` and `replaceFirst`, `IllegalStateException` if no match available  
+       `StringBuffer appendTail(StringBuffer sb)`
+       ```java
+       Pattern p = Pattern.compile("cat");
+       Matcher m = p.matcher("one cat two cats in the yard");
+       StringBuffer sb = new StringBuffer();
+       while (m.find()) {
+           m.appendReplacement(sb, "dog");
+           System.out.println(sb.toString());
+       }
+       m.appendTail(sb);
+       System.out.println(sb.toString());
+       // one dog
+       // one dog two dog
+       // one dog two dogs in the yard
+       ```
+     - `String replaceAll(String replacement)`
+     - `String replaceFirst(String replacement)`
+     - `static String quoteReplacement(String s)` -- quote `\` and `$`: otherwise `\` for escape, `${name}` for named groups, `$0` to `$9` for group number
+   - get, set info
+     - `Pattern pattern()`
+     - `Matcher usePattern(Pattern newPattern)` -- position in the input and last append position are unaffected
+     - `String toString()`
