@@ -13,17 +13,16 @@
    - resource bundles — Localized applications contain locale-specific information in resource bundles
    - localized messages — A message may contain placeholders: `{0}` , `{1}`
 
+1. `java.lang.ref.WeakReference` -- weak reference objects, which do not prevent their referents from being made finalizable, finalized, and then reclaimed
+
 # CLI
 
 1. `javac` — compile
-   - auto compile dependencies and recompile when source file updated according to timestamps
-   - wildcard
-     ```shell
-     javac Employee*.java
-     ```
-   - `-Xlint:term`
+   - timestamps aware -- auto compile dependencies and recompile when source file updated according to timestamps
+   - extra options -- `--help-extra`, `-X`
+   - `-Xlint:<key>(,<key>)*` -- enable warnings
      - `-Xlint` or `-Xlint:all` — all checks
-     - `-Xlint:deprecation` — Same as -deprecation , checks for deprecated methods
+     - `-Xlint:deprecation` — Same as `-deprecation`, checks for deprecated methods
      - `-Xlint:fallthrough` — Checks for missing `break` statements in `switch` statements
      - `-Xlint:finally` — Warns about finally clauses that cannot complete normally
      - `-Xlint:none` — Carries out none of the checks
@@ -32,20 +31,33 @@
      - `-Xlint:unchecked` — Warns of unsafe conversions between generic and raw types
 
 1. `java` — execute
-   - class name is not stored in the args of `public static void main(String[] args)`
-     ```shell
-     java Message -g cruel world
-     # args[0]: "-g"
-     # args[1]: "cruel"
-     # args[2]: "world"
+   - synopsis
      ```
+     java [options] <mainclass> [args...]
+         (to execute a class)
+     java [options] -m <module>[/<mainclass>] [args...]
+     java [options] --module <module>[/<mainclass>] [args...]
+         (to execute the main class in a module)
+     ```
+     - args in `public static void main(String[] args)` -- class name is not included
+       ```shell
+       java Message -g cruel world
+       # args: ["-g", "cruel", "world"]
+       ```
+     - jar -- `java -jar MyProgram.jar`
+       ```
+       java [options] -jar <jarfile> [args...]
+       ```
+     - single source file program -- compile and run, no `.class` file generated
+       ```
+       java [options] <sourcefile> [args]
+       ```
+       ```shell
+       java ClassName.java
+       ```
    - `-cp` or `-classpass` — specify the class path
      ```shell
      java -classpath /home/user/classdir:.:/home/user/archives/archive.jar MyProg
-     ```
-   - compile and run, no `.class` file generated
-     ```shell
-     java ClassName.java
      ```
    - `-verbose` — watch class loading
    - `java -X` — a listing of all nonstandard options
@@ -55,8 +67,7 @@
    - system properties — `-D`, `System::getProperty`, `System::getProperties`
      - log related — see [Logging](#Logging)
        - log configuration file location — `-Djava.util.logging.config.file=configFile`
-     - see [`Properties`](#Legacy%20Collections)
-   - jar -- `java -jar MyProgram.jar`
+     - see [`Properties`](#Legacy%20Collections) for list of system properties
 
 1. `javaw` -- `java` without a shell window
 
@@ -66,7 +77,7 @@
      - Public classes and interfaces
      - Public and protected fields
      - Public and protected constructors and methods
-   - `doc-files` directory for assets
+   - assets directory -- `/doc-files` directory for assets
    - syntax
      - `/** ... */`
      - tags `@`
@@ -75,7 +86,7 @@
        - `@throws class description`
        - more
      - HTML tags
-       - use `{@code ... }` instead of `<code>...</code>` to cope with escaping of `<`
+       - use `{@code ... }` instead of `<code>...</code>` to cope with escaping of `^`
    - example
      ```java
      /**
@@ -83,13 +94,9 @@
       * @param byPercent the percentage by which to raise the salary (e.g. 10 means 10%)
       * @return the amount of the raise
       */
-     public double raiseSalary(double byPercent) {
-         double raise = salary * byPercent / 100;
-         salary += raise;
-         return raise;
-     }
+     public double raiseSalary(double byPercent) {}
      ```
-   - tbd
+   - more
 
 1. `javap` — print java class information
    - `-v` -- verbose
@@ -135,18 +142,18 @@
    lines describing this package
    ```
    - each jar file contains a `META-INF/MANIFEST.MF` manifest file
-   - syntax
+   - syntax -- key-value entries
      - main section -- starts with `Manifest-Version`, applies to the whole JAR file
      - Subsequent entries -- starts with `Name`, can specify properties of named entities such as individual files, packages, or URLs
      - section delimiter -- blank lines
-     - the file must end with a newline
+     - file end -- the file must end with a newline
    - edit manifest
      ```shell
      jar cfm JARFileName ManifestFileName ... # create
      jar ufm MyArchive.jar manifest-additions.mf # update
      ```
-   - entry point
-     - `-e` option
+   - specify entry point for execution
+     - `jar -e` option
      - `Main-Class` in manifest
      - execution -- `java -jar MyProgram.jar`
    - sealing -- a package can have no more classes, `Sealed: boolean`, `false` by default
@@ -167,10 +174,7 @@
 
 1. curly braces and semicolons
 
-1. comments — `//` for inline and `/**/` for block
-   - jsdoc
-
-1. variable should be initialized or error
+1. initialize local variables before read otherwise compilation error
 
 1. does not have operator overloading
 
@@ -182,14 +186,14 @@
 
 1. integer types
    - types
-     - `int`
-     - `short` — 2 bytes
-     - `long`
      - `byte`
+     - `short` — 2 bytes
+     - `int`
+     - `long`
    - number literals
-     - `l` or `L` suffix for `long` type
-     - `0x`, `0`, `0b` or `0B`
-     - friendly underscores — `1_000_000` (or `0b1111_0100_0010_0100_0000` )
+     - `long` -- `l` or `L` suffix for `long` type
+     - hexadecimal, octal and binary -- `0x`, `0`, `0b` or `0B`
+     - friendly underscores — `1_000_000`, `0b1111_0100_0010_0100_0000`
    - no `unsigned`
 
 1. float point types
@@ -197,17 +201,17 @@
      - `float` — 4 bytes
      - `double`
    - number literals
-     - `f` or `F` suffix for `float` type
-     - `d`, `D` suffix or no suffix for double type
-     - `e` for exponent
-     - `p` for binary exponent — `0x1.0p-3` (2^-3^)
+     - `float` -- `f` or `F` suffix
+     - `double` -- `d`, `D` suffix or no suffix
+     - exponent -- `e`
+     - binary exponent -- `p`, e.g. `0x1.0p-3` (2^-3)
    - overflows and errors
-     - `Double.POSITIVE_INFINITY` , `Double.NEGATIVE_INFINITY` , and `Double.NaN`
+     - `Double.POSITIVE_INFINITY`, `Double.NEGATIVE_INFINITY`, and `Double.NaN`
      - `Double.isNaN()`
 
 1. `char` -- describes a code unit in the UTF-16 encoding
-   - single quote
-   - `\u0fff` — inside and outside quotes
+   - syntax -- single quote
+   - Unicode escaping, e.g. `\u0fff` — inside and outside quotes
      ```Java
      public static void main(String\u005B\u005D args) {}
      "\u0022+\u0022" // yielding ""+""
@@ -215,26 +219,26 @@
      // since \u000A is replaced with a newline when the program is read
      // Look inside c:\users // syntax error
      ```
-     - Unicode escape sequences are processed before the code is parsed
-   - `\b`, `\t`, `\n`, `\r`
+     - processing -- Unicode escape sequences are processed before the code is parsed
+     - other escapes -- `\b`, `\t`, `\n`, `\r`
    - code unit -- a 16-bit value
-     - supplementary characters -- encoded as consecutive pairs of code units, each of the values in such an encoding pair falls into a range of 2048 unused values of the basic multilingual plane
-     - surrogates area -- `U+D800` to `U+DBFF` for the first code unit, `U+DC00` to `U+DFFF` for the second code unit
+     - supplementary characters -- whose code points are greater than `U+FFFF`, encoded as consecutive pairs of code units, a range of 2048 unused values of the basic multilingual plane
+     - surrogates area -- high-surrogates range `U+D800` to `U+DBFF` for the first code unit, low-surrogates range `U+DC00` to `U+DFFF` for the second code unit
    - usage
-     - recommendation is not to use the `char` type unless you are actually manipulating UTF-16 code units
-     - use `String`
+     - use `String` -- recommendation is not to use the `char` type unless you are actually manipulating UTF-16 code units
 
 1. `boolean`
    - cannot convert between integers and boolean values
    - `if (x = 0)` does not compile
+   - stored as `int`
 
 #### primitive types conversation
 
-1. legal conversation — types with less information to types with more information, but not vice versa
-
-1. implicit conversation using operators — converted to a common type before the operation is carried out
-   - `double` > `float` > `long` > `int`
-   - for `int x`, `x += 3.5` is `x = (int)(x + 3.5)`
+1. conversation
+   - legal conversation — types with less information to types with more information, but not vice versa
+   - type priority -- `double` > `float` > `long` > `int` > `char`
+   - implicit conversation using operators — converted to a common type before the operation is carried out
+     - example -- for `int x`, `x += 3.5` is `x = (int)(x + 3.5)`
 
 1. casts
    ```java
@@ -243,7 +247,7 @@
    int nx2 = (int) Math.round(x); // Math.round() return long for double, int for float
    ```
    - truncate when out of range — `(byte) 300` is 44
-   - cannot cast between `boolean` values and any numeric type
+   - not between `boolean` and number -- cannot cast between `boolean` values and any numeric type
 
 ### other types
 
@@ -260,8 +264,8 @@
        public String getAbbreviation() { return abbreviation; }
    }
    ```
-   - `Size` is actually a subclass of `Enum`, having exactly four instances (static field)
-     - not possible to construct new objects, `==` can be used
+   - `enum` extends `Enum` -- `Size` is actually a subclass of `Enum`, having exactly four instances (static field)
+     - ?? -- not possible to construct new objects, `==` can be used
    - implicitly defined methods (i.e. added by the compiler)
      - `static E[] values()`
      - `static E valueOf(String name)`
@@ -283,10 +287,10 @@
    int[] smallPrimes2 = new int[] { 17, 19, 23, 29, 31, 37 };
    new int[] { 17, 19, 23, 29, 31, 37 }; // anonymous array
    ```
-   - arrays are objects, in Java Language Specification
+   - arrays are objects
      - `final int length`
      - `T[] clone()`
-     - inherit from `Object`, except `clone()` method
+     - `Object` methods
    - initialization
      - all elements are initialized with zero or `false`
      - Arrays of objects are initialized with the special value `null`
@@ -315,63 +319,59 @@
 ## Classes and Modifiers
 
 1. `public class`
-   - the name of the file must match the name of the `public` class
-   - can only have one `public` class in a source file
+   - filename and class name -- the name of the file must match the name of the `public` class
+   - unique in a file -- can only have one `public` class in a source file
    - when run `java ClassName` in CLI, the `main` method in `ClassName` is run
 
 1. `class`
    - `this`
-     - `this.` is optional, local variables can shadow instance fields
-     - implicit parameter `this` does not appear in the method declaration
-     - If the first statement of a constructor has the form `this(...)` , then the constructor calls another constructor of the same class
+     - field variable shadowing -- `this.` is optional, local variables can shadow instance fields
+     - implicit parameter -- implicit parameter `this` does not appear in the method declaration
+     - as constructor -- the form `this(...)`, constructor call must be the first statement in a constructor
    - initialization
-     - explicit field initialization
-       - assignment is carried out before the constructor executes
-       - constant value or an expression
+     - implicit field initialization -- fields automatically set to a default zero
+     - explicit field initialization -- initialize with constant value or an expression
      - initialization block
-       - can be `static`
-       - runs after `super()` call, but before the rest of the constructor
-       - legal to set fields defined later in the class
-       - However, to avoid circular definitions, not legal to read from fields initialized later
+       - can be `static` -- static initialization block
+       - can set fields but cannot read later fields -- legal to set fields defined later in the class. However, to avoid circular definitions, not legal to read from fields initialized later
+     - execution order -- runs after `super()` call or other constructor call, but before the rest of the constructor, see below
    - constructors
-     - same name as the class
-     - `public` and must be called with `new`
-     - fields not initialized in constructor, automatically set to a default zero
-     - when a constructor is absent, a no-argument constructor is provided
+     - method name -- same as the class
+     - `new` -- must be called with `new`
+     - default no-arg constructor -- when no constructor present, a no-argument constructor is provided
      - call another constructor — see `this` above
-   - when a constructor is called
-     1. If the first line of the constructor calls a second constructor, then the second constructor runs before the body of this constructor.
-     1. All data fields are initialized to their default values ( 0 , `false` , or `null` ).
-     1. All field initializers and initialization blocks are executed, in the order in which they occur in the class declaration.
-     1. The body of the constructor is executed.
+   - execution order when a constructor is called
+     1. other constructor call -- if the first line of the constructor calls a second constructor, then the second constructor runs before the body of this constructor.
+     1. implicit field initialization -- all data fields are initialized to their default values (0 , `false` , or `null`)
+     1. explicit field initialization and initialization blocks -- all field initializers and initialization blocks are executed, in the order in which they occur in the class declaration
+     1. the rest -- The body of the constructor is executed.
    - encapsulation
-     - `private` data filed with `public` accessor and mutator
-     - If you need to return a reference to a mutable object, you should clone it first
+     - getter, setter -- `private` data filed with `public` accessor and mutator
+     - return clone for mutable objects -- If you need to return a reference to a mutable object, return a clone
    - destructor
-     - Java does automatic garbage collection, does not support destructors
-     - The `finalize` method will be called before the garbage collector sweeps away the object
-       - do not rely on, cannot know when this method will be called
-     - `Runtime.addShutdownHook`
+     - garbage collection -- Java does automatic garbage collection, does not support destructors
+     - `Object::finalize` -- The `finalize` method will be called before the garbage collector sweeps away the object, but do not rely on, since cannot know when this method will be called, deprecated in JDK 9
+     - `Runtime::addShutdownHook`
 
 1. access modifiers
    - `public` — no access limit
    - `private` -- accessible only when the class is the same
-     - use in fields -- fields would better be marked `private`
    - `protected` — can be accessed by subclasses and within the same package
-     - use in fields -- not recommended for fields
-     - superclass limitation to subclass -- when not within the same package, `protected` fields of superclass objects are not accessible to subclass
+     - limitation to subclasses -- when not within the same package, `SuperType.protectedField` are not accessible to subclass
    - default package access -- when no access modifiers specified, can be accessed within the same package
-     - use in fields -- not recommended for fields
+   - use in fields -- `private` is recommended
+   - access privileges when overriding -- no more restrictive access privileges when overriding
 
 1. other modifiers
-   - `final` fields must be initialized and cannot be modified, methods cannot be overloaded, classes cannot be inherited
-     - if a class is declared `final`, only the methods, not the fields, are automatically `final`
-     - can be used for parameters
-     - declare constants
+   - `final`
+     - `final` fields -- must be initialized when the object is constructed (can be initialized in constructor) and cannot be modified
+     - `final` methods -- cannot be overloaded
+     - `final class` -- cannot be inherited, and only the methods, not the fields, are automatically `final`
+     - `final` parameters -- cannot be modified
    - `static`
-     - static methods can be invoked by object call, but not recommended
-     - Static initialization occurs when the class is first loaded
-     - get class from static method (`this.getClass()` will not work in static methods)
+     - call by instance -- static methods can be invoked by object call, but not recommended
+     - execution order -- static initialization occurs when the class is first loaded
+     - get class from static method (`this.getClass()` will not work in static methods) besides `.class` property
        ```java
        new Object(){}.getClass().getEnclosingClass();
        ```
@@ -379,11 +379,40 @@
 
 ## Math
 
-1. `java.lang.Math`
-   - `Math.floorDiv()`
-   - `Math.floorMod(x, y)` — `x - Math.floorDiv(x, y) * y`
-     - compared to `x % y` — `x - x / y * y`
-   - others
+1. `java.lang.Math` -- elementary exponential, logarithm, square root, and trigonometric functions
+   - `Math.E`, `Math.PI`
+   - `static double random()` -- uses `java.util.Random` behind scenes
+   - `min`, `max`
+   - rounding
+     - `static double ceil(double a)`
+     - `static long round(double a)`  
+       `static int round(float a)`
+     - `static double floor(double a)`
+     - `Math.floorDiv()`
+     - `Math.floorMod(x, y)` — `x - Math.floorDiv(x, y) * y`
+       - compared to `x % y` — `x - x / y * y`
+   - `Exact` suffixed methods -- `ArithmeticException` if overflow
+     - `static int addExact(int x, int y)`  
+       `static long addExact(long x, long y)`
+     - `addExact`, `subtractExact`, `multiplyExact`, `decrementExact`, `incrementExact`, `negateExact`
+     - `static int toIntExact(long value)`
+   - more
+
+1. `java.util.Random` — generate a stream of pseudorandom numbers, `Math.random()` simpler to use
+   ```java
+   public class Random extends Object
+   implements Serializable
+   ```
+   - creation
+     - `Random()`
+     - `Random(long seed)`
+   - set -- `void setSeed(long seed)`
+   - next -- for `boolean`, `byte`, `double`, `float`, `int`, `long`
+     - `int nextInt()`
+     - `int nextInt(int bound)`
+     - more
+     - `double nextGaussian()`
+   - stream
 
 1. `java.lang.StrictMath` — guaranteeing identical results on all platforms
 
@@ -401,15 +430,14 @@
      - `BigInteger multiply(BigInteger other)`
      - `BigInteger divide(BigInteger other)`
      - `BigInteger mod(BigInteger other)`
-   - comparaison
-     - `int compareTo(BigInteger val)`
-     - `boolean equals(Object x)`
 
-1. `java.math.BigDecimal`
+1. `java.math.BigDecimal` -- Immutable, arbitrary-precision signed decimal numbers, decimal version of `BigInteger`
 
 ## Built-In Classes
 
 1. inside `java.lang` package
+
+### System
 
 1. `System`
    ```java
@@ -424,19 +452,20 @@
      - `static void setIn(InputStream in)`
      - `static void setOut(PrintStream out)`
    - util
-     - `static void arraycopy(Object src, int srcPos, Object dest, int destPos, int length)`
+     - `static native void arraycopy(Object src, int srcPos, Object dest, int destPos, int length)`
      - `static long currentTimeMillis()`
      - `static long nanoTime()`
-     - `static int identityHashCode(Object x)`
-   - system property
+     - `static native int identityHashCode(Object x)` -- `Object::hashCode` regardless of overrided or not, 0 for `null`
+   - system property -- see [Legacy Collections](#Legacy-Collections) for the list of system properties
      - `static Properties getProperties()`
-     - `static String getProperty(String key)`
-     - `static String getProperty(String key, String def)`
-     - `static void setProperties(Properties props)`
-     - `static String setProperty(String key, String value)`
+     - `static String getProperty(String key)`  
+       `static String getProperty(String key, String def)`
+     - `Integer::getInteger`, `Long::getLong`
+     - `static void setProperties(Properties props)`  
+       `static String setProperty(String key, String value)`
      - `static String clearProperty(String key)`
      - `static String lineSeparator()` -- equivalent to `System.getProperty("line.separator")`
-       - see `File` for other separators
+       - see [`File`](#File-Classes) for other separators
    - environment
      - `static Map<String,String> getenv()`
      - `static String getenv(String name)`
@@ -473,21 +502,34 @@
    ```
    - length
      - `int length()`
+     - `boolean isEmpty()`
      - `int codePointCount(int startIndex, int endIndex)` — the number of code points
        ```java
        int cpCount = greeting.codePointCount(0, greeting.length());
        ```
    - substring or transform
-     - `char charAt(int index)`, `int codePointAt(int index)`
+     - `char charAt(int index)`, `int codePointAt(int index)`, `codePointBefore`
+     - conversation methods to and from `bytes[]`, `char[]`
      - `String substring(int beginIndex)` `String substring(int beginIndex, int endIndex)`
-     - `String replace(CharSequence oldString, CharSequence newString)`
+     - `String replace(char oldChar, char newChar)`  
+       `String replace(CharSequence target, CharSequence replacement)`  
+       `String replaceAll(String regex, String replacement)`  
+       `String replaceFirst(String regex, String replacement)`
      - `String toLowerCase()` `String toUpperCase()`
      - `String trim()`
      - `String[] split(String regex)`  
        `String[] split(String regex, int limit)`
-   - construct
-     - `static String format(String format, Object... args)`
-     - `static String join(CharSequence delimiter, CharSequence... elements)`
+   - creation
+     - `static String format(String format, Object... args)`  
+       `static String format(Locale l, String format, Object... args)`
+     - `static String join(CharSequence delimiter, CharSequence... elements)`  
+       `static String join(CharSequence delimiter, Iterable<? extends CharSequence> elements)`  
+       `Collectors::joining`  
+       `StringJoiner`
+     - `valueOf`
+       - `static String valueOf(type c)` -- from various types
+       - `static String copyValueOf(char[] data)` -- `valueOf` equivalent  
+         `static String copyValueOf(char[] data, int offset, int count)`
      - `String concat(String str)`
      - `String(byte[] bytes)`  
        `String(byte[] bytes, Charset charset)`  
@@ -507,11 +549,12 @@
            hash = 31 * hash + charAt(i);
        ```
      - `boolean equals(Object other)`, `boolean equalsIgnoreCase(String other)`
-       - Do not use the `==` operator to test whether two strings are equal
-       - only string literals are shared, not strings that are the result of operations like `+` or `substring`
-     - `int compareTo(String other)` — Java version of `strcmp` in C
+       - reference type -- do not use the `==` operator to test whether two strings are equal
+       - string pool -- only string literals are shared, not strings that are the result of operations like `+` or `substring`
      - `int compareToIgnoreCase(String str)`
      - `boolean startsWith(String prefix)`, `boolean endsWith(String suffix)`
+     - `boolean contentEquals(CharSequence cs)`, `boolean contentEquals(StringBuffer sb)`
+     - `String intern()` -- determined by `equals`, return the string from string pool, add to the pool if not contained already
    - transverse
      - with index `i`
        ```java
@@ -520,13 +563,18 @@
        if (Character.isSupplementaryCodePoint(cp)) i += 2;
        else i++;
        // decreasing
-       i—;
-       if (Character.isSurrogate(sentence.charAt(i))) i—;
+       i--;
+       if (Character.isSurrogate(sentence.charAt(i))) i--;
        int cp = sentence.codePointAt(i);
        ```
      - `int offsetByCodePoints()` — get at the i^th^ code point
+     - `int offsetByCodePoints(int index, int codePointOffset)` -- the resulted index by moving given number of code points from given index
      - `str.codePoints().toArray()`
-   - indexing
+   - find
+     - `boolean contains(CharSequence s)`
+     - `boolean matches(String regex)`
+     - `boolean regionMatches(boolean ignoreCase, int toffset, String other, int ooffset, int len)` -- Tests if two string regions are equal  
+       `boolean regionMatches(int toffset, String other, int ooffset, int len)`
      - `int indexOf(String str)`  
        `int indexOf(String str, int fromIndex)`  
        `int indexOf(int cp)`  
@@ -546,7 +594,6 @@
      - `StringBuilder(CharSequence seq)`
      - `StringBuilder(int capacity)`
      - `StringBuilder(String str)`
-   - `int length()`
    - modify
      - `StringBuilder append(String str)`
      - `StringBuilder append(char c)`
@@ -555,8 +602,7 @@
      - `StringBuilder insert(int offset, String str)`
      - `StringBuilder insert(int offset, char c)`
      - `StringBuilder delete(int startIndex, int endIndex)`
-   - output
-     - `String toString()`
+   - output -- `String toString()`
 
 1. `StringBuffer`
    ```java
@@ -564,21 +610,33 @@
    implements Serializable, CharSequence
    ```
 
-1. `java.util.Formatter` -- tbd
+1. `java.util.StringJoiner` -- store components in `String[]` with doubling strategy when expanding capability, used by `Collectors::joining` and `String::join`
+   ```java
+   public final class StringJoiner extends Object
+   ```
+   - constructors
+     - `StringJoiner(CharSequence delimiter)`
+     - `StringJoiner(CharSequence delimiter, CharSequence prefix, CharSequence suffix)`
+   - use
+     - `StringJoiner add(CharSequence newElement)`
+     - `int length()`
+     - `StringJoiner merge(StringJoiner other)`
+     - `StringJoiner setEmptyValue(CharSequence emptyValue)`
+     - `String toString()`
 
 ### Object Wrappers
 
 1. wrappers
    - `Integer` , `Long` , `Float` , `Double` , `Short` , `Byte` , `Character` , and `Boolean`
-   - all extends `Number` except `Boolean`
+   - all extends `Number` except `Boolean` -- no arithmetic operations and number conversations for boolean
    - immutable and `final`
    - autowrapping (autoboxing) — done by compiler, nothing related to VM
-     - `list.add(3);` is automatically translated to `list.add(Integer.valueOf(3));`
-     - the compiler translates `int n = list.get(i);` into `int n = list.get(i).intValue();`
-     - `Integer n = 3; n++;` compiler automatically inserts instructions to unbox the object, increment the resulting value, and box it back.
-   - fixed wrapping
+     - `valueOf` -- example: `list.add(3);` is automatically translated to `list.add(Integer.valueOf(3));`
+     - `typeValue()` -- example: the compiler translates `int n = list.get(i);` into `int n = list.get(i).intValue();`
+     - arithmetic operations -- example: `Integer n = 3; n++;` compiler automatically inserts instructions to unbox the object, increment the resulting value, and box it back.
+   - fixed wrapping -- wrapped into fixed objects
      - `boolean , byte , char <= 127`
-     - `short` , and `int` between -128 and 127 are wrapped into fixed objects
+     - `short` , and `int` between -128 and 127
    - wrapper class references can be `null` — possible `NullPointerException`
    - conditional promotion — `Integer` to `Double`
      ```java
@@ -587,6 +645,18 @@
      System.out.println(true ? n : x); // Prints 1.0
      ```
 
+1. `Number`
+   ```java
+   public abstract class Number extends Object
+   implements Serializable
+   ```
+   - `byte byteValue()`
+   - `abstract double doubleValue()`
+   - `abstract float floatValue()`
+   - `abstract int intValue()`
+   - `abstract long longValue()`
+   - `short shortValue()`
+
 1. `Integer`
    ```java
    public final class Integer
@@ -594,65 +664,87 @@
    implements Comparable<Integer>
    ```
    - fields
-     - `static int BYTES`
+     - `static int BYTES` -- usually 4
      - `static int MAX_VALUE`
      - `static int MIN_VALUE`
-     - `static int SIZE`
-     - `static Class<Integer> TYPE`
-   - constructors
+     - `static int SIZE` -- usually 32
+     - `static Class<Integer> TYPE` -- `int.class`
+   - creation
      - `Integer(int value)`
-     - `Integer(String s)`
-   - conversation
-     - `int intValue()`
-     - `static String toString(int i)`  
-       `static String toString(int i, int radix)`
+     - `Integer(String s)` -- uses `parseInt` internally
+     - `static Integer decode(String nm)` -- accepts decimal, hexadecimal (`0x`, `0X`, `#` prefixed), octal (`0` prefixed), can be negative
+     - `static Integer valueOf(int i)`  
+       `static Integer valueOf(String s)` -- uses `parseInt` internally  
+       `static Integer valueOf(String s, int radix)`
+   - conversation to primitive types
+     - methods in `Number`
+       - `int intValue()`
      - `static int parseInt(String s)`  
        `static int parseInt(String s, int radix)`
-     - `static Integer valueOf(int i)`  
-       `static Integer valueOf(String s)`  
-       `static Integer valueOf(String s, int radix)`
+   - arithmetic operations
+     - `static int signum(int i)`
+     - `static int sum(int a, int b)`
+   - unsigned
+     - `static int parseUnsignedInt(String s)`
+     - `static int parseUnsignedInt(String s, int radix)`
+     - `static int divideUnsigned(int dividend, int divisor)`
+     - `static int compareUnsigned(int x, int y)`
+     - `static int remainderUnsigned(int dividend, int divisor)`
+     - `static String toBinaryString(int i)` -- two's complement representation
+     - `static String toHexString(int i)`
+     - `static String toOctalString(int i)`
+     - `static String toUnsignedString(int i)`
+     - `static String toUnsignedString(int i, int radix)`
+     - `static long toUnsignedLong(int x)`
+   - bits in the two's complement
+     - `static int bitCount(int i)` -- the number of one-bits
+     - `static int highestOneBit(int i)`
+     - `static int lowestOneBit(int i)`
+     - `static int numberOfLeadingZeros(int i)`
+     - `static int numberOfTrailingZeros(int i)`
+     - `static int reverse(int i)`
+     - `static int reverseBytes(int i)`
+     - `static int rotateLeft(int i, int distance)`
+     - `static int rotateRight(int i, int distance)`
+   - for `int` and `null` compatible
+     - `static int compare(int x, int y)`
+     - `static int hashCode(int value)`
+     - `static String toString(int i)`
+     - `static String toString(int i, int radix)`
 
-1. `Character`
+1. `Double`
+   - counterparts of fields and methods in `Integer`
+   - IEEE 754
+     - `static int MAX_EXPONENT`
+     - `static int MIN_EXPONENT`
+     - `static double MIN_NORMAL`
+   - infinite and not a number
+     - `static double NaN`
+     - `static double NEGATIVE_INFINITY`
+     - `static double POSITIVE_INFINITY`
+     - `static boolean isFinite(double d)`
+     - `boolean isInfinite()`
+     - `static boolean isInfinite(double v)`
+     - `boolean isNaN()`
+     - `static boolean isNaN(double v)`
+
+1. `Character` -- see after
+
+1. `Boolean`
    ```java
-   public final class Character extends Object
-   implements Serializable, Comparable<Character>
+   public final class Boolean extends Object
+   implements Serializable, Comparable<Boolean>
    ```
-   - general category in the [Unicode specification](http://unicode.org/reports/tr44/#General_Category_Values)
-     - defined in static fields as `byte`
-     - `static int getType(char ch)`
-     - `static int getType(int codePoint)`
-   - wrapping and outboxing
-     - `Character(char value)`
-     - `static Character valueOf(char c)`
-     - `char charValue()`
-   - more
-   - `Character.UnicodeScript`
-     ```java
-     public static enum UnicodeScript
-     ```
-     - script names -- enum constants
-     - `static Character.UnicodeScript forName(String scriptName)`
-     - `static Character.UnicodeScript of(int codePoint)`
-   - `Character.UnicodeBlock`
-     ```java
-     public static final class Character.UnicodeBlock
-     extends Character.Subset
-     ```
-     - Unicode character block names -- static fields
-     - `static Character.UnicodeBlock forName(String blockName)`
-     - `static Character.UnicodeBlock of(char c)`
-     - `static Character.UnicodeBlock of(int codePoint)`
-   - `Character.Subset` -- for extending, represents particular subsets of the Unicode character set
 
 # Control Flow
 
-1. may not declare identically named variables in two nested blocks
+1. no block variable shadowing -- may not declare identically named variables in two nested blocks
    - in JS and C++ inner one shadows outer one
 
 1. `switch`
    - A case label can be
-     - A constant expression of type `char` , `byte` , `short` , or `int`
-     - An enumerated constant
+     - primitive type expressions -- a constant expression of type `char` , `byte` , `short` , or `int`
+     - `Enum` -- like `with` in JS
        ```java
        Size sz = . . .;
        switch (sz)
@@ -663,12 +755,11 @@
            // . . .
        }
        ```
-     - Starting with Java SE 7, a string literal, uses `hashCode()` behind scenes
+     - strings -- Starting with Java SE 7, a string literal, uses `hashCode()` behind scenes
 
-1. labeled `break` and `continue`
-   - for labeled blocks, can only jump out of a block, never into a block
+1. labeled `break` and `continue` -- for labeled blocks, can only jump out of a block, never into a block
 
-1. `for (variable : collection) statement`
+1. iterator -- `for (variable : collection) statement`
    - `collection` — an array or an object of a class that implements the `Iterable` interface
    - see [Collections](#Collections)
 
@@ -681,81 +772,72 @@
    - package name — reversely ordered domain
    - package availability — A class can use all classes from its own package and all public classes from other packages.
    - package at runtime
-     - Locating classes in packages is an activity of the compiler. The only benefit of the `import` statement is convenience
-     - The bytecodes in class files always use full package names to refer to other classes.
+     - locating classes is done by compiler -- the only benefit of the `import` statement is convenience
+     - canonical name after compilation -- the byte codes in class files always canonical names to refer to other classes
 
 1. class importation
-   - add the full package name in front of every class name
+   - without `import` -- use canonical name
    - `import` statement
      ```java
      import java.time.*;
      import java.time.LocalDate;
      ```
-     - some IDEs can expand package statements with `*` into specific imports
-     - `*` notation to import a single package
-       - cannot use `import java.*` or `import java.*.*` to import all packages with the java prefix
-     - name conflict
+     - import a class -- canonical name
+     - import a package -- `*`
+     - import a inner class -- `java.util.AbstractMap.SimpleEntry`
+     - solve name conflict -- import the specific class, or use canonical name
        ```java
        import java.util.*;
        import java.sql.*;
        // compile-time error when use `Date` class
        ```
-       - solve this problem by adding a specific import statement — `import java.util.Date;`
-       - use the full package name if both needed
+   - static imports — the importing of static methods and fields
+     ```java
+     import static java.lang.System.*;
+     import static java.lang.System.out;
+     ```
 
-1. static imports — the importing of static methods and fields
+1. add to package -- put the name of the package at the top of a source file
    ```java
-   import static java.lang.System.*;
-   import static java.lang.System.out;
+   package com.example;
    ```
-
-1. add to package
-   ```java
-   package com.horstmann.corejava;
-   public class Employee
-   {
-       . . .
-   }
-   ```
-   - put the name of the package at the top of your source file
-   - Place source files into a subdirectory that matches the full package name.
+   - directory -- match the canonical name
      ```shell
      javac com/mycompany/PayrollApp.java
      java com.mycompany.PayrollApp
      ```
-   - the classes in that source file belong to the default package if no `package` statement
-   - disallow loading of user-defined classes whose package name starts with "`java.`"
+   - default package -- classes belong to the default package if no `package` statement
+   - no custom `java.` prefixed packages -- disallow loading of user-defined classes whose package name starts with "`java.`"
 
 1. class path
    ```
    /home/user/classdir:.:/home/user/archives/archive.jar
    c:\classdir;.;c:\archives\archive.jar
    ```
-   - base directory for the package tree can be added
-   - jar files can be added
-   - jar file directory can be added
-     ```
-     /home/user/classdir:.:/home/user/archives/'*'
-     c:\classdir;.;c:\archives\*
-     ```
-     - In UNIX, the `*` must be escaped to prevent shell expansion.
-   - do not add runtime libary files
-     - `rt.jar` and the other JAR files in the `jre/lib` and `jre/lib/ext` directories are always searched for classes
-   - `javac` and `java`
-     - The `javac` compiler always looks for files in the current directory
-     - the `java` virtual machine launcher only looks into the class path
-       - default class path is `.`
-   - class search order
-     - for `java`, runtime libary to the class path
-     - for `javac`, `java.lang` to imports to current package
-
-1. set class path
-   - `-cp` or `-classpath` option
+   - system property -- `java.class.path`
+   - possible components
      ```shell
-     java -classpath /home/user/classdir:.:/home/user/archives/archive.jar MyProg
-     # java -classpath c:\classdir;.;c:\archives\archive.jar MyProg
+     /home/user/classdir:.:/home/user/archives/'*'
+     # - In UNIX, the `*` must be escaped to prevent shell expansion.
+     # c:\classdir;.;c:\archives\*
      ```
-   - the `CLASSPATH` environment variable
+     - base directory for the package tree
+     - jar files
+     - jar file directory
+     - do not add runtime libary files -- `rt.jar` and the other JAR files in the `jre/lib` and `jre/lib/ext` directories are always searched for classes
+   - used by `java` but not `javac`
+     - the `javac` compiler -- always looks for files in the current directory
+     - the `java` virtual machine -- launcher only looks into the class path, default class path is `.`
+   - class search order
+     - for `javac` -- from `java.lang` to imports to current package
+     - for `java` -- from runtime libary to the class path
+   - set class path
+     - `-cp` or `-classpath` option
+       ```shell
+       java -classpath /home/user/classdir:.:/home/user/archives/archive.jar MyProg
+       # java -classpath c:\classdir;.;c:\archives\archive.jar MyProg
+       ```
+     - the `CLASSPATH` environment variable
 
 ## Package Related Classes
 
@@ -769,7 +851,8 @@
    ```java
    public abstract class ClassLoader extends Object
    ```
-   - get `ClassLoader` — `Class::getClassLoader`
+   - creation
+     - `Class::getClassLoader`
    - assertion
      - `void clearAssertionStatus()`
      - `void setClassAssertionStatus(String className, boolean enabled)`
@@ -781,62 +864,54 @@
 1. inheritance
    - `extends`
    - `super`
-     - special keyword, cannot be assigned
+     <!-- - special keyword, cannot be assigned -->
    - `super()`
-     - The call using `super` must be the first statement in the constructor for the subclass
-     - If the subclass constructor does not call a superclass constructor explicitly, the no-argument `super()` is invoked
-     - invoked before initializers
+     - first statement -- the call using `super` must be the first statement in the constructor for the subclass
+     - default no-arg constructor -- if the subclass constructor does not call a superclass constructor explicitly, the no-argument `super()` is invoked
+     - order -- invoked before initializers
    - polymorphism
-     - object variables are polymorphic — a variable of certain type can refer to this type or any subclass, but not superclass
-       - `Object[] objects`
-       - all arrays remember the element type with which they were created (`new`ed)
-         ```java
-         Manager[] managers = new Manager[10];
-         Employee[] staff = managers; // OK
-         staff[0] = new Employee("Harry Hacker", ...); // ArrayStoreException
-         ```
+     - object variables are polymorphic — a variable can be assigned subclasses of its type
+     - no polymorphism exploit in arrays -- all arrays remember the element type with which they were created (`new`ed)
+       ```java
+       Manager[] managers = new Manager[10];
+       Employee[] staff = managers; // OK
+       staff[0] = new Employee("Harry Hacker", ...); // ArrayStoreException
+       ```
 
-1. dynamic binding
-   - static binding for `private`, `static`, `final` methods or a constructor
-     - no need to use static binding to avoid the overhead, JIT of the VM does the inlining optimization
-     - rarely but if the virtual machine loads another subclass that overrides an inlined method? Then the optimizer must undo the inlining.
-   - method call
-     1. the virtual machine precomputes for each class a method table
-        - method table — lists all method signatures and the actual methods to be called
-     1. overriding resolution according to function signatures
-        - return type is not a part of the signature (but is in JVM so bridge methods work)
-        - when return another type, a bridge method is synthesized
-        - avoid a more restrictive access privilege when overriding
-     1. table lookup when methods is called, from actual type to superclasses to `Object`
+1. method call
+   - overriding resolution -- according to function signatures, done by compiler
+     - function signature
+       - return type -- return type is not a part of the signature (but is in JVM so bridge methods work)
+       - bridge method -- when return another type, a bridge method is synthesized
+   - static binding -- for `private`, `static`, `final` methods or constructors, done by compiler
+   - dynamic binding -- JVM resolving the implicit parameter with method table lookup
+     - method table -- method table lists all method signatures and the actual methods to be called, computed by VM for each class in advance
+     - order of method table lookup -- from actual type to superclasses to `Object`
+     - overhead of dynamic binding -- no need to use static binding to avoid the overhead, JIT does the inlining optimization
 
 1. casting
-   - cast to more general, a subclass reference to a superclass variable — direct assign
-   - cast to more specific, a superclass reference to a subclass variable — use the same syntax as primitive type cast, check at runtime
-     - `ClassCastException` when cannot cast
-     - use `instanceof` to check before casting
-     - can cast only within an inheritance hierarchy
-     - best to minimize the use of casts and the `instanceof` operator
+   - direct assign to more general -- cast to more general, a subclass reference to a superclass variable, direct assign
+   - cast needed for more specific -- cast to more specific, a superclass reference to a subclass variable, use the same syntax as primitive type cast, check at runtime
+     - exception -- `ClassCastException` when cannot cast
+     - check -- use `instanceof` to check before casting
+     - cast range -- can cast only within an inheritance hierarchy
+     - minimal usage -- best to minimize the use of casts and the `instanceof` operator
 
 1. abstract class
-   - cannot be instantiated
-     - but `SuperAbstractClass obj = new SubClass()` is OK
-   - any class can be tagged `abstract`, but not vice versa
-     - a class with one or more `abstract` methods must itself be declared `abstract`
-     - abstract classes can have no abstract methods
-     - abstract classes can have fields and concrete methods
-   - when extending an abstract class,
-     - leave some or all abstract methods unimplemented, resulting in an abstract subclass
-     - or implement all abstract methods, the subclass being abstract or not
+   - no instance -- cannot be instantiated, but can be super type
+   - abstract methods -- any class can be tagged `abstract`, but not vice versa
+     - can be none -- abstract classes can have no abstract methods, abstract classes can have fields and concrete methods
+     - none in concrete class -- a class with one or more `abstract` methods must itself be declared `abstract`
 
 1. `Object` — the cosmic superclass
-   - only the values of primitive types (numbers, characters, and boolean values) are not objects
+   - for all reference type -- only the values of primitive types (numbers, characters, and boolean values) are not objects
    - `boolean equals(Object otherObject)` — determines whether two object references are identical
-     - override
+     - override -- template as below, need to override `hashCode` also if `equals` overriden
        ```java
-       @override // error when not overriding but define a new method
-       public boolean equals(Object otherObject)
-       {
-           // a quick test to see if the objects are identical
+       @override
+       public boolean equals(Object otherObject) {
+           // super.equals(other)
+           // a quick test to see if the objects are identical, may be unnecessary if covered in `super.equals(other)`
            if (this == otherObject) return true;
            // must return false if the explicit parameter is null
            if (otherObject == null) return false;
@@ -851,44 +926,33 @@
                && hireDay.equals(other.hireDay);
        }
        ```
-     - `Objects.equals(Object a, Object, b)` — guard against `null`, call `a.equals(b)` when both non-null
-     - `Arrays.equals(type[] a, type[] b)` for arrays
-     - When you define the `equals` method for a subclass, first call `super.equals(other)`
-     - need to redefine `hashCode` also
-   - `int hashCode()` — derived from the memory address
-     - compatible with `equals()`
-     - `int Objects.hashCode(Object obj)` — null-safe, 0 for `null`
-     - `int Double.hashCode(double)` — etc., for primitive types
-   - `String toString()` — the class name and the hash code of the object
-     - called when string concatenation with `+`
-     - in coordination with `getClass().getName()` when override
-     - arrays will come up with something like `"[I@1a46e30"`, where `[I` denotes an array of integers <!—]]—>
+   - `native int hashCode()` — derived from the memory address, recommended to be compatible with `equals()`
+   - `String toString()` — `getClass().getName() + "@" + Integer.toHexString(hashCode());`
+     - for arrays -- arrays will come up with something like `"[I@1a46e30"`, where `[I` denotes an array of integers <!-- ]] -->
    - `Class<?> getClass()`
    - `protected Object clone()`
+   - `protected void finalize()` -- deprecated in JDK 9
    - concurrency related -- see after
+   - methods in `Objects` and object wrappers
 
 # Interfaces, Lambdas and Inner Classes
 
 ## Interfaces
 
 1. interface
-   - methods and inner classes / interfaces
-     - all methods are implicitly `abstract`, redundancy is discouraged
-     - all methods are implicitly `public`, redundancy is discouraged
-       - but needed when implementing
-     - static methods are supported as of Java SE 8
-       - need explicit access modifier
-     - an interface method may not be declared with `protected` or package access, or with the modifiers `final`, `synchronized`, or `native`
-     - inner classes are automatically static and public
-   - constant fields
-     - implicitly `public static final`, as methods are implicitly `public`
-     - automatically inherits these constants when implementing
-   - never have instance fields
-   - `implements` keyword
-     - can be generic — `class Employee implements Comparable<Employee>`
-   - supports `instanceof`, `extend`, multiple inheritance
-     - diamond problem -- when `default` methods of parent interfaces clash, either re-implement the method or compile error
-   - initialized when they are first accessed, typically by reading a field that is not a compile time constant
+   - methods in interfaces
+     - non-static methods -- all methods are implicitly `abstract public`, redundancy is discouraged
+       - when implementing -- `public` still required when implementing
+     - static methods -- supported as of Java SE 8, need explicit access modifier
+     - prohibited modifiers -- an interface method may not be declared with `protected` or package access, or with the modifiers `final`, `synchronized`, or `native`
+   - inner classes in interfaces -- automatically `static public`
+   - constant fields -- implicitly `public static final`, automatically inherited when implementing
+   - no instance fields
+   - `implements`, `SuperInterface.super`
+   - can be generic — `class Employee implements Comparable<Employee>`
+   - use as super type -- supports `instanceof`, `extend`, multiple inheritance
+     - diamond problem -- see below
+   - initialization time point -- initialized when they are first accessed, typically by reading a field that is not a compile time constant
 
 1. default methods
    - `default` implementation
@@ -900,46 +964,43 @@
      }
      ```
    - `default` method conflict resolving — interface vs superclass vs another interface
-     - Superclasses win — can never make a default method that redefines one of the methods in the `Object` class
-       - Some interfaces in the Java API redeclare `Object` methods in order to attach javadoc comments, like `Comparator`
-       - redeclaring methods from the `Object` class do not make the methods abstract, lambdas can still be compatible
-     - interface clash — if clashes, either `default` or not, the method must be overriden
-     - choose one when interface clash
-       ```java
-       class Student implements Person, Named
-       {
-           public String getName() { return Person.super.getName(); }
-       }
-       ```
+     - superclasses take precedence -- default methods are ignored if implemented in superclasses
+       - no default `Object` methods -- not possible to make a default method that redefines one of the methods in the `Object` class
+       - no abstract `Object` methods -- redeclaring methods from the `Object` class do not make the methods abstract, no effect to function interfaces
+       - attach javadoc by `Object` methods -- some interfaces redeclare `Object` methods in order to attach javadoc comments, like `Comparator`
+     - interface clash — if clashes, even only one of the methdos is `default`, the method must be overriden
+       - `SuperInterface.super` -- choose one when interface clash
+         ```java
+         class Student implements Person, Named {
+             public String getName() { return Person.super.getName(); }
+         }
+         ```
 
 1. companion class
    - used to place static methods — it has been common to place static methods in companion classes, like `Collection` / `Collections` or `Path` / `Paths`
    - used to implement some or all of methods of an interface — such as `Collection` / `AbstractCollection` or `MouseListener` / `MouseAdapter`
-   - With Java SE 8, this technique is obsolete, as the support of default methods and static methods
+   - `default` and `static` methods in interfaces -- with Java SE 8, this technique of companion class is obsolete, as the support of default methods and static methods
 
-1. use of interface
+1. some use of interface
    - callback — pass an object of a class implementing a callback interface, methods in the interface will be called when the event fires
    - tagging interface — `Cloneable`
 
 ### Common Interfaces
 
-1. `Interface Comparable<T>`
-   - `int compareTo(T o)`
-     - used in `Arrays.sort()`, `Arrays.binarySearch()`
-     - when use subtraction to return a result, make sure absolute value is at most `(Integer.MAX_VALUE - 1) / 2`
-       - otherwise use `Integer.compare()`
-     - strongly recommended (though not required) to comply with `equals()`
-       - `BigDecimal` violates -- `new BigDecimal("1.0").equals(new BigDecimal("1.00"))` is `false` because the numbers differ in precision
-     - make `x.compareTo(y)` compatible with `y.compareTo(x)` — when overriding a class which extends a class implementing `Comparable<T>`, start with
-       ```java
-       if (getClass() != other.getClass()) throw new ClassCastException();
-       ```
+1. `Interface Comparable<T>` -- `int compareTo(T o)`
+   - overflow when implementing with subtraction -- make sure absolute values of operands are at most `(Integer.MAX_VALUE - 1) / 2`
+     - otherwise use `Integer.compare()`
+   - `equals()` compaliance -- strongly recommended (though not required) to comply with `equals()`
+     - `BigDecimal` violates -- `new BigDecimal("1.0").equals(new BigDecimal("1.00"))` is `false` because the numbers differ in precision
+   - associative -- to make `x.compareTo(y)` compatible with `y.compareTo(x)`, start with below when implementing
+     ```java
+     if (getClass() != other.getClass()) throw new ClassCastException();
+     ```
 
-1. `Interface java.util.Comparator<T>`
-   - `int compare(T o1, T o2)`
-   - predefined
+1. `Interface java.util.Comparator<T>` -- `int compare(T o1, T o2)`
+   - nature and reversed order
      - `static <T extends Comparable<? super T>> Comparator<T> naturalOrder()`
-     - `static <T extends Comparable<? super T>> Comparator<T> reverseOrder()`
+     - `static <T extends Comparable<? super T>> Comparator<T> reverseOrder()` -- uses `Collections::reverseOrder` under the hood
    - key extract
      ```java
      // sort people by name
@@ -957,28 +1018,26 @@
          .thenComparing(Person::getFirstName)
      );
      ```
-     - `default Comparator<T> thenComparing(Comparator<? super T> other)`
-     - `default <U extends Comparable<? super U>> Comparator<T> thenComparing(Function<? super T,? extends U> keyExtractor)`
-     - `default <U> Comparator<T> thenComparing(Function<? super T,? extends U> keyExtractor, Comparator<? super U> keyComparator)`
-     - `default Comparator<T> thenComparingType(ToTypeFunction<? super T> keyExtractor)`
-       - `type` here is `int`, `double` or `long`
-     - `default Comparator<T> reversed()`
+     - `default Comparator<T> thenComparing(Comparator<? super T> other)`  
+       `default <U extends Comparable<? super U>> Comparator<T> thenComparing(Function<? super T,? extends U> keyExtractor)`  
+       `default <U> Comparator<T> thenComparing(Function<? super T,? extends U> keyExtractor, Comparator<? super U> keyComparator)`
+     - `default Comparator<T> thenComparingType(ToTypeFunction<? super T> keyExtractor)` -- `type` for `int`, `double` and `long`
+     - `default Comparator<T> reversed()` -- uses `Collections::reverseOrder` under the hood
    - comparing `null`
      - `static <T> Comparator<T> nullsFirst(Comparator<? super T> comparator)`
      - `static <T> Comparator<T> nullsLast(Comparator<? super T> comparator)`
 
 1. `Interface Cloneable`
-   - serves as a tag, a `CloneNotSupportedException` if an object requests cloning but does not implement that interface
+   - mark interface -- serves as a tag, a `CloneNotSupportedException` if an object requests cloning but does not implement that interface
    - make a class cloneable — implement this interface, redefine `clone` to be `public`
-     - `clone()` in `Object` is protected, and does a shallow copy
-     - use `(T) super.clone()` if `clone()` in `Object` is OK
-   - Up to Java SE 1.4, the clone method always had return type `Object`, but now the correct return type can be specified
+     - `Object::clone` -- protected, and does a shallow copy
+     - use `Object::clone` -- `(T) super.clone()`
+   <!-- - Up to Java SE 1.4, the clone method always had return type `Object`, but now the correct return type can be specified -->
 
 ## Lambdas
 
 1. closure
-   - cannot mutate captured value
-   - any captured variable in a lambda expression must be effectively final
+   - effectively final -- any captured variable in a lambda expression must be effectively final: no difference if declared `final`
      ```java
      for (int i = 1; i <= count; i++) {
          ActionListener listener = event -> {
@@ -988,10 +1047,12 @@
          new Timer(1000, listener).start();
      }
      ```
-     - illegal to refer to a variable in a lambda expression that is mutated outside
-   - illegal to declare a parameter or a local variable in the lambda that has the same name as a local variable
-   - the same scope as a nested block
-   - `this` is the same as what outside the lambda
+     - no mutation outside -- illegal to refer to a variable in a lambda expression that is mutated outside
+     - no mutation inside -- cannot mutate captured value
+     - access mutable data — use an array of length 1
+   - no block variable shadowing -- illegal to declare a parameter or a local variable in the lambda that has the same name as a local variable
+   - block scope -- the same scope as a nested block
+   - same `this` -- `this` is the same as what outside the lambda
 
 1. lambda expression syntax
    - inline
@@ -1010,43 +1071,40 @@
      ```java
      Comparator<String> comp = (first, second) -> first.length() - second.length();
      ```
-     type inference without parentheses
+   - type inference without parentheses
      ```java
      ActionListener listener = event -> System.out.println("The time is " + new Date()");
      ```
-   - return type is always inferred, cannot be specified
+   - inferred return type -- return type is always inferred, cannot be specified
 
 1. functional interface — an interface with a single abstract method, like `Comparator<T>`
-   - conversion to a functional interface is the only function for lambdas
-   - behind the scenes, methods like `Arrays::sort` receives an object of some class that implements the interface, lambda is executed when invoking the method of that interface
+   - for conversation from lambdas -- conversion to a functional interface is the only function for lambdas
+   - object instance used behind the scenes -- methods like `Arrays::sort` receives an object of some class that implements the interface, lambda is executed when invoking the method of that interface
    - `@FunctionalInterface`
-   - lambda expression holders (also function interface) — `java.util.function.Function<T, R>`, `java.util.function.BiFunction<T, U, R>`
+   - lambda expression holders (also function interface) — see [Common Functional Interfaces](#Common-Functional-Interfaces) for `java.util.function`
 
-1. method reference
+1. method reference -- use as lambdas
    ```java
    object::instanceMethod
    this::instanceMethod
    super::instanceMethod // uses `this` as the target and invokes the superclass version of the given method
    Class::staticMethod
-   Class::instanceMethod // implicit parameter become the first parameter
+   Class::instanceMethod // the implicit parameter becomes explicit
    Class::new // constructor reference
+   int[]::new
    ```
-   - use where lambdas are used
-   - turned into instances of functional interfaces like lambdas
-   - `int[]::new`
-     - `new T[n]` is illegal, so libary designers use this syntax to mitigate
-       ```java
-       Object[] people = stream.toArray();
-       // vs
-       Person[] people = stream.toArray(Person[]::new);
-       ```
+   - object instance used behind the scenes -- turned into instances of functional interfaces like lambdas
+   - `int[]::new` -- `new T[n]` is illegal, so libary designers use this syntax to mitigate
+     ```java
+     Object[] people = stream.toArray();
+     Person[] people = stream.toArray(Person[]::new);
+     ```
 
 ### Common Functional Interfaces
 
 1. `java.util.function` package, all `@FunctionalInterface`
 
-1. `java.util.function.Function<T, R>`
-   - `R apply(T t)`
+1. `java.util.function.Function<T, R>` -- `R apply(T t)`
    - `static <T> Function<T,T> identity()`
    - chaining
      - `default <V> Function<T,V> andThen(Function<? super R,? extends V> after)`
@@ -1070,7 +1128,7 @@
      - `java.util.function.ToIntBiFunction<T,U>`
      - `java.util.function.ToLongBiFunction<T,U>`
 
-1. operator -- `Function` with type parameters of the same type
+1. operator -- `Function` with type parameters of the same primitive type
    ```java
    @FunctionalInterface
    public interface UnaryOperator<T>
@@ -1090,19 +1148,18 @@
      - `java.util.function.IntBinaryOperator`
      - `java.util.function.LongBinaryOperator`
 
-1. `java.util.function.Supplier<T>`
-   - `T get()`
+1. `java.util.function.Supplier<T>` -- `T get()`
    - variants
      - `java.util.function.BooleanSupplier` -- `boolean getAsBoolean()`
      - `java.util.function.DoubleSupplier`
      - `java.util.function.IntSupplier`
      - `java.util.function.LongSupplier`
 
-1. `java.util.function.Consumer<T>`
-   - `void accept(T t)`
+1. `java.util.function.Consumer<T>` -- `void accept(T t)`
    - `default Consumer<T> andThen(Consumer<? super T> after)` — chaining
      ```java
-     return (T t) -> { accept(t); after.accept(t); }; // default implementation
+     // default implementation
+     return (T t) -> { accept(t); after.accept(t); };
      ```
    - variants
      - `java.util.function.DoubleConsumer` -- `void accept(double value)`
@@ -1114,12 +1171,12 @@
      - `java.util.function.ObjIntConsumer<T>`
      - `java.util.function.ObjLongConsumer<T>`
 
-1. `java.util.function.Predicate<T>`
-   - `default Predicate<T> and(Predicate<? super T> other)`
+1. `java.util.function.Predicate<T>` -- `boolean test(T t)`
    - `static <T> Predicate<T> isEqual(Object targetRef)`
-   - `default Predicate<T> negate()`
-   - `default Predicate<T> or(Predicate<? super T> other)`
-   - `boolean test(T t)`
+   - chaining
+     - `default Predicate<T> and(Predicate<? super T> other)`
+     - `default Predicate<T> negate()`
+     - `default Predicate<T> or(Predicate<? super T> other)`
    - variants
      - `java.util.function.DoublePredicate`
      - `java.util.function.IntPredicate`
@@ -1129,90 +1186,101 @@
 ## Inner Class
 
 1. inner class
+   - explicit reference to the outer class — outer class can be explicitly referred to as `OuterClass.this`
    - implicit reference — can access the data from the scope in which they are defined
-     - also explicit reference — outer class can be explicitly referred to as `OuterClass.this`
-     - constructors behind the scenes
-       - The compiler modifies all inner class constructors, adding a parameter for the outer class reference
-       - when inner class is being constructed, the compiler passes the `this` reference of outer class
-   - constructing inner classes
+     - synthesized constructor parameter for implicit reference -- the compiler modifies all inner class constructors, adding a parameter for the outer class reference
+   - constructing inner classes -- `new` keyword changes for implicit reference
      - inside outer class — `this.new` or alternatively `new`
      - outside outer class — `outerObj.new`
    - access control — can be hidden from other classes in the same package
-     - Only inner classes can be private. Regular classes always have either package or public visibility
+     - only inner classes can be private -- regular classes always have either package or public visibility
    - refer to inner class outside the outer class — `OuterClass.InnerClass`
-   - enums are static inner classes
 
 1. inner class limits
-   - static fields must be `final`
-   - cannot have static methods
+   - static fields -- must be `final`
+   - static methods -- cannot have static methods
 
-1. inner class at runtime
-   - inner classes are translated into regular class files with `$` (dollar signs) delimiting outer and inner class names
-   - inner class has a `final` `this$0` reference to outer class generated by compiler
-   - for private inner classes
+1. inner class after compilation or at runtime -- synthesized regular classes
+   - `Outer$Inner` class -- inner classes are translated into regular class files with `$` (dollar signs) delimiting outer and inner class names
+     - compared to regular classes -- more access privileges to the outer class, like private fields
+   - synthesized outer class reference -- inner class has a `final` `this$0` field for reference to outer class generated by compiler
+   - private inner classes -- JVM does not support private classes, so the compiler produces a package-visible class with a private constructor, and a second package-visible constructor that calls the private one
      ```java
      private TalkingClock$TimePrinter(TalkingClock);
-     TalkingClock$TimePrinter(TalkingClock, TalkingClock$1); // the last parameter is synthesized solely to distinguish this constructor from others
+     TalkingClock$TimePrinter(TalkingClock, TalkingClock$1);
+     // the last parameter type is synthesized solely to distinguish this constructor from others
      new TalkingClock$TimePrinter(this, null); // actual call in outer class
      ```
-     - the compiler produces a package-visible class with a private constructor
-     - and a second package-visible constructor that calls the private one
-   - access to outer class mechanism
-     - outer class generates a static `access$0blah(OuterClass outer)` method for inner class to access
-     - the generated name is not legal, but can be exploited
-   - the virtual machine does not have any special knowledge about them
-   - use `javap -p` to verify
+   - mechanism for more privileged access to outer class -- synthesized outer class backdoor method
+     - backdoor method -- outer class generates a package accessible static `access$0(OuterClass outer)` method (method name can vary slightly), for inner class, outer class private field access is translated to backdoor method call
+     - vulnerability -- the generated backdoor method name is not legal in source code, but can be exploited by build or modify a class file
+   - JVM unaware -- the virtual machine does not have any special knowledge about inner classes
+   - verify by inspecting class files -- use `javap -p` to verify
 
 1. local inner class — class locally in a single method
-   - never declared with an access specifier
-   - scope is always restricted to the block being declared
-   - can access effectively final local variables
-     - behind the scenes — stored as a final field of inner class, and spawned to constructor for initialization
-   - access mutable data — use an array of length 1
-     - a prototype version of the compiler automatically made this transformation for all local variables that were modified in the inner class
-     - later abandoned due to concurrent updates can lead to race conditions
+   - no access modifier -- never declared with an access specifier
+   - restricted scope -- scope is always restricted to the block being declared
+   - effectively final closure -- can access effectively final local variables
+     - as final fields — behind the scenes stored as a final field of inner class, and spawned to constructor for initialization
+     - access mutable data — use an array of length 1
    - anonymous inner subclass
      ```java
      new SuperType(construction parameters) {
          // inner class methods and data
      }
      ```
-     - `SuperType` can be an interface, the inner class implements that interface
-     - `SuperType` can also be a class, the inner class extends that class
-       - take care that `equals()` with `SuperType` will fail
+     - implement an interface -- `SuperType` can be an interface, the inner class implements that interface
+     - extend a class -- `SuperType` can also be a class, the inner class extends that class
+       - a different subclass -- take care that `equals()` with `SuperType` will fail
      - anonymity cannot have constructors — the name of a constructor must be the same as the name of a class
-     - use case -- double brace initialization for `ArrayList`
-       ```java
-       invite(new ArrayList<String>() {{ add("Harry"); add("Tony"); }});
-       ```
-     - use case -- get the class from static methods
-       ```java
-       new Object(){}.getClass().getEnclosingClass();
-       ```
+     - use case
+       - double brace initialization for `ArrayList`
+         ```java
+         invite(new ArrayList<String>() {{ add("Harry"); add("Tony"); }});
+         ```
+       - get the class from static methods, alternative to `T.class`
+         ```java
+         new Object(){}.getClass().getEnclosingClass();
+         ```
 
 1. static inner class
-   - only inner classes can be declared static
-   - inner interfaces are implicitly static
-   - do not have a outer class reference
-   - can be used for holder for a method to return multiple values
-   - must be declared static if needed in a outer class static method
-   - can have static fields and methods
-   - inner classes that are declared inside an interface are automatically static and public
+   - static -- do not have a outer class reference, can have static fields and methods
+   - use case
+     - enums are static inner classes
+     - use in outer static methods -- must be declared static if needed in a outer class static method
+     - return type -- can be used for holder for a method to return multiple values
+   - the only static classes -- only inner classes can be declared static
+   - implicitly static
+     - inner interfaces are implicitly `static`
+     - inner classes inside interfaces are automatically `static public`
 
 # Reflection
 
 1. runtime type identification — used by VM for method resolution
    - `Class getClass()` in `Object`
    - `static Class<?> forName(String className)` in `Class`
-   - `T.class` if `T` is any Java type (or the `void` keyword)
-   - use `Class<T>` as a parameter for type match — call with a class and the type parameter `T` will be matched
+   - `T.class` if `T` is any Java type (or `void.class`)
+   - type capturing -- use `Class<T>` as a parameter for type match, when called with a class object, the type parameter `T` will be matched
+
+1. `interface java.lang.reflect.Type` — superinterface for all types, implemented or extended by `Class<T>`, `GenericArrayType`, `ParameterizedType`, `TypeVariable<D>`, `WildcardType`
+   - `default String getTypeName()`
+   - generics reflection methods -- in implementing classes or sub-Interfaces
+
+1. `interface java.lang.reflect.AnnotatedElement` -- represents an annotated element with methods getting annotations
+
+1. `java.lang.reflect.GenericDeclaration` -- entities that declare type variables
+   ```java
+   public interface GenericDeclaration
+   extends AnnotatedElement
+   ```
+   - `TypeVariable<?>[] getTypeParameters()`
 
 1. `Class`
    ```java
    public final class Class<T> extends Object
    implements Serializable, GenericDeclaration, Type, AnnotatedElement
    ```
-   - reflection information
+   - reflection
      - `String getName()`
      - `String getTypeName()`
      - `String toString()`
@@ -1220,10 +1288,10 @@
      - `ClassLoader getClassLoader()`
      - `T[] getEnumConstants()`
      - `Class<? super T> getSuperclass()`
-   - get new object of this type
+   - instance creation
      - `T newInstance()`
      - `T cast(Object obj) throws ClassCastException`
-   - get method reflection — from this class and superclasses, declared only for this class
+   - method reflection — from this class and superclasses, `declared-` only for this class
      - `Field[] getFields()`
      - `Field getField(String name)`
      - `Field[] getDeclaredFields()`
@@ -1236,23 +1304,16 @@
      - `Constructor<T> getConstructor(Class<?>... parameterTypes)`
      - `Constructor[] getDeclaredConstructors()`
      - `Constructor<T> getDeclaredConstructor(Class<?>... parameterTypes)`
-   - inner class
+   - inner class and outer class
      - `Class<?>[] getClasses()`
      - `Class<?> getEnclosingClass()`
    - generics
      - `Type[] getGenericInterfaces()`
      - `Type getGenericSuperclass()`
      - `TypeVariable<Class<T>>[] getTypeParameters()`
-   - resources
+   - get resources, delegating to class loader
      - `URL getResource(String name)`
      - `InputStream getResourceAsStream(String name)`
-
-1. `java.lang.reflect.Type` — implemented / extended by `Class<T>`, `GenericArrayType`, `ParameterizedType`, `TypeVariable<D>`, `WildcardType`
-   ```java
-   public Interface Type
-   ```
-   - `default String getTypeName()`
-   - implementation classes / sub-interfaces have get methods returning information about generics
 
 1. `java.lang.reflect.Field`  
    `java.lang.reflect.Method`  
@@ -1312,8 +1373,6 @@
    - `static boolean isSynchronized(int mod)`
    - `static boolean isVolatile(int mod)`
 
-## Array
-
 1. `java.lang.reflect.Array`
    ```java
    public final class Array extends Object
@@ -1330,19 +1389,17 @@
 ## Proxy
 
 1. proxies
-   - create, at runtime, new classes that implement a given set of interfaces
-   - proxy objects belong to a class that is defined at runtime with an undefined name, and has a name such as `$Proxy0`
-   - all proxies are final singleton and extends `Proxy`
-   - all proxy classes override the `toString()` , `equals()` , and `hashCode()`, and interface methods with `InvocationHandler::invoke`
+   - usage -- at runtime, create new classes that implement given interfaces, with a method invocation handler
+   - proxy class definition
+     - runtime defined name -- proxy objects belong to classes defined at runtime with names such as `$Proxy0`
+     - modifiers and inheritance -- all proxies are `public final` and extends `Proxy`
+     - singleton -- only one proxy class for a particular class loader and ordered set of interfaces
+     - package -- default package if given interfaces all public, else belongs to the package of given non-public interfaces
+   - proxying -- all proxy classes override the `toString()`, `equals()`, and `hashCode()`, and given interface methods with `InvocationHandler::invoke`
      - other methods in `Object` are untouched
-   - only one proxy class for a particular class loader and ordered set of interfaces
-   - package
-     - If all interfaces that the proxy class implements are public, no package
-     - all non-public interfaces must belong to the same package, and the proxy class will also belong to that package
 
-1. `Interface java.lang.reflect.InvocationHandler`
+1. `Interface java.lang.reflect.InvocationHandler` -- invocation handlers
    - `public Object invoke(Object proxy, Method method, Object[] args) throws Throwable`
-   - invocation handler — any class that implements `InvocationHandler`
    - additional data is stored in the invocation handler
 
 1. `java.lang.reflect.Proxy`
@@ -1350,13 +1407,11 @@
    public class Proxy extends Object
    implements Serializable
    ```
-   - constructors
-     - constructor — protected
+   - creation
      - `static Object newProxyInstance(ClassLoader loader, Class<?>[] interfaces, InvocationHandler h)`
-        - initializes `protected InvocationHandler h`
+     - `static Class<?> getProxyClass(ClassLoader loader, Class<?>... interfaces)`
    - `static InvocationHandler getInvocationHandler(Object proxy)`
    - `static boolean isProxyClass(Class<?> cl)`
-   - `static Class<?> getProxyClass(ClassLoader loader, Class<?>... interfaces)`
 
 1. use example
    ```java
@@ -1404,7 +1459,7 @@
    public final class Console extends Object
    implements Flushable
    ```
-   - get instance
+   - creation
      - `System.console()`
    - write
      - `void flush()`
@@ -1464,16 +1519,16 @@
      - `long nextLong(int radix)`
      - `short nextShort()`
      - `short nextShort(int radix)`
-   - test -- `hasNext` version of read methods
-   - find
+     - `MatchResult match()` -- the match result of the last scanning operation
+   - test -- `has-` prefixed version of read methods, `hasNext`
+   - find -- ignoring delimiters, the scanner returns and advances past the match if found, else returns `null` with position unchanged
      - `String findInLine(Pattern pattern)`
      - `String findInLine(String pattern)`
-     - `String findWithinHorizon(Pattern pattern, int horizon)`
+     - `String findWithinHorizon(Pattern pattern, int horizon)` -- will never search more than `horizon` code points beyond its current position, `horizon` ignored if it is 0
      - `String findWithinHorizon(String pattern, int horizon)`
-   - skip
+   - skip -- ignoring delimiters
      - `Scanner skip(Pattern pattern)`
      - `Scanner skip(String pattern)`
-   - `MatchResult match()`
    - `IOException ioException()` -- Returns the `IOException` last thrown by this Scanner's underlying `Readable`.
 
 1. `java.io.BufferedReader` -- synchronized
@@ -1494,10 +1549,10 @@
 ## Basic IO Stream
 
 1. IO streams
-   - byte oriented -- `InputStream`, `OutputStream`
+   - byte streams, byte oriented -- `InputStream`, `OutputStream`
      - deal with bytes -- `FilterInputStream`, `FilterOutputStream` and their derivatives
      - buffer -- use `BufferedInputStream` and `BufferedOutputStream` as an intermediate stream
-   - based on two-byte `char` values (UTF-16 codepoints) -- `Reader`, `Writer`, can be converted from byte streams
+   - `char` streams, two-byte `char` values (UTF-16 codepoints) oriented -- `Reader`, `Writer`, can be converted from byte streams
    - usage -- combination, filter streams as wrappers
      ```java
      DataInputStream din = new DataInputStream(
@@ -1506,11 +1561,12 @@
      ```
 
 1. IO interfaces
-   - `java.io.Closeable` -- idempotent variant with `IOException` compared to `AutoCloseable` with `Exception`: no effect if already closed, whereas `AutoCloseable::close` may have side effects
+   - `java.io.Closeable` -- idempotent variant with `IOException` compared to `AutoCloseable` with `Exception`
      ```java
      public interface Closeable
      extends AutoCloseable
      ```
+     - `close()` when already closed -- no effect if already closed, whereas `AutoCloseable::close` may have side effects
    - `java.io.Flushable` -- write any buffered output to the underlying stream
      ```java
      public interface Flushable {
@@ -1594,7 +1650,7 @@
    - `abstract void flush()`
    - `abstract void close()`
 
-1. convert stream to reader / writer, uses `Charset.defaultCharset()` if not specified
+1. convert stream to reader or writer, uses `Charset.defaultCharset()` if not specified
    - `java.io.InputStreamReader`
      ```java
      public class InputStreamReader
@@ -1620,7 +1676,7 @@
 
 ## Filter Stream
 
-1. filter stream -- contains some other stream, which it uses as its basic source / sink of data, possibly transforming the data along the way or providing additional functionality
+1. filter stream -- contains some other stream, which it uses as its basic source or sink of data, possibly transforming the data along the way or providing additional functionality
    - `java.io.FilterInputStream`
      ```java
      public class FilterInputStream
@@ -1938,11 +1994,11 @@
      - `static FileChannel open(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs)`
      - `FileInputStream::getChannel`, `FileOutputStream::getChannel`, `RandomAccessFile::getChannel`
    - `abstract MappedByteBuffer map(FileChannel.MapMode mode, long position, long size)` -- maps a region of this channel's file directly into memory, recommended only for large files
-   - `java.nio.MappedByteBuffer` -- a direct byte buffer whose content is a memory-mapped region of a file
-     ```java
-     public abstract class MappedByteBuffer
-     extends ByteBuffer
-     ```
+     - `java.nio.MappedByteBuffer` -- a direct byte buffer whose content is a memory-mapped region of a file
+       ```java
+       public abstract class MappedByteBuffer
+       extends ByteBuffer
+       ```
    - lock -- lock the given region of this channel's file
      - `FileLock lock()` -- blocks, equivalent to `lock(0L, Long.MAX_VALUE, false)`  
        `abstract FileLock lock(long position, long size, boolean shared)`
@@ -2103,7 +2159,7 @@
 
 1. print streams -- add the ability to print representations of various data values conveniently
    - never throws an `IOException` -- only `checkError()`
-   - support auto flush, defaults to `false`
+   - auto flush -- support auto flush, defaults to `false`
      - for `PrintStream` -- after a byte array is written, or a `\n` is written
      - for `PrintWriter` -- after the invoke of `println`, `printf`, or `format`
 
@@ -2144,12 +2200,6 @@
    - methods -- see `PrintStream`
      - difference -- `PrintStream::write` methods allow `int` and `byte[]`
 
-1. `java.nio.file.Paths`
-   ```java
-   public final class Paths extends Object
-   ```
-   - `static Path get(String first, String... more)` — Converts a path string, or a sequence of strings that when joined form a path string, to a Path.
-
 ## Other Streams
 
 1. byte array streams -- save the data in an internal buffer (byte array), no effect for `close()` and no `IOException` afterwards
@@ -2168,13 +2218,10 @@
 
 1. `transient` -- mark fields not part of the persistent state, which is skipped in serialization
 
-1. `java.io.Serializable` -- mark only data fields serializable, not superclass data or any other class information not included
-   ```java
-   public interface Serializable
-   ```
+1. `interface java.io.Serializable` -- mark only data fields serializable, superclass data or any other class information not included
    - deserialize fields of classes not `Serializable` -- initialized using the public or protected no-arg constructor
    - serialize subclasses whose parents are not `Serializable` -- serialize the super types only when they have accessible no-arg constructor
-   - override default read and write behavior, special handling during the serialization and deserialization -- implement methods below
+   - serialization and deserialization control -- override default read and write behavior, special handling during the serialization and deserialization, by implementing methods below
      ```java
      private void writeObject(java.io.ObjectOutputStream out) throws IOException
      private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException
@@ -2185,11 +2232,11 @@
        ```java
        MODIFIER static final long serialVersionUID = 42L; // private is recommended
        ```
-     - by default, not recommended -- the serialization runtime will calculate a default `serialVersionUID` value for that class based on various aspects of the class (fingerprint), which may vary depending on compiler implementations
+     - generate by default, not recommended -- the serialization runtime will calculate a default `serialVersionUID` value for that class based on various aspects of the class (fingerprint), which may vary depending on compiler implementations
      - not applicable to array classes -- cannot declare explicitly, and the requirement for matching `serialVersionUID` values is waived for array classes
      - get version ID via CLI -- `serialver ClassName`
      - auto conversation when version ID match -- for data fields, skip when type is different, ignore additional, set absent to default
-   - use another object
+   - write or read with another object
      - when writing to stream -- implement `writeReplace`
        ```java
        MODIFIER Object writeReplace() throws ObjectStreamException;
@@ -2198,31 +2245,28 @@
        ```java
        MODIFIER Object readResolve() throws ObjectStreamException;
        ```
-   - serial number -- associate the object a number in encounter order and save / read the object data when first encounter, only save the serial number / read the object reference when encountered afterwards
+   - serial number -- associate the object a number in encounter order and save or read the object data when first encounter, only save the serial number or read the object reference when encountered afterwards
    - file structure
      - magic number -- `ACED`
      - version number of the object serialization format -- `0005` for JDK 8
      - object sequences
        - strings saved in modified UTF-8
        - fingerprint stored in class -- first 8 bytes of SHA
-     - more details
+     - more
 
 1. `java.io.Externalizable` -- complete control over the format and contents of the stream for an object and its superclasses
    ```java
    public interface Externalizable
    extends Serializable
    ```
-   - order -- If the object supports `Externalizable`, the `writeExternal` method is called. If the object does not support `Externalizable` and does implement `Serializable`, the object is saved using `ObjectOutputStream`
+   - taking precedence and mechanism -- If the object supports `Externalizable`, the `writeExternal` method is called. If the object does not support `Externalizable` and does implement `Serializable`, the object is saved using `ObjectOutputStream`
    - no-arg constructor when reconstructing -- when reading, creates an object with the no-argument constructor and then calls the `readExternal` method
    - use another object -- support `writeReplace` and `readResolve` methods
    - `void readExternal(ObjectInputStream in) throws IOException, ClassNotFoundException`
    - `void writeExternal(ObjectOutputStream out) throws IOException`
 
 1. interfaces for object streams
-   - `java.io.ObjectStreamConstants` -- Constants written into the Object Serialization Stream
-     ```java
-     public interface ObjectStreamConstants
-     ```
+   - `interface java.io.ObjectStreamConstants` -- Constants written into the Object Serialization Stream
    - `java.io.ObjectOutput`
      ```java
      public interface ObjectOutput
@@ -2378,7 +2422,7 @@
      - `Object[]` actually needs to be `Comparable[]`
    - initialization and modifications
      - `static void fill(type[] a, type v)`
-     - `static type[] copyOf(type[] original, int newLength)`
+     - `static type[] copyOf(type[] original, int newLength)` -- uses `System::arraycopy` behind the scenes
      - `static type[] copyOfRange(type[] a, int start, int end)`
      - `System::arraycopy`
      - `static void setAll(double[] array, IntToDoubleFunction generator)` -- generator takes indices as parameter  
@@ -2387,7 +2431,7 @@
        `static <T> void setAll(T[] array, IntFunction<? extends T> generator)`
      - `parallelSetAll` -- parallel version of `setAll`
      - `parallelPrefix` -- prefix operators, like prefix sum
-   - `Object`
+   - `Object` methods
      - `static boolean equals(type[] a, type[] b)`
      - `static int hashCode(Object[] a)`
      - `static boolean deepEquals(Object[] a1, Object[] a2)`
@@ -2395,31 +2439,31 @@
      - `static String deepToString(Object[] a)`
    - sort
      - `static void sort(type[] a)`  
-       `static void sort(type[] a, int fromIndex, int toIndex)`
+       `static void sort(type[] a, int fromIndex, int toIndex)`  
+       `static <T> void sort(T[] a, Comparator<? super T> c)`  
+       `static <T> void sort(T[] a, int fromIndex, int toIndex, Comparator<? super T> c)`
        - `Object[]` actually needs to be `Comparable[]`
-       - uses `sort()` of `java.util.DualPivotQuickSort`
-       - `java.util.ComparableTimSort::sort` for `Object[]`
+       - `java.util.DualPivotQuickSort::sort` for primitive type arrays
+       - `java.util.TimSort::sort` for `T[]`
      - `static void parallelSort(type[] a)`  
        `static void parallelSort(type[] a, int fromIndex, int toIndex)` (no `Object[]`)  
-       `static <T extends Comparable<? super T>> void parallelSort(T[] a, int fromIndex, int toIndex)`
+       `static <T extends Comparable<? super T>> void parallelSort(T[] a, int fromIndex, int toIndex)`  
+       `static <T> void parallelSort(T[] a, Comparator<? super T> cmp)`  
+       `static <T> void parallelSort(T[] a, int fromIndex, int toIndex, Comparator<? super T> cmp)`
        - granularity — `private static final int MIN_ARRAY_SORT_GRAN = 1 << 13;`
-       - sequential sort (as `Arrays.sort()`)
+       - sequential sort (as `Arrays::sort`) when
          ```java
          if (n <= MIN_ARRAY_SORT_GRAN || (p = ForkJoinPool.getCommonPoolParallelism()) == 1)
          ```
        - else parallel sort — uses threading (each thread gets a chunk of the list and sorts it in parallel. Later these sorted chunks are merged into a result)
        - `java.util.DualPivotQuickSort::sort` for primitive type arrays
        - `java.util.TimSort::sort` for `T[]`
-     - `static <T> void sort(T[] a, Comparator<? super T> c)`  
-       `static <T> void sort(T[] a, int fromIndex, int toIndex, Comparator<? super T> c)`
-     - `static <T> void parallelSort(T[] a, Comparator<? super T> cmp)`  
-       `static <T> void parallelSort(T[] a, int fromIndex, int toIndex, Comparator<? super T> cmp)`
 
 ## Event Handling
 
 1. `java.util.EventListener` -- A tagging interface that all event listener interfaces must extend
 
-1. `java.util.EventListenerProxy` -- An abstract wrapper class for an EventListener class
+1. `java.util.EventListenerProxy` -- An abstract wrapper class for an EventListener class which associates a set of additional parameters with the listener
    ```java
    public abstract class EventListenerProxy<T extends EventListener> extends Object
    implements EventListener
@@ -2433,7 +2477,7 @@
 
 ## Collections and Maps
 
-1. concurrent collections -- see [Thread-Safe Collections](#Thread-Safe-Collections), and `SynchronousQueue`
+1. concurrent collections -- see [Thread-Safe Collections](#Thread-Safe-Collections), and [`SynchronousQueue`](#Data-Exchange)
 
 1. `Iterable`
    ```java
@@ -2456,8 +2500,11 @@
    - `boolean hasNext()`
    - `void remove()` — remove the element last returned by `next()`
    - `default void forEachRemaining(Consumer<? super E> action)`
+   - `Collections::emptyIterator`
 
 1. `java.util.Spliterator` — both sequential and parallel data processing, the parallel analogue of an `Iterator`
+   - fail fast
+   - late-binding -- binds to the source of elements at the point of first traversal, first split, or first query for estimated size, rather than at the time the `Spliterator` is created
 
 1. `java.util.Collection`
    ```java
@@ -2504,30 +2551,16 @@
      `static <T> T min(Collection<? extends T> coll, Comparator<? super T> comp)`
    - `static <T> Comparator<T> reverseOrder()`  
      `static <T> Comparator<T> reverseOrder(Comparator<T> cmp)`
-     - called by `Comparator::reverseOrder`
-   - list related
-     - find
-       - `static <T> int binarySearch(List<? extends Comparable<? super T>> list, T key)` -- `insertionPoint = -i - 1` if no matching  
-         `static <T> int binarySearch(List<? extends T> list, T key, Comparator<? super T> c)`
-         - checks `RandomAccess` or `BINARYSEARCH_THRESHOLD` to determine whether `indexedBinarySearch` or `iteratorBinarySearch`
-       - `static int indexOfSubList(List<?> source, List<?> target)`
-       - `static int lastIndexOfSubList(List<?> source, List<?> target)`
-     - modify
-       - `static <T> void copy(List<? super T> dest, List<? extends T> src)`
-       - `static <T> void fill(List<? super T> list, T obj)`
-       - `static <T> boolean replaceAll(List<T> list, T oldVal, T newVal)`
-       - `static void reverse(List<?> list)`
-       - `static void rotate(List<?> list, int distance)`
-       - `static void shuffle(List<?> list)` -- checks whether `RandomAccess` otherwise `toArray()`  
-         `static void shuffle(List<?> list, Random rnd)`
-       - `static <T extends Comparable<? super T>> void sort(List<T> list)`
-       - `static <T> void sort(List<T> list, Comparator<? super T> c)` -- uses `List::sort`
-       - `static void swap(List<?> list, int i, int j)`
+     - called by `Comparator::reverseOrder` and `Comparator::reversed`
+   - list related -- see [List](#List)
+   - views and wrappers -- see [Views and Wrappers](#Views-and-Wrappers)
+     - `Collections::unmodifiableCollection`
+     - `Collections::synchronizedCollection`
+     - `Collections::checkedCollection`
 
 ### List
 
-1. `java.util.RandomAccess` — Marker interface used by `List` implementations to indicate that they support fast (generally constant time) random access.
-   - no interface body
+1. `interface java.util.RandomAccess` — marker interface used by `List` implementations to indicate that they support fast (generally constant time) random access
 
 1. `java.util.List`
    ```java
@@ -2557,7 +2590,7 @@
      - `E remove(int index)`
      - `default void sort(Comparator<? super E> c)` — uses `Arrays::sort` after `toArray()`
 
-1. `java.util.ListIterator`
+1. `java.util.ListIterator` -- has `previous` in addition to `next`
    ```java
    public interface ListIterator<E> extends Iterator<E>
    ```
@@ -2567,6 +2600,34 @@
    - `E previous()`
    - `int previousIndex()`
    - `void set(E e)`
+   - `Collections::emptyListIterator`
+
+1. `List` related methods in `Collections`
+   - find
+     - `static <T> int binarySearch(List<? extends Comparable<? super T>> list, T key)` -- return `(-(insertion point) - 1)` if no matching  
+       `static <T> int binarySearch(List<? extends T> list, T key, Comparator<? super T> c)`
+       - whether `indexedBinarySearch` or `iteratorBinarySearch` -- checks `RandomAccess` or `BINARYSEARCH_THRESHOLD` to determine
+     - `static int indexOfSubList(List<?> source, List<?> target)`
+     - `static int lastIndexOfSubList(List<?> source, List<?> target)`
+   - modify
+     - `static <T> void copy(List<? super T> dest, List<? extends T> src)`
+     - `static <T> void fill(List<? super T> list, T obj)`
+     - `static <T> boolean replaceAll(List<T> list, T oldVal, T newVal)`
+     - `static void reverse(List<?> list)`
+     - `static void rotate(List<?> list, int distance)`
+     - `static void shuffle(List<?> list)` -- checks whether `RandomAccess` otherwise `toArray()`  
+       `static void shuffle(List<?> list, Random rnd)`
+     - `static <T extends Comparable<? super T>> void sort(List<T> list)`
+     - `static <T> void sort(List<T> list, Comparator<? super T> c)` -- uses `List::sort`
+     - `static void swap(List<?> list, int i, int j)`
+   - views
+     - `Arrays::asList`
+     - `singletonList`
+     - `emptyList`
+     - `unmodifiableList`
+     - `synchronizedList`
+     - `checkedList`
+     - `List::subList`
 
 1. `java.util.ArrayList`
    ```java
@@ -2581,10 +2642,13 @@
      - `ArrayList(int initialCapacity)`
      - anonymous `ArrayList` — double brace initialization, actually a inner subclass
        ```java
-       invite(new ArrayList<String>() {{ add("Harry"); add("Tony"); }});
+       new ArrayList<String>() {{ add("Harry"); add("Tony"); }};
        ```
    - capacity
      - `void ensureCapacity(int minCapacity)`
+       ```java
+       int newCapacity = oldCapacity + (oldCapacity >> 1);
+       ```
      - `void trimToSize()`
 
 1. `java.util.LinkedList`
@@ -2594,20 +2658,23 @@
    implements List<E>, Deque<E>, Cloneable, Serializable
    ```
    - use with `ListIterator`
+   - `LinkedList` vs `ArrayDeque` -- see `ArrayDeque` below
 
 ### Queue
 
-1. `java.util.Queue` -- skeletal implementations of some `Queue` operations
+1. `java.util.Queue`
    ```java
    public interface Queue<E> extends Collection<E>
    ```
-   - `boolean add(E e)` — Inserts the specified element into this queue if it is possible to do so immediately without violating capacity restrictions, returning true upon success and throwing an IllegalStateException if no space is currently available.
-   - `E element()` — Retrieves, but does not remove, the head of this queue.
-   - `boolean offer(E e)` — Inserts the specified element into this queue if it is possible to do so immediately without violating capacity restrictions.
-   - `E peek()` — Retrieves, but does not remove, the head of this queue, or returns null if this queue is empty.
-   - `E poll()` — Retrieves and removes the head of this queue, or returns null if this queue is empty.
-   - `E remove()` — Retrieves and removes the head of this queue.
-   - `java.util.AbstractQueue`
+   - `IllegalStateException` or `NoSuchElementException` when failure
+     - `boolean add(E e)` — returning `true` upon success and throwing an `IllegalStateException` if no space is currently available
+     - `E remove()`
+     - `E element()` — peek the head
+   - return `null` when failure
+     - `boolean offer(E e)`
+     - `E poll()`
+     - `E peek()`
+   - `java.util.AbstractQueue` -- skeletal implementations of some `Queue` operations
      ```java
      public abstract class AbstractQueue<E> extends AbstractCollection<E>
      implements Queue<E>
@@ -2625,13 +2692,22 @@
    | Examine | `getFirst()`, `element()`            | `peekFirst()`, `peek()` | `getLast()`            | `peekLast()`               |
    - usage — double ended queue, also should be used in preference to the legacy `Stack` class
 
+1. `LinkedList`
+
 1. `java.util.ArrayDeque`
    ```java
    public class ArrayDeque<E> extends AbstractCollection<E>
    implements Deque<E>, Cloneable, Serializable
    ```
-   - underlying implementation -- circular array
-   - capacity is 16 initially
+   - underlying implementation -- circular array, no `null` elements
+   - not implementing `List` and extends `AbstractCollection` but not `AbstractQueue` -- [retrofit `ArrayDeque` to implement `List`](https://bugs.openjdk.java.net/browse/JDK-8143850)
+   - capacity
+     - default initial capacity -- 16
+     - capacity grow policy -- double capacity if small; else grow by 50%
+       ```java
+       int jump = (oldCapacity < 64) ? (oldCapacity + 2) : (oldCapacity >> 1);
+       ```
+   - `ArrayDeque` vs `LinkedList` -- `LinkedList`s iterate with more CPU cache miss, have the overhead of node allocations, and consume more memory, but supports `List`, `null` elements, and better remove-while-iterate
 
 1. `java.util.PriorityQueue`
    ```java
@@ -2639,6 +2715,10 @@
    implements Serializable
    ```
    - `private static final int DEFAULT_INITIAL_CAPACITY = 11`
+   - capacity grow policy -- as `ArrayDeque`
+
+1. views
+   - as stack -- `Collections::asLifoQueue`
 
 ### Set
 
@@ -2679,16 +2759,17 @@
    public class HashSet<E> extends AbstractSet<E>
    implements Set<E>, Cloneable, Serializable
    ```
-   - `private transient HashMap<E,Object> map`
-   - `private static final Object PRESENT = new Object()` — dummy value
+   - underlying data structure -- `private transient HashMap<E,Object> map`
+   - dummy value for the value of `Map.Entry` -- `private static final Object PRESENT = new Object()`
+   - iteration performance -- proportional to capability
 
 1. `java.util.TreeSet` — red-black tree
    ```java
    public class TreeSet<E> extends AbstractSet<E>
    implements NavigableSet<E>, Cloneable, Serializable
    ```
-   - `private transient NavigableMap<E,Object> m` -- initialized with `TreeMap` in most cases
-   - `private static final Object PRESENT = new Object()` — dummy value
+   - underlying data structure -- `private transient NavigableMap<E,Object> m`, initialized with `TreeMap`
+   - dummy value -- see `HashSet`
 
 1. `java.util.EnumSet` — for use with enum types
    ```java
@@ -2697,9 +2778,10 @@
    implements Cloneable, Serializable
    ```
    - underlying data — represented internally as bit vectors
+   - `null` support -- `NullPointerException` for `null` elements
    - usage — a high-quality, typesafe alternative to traditional int-based "bit flags"
-   - underlying implementation — `RegularEnumSet`, `JumboEnumSet`, non-public in `java.util`
-     - helper class — the abstract class itself acts as a static helper
+   - underlying implementation — `RegularEnumSet` with a `long`, `JumboEnumSet` with a `long[]`, non-public in `java.util`
+   - helper class — the abstract class itself acts as a static helper
 
 1. `java.util.LinkedHashSet` — ordered `HashSet` with underlying linked list
    ```java
@@ -2707,7 +2789,17 @@
    implements Set<E>, Cloneable, Serializable
    ```
 
-1. set from map -- `Collections::newSetFromMap` (for maps without corresponding sets, like `WeakHashMap` but not `HashMap`)
+1. views
+   - `Map::keySet` etc.
+   - set from map -- `Collections::newSetFromMap` (for maps without corresponding sets, like `WeakHashMap` but not `HashMap`)
+   - `Collections::singleton`
+   - empty views -- `Collections::emptySet`, `Collections::emptyNavigableSet`, `Collections::emptySortedSet`
+   - unmodifiable views -- `Collections::unmodifiableSet`, `Collections::unmodifiableNavigableSet`, `Collections::unmodifiableSortedSet`
+   - synchronized views
+   - checked views
+   - subset methods
+
+1. `BitSet` -- see [Legacy Collections](#Legacy-Collections)
 
 ### Maps
 
@@ -2718,7 +2810,7 @@
    - modify
      - `void clear()`
      - `V remove(Object key)` — returns the previous value or `null`
-     - `default boolean remove(Object key, Object value)`
+     - `default boolean remove(Object key, Object value)` -- remove if `get(key)` equals `value`
      - `default V replace(K key, V value)`
      - `default boolean replace(K key, V oldValue, V newValue)`
      - `default void replaceAll(BiFunction<? super K,? super V,? extends V> function)`
@@ -2757,8 +2849,13 @@
      public abstract class AbstractMap<K,V> extends Object
      implements Map<K,V>
      ```
-      - should have been replaced by default methods, but only new methods have default implementation
-      - extends the abstract class and simultaneously implement the interface — only make a difference to clarity and reflection
+     - should have been replaced by default methods, but only new methods have default implementation
+     - extends the abstract class and simultaneously implement the interface — only make a difference to clarity and reflection
+     - `AbstractMap.SimpleEntry`, `AbstractMap.SimpleImmutableEntry`
+       ```java
+       public static class AbstractMap.SimpleEntry<K,V> extends Object
+       implements Map.Entry<K,V>, Serializable
+       ```
 
 1. `java.util.NavigableMap` -- refer to `NavigableSet`
    ```java
@@ -2777,15 +2874,16 @@
      - `static final float DEFAULT_LOAD_FACTOR = 0.75f`
      - `static final int TREEIFY_THRESHOLD = 8`
      - `static final int UNTREEIFY_THRESHOLD = 6`
-     - `static final int MIN_TREEIFY_CAPACITY = 64`
-   - `static class Node<K,V> implements Map.Entry<K,V>`
+     - `static final int MIN_TREEIFY_CAPACITY = 64` -- smallest capability to permit treeify
+   - `static class Node<K,V> implements Map.Entry<K,V>` -- permits `null` values and keys
+   - iteration performance -- proportional to capability
 
 1. `java.util.TreeMap` -- red-black tree
    ```java
    public class TreeMap<K,V> extends AbstractMap<K,V>
    implements NavigableMap<K,V>, Cloneable, Serializable
    ```
-   - `Map.Entry` returned by methods in this class and its views represent snapshots of mappings at the time they were produced
+   - do not support the `Entry::setValue` method -- `Map.Entry` returned by methods in this class and its views represent snapshots of mappings at the time they were produced
 
 1. `java.util.EnumMap` -- for use with enum types
    ```java
@@ -2793,18 +2891,21 @@
    extends AbstractMap<K,V>
    implements Serializable, Cloneable
    ```
-   - underlying data -- represented internally as arrays
+   - underlying data -- represented internally as arrays, ordinals as indices
+   - weakly consistent iterators -- never throw `ConcurrentModificationException`, may or may not show the effects of any modifications to the map that occur while the iteration is in progress
+   - `null` support -- no `null` keys but values
 
-1. `java.util.LinkedHashMap` — ordered `HashMap` with underlying linked list
+1. `java.util.LinkedHashMap` — ordered `HashMap` with underlying doubly-linked list
    ```java
    public class LinkedHashMap<K,V> extends HashMap<K,V>
    implements Map<K,V>
    ```
    - `LinkedHashMap(int initialCapacity, float loadFactor, boolean accessOrder)`
      - `final boolean accessOrder` -- `true` for access order, `false` for insertion order
-   - insertion order -- the order is not affected if a key is re-inserted
-   - access order -- get methods and modify methods make corresponding entries place at last
-     - `Map::replace` results an access only when the value is replaced
+   - insertion order -- the order is not affected if a key is re-inserted, even the value changes
+   - access order -- get methods and modify methods make corresponding entries place at last: `put`, `putIfAbsent`, `get`, `getOrDefault`, `compute`, `computeIfAbsent`, `computeIfPresent`, or `merge`
+     - `Map::replace` -- results an access only when the value is replaced
+     - operations on views -- no effect on order
    - `protected boolean removeEldestEntry(Map.Entry<K,V> eldest)` -- invoked by `put` and `putAll` after inserting a new entry into the map, returns `true` if this map should remove its eldest entry
 
 1. `java.util.WeakHashMap`
@@ -2816,8 +2917,9 @@
      - entry auto removal -- an entry is automatically removed when its key is no longer in ordinary use
        - `WeakHashMap` periodically checks reclaimed `WeakReference` queue, and removes associated entry
      - `WeakReference` queue -- objects reachable only by a `WeakReference` will not only be reclaimed by gc, but also be queued
+   - `null` support -- both keys and values
    - underlying implementation -- `key` is wrapped with `WeakReference`
-   - for values with strong reference to the keys -- prevent keys from gc, can be alleviated by wrapping values with `new WeakReference(value)`
+   - values with strong reference to the keys -- prevent keys from gc, can be alleviated by wrapping values with `new WeakReference(value)`
 
 1. `java.util.IdentityHashMap` — `HashMap` with keys (and values) that are compared by `==`, not `equals`
    ```java
@@ -2827,13 +2929,21 @@
    - constant-time performance for the basic operations (`get` and `put`) -- assuming the system identity hash function (`System.identityHashCode(Object)`) disperses elements properly among the buckets
    - rehashing may be fairly expensive -- initialize with large expected capacity
 
+1. views
+   - `Collections::singletonMap`
+   - empty views -- `Collections::emptyMap`, `Collections::emptyNavigableMap`, `Collections::emptySortedMap`
+   - unmodifiable views -- `Collections::unmodifiableMap`, `Collections::unmodifiableNavigableMap`, `Collections::unmodifiableSortedMap`
+   - synchronized views
+   - checked views
+   - sub map methods
+
 ### Views and Wrappers
 
 1. `Map::keySet` etc.
 
 1. `Arrays::asList`
 
-1. `java.util.Collections`
+1. `Collections`
    - one for n wrapper -- `static <T> List<T> nCopies(int n, T o)`
      - returns an immutable list consisting of n copies of the specified object, `o` is stored only once
    - stack view -- `static <T> Queue<T> asLifoQueue(Deque<T> deque)`
@@ -2886,8 +2996,8 @@
      - `static <K,V> SortedMap<K,V> checkedSortedMap(SortedMap<K,V> m, Class<K> keyType, Class<V> valueType)`
      - `static <E> SortedSet<E> checkedSortedSet(SortedSet<E> s, Class<E> type)`
    - `equals` and `hashCode`
-     - `unmodifiableCollection`, `synchronizedCollection`, `checkedCollection` -- returns a collection whose equals method does not invoke the `equals` method of the underlying collection but `Object::equals`, same for `hashCode`
-     - exception -- `unmodifiableSet` and `unmodifiableList` methods use the equals and hashCode methods of the underlying collections
+     - unmodifiable, synchronized and checked views -- returns a collection whose equals method does not invoke the `equals` method of the underlying collection but `Object::equals`, same for `hashCode`
+     - exception -- `unmodifiableSet` and `unmodifiableList` methods use the `equals` and `hashCode` methods of the underlying collections
 
 1. subranges -- views that changes reflect to the original
    - `List::subList`
@@ -2986,7 +3096,7 @@
    public class BitSet extends Object
    implements Cloneable, Serializable
    ```
-   - no boundary check, some methods (such as `size()`) may overflow
+   - no boundary check -- some methods (such as `size()`) may overflow
 
 ## Preferences
 
@@ -3028,7 +3138,7 @@
      - lazy
      - one-time -- may throw `IllegalStateException` if it detects that the stream is being reused
      - sequential or parallel -- in parallel mode when the terminal method executes, all intermediate stream operations will be parallelized, using `ForkJoinPool`
-     - ordered or not -- streams that arise from ordered collections (arrays and lists), from ranges, generators, and iterators, or from calling `Stream::sorted`
+     - ordered or not -- streams that arise from ordered collections (arrays and lists), from ranges, generators, and iterators, or from calling `Stream::sorted` are ordered
        - order and parallelism -- ordering does not preclude efficient parallelism, but some operations can be more effectively parallelized without requiring order
    - stream creation
      - from collections and `Arrays` -- `Collection::stream`, `Collection::parallelStream`, `Arrays::stream`
@@ -3038,8 +3148,7 @@
      - `Files::lines`, `BufferedReader::lines`
      - `Stream.Builder`
      - `Random::ints`, `Random::doubles`, `Random::longs` for primitive variants
-     - `CharSequence::codepoints`
-   - generic and primitive variants exist
+     - `CharSequence::codepoints`, `CharSequence::chars`
 
 1. `java.util.stream.BaseStream`
    ```java
@@ -3065,7 +3174,7 @@
    public interface IntStream
    extends BaseStream<Integer,IntStream>
    ```
-   - see `Stream`
+   - methods like those in `Stream`
    - creation -- partial `range()` in Python
      - `static IntStream range(int startInclusive, int endExclusive)`
      - `static IntStream rangeClosed(int startInclusive, int endInclusive)`
@@ -3129,11 +3238,12 @@
      - `boolean noneMatch(Predicate<? super T> predicate)`
      - `T reduce(T identity, BinaryOperator<T> accumulator)`
      - `<U> U reduce(U identity, BiFunction<U,? super T,U> accumulator, BinaryOperator<U> combiner)`
+     - `Collectors::reducing`
    - result (terminal operation)
      - `BaseStream` methods
      - `Stream<T> peek(Consumer<? super T> action)`
      - `void forEach(Consumer<? super T> action)`
-     - `void forEachOrdered(Consumer<? super T> action)` -- when in parallel and ordre matters
+     - `void forEachOrdered(Consumer<? super T> action)` -- when in parallel mode and order matters
      - `Object[] toArray()`  
        `<A> A[] toArray(IntFunction<A[]> generator)`
      - `<R,A> R collect(Collector<? super T,A,R> collector)`  
@@ -3157,6 +3267,7 @@
      - combining two result containers into one (`BinaryOperator<A> combiner()`)
      - performing an optional final transform on the container (`Function<A,R> finisher()`)
    - `Set<Collector.Characteristics> characteristics()`
+   - `enum Characteristics`
      - `CONCURRENT` -- Indicates that this collector is concurrent, meaning that the result container can support the accumulator function being called concurrently with the same result container from multiple threads.
      - `IDENTITY_FINISH` -- Indicates that the finisher function is the identity function and can be elided.
        - `Function.identity()`
@@ -3164,19 +3275,19 @@
    - creation
      - `static <T,A,R> Collector<T,A,R> of(Supplier<A> supplier, BiConsumer<A,T> accumulator, BinaryOperator<A> combiner, Function<A,R> finisher, Collector.Characteristics... characteristics)`
      - `static <T,R> Collector<T,R,R> of(Supplier<R> supplier, BiConsumer<R,T> accumulator, BinaryOperator<R> combiner, Collector.Characteristics... characteristics)`
-     - `Collectors`
+     - methods in `Collectors`
 
 1. `java.util.stream.Collectors`
    - statics
      - `static <T> Collector<T,?,Double> averagingDouble(ToDoubleFunction<? super T> mapper)`  
        `static <T> Collector<T,?,Double> averagingInt(ToIntFunction<? super T> mapper)`  
        `static <T> Collector<T,?,Double> averagingLong(ToLongFunction<? super T> mapper)`
-     - `static <T> Collector<T,?,Long> counting()`
      - `static <T> Collector<T,?,Optional<T>> maxBy(Comparator<? super T> comparator)`
      - `static <T> Collector<T,?,Optional<T>> minBy(Comparator<? super T> comparator)`
      - `static <T> Collector<T,?,DoubleSummaryStatistics> summarizingDouble(ToDoubleFunction<? super T> mapper)`  
        `static <T> Collector<T,?,IntSummaryStatistics> summarizingInt(ToIntFunction<? super T> mapper)`  
        `static <T> Collector<T,?,LongSummaryStatistics> summarizingLong(ToLongFunction<? super T> mapper)`
+     - `static <T> Collector<T,?,Long> counting()`
      - `static <T> Collector<T,?,Double> summingDouble(ToDoubleFunction<? super T> mapper)`  
        `static <T> Collector<T,?,Integer> summingInt(ToIntFunction<? super T> mapper)`  
        `static <T> Collector<T,?,Long> summingLong(ToLongFunction<? super T> mapper)`
@@ -3268,18 +3379,7 @@
      `static <T> T requireNonNull(T obj, Supplier<String> messageSupplier)` — Checks that the specified object reference is not null and throws a customized `NullPointerException` if it is.
    - `static String toString(Object o)` — `return String.valueOf(o);` &rarr; `return (obj == null) ? "null" : obj.toString();`
    - `static String toString(Object o, String nullDefault)` — `return (o != null) ? o.toString() : nullDefault;`
-
-1. `java.util.Random` — generate a stream of pseudorandom numbers, `Math.random()` simpler to use
-   ```java
-   public class Random extends Object
-   implements Serializable
-   ```
-   - constructors
-     - `Random()`
-     - `Random(long seed)`
-   - next
-     - `int nextInt()`
-     - `int nextInt(int bound)`
+   - index check methods -- since JDK 9
 
 1. `java.util.Optional` -- A container object which may or may not contain a non-null value, a better `null`
    ```java
@@ -3310,9 +3410,10 @@
    public class LongSummaryStatistics extends Object
    implements LongConsumer, IntConsumer
    ```
-   - use
+   - creation
      - `Collectors::summarizingLong`, `Collectors::summarizingDouble`, `Collectors::summarizingInt`
-     - with out collector
+     - `IntSummaryStatistics(long count, int min, int max, long sum)`
+     - with out collector -- `IntSummaryStatistics()`
        ```java
        LongSummaryStatistics stats = longStream.collect(LongSummaryStatistics::new,
                                                         LongSummaryStatistics::accept,
@@ -3326,12 +3427,16 @@
      - `long|double getSum()`
      - `String toString()`
 
+## ZIP
+
 1. `java.util.zip.CRC32`
    ```java
    public class CRC32 extends Object
    implements Checksum
    ```
    - `interface java.util.zip.Checksum`
+
+1. ZIP streams -- see [ZIP Streams](#ZIP-Streams)
 
 # Error Handling
 
@@ -3342,7 +3447,7 @@
    - test with main method, or unit test tools
 
 1. print or log
-   - using string concatenation
+   - debug by print concatenated or formatted string
    - logging proxy — anonymous inner class overriding methods of interest with logger
    - stack trace — `Throwable::printStackTrace` and rethrow, or `Thread.dumpStack()`
      - capture string instead of printing to `System.err`
@@ -3932,9 +4037,9 @@
 
 1. `@SuppressWarnings("fallthrough")`
 
-1. `@override`
+1. `@override` -- error when not overriding but define a new method
 
-1. `@FunctionalInterface`
+1. `@FunctionalInterface` -- error if conditions of functional interfaces not meet
 
 1. `@SafeVarargs`
 
@@ -4796,7 +4901,46 @@
 
 1. `String` -- see [`String`](#String)
 
-1. `Character` -- see [Object Wrappers](#Object-Wrappers)
+<!-- TODO -->
+1. `Character` -- see also [char](#primitive-types)
+   ```java
+   public final class Character extends Object
+   implements Serializable, Comparable<Character>
+   ```
+   - general category in the [Unicode specification](http://unicode.org/reports/tr44/#General_Category_Values)
+     - defined in static fields as `byte`
+     - `static int getType(char ch)`
+     - `static int getType(int codePoint)`
+   - wrapping and outboxing
+     - `Character(char value)`
+     - `static Character valueOf(char c)`
+     - `char charValue()`
+   - conversation between code points
+     - casts and `0 + 'a'`
+     - `static char[] toChars(int codePoint)`
+     - `static int toChars(int codePoint, char[] dst, int dstIndex)`
+     - `static int toCodePoint(char high, char low)`
+     - `codePointAt`
+     - `codePointBefore`
+     - `codePointCount`
+   - more
+   - `Character.UnicodeScript`
+     ```java
+     public static enum UnicodeScript
+     ```
+     - script names -- enum constants
+     - `static Character.UnicodeScript forName(String scriptName)`
+     - `static Character.UnicodeScript of(int codePoint)`
+   - `Character.UnicodeBlock`
+     ```java
+     public static final class Character.UnicodeBlock
+     extends Character.Subset
+     ```
+     - Unicode character block names -- static fields
+     - `static Character.UnicodeBlock forName(String blockName)`
+     - `static Character.UnicodeBlock of(char c)`
+     - `static Character.UnicodeBlock of(int codePoint)`
+   - `Character.Subset` -- for extending, represents particular subsets of the Unicode character set
 
 ## Regex
 
@@ -5062,3 +5206,8 @@
      - `Pattern pattern()`
      - `Matcher usePattern(Pattern newPattern)` -- position in the input and last append position are unaffected
      - `String toString()`
+
+## Format
+
+1. `java.util.Formatter`
+   - `String::format`
