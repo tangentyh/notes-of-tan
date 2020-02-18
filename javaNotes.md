@@ -3,7 +3,8 @@
 1. docs
    - [oracle JDK 1.8](https://docs.oracle.com/javase/8/docs/api/index.html)
    - [jshell](https://docs.oracle.com/javase/9/jshell/toc.htm)
-   - [download](https://www.oracle.com/technetwork/java/javase/downloads/index.html)
+   - [download](https://stackoverflow.com/questions/6986993/how-to-download-javadoc-to-read-offline/36497090)
+     - [Java Development Kit 8 Documentation](https://www.oracle.com/technetwork/java/javase/documentation/jdk8-doc-downloads-2133158.html)
 
 1. [specification](http://docs.oracle.com/javase/specs)
 
@@ -908,7 +909,7 @@
    - `boolean equals(Object otherObject)` — determines whether two object references are identical
      - override -- template as below, need to override `hashCode` also if `equals` overriden
        ```java
-       @override
+       @Override
        public boolean equals(Object otherObject) {
            // super.equals(other)
            // a quick test to see if the objects are identical, may be unnecessary if covered in `super.equals(other)`
@@ -1028,7 +1029,7 @@
      - `static <T> Comparator<T> nullsLast(Comparator<? super T> comparator)`
 
 1. `Interface Cloneable`
-   - mark interface -- serves as a tag, a `CloneNotSupportedException` if an object requests cloning but does not implement that interface
+   - mark interface -- serves as a tag, a checked `CloneNotSupportedException` if an object requests cloning but does not implement that interface
    - make a class cloneable — implement this interface, redefine `clone` to be `public`
      - `Object::clone` -- protected, and does a shallow copy
      - use `Object::clone` -- `(T) super.clone()`
@@ -1194,6 +1195,7 @@
      - outside outer class — `outerObj.new`
    - access control — can be hidden from other classes in the same package
      - only inner classes can be private -- regular classes always have either package or public visibility
+     - `private` accessible for each other -- between the outer class and inner classes
    - refer to inner class outside the outer class — `OuterClass.InnerClass`
 
 1. inner class limits
@@ -1450,943 +1452,6 @@
    }
    ```
 
-# IO
-
-## Console
-
-1. `java.io.Console` -- synchronized
-   ```java
-   public final class Console extends Object
-   implements Flushable
-   ```
-   - creation
-     - `System.console()`
-   - write
-     - `void flush()`
-     - `Console format(String fmt, Object... args)`
-     - `Console printf(String format, Object... args)`
-   - read
-     - `String readLine()`  
-       `String readLine(String fmt, Object... args)`
-     - `char[] readPassword()`  
-       `char[] readPassword(String fmt, Object... args)`
-   - get underlying stream
-     - `Reader reader()`
-     - `PrintWriter writer()`
-
-1. `java.util.Scanner` -- not synchronized
-   ```java
-   public final class Scanner extends Object
-   implements Iterator<String>, Closeable
-   ```
-   - constructors
-     - `Scanner(File source)`
-     - `Scanner(File source, String charsetName)`
-     - `Scanner(InputStream source)`
-       - `System.in` for stdin
-     - `Scanner(InputStream source, String charsetName)`
-     - `Scanner(Path source)`
-     - `Scanner(Path source, String charsetName)`
-     - `Scanner(String source)`
-     - `Scanner(Readable source)`
-     - `Scanner(ReadableByteChannel source)`
-     - `Scanner(ReadableByteChannel source, String charsetName)`
-   - settings -- delimiter, locale, regex
-     - `Scanner reset()`
-     - `Scanner useDelimiter(Pattern pattern)`
-     - `Scanner useDelimiter(String pattern)`
-     - `Pattern delimiter()`
-     - `Scanner useLocale(Locale locale)`
-     - `Locale locale()`
-     - `Scanner useRadix(int radix)`
-     - `int radix()`
-   - read
-     - `String next()`
-     - `String next(Pattern pattern)`
-     - `String next(String pattern)`
-     - `BigDecimal nextBigDecimal()`
-     - `BigInteger nextBigInteger()`
-     - `BigInteger nextBigInteger(int radix)`
-     - `boolean nextBoolean()`
-     - `byte nextByte()`
-     - `byte nextByte(int radix)`
-     - `double nextDouble()`
-     - `float nextFloat()`
-     - `int nextInt()`
-     - `int nextInt(int radix)`
-     - `String nextLine()`
-     - `long nextLong()`
-     - `long nextLong(int radix)`
-     - `short nextShort()`
-     - `short nextShort(int radix)`
-     - `MatchResult match()` -- the match result of the last scanning operation
-   - test -- `has-` prefixed version of read methods, `hasNext`
-   - find -- ignoring delimiters, the scanner returns and advances past the match if found, else returns `null` with position unchanged
-     - `String findInLine(Pattern pattern)`
-     - `String findInLine(String pattern)`
-     - `String findWithinHorizon(Pattern pattern, int horizon)` -- will never search more than `horizon` code points beyond its current position, `horizon` ignored if it is 0
-     - `String findWithinHorizon(String pattern, int horizon)`
-   - skip -- ignoring delimiters
-     - `Scanner skip(Pattern pattern)`
-     - `Scanner skip(String pattern)`
-   - `IOException ioException()` -- Returns the `IOException` last thrown by this Scanner's underlying `Readable`.
-
-1. `java.io.BufferedReader` -- synchronized
-   ```java
-   public class BufferedReader
-   extends Reader
-   ```
-   - `Stream<String> lines()`
-   - `String readLine()`
-   - `Reader` methods
-
-1. `System.out`, `static PrintStream`
-   - `print()`
-   - `println()`
-   - `PrintStream printf(String format, Object... args)`
-     - [formats](https://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html#syntax)
-
-## Basic IO Stream
-
-1. IO streams
-   - byte streams, byte oriented -- `InputStream`, `OutputStream`
-     - deal with bytes -- `FilterInputStream`, `FilterOutputStream` and their derivatives
-     - buffer -- use `BufferedInputStream` and `BufferedOutputStream` as an intermediate stream
-   - `char` streams, two-byte `char` values (UTF-16 codepoints) oriented -- `Reader`, `Writer`, can be converted from byte streams
-   - usage -- combination, filter streams as wrappers
-     ```java
-     DataInputStream din = new DataInputStream(
-         new BufferedInputStream(
-             new FileInputStream("employee.dat")));
-     ```
-
-1. IO interfaces
-   - `java.io.Closeable` -- idempotent variant with `IOException` compared to `AutoCloseable` with `Exception`
-     ```java
-     public interface Closeable
-     extends AutoCloseable
-     ```
-     - `close()` when already closed -- no effect if already closed, whereas `AutoCloseable::close` may have side effects
-   - `java.io.Flushable` -- write any buffered output to the underlying stream
-     ```java
-     public interface Flushable {
-         void flush() throws IOException;
-     }
-     ```
-   - `Readable`
-     ```java
-     public interface Readable {
-         public int read(java.nio.CharBuffer cb) throws IOException;
-     }
-     ```
-   - `Appendable` -- to which char sequences and values can be appended, must be implemented by any class whose instances are intended to receive formatted output from a `java.util.Formatter`
-     ```java
-     public interface Appendable {
-         Appendable append(char c) throws IOException;
-         Appendable append(CharSequence csq) throws IOException;
-         Appendable append(CharSequence csq, int start, int end) throws IOException;
-     }
-     ```
-
-1. `java.io.InputStream`
-   ```java
-   public abstract class InputStream extends Object
-   implements Closeable
-   ```
-   - lifecycle
-     - `int available()` -- an estimate of the number of bytes that can be read (or skipped over) without blocking
-     - `abstract int read()` -- block if necessary, read next byte (0 ~ 255), `-1` if at end, used by some other methods so only one method to implementing when inheriting  
-       `int read(byte[] b)`  
-       `int read(byte[] b, int off, int len)` -- reads up to `len` bytes of data from the offset into byte buffer `b`
-     - `long skip(long n)` -- returns the actual number of bytes skipped
-     - `void close()`
-   - mark -- the stream somehow remembers all the bytes read after the call to `mark` and stands ready to supply those same bytes again if and whenever the method `reset` is called, as long as within `readlimit`
-     - `boolean markSupported()`
-     - `void mark(int readlimit)`
-     - `void reset()`
-
-1. `java.io.OutputStream`
-   ```java
-   public abstract class OutputStream extends Object
-   implements Closeable, Flushable
-   ```
-   - `abstract void write(int b)` -- block if necessary  
-     `void write(byte[] b)`  
-     `void write(byte[] b, int off, int len)`
-   - `void flush()`
-   - `void close()` -- automatically `flush()` before close
-
-1. `java.io.Reader` -- see `InputStream`
-   ```java
-   public abstract class Reader extends Object
-   implements Readable, Closeable
-   ```
-   - lifecycle
-     - `boolean ready()`
-     - `abstract int read(char[] cbuf, int off, int len)` -- 0 ~ 65535 or -1  
-       `int read()`  
-       `int read(char[] cbuf)`  
-       `int read(CharBuffer target)`
-     - `long skip(long n)`
-     - `abstract void close()`
-   - mark
-     - `boolean markSupported()`
-     - `void mark(int readAheadLimit)`
-     - `void reset()`
-
-1. `java.io.Writer` -- see `OutputStream`
-   ```java
-   public abstract class Writer extends Object
-   implements Appendable, Closeable, Flushable
-   ```
-   - `Writer append(char c)`  
-     `Writer append(CharSequence csq)`  
-     `Writer append(CharSequence csq, int start, int end)`
-   - `abstract void write(char[] cbuf, int off, int len)`  
-     `void write(char[] cbuf)`  
-     `void write(int c)`  
-     `void write(String str)`  
-     `void write(String str, int off, int len)`
-   - `abstract void flush()`
-   - `abstract void close()`
-
-1. convert stream to reader or writer, uses `Charset.defaultCharset()` if not specified
-   - `java.io.InputStreamReader`
-     ```java
-     public class InputStreamReader
-     extends Reader
-     ```
-     - constructors
-       - `InputStreamReader(InputStream in)`
-       - `InputStreamReader(InputStream in, Charset cs)`
-       - `InputStreamReader(InputStream in, CharsetDecoder dec)`
-       - `InputStreamReader(InputStream in, String charsetName)`
-     - `String getEncoding()`
-   - `java.io.OutputStreamWriter`
-     ```java
-     public class OutputStreamWriter
-     extends Writer
-     ```
-     - constructors
-       - `OutputStreamWriter(OutputStream out)`
-       - `OutputStreamWriter(OutputStream out, Charset cs)`
-       - `OutputStreamWriter(OutputStream out, CharsetEncoder enc)`
-       - `OutputStreamWriter(OutputStream out, String charsetName)`
-     - `String getEncoding()`
-
-## Filter Stream
-
-1. filter stream -- contains some other stream, which it uses as its basic source or sink of data, possibly transforming the data along the way or providing additional functionality
-   - `java.io.FilterInputStream`
-     ```java
-     public class FilterInputStream
-     extends InputStream
-     ```
-     - constructor -- `protected FilterInputStream(InputStream in)`
-   - `java.io.FilterOutputStream`
-     ```java
-     public class FilterOutputStream
-     extends OutputStream
-     ```
-     - constructor -- `FilterOutputStream(OutputStream out)`
-   - `java.io.FilterReader`
-     ```java
-     public abstract class FilterReader
-     extends Reader
-     ```
-   - `java.io.FilterWriter`
-     ```java
-     public abstract class FilterWriter
-     extends Writer
-     ```
-
-1. buffer -- the ability to buffer the input and to support the mark and reset methods
-   - `java.io.BufferedInputStream`
-     ```java
-     public class BufferedInputStream
-     extends FilterInputStream
-     ```
-     - constructors
-       - `BufferedInputStream(InputStream in)`
-       - `BufferedInputStream(InputStream in, int size)`
-   - `java.io.BufferedOutputStream`
-     ```java
-     public class BufferedOutputStream
-     extends FilterOutputStream
-     ```
-     - constructors
-       - `BufferedOutputStream(OutputStream out)`
-       - `BufferedOutputStream(OutputStream out, int size)`
-   - `java.io.BufferedReader`
-     ```java
-     public class BufferedReader
-     extends Reader
-     ```
-   - `java.io.BufferedWriter`
-     ```java
-     public class BufferedWriter
-     extends Writer
-     ```
-
-1. data input -- conversation between bytes from a binary stream and Java data types, big endian
-   - [modified UTF-8](https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8) -- UTF-8 encoded UTF-16
-   - `java.io.DataInput`
-     ```java
-     public interface DataInput
-     ```
-     - `void readFully(byte[] b)`
-     - `void readFully(byte[] b, int off, int len)`
-     - `boolean readBoolean()`
-     - `byte readByte()`
-     - `char readChar()`
-     - `double readDouble()`
-     - `float readFloat()`
-     - `int readInt()`
-     - `String readLine()`
-     - `long readLong()`
-     - `short readShort()`
-     - `int readUnsignedByte()` -- 0 ~ 255
-     - `int readUnsignedShort()` -- 0 ~ 65535
-     - `String readUTF()` -- modified UTF-8 encoded string
-     - `int skipBytes(int n)`
-   - `java.io.DataOutput`
-     ```java
-     public interface DataOutput
-     ```
-   - `java.io.DataInputStream`
-     ```java
-     public class DataInputStream
-     extends FilterInputStream
-     implements DataInput
-     ```
-     - constructor -- `DataInputStream(InputStream in)`
-   - `java.io.DataOutputStream`
-     ```java
-     public class DataOutputStream
-     extends FilterOutputStream
-     implements DataOutput
-     ```
-     - constructor -- `DataOutputStream(OutputStream out)`
-
-1. peek -- push back stream
-   - `java.io.PushbackInputStream`
-     ```java
-     public class PushbackInputStream
-     extends FilterInputStream
-     ```
-     - constructors
-       - `PushbackInputStream(InputStream in)`
-       - `PushbackInputStream(InputStream in, int size)`
-     - push back
-       - `void unread(byte[] b)`
-       - `void unread(byte[] b, int off, int len)`
-       - `void unread(int b)`
-   - `java.io.PushbackReader`
-     ```java
-     public class PushbackReader
-     extends FilterReader
-     ```
-
-### ZIP Streams
-
-1. inflate and deflate
-   - `java.util.zip.InflaterInputStream`
-     ```java
-     public class InflaterInputStream
-     extends FilterInputStream
-     ```
-   - `java.util.zip.DeflaterOutputStream`
-     ```java
-     public class DeflaterOutputStream
-     extends FilterOutputStream
-     ```
-
-1. ZIP stream
-   - `java.util.zip.ZipInputStream`
-     ```java
-     public class ZipInputStream
-     extends InflaterInputStream
-     ```
-   - `java.util.zip.ZipOutputStream`
-     ```java
-     public class ZipOutputStream
-     extends DeflaterOutputStream
-     ```
-
-1. ZIP file system -- `FileSystems.newFileSystem(Paths.get(zipname), null)`
-
-## Files
-
-### File Classes
-
-1. `java.io.File` -- an abstract representation of file and directory pathnames, the old school way
-   ```java
-   public class File extends Object
-   implements Serializable, Comparable<File>
-   ```
-   - separators -- `System.getProperty("file.separator")`, `System.getProperty("path.separator")`
-     - `static String separator`
-     - `static char separatorChar`
-     - `static String pathSeparator`
-     - `static char pathSeparatorChar`
-   - permissions
-     - `boolean canExecute()`
-     - `boolean canRead()`
-     - `boolean canWrite()`
-     - `boolean isHidden()`
-     - `boolean setExecutable(boolean executable)
-     - `boolean setExecutable(boolean executable, boolean ownerOnly)
-     - `boolean setReadable(boolean readable)
-     - `boolean setReadable(boolean readable, boolean ownerOnly)
-     - `boolean setReadOnly()
-     - `boolean setWritable(boolean writable)
-     - `boolean setWritable(boolean writable, boolean ownerOnly)
-   - inherited
-     - `int compareTo(File pathname)` -- lexicographically
-   - CRUD
-     - `static File createTempFile(String prefix, String suffix)`
-     - `static File createTempFile(String prefix, String suffix, File directory)`
-     - `boolean createNewFile()`
-     - `boolean mkdir()`
-     - `boolean mkdirs()`
-     - `boolean delete()`
-     - `void deleteOnExit()`
-     - `boolean exists()`
-     - `boolean renameTo(File dest)`
-   - metadata and list
-     - `boolean isDirectory()`
-     - `boolean isFile()`
-     - `long lastModified()`
-     - `boolean setLastModified(long time)`
-     - `long length()`
-     - `String[] list()`  
-       `String[] list(FilenameFilter filter)`
-     - `File[] listFiles()`  
-       `File[] listFiles(FileFilter filter)`  
-       `File[] listFiles(FilenameFilter filter)`
-     - `static File[] listRoots()`
-   - path
-     - `File getAbsoluteFile()`
-     - `String getAbsolutePath()`
-     - `File getCanonicalFile()`
-     - `String getCanonicalPath()`
-     - `String getName()`
-     - `String getParent()`
-     - `File getParentFile()`
-     - `String getPath()`
-     - `boolean isAbsolute()`
-     - `String toString()`
-     - `Path toPath()`
-     - `URI toURI()`
-   - space -- the partition named by this abstract pathname
-     - `long getFreeSpace()`
-     - `long getTotalSpace()`
-     - `long getUsableSpace()`
-   - file filters
-     - `java.io.FilenameFilter`
-       ```java
-       @FunctionalInterface
-       public interface FilenameFilter {
-           boolean accept(File dir, String name);
-       }
-       ```
-     - `java.io.FileFilter`
-       ```java
-       @FunctionalInterface
-       public interface FileFilter {
-           boolean accept(File pathname);
-       }
-       ```
-   - `java.io.FileDescriptor` -- used in file streams
-      ```java
-      public final class FileDescriptor extends Object
-      ``
-
-1. `java.nio.file.Path` -- represents a system dependent file path, immutable
-   ```java
-   public interface Path
-   extends Comparable<Path>, Iterable<Path>, Watchable
-   ```
-   - creation
-     - `java.nio.file.Paths`
-       ```java
-       public final class Paths extends Object
-       ```
-       - `static Path get(String first, String... more)` -- join
-       - `static Path get(URI uri)`
-     - `File::toPath`
-   - components methods
-   - relative, absolute, real path methods
-   - `File toFile()`
-   - `URI toUri()`
-   - inherited methods
-
-1. `java.nio.file.Files` -- static methods take `Path` as arguments, operate its underlying files, usually atomically
-   ```java
-   public final class Files extends Object
-   ```
-   - limit -- some read / write methods are intended for text files of moderate length, use stream methods such as `newInputStream` for large or binary files
-   - glop pattern -- extended syntax, extended `**`, see [File Operations (The Java™ Tutorials > Essential Classes > Basic I/O)](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob), and [`FileSystem::getPathMatcher`](https://docs.oracle.com/javase/8/docs/api/java/nio/file/FileSystem.html#getPathMatcher-java.lang.String-)
-
-1. utility classes
-   - `java.nio.file.DirectoryStream` -- an object to iterate over the entries in a directory, supports only a single `Iterator`
-     ```java
-     public interface DirectoryStream<T>
-     extends Closeable, Iterable<T>
-     ```
-   - `java.nio.file.SimpleFileVisitor` -- a simple visitor of files with default behavior to visit all files and to re-throw I/O errors
-     ```java
-     public class SimpleFileVisitor<T> extends Object
-     implements FileVisitor<T>
-     ```
-     - `public interface java.nio.file.FileVisitor<T>`
-     - prevent termination by exceptions -- override `postVisitDirectory` to return `FileVisitResult.CONTINUE` and `visitFileFailed` to return `FileVisitResult.SKIP_SUBTREE`
-   - `java.nio.file.PathMatcher`
-     ```java
-     @FunctionalInterface
-     public interface PathMatcher
-     ```
-
-1. `java.nio.file.FileStore` -- a storage pool, device, partition, volume, concrete file system or other implementation specific means of file storage
-   ```java
-   public abstract class FileStore extends Object
-   ```
-
-1. `java.nio.file.FileSystem`
-   ```java
-   public abstract class FileSystem extends Object
-   implements Closeable
-   ```
-   - `abstract Path getPath(String first, String... more)`
-   - `abstract Iterable<Path> getRootDirectories()`
-   - `abstract boolean isOpen()`
-   - `abstract boolean isReadOnly()`
-   - `abstract Iterable<FileStore> getFileStores()`
-   - `abstract PathMatcher getPathMatcher(String syntaxAndPattern)`
-   - `abstract String getSeparator()`
-   - `abstract UserPrincipalLookupService getUserPrincipalLookupService()`
-   - `abstract WatchService newWatchService()`
-   - `abstract FileSystemProvider provider()`
-   - `abstract Set<String> supportedFileAttributeViews()`
-   - creation -- `FileSystems`
-
-1. `java.nio.file.FileSystems` -- factory methods for file systems
-   - initialization -- The first invocation of any of the methods defined by this class causes the default `FileSystemProvider` to be loaded. The default provider, identified by the URI scheme "file", creates the `FileSystem` that provides access to the file systems accessible to the JVM
-   - `static FileSystem getDefault()`
-   - `static FileSystem getFileSystem(URI uri)`
-   - `static FileSystem newFileSystem(Path path, ClassLoader loader)` -- constructs a new `FileSystem` to access the contents of a file as a file system, supports ZIP files
-   - `static FileSystem newFileSystem(URI uri, Map<String,?> env)`
-   - `static FileSystem newFileSystem(URI uri, Map<String,?> env, ClassLoader loader)`
-
-1. `java.nio.file.spi.FileSystemProvider` -- file system service provider, methods in `Files` under the hood
-   ```java
-   public abstract class FileSystemProvider extends Object
-   ```
-
-1. `java.nio.channels.FileChannel` -- reading, writing, mapping, locking, transferring and manipulating a file
-   ```java
-   public abstract class FileChannel
-   extends AbstractInterruptibleChannel
-   implements SeekableByteChannel, GatheringByteChannel, ScatteringByteChannel
-   ```
-   - creation
-     - `static FileChannel open(Path path, OpenOption... options)`
-     - `static FileChannel open(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs)`
-     - `FileInputStream::getChannel`, `FileOutputStream::getChannel`, `RandomAccessFile::getChannel`
-   - `abstract MappedByteBuffer map(FileChannel.MapMode mode, long position, long size)` -- maps a region of this channel's file directly into memory, recommended only for large files
-     - `java.nio.MappedByteBuffer` -- a direct byte buffer whose content is a memory-mapped region of a file
-       ```java
-       public abstract class MappedByteBuffer
-       extends ByteBuffer
-       ```
-   - lock -- lock the given region of this channel's file
-     - `FileLock lock()` -- blocks, equivalent to `lock(0L, Long.MAX_VALUE, false)`  
-       `abstract FileLock lock(long position, long size, boolean shared)`
-     - `FileLock tryLock()` -- `null` if not available, equivalent to `tryLock(0L, Long.MAX_VALUE, false)`  
-       `abstract FileLock tryLock(long position, long size, boolean shared)`
-
-1. `java.nio.channels.FileLock` -- a lock on a region of a file, on behalf of the JVM
-   ```java
-   public abstract class FileLock extends Object
-   implements AutoCloseable
-   ```
-   - region is fixed -- the region stays fixed, the file can have uncovered portion or can grow beyond the region
-     - `boolean overlaps(long position, long size)`
-     - `long position()`
-     - `long size()`
-   - lock on behalf of the JVM -- not for multithreading, but for multiprocessing
-   - shared lock -- allow other programs to acquire overlapping shared locks while not allowing exclusive locks
-     - `shared` for read, exclusive for write -- `true` to request a shared lock, in which case this channel must be open for reading (and possibly writing); `false` to request an exclusive lock, in which case this channel must be open for writing (and possibly reading)
-   - OS dependent
-     - lock support -- On some systems, file locking is merely advisory
-     - shared support -- a request for a shared lock is automatically converted into a request for an exclusive lock if not supported
-     - memory map support -- on some systems, you cannot simultaneously lock a file and map it into memory
-     - avoid multiple channels on the same locked file -- on some systems, closing a channel releases all locks on the underlying file
-     - avoid locking files on a networked file system
-   - `abstract void release()`  
-     `void close()`
-
-### File Options and Attributes
-
-1. options
-   - `interface java.nio.file.OpenOption` -- mark interface
-   - `interface java.nio.file.CopyOption` -- mark interface
-   - `java.nio.file.LinkOption.NOFOLLOW_LINKS` -- Do not follow symbolic links
-     ```java
-     public enum LinkOption extends Enum<LinkOption>
-     implements OpenOption, CopyOption
-     ```
-   - `java.nio.file.StandardOpenOption`
-     ```java
-     public enum StandardOpenOption extends Enum<StandardOpenOption>
-     implements OpenOption
-     ```
-     - `READ`
-     - `CREATE`
-     - `CREATE_NEW`
-     - `DELETE_ON_CLOSE`
-     - `SPARSE` -- a hint to the file system that this file will be sparse
-     - `SYNC`, `DSYNC`
-     - `WRITE`
-     - `APPEND`
-     - `TRUNCATE_EXISTING`
-   - `java.nio.file.StandardCopyOption`
-     ```java
-     public enum StandardCopyOption extends Enum<StandardCopyOption>
-     implements CopyOption
-     ```
-     - `ATOMIC_MOVE`
-     - `COPY_ATTRIBUTES`
-     - `REPLACE_EXISTING`
-   - `java.nio.file.FileVisitOption.FOLLOW_LINKS` -- Follow symbolic links, neither `OpenOption` nor `CopyOption`
-
-1. file attributes -- `java.nio.file.attribute`
-   - `java.nio.file.attribute.UserPrincipal` -- a Principal representing an identity used to determine access rights to objects in a file system
-     ```java
-     public interface UserPrincipal extends Principal
-     ```
-   - `interface java.nio.file.attribute.BasicFileAttributes` -- basic file attributes, including times, file or dir or link, size, file key
-     - file key -- an object of some class, specific to the file system, that may or may not uniquely identify a file
-     - read attributes -- `Files::readAttributes`
-     - sub-interfaces
-       - `java.nio.file.attribute.DosFileAttributes`
-       - `java.nio.file.attribute.PosixFileAttributes`
-   - `java.nio.file.attribute.FileTime` -- a file's time stamp attribute
-     ```java
-     public final class FileTime extends Object
-     implements Comparable<FileTime>
-     ```
-
-### File Stream
-
-1. file streams
-   - `java.io.FileInputStream`
-      ```java
-      public class FileInputStream
-      extends InputStream
-      ```
-      - constructors
-        - `FileInputStream(File file)`
-        - `FileInputStream(FileDescriptor fdObj)`
-        - `FileInputStream(String name)`
-      - methods beyond `InputStream`
-        - `protected void finalize()` -- ensures that the close method of this file input stream is called when there are no more references to it
-        - `FileChannel getChannel()`
-        - `FileDescriptor getFD()`
-   - `java.io.FileOutputStream`
-     ```java
-     public class FileOutputStream
-     extends OutputStream
-     ```
-     - constructors
-       - `FileOutputStream(File file)`
-       - `FileOutputStream(File file, boolean append)`
-       - `FileOutputStream(FileDescriptor fdObj)`
-       - `FileOutputStream(String name)`
-       - `FileOutputStream(String name, boolean append)`
-     - see `FileInputStream`
-   - print streams
-   - `Scanner`, `BufferedReader`
-   - `java.io.RandomAccessFile` -- both reading and writing to a random access file, which has a file pointer, suitable for small and moderate files
-     ```java
-     public class RandomAccessFile extends Object
-     implements DataOutput, DataInput, Closeable
-     ```
-     - mode -- `"r"`, `"rw"`, `"rws"` (file content or metadata synchronized with storage), or `"rwd"` (only file content synchronized)
-     - constructors
-       - `RandomAccessFile(File file, String mode)`
-       - `RandomAccessFile(String name, String mode)`
-     - file info
-       - `FileChannel getChannel()`
-       - `FileDescriptor getFD()`
-       - `long length()`
-     - file pointer -- cursor for read / write
-       - `long getFilePointer()`
-       - `void seek(long pos)` -- Sets the file-pointer offset, measured from the beginning of this file, at which the next read or write occurs.
-       - `void setLength(long newLength)`
-       - `int skipBytes(int n)`
-     - read
-       - `int read()`
-       - `int read(byte[] b)`
-       - `int read(byte[] b, int off, int len)`
-       - `DataInput` methods
-     - write -- `DataOutput` methods
-
-1. char based file streams -- default encoding as `InputStreamReader`, `OutputStreamWriter`
-   - `java.io.FileReader`
-     ```java
-     public class FileReader
-     extends InputStreamReader
-     ```
-     - constructors
-       - `FileReader(File file)`
-       - `FileReader(FileDescriptor fd)`
-       - `FileReader(String fileName)`
-   - `java.io.FileWriter`
-     ```java
-     public class FileWriter
-     extends OutputStreamWriter
-     ```
-     - constructors
-       - `FileWriter(File file)`
-       - `FileWriter(File file, boolean append)`
-       - `FileWriter(FileDescriptor fd)`
-       - `FileWriter(String fileName)`
-       - `FileWriter(String fileName, boolean append)`
-   - print streams
-
-## Print Stream
-
-1. print streams -- add the ability to print representations of various data values conveniently
-   - never throws an `IOException` -- only `checkError()`
-   - auto flush -- support auto flush, defaults to `false`
-     - for `PrintStream` -- after a byte array is written, or a `\n` is written
-     - for `PrintWriter` -- after the invoke of `println`, `printf`, or `format`
-
-1. `java.io.PrintStream` -- print into bytes
-   ```java
-   public class PrintStream
-   extends FilterOutputStream
-   implements Appendable, Closeable
-   ```
-   - constructors
-     - `PrintStream(File file)`
-     - `PrintStream(File file, String csn)`
-     - `PrintStream(OutputStream out)`
-     - `PrintStream(OutputStream out, boolean autoFlush)`
-     - `PrintStream(OutputStream out, boolean autoFlush, String encoding)`
-     - `PrintStream(String fileName)`
-     - `PrintStream(String fileName, String csn)`
-   - `print` and `println` methods -- `void`, supports primitive types, `char[]` and `Object`
-   - `printf`
-     - `PrintStream printf(Locale l, String format, Object... args)`
-     - `PrintStream printf(String format, Object... args)`
-   - `boolean checkError()`
-
-1. `java.io.PrintWriter` -- print into text (chars)
-   ```java
-   public class PrintWriter
-   extends Writer
-   ```
-   - constructors
-     - `PrintWriter(File file)`
-     - `PrintWriter(File file, String csn)`
-     - `PrintWriter(OutputStream out)`
-     - `PrintWriter(OutputStream out, boolean autoFlush)`
-     - `PrintWriter(String fileName)`
-     - `PrintWriter(String fileName, String csn)`
-     - `PrintWriter(Writer out)`
-     - `PrintWriter(Writer out, boolean autoFlush)`
-   - methods -- see `PrintStream`
-     - difference -- `PrintStream::write` methods allow `int` and `byte[]`
-
-## Other Streams
-
-1. byte array streams -- save the data in an internal buffer (byte array), no effect for `close()` and no `IOException` afterwards
-   - `java.io.ByteArrayInputStream`
-     ```java
-     public class ByteArrayInputStream
-     extends InputStream
-     ```
-   - `java.io.ByteArrayOutputStream`
-     ```java
-     public class ByteArrayOutputStream
-     extends OutputStream
-     ```
-
-## Serialization
-
-1. `transient` -- mark fields not part of the persistent state, which is skipped in serialization
-
-1. `interface java.io.Serializable` -- mark only data fields serializable, superclass data or any other class information not included
-   - deserialize fields of classes not `Serializable` -- initialized using the public or protected no-arg constructor
-   - serialize subclasses whose parents are not `Serializable` -- serialize the super types only when they have accessible no-arg constructor
-   - serialization and deserialization control -- override default read and write behavior, special handling during the serialization and deserialization, by implementing methods below
-     ```java
-     private void writeObject(java.io.ObjectOutputStream out) throws IOException
-     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException
-     private void readObjectNoData() throws ObjectStreamException
-     ```
-   - version ID -- used during deserialization to verify that the sender and receiver of a serialized object have loaded classes compatible with serialization, `InvalidClassException` if no match
-     - declare explicitly
-       ```java
-       MODIFIER static final long serialVersionUID = 42L; // private is recommended
-       ```
-     - generate by default, not recommended -- the serialization runtime will calculate a default `serialVersionUID` value for that class based on various aspects of the class (fingerprint), which may vary depending on compiler implementations
-     - not applicable to array classes -- cannot declare explicitly, and the requirement for matching `serialVersionUID` values is waived for array classes
-     - get version ID via CLI -- `serialver ClassName`
-     - auto conversation when version ID match -- for data fields, skip when type is different, ignore additional, set absent to default
-   - write or read with another object
-     - when writing to stream -- implement `writeReplace`
-       ```java
-       MODIFIER Object writeReplace() throws ObjectStreamException;
-       ```
-     - when reading from stream -- implement `readResolve`
-       ```java
-       MODIFIER Object readResolve() throws ObjectStreamException;
-       ```
-   - serial number -- associate the object a number in encounter order and save or read the object data when first encounter, only save the serial number or read the object reference when encountered afterwards
-   - file structure
-     - magic number -- `ACED`
-     - version number of the object serialization format -- `0005` for JDK 8
-     - object sequences
-       - strings saved in modified UTF-8
-       - fingerprint stored in class -- first 8 bytes of SHA
-     - more
-
-1. `java.io.Externalizable` -- complete control over the format and contents of the stream for an object and its superclasses
-   ```java
-   public interface Externalizable
-   extends Serializable
-   ```
-   - taking precedence and mechanism -- If the object supports `Externalizable`, the `writeExternal` method is called. If the object does not support `Externalizable` and does implement `Serializable`, the object is saved using `ObjectOutputStream`
-   - no-arg constructor when reconstructing -- when reading, creates an object with the no-argument constructor and then calls the `readExternal` method
-   - use another object -- support `writeReplace` and `readResolve` methods
-   - `void readExternal(ObjectInputStream in) throws IOException, ClassNotFoundException`
-   - `void writeExternal(ObjectOutputStream out) throws IOException`
-
-1. interfaces for object streams
-   - `interface java.io.ObjectStreamConstants` -- Constants written into the Object Serialization Stream
-   - `java.io.ObjectOutput`
-     ```java
-     public interface ObjectOutput
-     extends DataOutput, AutoCloseable
-     ```
-     - inherited methods
-     - `void flush()`
-     - `void writeObject(Object obj)`
-   - `java.io.ObjectInput`
-     ```java
-     public interface ObjectInput
-     extends DataInput, AutoCloseable
-     ```
-     - inherited methods
-     - `int available()`
-     - `int read()`  
-       `int read(byte[] b)`  
-       `int read(byte[] b, int off, int len)`
-     - `Object readObject()`
-     - `long skip(long n)`
-
-1. `java.io.ObjectInputStream`
-   ```java
-   public class ObjectInputStream
-   extends InputStream
-   implements ObjectInput, ObjectStreamConstants
-   ```
-   - constructor -- `ObjectInputStream(InputStream in)`
-   - `void defaultReadObject()`
-
-1. `java.io.ObjectOutputStream`
-   ```java
-   public class ObjectOutputStream
-   extends OutputStream
-   implements ObjectOutput, ObjectStreamConstants
-   ```
-   - constructor -- `ObjectOutputStream(OutputStream out)`
-   - `void defaultWriteObject()`
-
-## nio
-
-1. file related -- see [File Classes](#File-Classes)
-
-1. `java.nio.ByteOrder`
-   ```java
-   public final class ByteOrder extends Object
-   ```
-   - `static ByteOrder BIG_ENDIAN`
-   - `static ByteOrder LITTLE_ENDIAN`
-   - `static ByteOrder nativeOrder()` -- the native byte order of the underlying platform
-   - for buffers -- `ByteBuffer::order`
-
-1. `java.nio.Buffer` -- finite sequence of elements, not thread-safe
-   ```java
-   public abstract class Buffer extends Object
-   ```
-   - underlying array
-     - `abstract Object array()` -- Returns the array that backs this buffer  (optional operation).
-     - `abstract int arrayOffset()` -- Returns the offset within this buffer's backing array of the first element of the buffer  (optional operation).
-     - `abstract boolean hasArray()`
-   - indices
-     - `int capacity()`
-     - `int limit()` -- the index of the first element that should not be read or written
-     - `int position()` -- the index of the next element to be read or written
-     - relative operations -- from position
-     - absolute operations -- from explicit index
-   - change indices
-     - `Buffer clear()` -- for `put` or related, sets the limit to the capacity and the position to zero
-     - `Buffer flip()` -- for `get` or related, sets the limit to the current position and then sets the position to zero
-     - `Buffer rewind()` -- for re-read, sets the position to zero
-     - `Buffer limit(int newLimit)`
-     - `Buffer position(int newPosition)`
-     - mark and reset
-       - `Buffer mark()` -- set the current as the index to which its position will be set when `reset()`, otherwise `InvalidMarkException`
-       - `Buffer reset()`
-   - remaining
-     - `int remaining()` -- from position to limit
-     - `boolean hasRemaining()`
-   - attributes
-     - direct buffers
-       - no intermediate buffer -- JVM will attempt to avoid copying the buffer's content to (or from) an intermediate buffer before (or after) each invocation of one of the underlying operating system's native I/O operations
-       - higher overhead -- have somewhat higher allocation and deallocation costs than non-direct buffers
-       - gc problems -- the contents of direct buffers may reside outside of the normal garbage-collected heap
-       - usage -- best to allocate direct buffers only when they yield a measurable gain in program performance
-       - creation -- `ByteBuffer::allocateDirect`, `FileChannel::map`, view buffers on direct buffers
-     - `abstract boolean isDirect()`
-     - `abstract boolean isReadOnly()`
-
-1. `java.nio.ByteBuffer` -- byte buffer with absolute and relative, bulk and not bulk `get` and `put`, not bulk `get` and `put` with other types, as well as views and other manipulating
-   ```java
-   public abstract class ByteBuffer
-   extends Buffer
-   implements Comparable<ByteBuffer>
-   ```
-   - view buffers -- another buffer whose content is backed by the byte buffer, changes on either one will be reflected on both
-   - get and put methods
-   - creation
-     - `static ByteBuffer allocate(int capacity)`
-     - `static ByteBuffer allocateDirect(int capacity)`
-     - `static ByteBuffer wrap(byte[] array)`
-     - `static ByteBuffer wrap(byte[] array, int offset, int length)`
-   - manipulate
-     - `abstract ByteBuffer compact()`
-     - `abstract ByteBuffer duplicate()`
-     - `abstract ByteBuffer slice()`
-
-1. `java.nio.CharBuffer`
-   ```java
-   public abstract class CharBuffer
-   extends Buffer
-   implements Comparable<CharBuffer>, Appendable, CharSequence, Readable
-   ```
-
-1. `java.nio.ShortBuffer`, `java.nio.LongBuffer`, `java.nio.IntBuffer`, `java.nio.FloatBuffer`, `java.nio.DoubleBuffer`
-   ```java
-   public abstract class DoubleBuffer
-   extends Buffer
-   implements Comparable<DoubleBuffer>
-   ```
-
 # Utils
 
 ## Time
@@ -2622,6 +1687,7 @@
      - `static void swap(List<?> list, int i, int j)`
    - views
      - `Arrays::asList`
+     - `nCopies`
      - `singletonList`
      - `emptyList`
      - `unmodifiableList`
@@ -2701,6 +1767,7 @@
    ```
    - underlying implementation -- circular array, no `null` elements
    - not implementing `List` and extends `AbstractCollection` but not `AbstractQueue` -- [retrofit `ArrayDeque` to implement `List`](https://bugs.openjdk.java.net/browse/JDK-8143850)
+   - no `null` support -- `NullPointerException` for `null` elements
    - capacity
      - default initial capacity -- 16
      - capacity grow policy -- double capacity if small; else grow by 50%
@@ -2778,7 +1845,7 @@
    implements Cloneable, Serializable
    ```
    - underlying data — represented internally as bit vectors
-   - `null` support -- `NullPointerException` for `null` elements
+   - no `null` support -- `NullPointerException` for `null` elements
    - usage — a high-quality, typesafe alternative to traditional int-based "bit flags"
    - underlying implementation — `RegularEnumSet` with a `long`, `JumboEnumSet` with a `long[]`, non-public in `java.util`
    - helper class — the abstract class itself acts as a static helper
@@ -3458,27 +2525,25 @@
        ```
      - change handler for uncaught exceptions
        ```java
-       Thread.setDefaultUncaughtExceptionHandler( new Thread.UncaughtExceptionHandler() {
-           public void uncaughtException(Thread t, Throwable e) {
-               // save information in log file
-           };
+       Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+           @Override
+           public void uncaughtException(Thread t, Throwable e) { /* logging... */ };
        });
        ```
 
-1. CLI options
-   - `ctrl + \` -- get thread dump when the program hangs??
+1. CLI options related to debugging
+   - `ctrl` + `\` -- get thread dump when the program hangs??
    - `java`
      - use `-verbose` when launching JVM for diagnosing class path problems
      - use `Xprof` for profiling, note that support was removed in 10.0
    - use `-Xlint:all` when `javac`
    - use `jconsole` to track memory consumption, thread usage, class loading
-   - `jmap` to get a heap dump and `jhat` to examine
+   - `jmap` and `jhat` (`jhat` removed in JDK 9) -- `jmap` to get a heap dump and `jhat` to examine
      ```java
      jmap -dump:format=b,file=dumpFileName processID
      jhat dumpFileName
      ```
      - at `localhost:7000`
-     - `jhat` removed in JDK 9
    - `jstat`
    - `jcmd`
    - `hprof`
@@ -3528,32 +2593,52 @@
    public class Error extends Throwable
    ```
 
-1. `Exception`
+1. `Exception` and its hierarchy
    ```java
    public class Exception extends Throwable
    ```
-   - descendents
-     - `RuntimeException`
-     - `IOException`
-     - more
+   - `CloneNotSupportedException`
+   - `InterruptedException`
+   - `ReflectiveOperationException`
+     - `ClassNotFoundException`
+     - `IllegalAccessException`
+     - `InstantiationException`
+     - `NoSuchFieldException`
+     - `NoSuchMethodException`
+   - `RuntimeException`
+     - `ArithmeticException`
+     - `ArrayStoreException`
+     - `ClassCastException`
+     - `EnumConstantNotPresentException`
+     - `IllegalArgumentException`
+       - `IllegalThreadStateException`
+       - `NumberFormatException`
+     - `IllegalMonitorStateException`
+     - `IllegalStateException`
+     - `IndexOutOfBoundsException`
+       - `ArrayIndexOutOfBoundsException`
+       - `StringIndexOutOfBoundsException`
+     - `NegativeArraySizeException`
+     - `NullPointerException`
+     - `SecurityException`
+     - `TypeNotPresentException`
+     - `UnsupportedOperationException`
 
 1. `StackTraceElement`
    ```java
    public final class StackTraceElement extends Object
    implements Serializable
    ```
-   - returned by
-     - `Throwable.getStackTrace()`
+   - creation
+     - `StackTraceElement(String declaringClass, String methodName, String fileName, int lineNumber)`
+     - `Throwable::getStackTrace`
+     - `Thread::getStackTrace`
      - `Thread.getAllStackTraces()`
    - stack info
      - `String getClassName()`
      - `String getFileName()`
      - `int getLineNumber()`
      - `String getMethodName()`
-   - `Object`
-     - `boolean equals(Object obj)`
-     - `int hashCode()`
-     - `String toString()`
 
 ## Exception Handling
 
@@ -3564,15 +2649,13 @@
    public FileInputStream(String name) throws FileNotFoundException
    ```
    - when to declare
-     - call a method that threatens to throw a checked exception
-     - `throw` checked exceptions manually
-       - a method without a `throws` specifier may not throw any checked exceptions at all
-   - if not declared — If your method fails to faithfully declare all checked exceptions or handle them, the compiler will issue an error message
+     - nested method call -- when calling a method that threatens to throw a checked exception
+     - `throw` checked exceptions spontaneously -- check exceptions can be thrown only when declared by the method
+   - if not declared — compiling error if a method fails to faithfully declare all checked exceptions or handle them
    - if caught — no need for `throws`
    - when overriding a method
-     - exception specification cannot be more general
-     - OK to throw more specific exceptions, or not to throw any exceptions in the subclass method
-     - if the superclass method throws no checked exception at all, neither can the subclass
+     - more specific exceptions or not at all -- exception specification cannot be more general; OK to throw more specific exceptions, or not to throw any exceptions in the subclass method
+     - none if none in superclass -- if the superclass method throws no checked exception at all, neither can the subclass
 
 1. `try catch`
    ```java
@@ -3594,11 +2677,12 @@
          // emergency action for missing files and unknown hosts
      }
      ```
-     - the exception variable is implicitly `final` when multiple exception types
+     - implicit `final` -- the exception variable is implicitly `final` when multiple exception types
    - rethrow — `throw` in `catch` block
      - exception wrapping — use `Throwable::initCause` to throw as another wrapped type and `Throwable::getCause` for original failure
      - bypass exception specification limit — rethrow a wrapped `RuntimeException` if a method cannot throw checked exception
-       - for example, `java.io.UncheckedIOException` is designed to wrap `IOException`
+       - for `IOException` -- for example, `java.io.UncheckedIOException` is designed to wrap `IOException`
+     - use generics to make checked exceptions unchecked, see [Generics](#Generics)
    - smart narrowing — when rethrow any exception
      ```java
      public void updateRecord() throws SQLException {
@@ -3610,15 +2694,17 @@
          }
      }
      ```
-     - compiler now tracks the fact that `e` originates from the `try` block, it is valid to declare the enclosing method as throws `SQLException`
-       - Provided that the only checked exceptions in that block are `SQLException` instances
-       - and provided that `e` is not changed in the catch block
+     - example above -- compiler now tracks the fact that `e` originates from the `try` block, it is valid to declare the enclosing method as throws `SQLException`
+     - smart narrowing conditions
+       - only checked exceptions -- provided that the only checked exceptions in that block are `SQLException` instances
+       - `final` `e` -- and provided that `e` is not changed in the catch block
 
 1. `finally` — always executed, can be used without `catch`
-   - executes before the method returns, if `return` used before `finally`
-   - `return` in `finally` will mask previous `return`
-   - handle exceptions in `finally`
+   - order -- executes before the method return, if `return` used before `finally`
+   - mask `return` and exceptions
+     - `return` in `finally` will mask previous `return`
      - exceptions in `finally` will mask exceptions previously thrown
+   - handle exceptions in `finally`
      - wrap a `try catch` block to handle possible exception thrown by `finally`
        ```java
        InputStream in = . . .;
@@ -3676,23 +2762,22 @@
    assert condition;
    assert condition : expression;
    ```
-   - throw an `AssertionError` if the assertion fails
-   - `expression` is passed to the constructor of the `AssertionError` to produce a message string
-     - using `String::valueOf` when converting
+   - `condition` -- throw an `AssertionError` if the assertion fails
+   - `expression` -- passed to `AssertionError::new` to produce a message string, using `String::valueOf` when converting
    - enabling and disabling
-     - disabled by default, `-da` or `-disableassertions` to explicitly disable certain classes
-     - enable by `-ea` or `-enableassertions`
+     - disabled -- disabled by default, `-da` or `-disableassertions` to explicitly disable certain classes
+     - enable -- by `-ea` or `-enableassertions`
        ```shell
        java -enableassertions MyApp
        java -ea:MyClass -ea:com.mycompany.mylib... MyApp # for specific classes
        ```
-       - when enabled, no recompiling, but the class loader stops stripping out the assertion code
-     - Some classes are not loaded by a class loader but directly by the virtual machine, but above switches still work
-     - `-enablesystemassertions` / `-esa` for system classes
+       - enabling mechanism -- when enabled, no recompiling, but the class loader stops stripping out the assertion code
+     - also for JVM loaded classes -- some classes are not loaded by a class loader but directly by the virtual machine, but above switches still work
+     - enable for system classes -- `-enablesystemassertions` / `-esa` for system classes
 
 1. assert use
-   - Assertion failures are intended to be fatal, unrecoverable errors
-   - Assertion checks are turned on only during development and testing
+   - fatal errors -- assertion failures are intended to be fatal, unrecoverable errors
+   - for development and testing -- assertion checks are turned on only during development and testing
    - use for precondition — parameter checking
    - use for documenting assumptions
      ```java
@@ -3737,15 +2822,18 @@
    - levels — `Level`
      - `Level.INFO` by default
    - stack info — default log record shows the name of the class and method that contain the logging call, as inferred from the call stack
-       - the virtual machine optimizes execution, accurate call information may not be available
-       - `Logger::logp` to set calling point explicitly
-   - log manager configuration
-     - configuration file — `jre/lib/logging.properties`
-       - log configuration file location — `-Djava.util.logging.config.file=configFile`
-       - `.level=INFO`
-       - `java.util.logging.ConsoleHandler.level=FINE`
-     - processed by the `java.util.logging.LogManager`, configurable by `java.util.logging.manager` and `java.util.logging.config.class` system property
-   - localization — resource bundle
+     - call info and optimization -- the virtual machine optimizes execution, accurate call information may not be available
+     - `Logger::logp` to set calling point explicitly
+   - log configuration -- processed by `LogManager`
+     - manager object property -- `java.util.logging.manager`, if `null` the no-arg protected constructor is used
+     - configuration class property -- `java.util.logging.config.class`, take precedence over config files
+     - configuration file — `java.util.logging.config.file`
+       - default config file -- `$JAVA_HOME/lib/logging.properties`, or `$JAVA_HOME/conf/logging.properties` for JDK >= 9
+       - `.level=INFO` -- default global logging level
+       - `java.util.logging.ConsoleHandler.level=INFO` -- log level for `ConsoleHandler`
+       - hierarchy -- `foo.level` defines a log level for the logger called "foo" and (recursively) for any of its children in the naming hierarchy
+       - children after parents -- level settings for child nodes in the tree should come after settings for their parents
+   - localization — use resource bundle
      ```java
      Logger logger = Logger.getLogger(loggerName, "com.mycompany.logmessages");
      logger.log(Level.INFO, "readingFile", fileName); // fill placeholder
@@ -3757,7 +2845,7 @@
      - get and set resource bundle — `Logger::getResourceBundle`, `Logger::setResourceBundle`
 
 1. `java.util.logging.Logger`
-   - singleton
+   - creation -- uses `LogManager` behind the scenes
      - `static Logger getGlobal()`
      - `static Logger getAnonymousLogger()`
      - `static Logger getAnonymousLogger(String resourceBundleName)`
@@ -3772,9 +2860,9 @@
    - hierarchy
      - `void setParent(Logger parent)`
      - `Logger getParent()`
-   - log
-     - `void level(String msg)`  
-       `void level(Supplier<String> msgSupplier)`
+   - log -- uses `Handler::publish` behind the scenes
+     - `void info(String msg)`  
+       `void info(Supplier<String> msgSupplier)`
         - all levels have methods, except `Level.ALL` and `Level.OFF`
      - `void log(Level level, String msg)`  
        `void log(Level level, Supplier<String> msgSupplier)`
@@ -3797,23 +2885,25 @@
        `void exiting(String sourceClass, String sourceMethod, Object result)`
        - log records start with `RETURN`
 
+1. `java.util.logging.LogManager` -- singleton to maintain a set of shared state about loggers and log services
+
+### Log Levels and Records
+
 1. `java.util.logging.Level`
    ```java
    public class Level extends Object
    implements Serializable
    ```
    - levels
-     - `static Level OFF`
-     - `static Level SEVERE`
-     - `static Level WARNING`
-     - `static Level INFO`
-     - `static Level CONFIG`
-     - `static Level FINE`
-     - `static Level FINER`
-     - `static Level FINEST`
-     - `static Level ALL`
-
-### Log Records
+     - `static Level OFF` -- `Integer.MAX_VALUE`
+     - `static Level SEVERE` -- 1000, `error` for `slf4j`
+     - `static Level WARNING` -- 900, `warn` for `slf4j`
+     - `static Level INFO` -- 800
+     - `static Level CONFIG` -- 700
+     - `static Level FINE` -- 500, `debug`, `trace` for `slf4j`
+     - `static Level FINER` -- 400
+     - `static Level FINEST` -- 300
+     - `static Level ALL` -- `Integer.MIN_VALUE`
 
 1. `java.util.logging.LogRecord` — used to pass logging requests between the logging framework and individual log Handlers
    ```java
@@ -3828,7 +2918,7 @@
 
 ### Handlers
 
-1. handler — all handlers extends `Handler`
+1. handler — all handlers extends `Handler`, used by `Logger::log`
    - also has level — `INFO` by default, configurable via configuration file
      - `java.util.logging.ConsoleHandler.level=INFO`
    - hierarchy — a logger sends records both to its own handlers and the handlers of the parent
@@ -3856,9 +2946,9 @@
      - `void setLevel(Level newLevel)`
    - more
 
-### Filters
+#### Filters
 
-1. filters — implements `Filter`
+1. filters — implements `Filter`, used by handlers
    - in addition to level filtering, logger and handler can have an optional filter
    - `Logger::setFilter`, `Handler::setFilter`
      - both at most one filter at a time
@@ -3870,9 +2960,9 @@
    ```
    - `boolean isLoggable(LogRecord record)`
 
-### Formatters
+#### Formatters
 
-1. formatters — extends `Formatter`
+1. formatters — extends `Formatter`, used by handlers
    - `Handler::setFormatter`
 
 1. `java.util.logging.Formatter`
@@ -3888,26 +2978,24 @@
    - [further reading](http://angelikalanger.com/GenericsFAQ/JavaGenericsFAQ.html)
    - diamond syntax
    - raw and typed
-     - typed ones are subtype of the raw one
-       - possible to cast a typed one to a raw one and cause type error
-     - warning when assign a raw one to a typed one
-     - types only checked when compiling, all are raw without type at runtime
-   - no relationship between `Generic<Type_2>` and `Generic<Type_2>, regardless of the relationship between the type variables
-   - in JVM
-     - type variables are erased and replaced by first bound, or `Object`
-     - compiler inserts casts to other bounds when necessary
+     - typed are subtypes -- typed ones are subtypes of the raw one
+     - warning when using raw types
+     - raw at runtime -- types only checked when compiling, all are raw without type at runtime
+   - differently parallelized, different type -- no relationship between `Generic<Type_2>` and `Generic<Type_2>`, regardless of the relationship between the type variables
+   - at runtime in JVM
+     - erased to bound -- type variables are erased and replaced by first bound, or `Object`
+     - cast when needed -- compiler inserts casts to other bounds when necessary
        - place the predominant interface at the first one for performance
      - bridge methods are synthesized when necessary (when overriding)
-       - actual override method can have a different signature compared to super type method — due to type erasure of generics or different return type
-       - bridge method is of the same signature of super type method
-       - bridge method calls actual method
+       - override method can have a different signature — due to type erasure of generics or different return type
+       - bridge method -- the same signature of super type method, calls actual method
 
 1. generic syntax
    - name conventions
-     - `E` for the element type of a collection
-     - `K` and `V` for key and value types of a table
-     - and `T` (and the neighboring letters `U` and `S` , if necessary) for “any type at all”
-   - generic class
+     - `E` -- for the element type of a collection
+     - `K` and `V` -- for key and value types of a table
+     - `T` (and the neighboring `U` and `S`) -- for “any type at all”
+   - generic class syntax
      ```java
      public class Pair<T, U> { . . . }
      ```
@@ -3921,7 +3009,6 @@
      - call — type parameter before method name, `className.<type>method(params)`
        - avoid parsing ambiguities in C++ — `g(f<a,b>(c))`
      - type inference — type can be inferred from parameters, but can be problematic when multiple super types
-       - use `jshell` to test
    - generic bounds — `extends`, including
      ```java
      public static <T extends Comparable & Serializable> T min(T[] a)
@@ -3929,15 +3016,15 @@
      - class bound — must be the first one in the bounds list
      - interface bound and class bound — arbitrary number of interfaces, but at most one class
    - wildcards — `?`
-     - `?` — can only be assigned to `Object`, can only be assigned `null`
-     - `? extends SomeType` — including, can not be assigned, but can be assigned to (`?` can be deemed `SubSubSubSomeType`)
+     - `?` — for a variable of type `?`, can only assign when left value is `Object`, or right value is `null`
+     - `? extends SomeType` — including; a variable of this type can only be right value
        ```java
        Pair<Manager> managerBuddies = new Pair<>(ceo, cfo);
        Pair<? extends Employee> wildcardBuddies = managerBuddies; // OK
-       Employee e = wildcardBuddies.getFirst(); // OK, function signature is `? extends Employee getFirst()`
-       wildcardBuddies.setFirst(lowlyEmployee); // compile-time error, function signature is `void setFirst(? extends Employee)`
+       Employee e = wildcardBuddies.getFirst(); // function signature is `? extends Employee getFirst()`, OK
+       wildcardBuddies.setFirst(lowlyEmployee); // function signature is `void setFirst(? extends Employee)`, compile-time error
        ```
-     - `? super SomeType` — including, the contrary of `? extends SomeType` (can only be assigned to `Object`)
+     - `? super SomeType` — including; the contrary of `? extends SomeType` (left value can only be `Object`)
        - example — `<T extends Comparable<? super T>>`, a rescue when `T` does not implement `Comparable` but its super class does
      - wildcard capture — when the wildcard represents a single, definite type, it can be captured by type parameter
        ```java
@@ -3962,12 +3049,14 @@
    } catch (Throwable t) {
        // the compiler will believe that t becomes an unchecked exception
        Block.<RuntimeException>throwAs(t);
+       // alternatively, see https://stackoverflow.com/questions/31316581/a-peculiar-feature-of-exception-type-inference-in-java-8
+       // Block.throwAs(t);
    }
    ```
 
 1. limits of generics
    - type parameters cannot be primitive types — not compatible with `Object` when type erased at runtime
-   - type variables not valid in static context (parameterized types are available)
+   - in static context -- type variables not valid in static context (parameterized types are available)
      ```java
      public class Singleton<T> {
          private static T singleInstance; // Error
@@ -3977,14 +3066,16 @@
          }
      }
      ```
-   - cannot throw or catch instances of a generic class
-   - compile warning when cast (`(Pair<String>) a`), compile error when `instanceof` (`a instanceof Pair<T>`)
+   - not when `throw` or `catch` -- cannot throw or catch instances of a generic class
+   - not when cast and `instanceof` -- compile warning when cast (`(Pair<String>) a`), compile error when `instanceof` (`a instanceof Pair<T>`)
    - name clash
-     - error by clash with `Object::equals` when defining `equals(T other)`
-     - error when subtype of the same interface with different parameterization — will be a conflict with the synthesized bridge methods
+     - name clash with methods in `Object` -- error by clash with `Object::equals` when defining `equals(T other)`
+     - error when generic interfaces implemented more than once with different arguments — will be a conflict with the synthesized bridge methods
        ```java
        class Employee implements Comparable<Employee> { }
        class Manager extends Employee implements Comparable<Manager> { } // Error
+       // bridge method for Comparable<X>
+       public int compareTo(Object other) { return compareTo((X) other); }
        ```
    - heap pollution, cannot initialize arrays of parameterized types, but can be declared — error when `new Pair<String>[10]`
      ```java
@@ -3993,7 +3084,7 @@
      ```
      ```java
      // heap pollution
-     Object[] objArray = table;
+     Object[] objArray = table; // defined above
      objArray[0] = new Pair<Employee>();
      ```
    - cannot instantiate type variable — error when `new T()`
@@ -4037,7 +3128,7 @@
 
 1. `@SuppressWarnings("fallthrough")`
 
-1. `@override` -- error when not overriding but define a new method
+1. `@Override` -- error when not overriding but define a new method
 
 1. `@FunctionalInterface` -- error if conditions of functional interfaces not meet
 
@@ -4050,8 +3141,7 @@
 1. multithread
    - construct a runnable thread
      - construct with a `Runnable` target
-     - subclass `Thread` and override `run` method
-       - recommended only when customizing `run` is not enough
+     - subclass `Thread` and override `run` method -- recommended only when customizing `run` is not enough
    - start a thread -- `Thread::run`
      - [zhihu](https://zhuanlan.zhihu.com/p/34414549)
    - thread scheduling -- depends on the services the OS provides
@@ -4059,13 +3149,13 @@
 1. properties of threads
    - priority -- whenever the scheduler wants to pick a new thread, threads with higher priorities are preferred
      - inherit -- initially set equal to the priority of the creating thread
-     - constants -- `Thread.MIN_PRIORITY` 1, `Thread.NORM_PRIORITY` 5, `Thread.MAX_PRIORITY` 10, mapped to priority levels of the host platform
+     - mapped constants -- `Thread.MIN_PRIORITY` 1, `Thread.NORM_PRIORITY` 5, `Thread.MAX_PRIORITY` 10, mapped to priority levels of the host platform
      - Windows has seven priority levels, priorities are ignored in Linux??
      - caveat -- few scenarios there to ever tweak priorities. If you have several threads with a high priority that don’t become inactive, the lower-priority threads may never execute
    - daemon -- serves other threads, JVM exits when only daemon threads remain
      - inherit -- is a daemon thread if and only if the creating thread is a daemon
-     - caveat -- should never access a persistent resource such as a file or database since it can terminate at any time
-   - state -- `Thread.State`
+     - no persistence access -- should never access a persistent resource such as a file or database since it can terminate at any time
+   - state -- enum `Thread.State`, see below
    - `Thread.UncaughtExceptionHandler` -- method to be invoked from when the given thread terminates due to the given uncaught exception
      ```java
      @FunctionalInterface
@@ -4073,8 +3163,8 @@
          void uncaughtException(Thread t, Throwable e);
      }
      ```
-     - Any exception thrown by this method will be ignored by JVM
-     - default handler defaults to `null`, individual handler defaults to `ThreadGroup`
+     - exceptions in `uncaughtException` -- any exception thrown by this method will be ignored by JVM
+     - handler defaults -- default handler defaults to `null`, individual handler defaults to `ThreadGroup`
    - `ThreadGroup` -- represents a set of threads. In addition, a thread group can also include other thread groups
      - not recommended, use alternatives instead
      - action orders of `ThreadGroup::uncaughtException` when an uncaught exception
@@ -4087,9 +3177,9 @@
      public static final ThreadLocal<SimpleDateFormat> dateFormat =
          ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd"));
      ```
-     - why
+     - motivations -- avoid synchronization and blocking and boost performance
        - the internal data structures used by `SimpleDateFormat` can be corrupted by concurrent access, and synchronization is expensive
-       - `Random` is thread safe, but inefficient if multiple threads need to wait for a single shared generator
+       - `Random` is thread safe using `AtomicLong::compareAndSet`, but inefficient if multiple threads need to wait for a single shared generator
 
 1. `Runnable` -- should be implemented by any class whose instances are intended to be executed by a thread
    ```java
@@ -4112,8 +3202,8 @@
      - `void start()`
      - `void run()` -- called by `start()`, generally should not be called explicitly
      - `void interrupt()` -- set the interrupted status, if the thread is blocked, throw `InterruptedException` inside the thread
-       - typically blocking methods (those related to `Thread.State.WAITING` and `Thread.State.TIMED_WAITING`) threaten to throw `InterruptedException`
-     - `static void yield()`
+       - used by blocking methods -- typically blocking methods (those related to `Thread.State.WAITING` and `Thread.State.TIMED_WAITING`) threaten to throw `InterruptedException`
+     - `static void yield()` -- rarely appropriate to use, see javadoc
    - wait
      - `static void sleep(long millis)` -- for current thread  
        `static void sleep(long millis, int nanos)`
@@ -4125,10 +3215,10 @@
      - `boolean isAlive()`
      - `boolean isInterrupted()` -- can be used for check in `while`
      - `static boolean interrupted()` -- for current thread, also clears interrupted status
-   - get
-     - `Thread.State getState()`
      - `int getPriority()`
      - `boolean isDaemon()`
+     - `Thread.State getState()`
+   - get handler
      - `Thread.UncaughtExceptionHandler getUncaughtExceptionHandler()`
      - `static Thread.UncaughtExceptionHandler getDefaultUncaughtExceptionHandler()`
    - set
@@ -4137,10 +3227,7 @@
      - `void setUncaughtExceptionHandler(Thread.UncaughtExceptionHandler eh)`
      - `static void setDefaultUncaughtExceptionHandler(Thread.UncaughtExceptionHandler eh)`
 
-1. `Thread.State`
-   ```java
-   public enum State
-   ```
+1. `enum Thread.State`
    - `NEW` -- after `new`, a thread that has not yet started is in this state.
    - `RUNNABLE` -- after `start()`, a thread executing in the Java virtual machine is in this state, may not be running due to CPU time slicing
    - `BLOCKED` -- intrinsic object lock, a thread that is blocked waiting for a monitor lock is in this state.
@@ -4164,7 +3251,7 @@
    - `void set(T value)`
    - `static <S> ThreadLocal<S> withInitial(Supplier<? extends S> supplier)`
 
-1. `java.util.concurrent`
+1. `java.util.concurrent.ThreadLocalRandom`
    ```java
    public class ThreadLocalRandom extends Random
    ```
@@ -4176,7 +3263,7 @@
    - race condition -- when a system's substantive behavior is dependent on the sequence or timing of other uncontrollable events
    - atomic
    - preference -- concurrent collections with non-blocking mechanism, synchronizers > underlying locks in `java.util.concurrent` > `synchronized` > `Lock`
-     - client-side locking -- discouraged
+     - avoid client-side locking -- discouraged to use the lock of an object to implement additional atomic operations, e.g. use the lock of a `Vector` object to implement something like `AtomicLong::getAndAdd` for given index
    - when to use
      > If you write a variable which may next be read by another thread, or you read a variable which may have last been written by another thread, you must use synchronization.
 
@@ -4226,7 +3313,8 @@
      }
    }
    ```
-   - atomic -- atomically releases the associated lock and suspends the current thread, just like `Object.wait`
+   - atomic lock release when calling `await()` -- atomically releases the associated lock and suspends the current thread, just like `Object::wait`
+   - re-acquire the lock when `signal()` -- a thread must then re-acquire the lock before returning from `await()`
    - intrinsically bound to a lock
      - `Lock::newCondition` to get instances
      - `await` and `signal` methods can only be called if the thread owns the `Lock` of the `Condition`
@@ -4246,7 +3334,7 @@
    synchronized (obj) {
        while (<condition does not hold>)
            obj.wait(timeout, nanos);
-       ... // Perform action appropriate to condition
+       // Perform action appropriate to condition
    }
    ```
    - intrinsic lock -- every object has an intrinsic lock, used if declared with `synchronized`
@@ -4260,10 +3348,7 @@
    - monitor -- intrinsic lock is the loose adaption of the monitor concept
      - [Monitor (synchronization) - Wikipedia](https://en.wikipedia.org/wiki/Monitor_(synchronization))
 
-1. `java.util.concurrent.locks.Lock`
-   ```java
-   public interface Lock
-   ```
+1. `interface java.util.concurrent.locks.Lock`
    - `void lock()` -- other threads are blocked if the lock cannot be acquired, cannot be interrupted
    - `void lockInterruptibly()` -- `lock()` that can be interrupted, equivalent to `tryLock()` with an infinite timeout
    - `Condition newCondition()`
@@ -4271,10 +3356,7 @@
    - `boolean tryLock(long time, TimeUnit unit)` -- can be interrupted
    - `void unlock()`
 
-1. `java.util.concurrent.locks.Condition` -- renamed API as counterpart methods in `Object` are `final`
-   ```java
-   public interface Condition
-   ```
+1. `interface java.util.concurrent.locks.Condition` -- renamed API as counterpart methods in `Object` are `final`
    - `void await()`
    - `boolean await(long time, TimeUnit unit)`
    - `long awaitNanos(long nanosTimeout)`
@@ -4288,7 +3370,7 @@
    public class ReentrantLock extends Object
    implements Lock, Serializable
    ```
-   - reentrant -- has a hold count, can be repeatedly acquired by a thread, every `lock()` needs `unlock()` in order to relinquish the lock
+   - reentrant -- has a hold count, can be repeatedly acquired by a thread, `lock()` will return immediately if the current thread already owns the lock, every `lock()` needs `unlock()` in order to relinquish the lock
      - `int getHoldCount()`
    - fair -- a lot slower, a fair lock can still be unfair if the thread scheduler is unfair
      - `ReentrantLock()`
@@ -4303,15 +3385,16 @@
      - read lock can be acquired if -- the write lock is not held by another thread
    - `ReentrantReadWriteLock.WriteLock writeLock()`
      - write lock can be acquired if -- neither the read nor write lock are held by another thread
-   - `java.util.concurrent.locks.ReadWriteLock` interface
+   - `interface java.util.concurrent.locks.ReadWriteLock`
      - scenarios -- while only a single thread at a time (a writer thread) can modify the shared data, in many cases any number of threads can concurrently read the data
-     - mutual exclusive or not -- The read lock may be held simultaneously by multiple reader threads, so long as there are no writers. The write lock is exclusive
-     - must guarantee that the memory synchronization effects of `writeLock` operations -- a thread successfully acquiring the read lock will see all updates made upon previous release of the write lock
-     - a writer can acquire the read lock, but not vice-versa
+     - mutual exclusive or not -- the read lock may be held simultaneously by multiple reader threads, so long as there are no writers. The write lock is exclusive
+     - `writeLock` happen-before -- must guarantee that the memory synchronization effects of `writeLock` operations: a thread successfully acquiring the read lock will see all updates made upon previous release of the write lock
+     - simultaneous read and write lock -- a writer can acquire the read lock, but not vice-versa
      - overhead -- the read-write lock implementation (which is inherently more complex than a mutual exclusion lock) can dominate the execution cost if the read operations are too short
 
 1. `java.util.concurrent.locks.StampedLock` -- a capability-based lock, lock acquisition methods return a stamp that represents and controls access with respect to a lock state
    - [tbd, zhihu](https://zhuanlan.zhihu.com/p/33422168)
+   <!-- TODO -->
 
 ## volatile and Atomics
 
@@ -4319,9 +3402,11 @@
    - problems of concurrent write and read to instance fields
      - cache coherence -- threads running in different processors may see different values for the same memory location
      - reorder?? -- a memory value can be changed by another thread, but compilers assume memory values are only changed with explicit instructions, and compilers reorder instructions to maximize throughput
-   - compiler will insert the appropriate code to ensure that a change to the a variable in one thread is visible from any other thread that reads the variable
+   - ensure changes visible -- compiler will insert the appropriate code to ensure that a change to the a variable in one thread is visible from any other thread that reads the variable
      - [happen-before order](https://docs.oracle.com/javase/specs/jls/se11/html/jls-17.html#jls-17.4.5) -- a write to a volatile field is visible to and ordered before every subsequent read of that field
    - atomicity -- volatile variables do not provide any atomicity, but makes read and write to `long` and `double` atomic
+     - [JLS 17.7. Non-Atomic Treatment of double and long](https://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.7)  
+       > For the purposes of the Java programming language memory model, a single write to a non-volatile `long` or `double` value is treated as two separate writes: one to each 32-bit half. This can result in a situation where a thread sees the first 32 bits of a 64-bit value from one write, and the second 32 bits from another write.
 
 1. `java.util.concurrent.atomic` -- use efficient machine-level instructions to guarantee atomicity without using locks
    - optimistic update -- `compareAndSet` method, or use lambda like `accumulateAndGet` method
@@ -4338,17 +3423,39 @@
    - delayed computation -- `LongAdder`, `LongAccumulator`, `DoubleAdder`, `DoubleAccumulator`
      - under high contention, performance suffers because the optimistic updates require too many retries
      - the computation must be associative and commutative
-     - `identity` is also used when `accumulate()`
+     - `identity` -- initial value, also used when `accumulate()`
 
-1. `java.util.concurrent.atomic.AtomicLong`
-   ```java
-   public class AtomicLong extends Number // Striped64
-   implements Serializable
-   ```
-
-1. more
+1. `java.util.concurrent.atomic` classes
+   - `java.util.concurrent.atomic.AtomicBoolean` (implements `Serializable`)
+   - `java.util.concurrent.atomic.AtomicIntegerArray` (implements `Serializable`)
+   - `java.util.concurrent.atomic.AtomicIntegerFieldUpdater<T>`
+   - `java.util.concurrent.atomic.AtomicLongArray` (implements `Serializable`)
+   - `java.util.concurrent.atomic.AtomicLongFieldUpdater<T>`
+   - `java.util.concurrent.atomic.AtomicMarkableReference<V>`
+   - `java.util.concurrent.atomic.AtomicReference<V>` (implements `Serializable`)
+   - `java.util.concurrent.atomic.AtomicReferenceArray<E>` (implements `Serializable`)
+   - `java.util.concurrent.atomic.AtomicReferenceFieldUpdater<T,V>`
+   - `java.util.concurrent.atomic.AtomicStampedReference<V>`
+   - `java.lang.Number`
+     - `java.util.concurrent.atomic.AtomicInteger`
+     - `java.util.concurrent.atomic.AtomicLong`
+     - `java.util.concurrent.atomic.Striped64` -- a package-local class holding common representation and mechanics for classes supporting dynamic striping on 64 bit values
+       - `java.util.concurrent.atomic.DoubleAccumulator`
+       - `java.util.concurrent.atomic.DoubleAdder`
+       - `java.util.concurrent.atomic.LongAccumulator`
+       - `java.util.concurrent.atomic.LongAdder`
 
 ## Thread-Safe Collections
+
+1. `java.util.concurrent` exceptions
+   - `java.util.concurrent.BrokenBarrierException`
+   - `java.util.concurrent.ExecutionException`
+   - `java.util.concurrent.TimeoutException`
+   - `RuntimeException`
+     - `java.util.concurrent.CompletionException`
+     - `IllegalStateException`
+       - `java.util.concurrent.CancellationException`
+     - `java.util.concurrent.RejectedExecutionException`
 
 ### Blocking Queues
 
@@ -4394,7 +3501,7 @@
    implements BlockingQueue<E>, Serializable
    ```
 
-1. `java.util.concurrent.PriorityBlockingQueue` -- unbounded blocking queue that uses the same ordering rules as class PriorityQueue
+1. `java.util.concurrent.PriorityBlockingQueue` -- unbounded blocking queue that uses the same ordering rules as `PriorityQueue`
    ```java
    public class PriorityBlockingQueue<E> extends AbstractQueue<E>
    implements BlockingQueue<E>, Serializable
@@ -4412,10 +3519,9 @@
          long getDelay(TimeUnit unit);
      }
      ```
-     - necessity -- a `compareTo` method that provides an ordering consistent with its `getDelay` method
-       - which violates the consistency between `compareTo` and `equals`
+     - consistency between `compareTo` and `getDelay` -- a `compareTo` method needs to provide an ordering consistent with its `getDelay` method, which violates the consistency between `compareTo` and `equals`
 
-1. `java.util.concurrent.LinkedTransferQueue` -- unbounded TransferQueue backed by dual queues of slack (refer to source code)
+1. `java.util.concurrent.LinkedTransferQueue` -- unbounded `TransferQueue` backed by dual queues of slack (refer to source code) based on linked nodes
    ```java
    public class LinkedTransferQueue<E> extends AbstractQueue<E>
    implements TransferQueue<E>, Serializable
@@ -4425,17 +3531,17 @@
      public interface TransferQueue<E> extends BlockingQueue<E>
      ```
      - `void transfer(E e)` -- transfers the specified element immediately if there exists a consumer already waiting, else waits until the element is received by a consumer
-   - `size()` is O(n) and maybe inaccurate, due to non-data nodes and concurrency
-   - bulk operations `addAll`, `removeAll`, `retainAll`, `containsAll`, `equals`, and `toArray` are not guaranteed to be performed atomically
+   - inaccurate `size()` -- `size()` is O(n) and maybe inaccurate, due to non-data nodes and concurrency
+   - atomicity for bulk operations -- bulk operations `addAll`, `removeAll`, `retainAll`, `containsAll`, `equals`, and `toArray` are not guaranteed to be performed atomically
 
 ### Concurrent Collections
 
 1. concurrent collections
    - generally non-blocking algorithm
    - some are non-null
-   - `size()` is O(n) and maybe inaccurate, due to non-data nodes and concurrency
-   - bulk operations `addAll`, `removeAll`, `retainAll`, `containsAll`, `equals`, and `toArray` are not guaranteed to be performed atomically
-   - Iterators are weakly consistent -- may or may not reflect all modifications after construction, but will not return a value twice
+   - inaccurate `size()` -- `size()` is O(n) and maybe inaccurate, due to non-data nodes and concurrency
+   - atomicity for bulk operations -- bulk operations `addAll`, `removeAll`, `retainAll`, `containsAll`, `equals`, and `toArray` are not guaranteed to be performed atomically
+   - iterators are weakly consistent -- may or may not reflect all modifications after construction, but will not return a value twice
 
 1. `java.util.concurrent.ConcurrentLinkedQueue`
    ```java
@@ -4456,6 +3562,17 @@
    implements NavigableSet<E>, Cloneable, Serializable
    ```
 
+1. `java.util.concurrent.ConcurrentSkipListMap`
+   ```java
+   public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
+   implements ConcurrentNavigableMap<K,V>, Cloneable, Serializable
+   ```
+   - `java.util.concurrent.ConcurrentNavigableMap`
+     ```java
+     public interface ConcurrentNavigableMap<K,V>
+     extends ConcurrentMap<K,V>, NavigableMap<K,V>
+     ```
+
 1. `java.util.concurrent.ConcurrentHashMap`
    ```java
    public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
@@ -4463,7 +3580,7 @@
    ```
    - fully interoperable with `Hashtable`
    - `concurrencyLevel` -- the estimated number of concurrently updating threads, defaults to 16, other write threads will be blocked if the number exceeded
-   - `long mappingCount()`
+   - `long mappingCount()` -- used in lieu of `size()` for `long`; an estimate, the actual count may differ if there are concurrent insertions or removals
    - atomicity
      - vanilla -- `putIfAbsent`, `remove`
      - CAS -- `V replace(K key, V value)`, `boolean replace(K key, V oldValue, V newValue)`
@@ -4484,18 +3601,7 @@
      - `static <K> ConcurrentHashMap.KeySetView<K,Boolean> newKeySet()`  
        `static <K> ConcurrentHashMap.KeySetView<K,Boolean> newKeySet(int initialCapacity)`
 
-1. `java.util.concurrent.ConcurrentSkipListMap`
-   ```java
-   public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
-   implements ConcurrentNavigableMap<K,V>, Cloneable, Serializable
-   ```
-   - `java.util.concurrent.ConcurrentNavigableMap`
-     ```java
-     public interface ConcurrentNavigableMap<K,V>
-     extends ConcurrentMap<K,V>, NavigableMap<K,V>
-     ```
-
-### Other Thread-Safe Collections
+### Copy on Write Collections
 
 1. `java.util.concurrent.CopyOnWriteArrayList` -- all mutative operations (add, set, and so on) are implemented by making a fresh copy of the underlying array
    ```java
@@ -4507,7 +3613,7 @@
    - snapshot iterator -- iterator method uses a reference to the state of the array at the point that the iterator was created
    - thread-safe -- memory consistency
 
-1. `java.util.concurrent.CopyOnWriteArraySet` -- a Set that uses an internal CopyOnWriteArrayList for all of its operations
+1. `java.util.concurrent.CopyOnWriteArraySet` -- a `Set` that uses an internal `CopyOnWriteArrayList` for all of its operations
    ```java
    public class CopyOnWriteArraySet<E> extends AbstractSet<E>
    implements Serializable
@@ -4663,7 +3769,7 @@
    ```java
    public class ThreadPoolExecutor extends AbstractExecutorService
    ```
-   - returned by `Executors.newCachedThreadPool()`, `Executors.newFixedThreadPool(int)`, `Executors.newSingleThreadExecutor()`
+   - creation -- returned by `Executors.newCachedThreadPool()`, `Executors.newFixedThreadPool(int)`, `Executors.newSingleThreadExecutor()`
    - more
 
 1. `java.util.concurrent.ScheduledThreadPoolExecutor` -- `ThreadPoolExecutor` that can additionally schedule commands to run after a given delay, or to execute periodically, preferable to `java.util.Timer`
@@ -4671,7 +3777,7 @@
    public class ScheduledThreadPoolExecutor extends ThreadPoolExecutor
    implements ScheduledExecutorService
    ```
-   - returned by `Executors.newScheduledThreadPool(int)`, `Executors.newSingleThreadScheduledExecutor()`
+   - creation -- returned by `Executors.newScheduledThreadPool(int)`, `Executors.newSingleThreadScheduledExecutor()`
 
 1. `java.util.concurrent.ForkJoinPool` -- see [Fork-Join](#Fork-Join)
 
@@ -4727,11 +3833,11 @@
      - `static ForkJoinTask<?> adapt(Runnable runnable)`
      - `static <T> ForkJoinTask<T> adapt(Runnable runnable, T result)`
    - exceptions -- may still encounter unchecked exceptions, which are rethrown to callers join them
-     - `RejectedExecutionException` -- internal resource exhaustion
+     - `java.util.concurrent.RejectedExecutionException` -- internal resource exhaustion
    - awaiting completion and extracting results
      - `ForkJoinTask<V> fork()` -- Arranges to asynchronously execute this task in the pool the current task is running in, if applicable, or using the `ForkJoinPool.commonPool()` if not `inForkJoinPool()`.
      - `V join()` -- Returns the result of the computation when it is done
-     - `get` from `Future`, but throws checked exception
+     - inherited `Future::get`, but throws checked exception
      - `V invoke()` -- semantically equivalent to `fork(); join()` but always attempts to begin execution in the current thread
      - `invokeAll`
        - `static <T extends ForkJoinTask<?>> Collection<T> invokeAll(Collection<T> tasks)` -- forking a set of tasks and joining them all
@@ -4795,7 +3901,8 @@
    - use
      - permit -- a count, can be acquired or released, by any caller
      - binary semaphore -- mutex lock, but without ownership
-     - multiple permits methods -- increased risk of indefinite postponement when used without `true` fairness
+     - multiple permits methods -- increased risk of indefinite postponement when used without fairness
+     - fairness -- FIFO by the order of executing of specific internal points in `acquire` methods
    - constructors
      - `Semaphore(int permits)`
      - `Semaphore(int permits, boolean fair)`
@@ -4805,7 +3912,7 @@
    - acquire -- Acquires a permit from this semaphore, blocking until one is available, or the thread is interrupted
      - `void acquire()`
      - `void acquire(int permits)`
-     - `boolean tryAcquire()`
+     - `boolean tryAcquire()` -- return immediately, regardless of fairness
      - `boolean tryAcquire(int permits)`
      - `boolean tryAcquire(int permits, long timeout, TimeUnit unit)`
      - `boolean tryAcquire(long timeout, TimeUnit unit)`
@@ -4923,7 +4030,7 @@
      - `codePointAt`
      - `codePointBefore`
      - `codePointCount`
-   - more
+     - `static char forDigit(int digit, int radix)` -- 1 to `'1'`, 10 to `'a'` etc.
    - `Character.UnicodeScript`
      ```java
      public static enum UnicodeScript
@@ -4941,6 +4048,7 @@
      - `static Character.UnicodeBlock of(char c)`
      - `static Character.UnicodeBlock of(int codePoint)`
    - `Character.Subset` -- for extending, represents particular subsets of the Unicode character set
+   - more
 
 ## Regex
 
@@ -4960,10 +4068,10 @@
 
 1. character classes
    - `[a-zA-Z]` -- a through z or A through Z, inclusive (range)
-   - `[a-d[m-p]]` -- a through d, or m through p: [a-dm-p] (union)
+   - `[a-d[m-p]]` -- a through d, or m through p: `[a-dm-p]` (union)
    - `[a-z&&[def]]` -- d, e, or f (intersection)
-   - `[a-z&&[^bc]]` -- a through z, except for b and c: [ad-z] (subtraction)
-   - `[a-z&&[^m-p]]` -- a through z, and not m through p: [a-lq-z] (subtraction)
+   - `[a-z&&[^bc]]` -- a through z, except for b and c: `[ad-z]` (subtraction)
+   - `[a-z&&[^m-p]]` -- a through z, and not m through p: `[a-lq-z]` (subtraction)
    - `[\p{L}&&[^\p{Lu}]]` -- any letter except an uppercase letter (subtraction)
    - predefined non `\p`
      - `.` -- any character, including line terminators if `DOTALL`
@@ -5002,7 +4110,7 @@
    - predefined Unicode properties
      - `\p{IsLatin}` -- a Latin script character (prefix `Is` with `Character.UnicodeScript` enum value)
      - `\p{InGreek}` -- a character in the Greek block (prefix `In` with `Character.UnicodeBlock` static fields)
-     - `\p{Lu}`, `\p{gc=Lu}` -- an uppercase letter ([general category](http://unicode.org/reports/tr44/#General_Category_Values), also static fields of `Character`)
+     - `\p{Lu}`, `\p{gc=Lu}` -- an uppercase letter ([general category](http://unicode.org/reports/tr44/#General_Category_Values), also partially documented in the javadoc of static fields in `Character`)
      - `\P{InGreek}` -- any character except one in the Greek block (negation)
      - `\p{IsAlphabetic}` -- an alphabetic character (binary property, `Is` prefix with below), conform with POSIX character classes when `UNICODE_CHARACTER_CLASS`
         - `Alphabetic`
@@ -5019,8 +4127,6 @@
         - `Join_Control`
         - `Noncharacter_Code_Point`
         - `Assigned`
-
-1. compound character -- `\R` -- any Unicode line break sequence, is equivalent to `\r\n|[\n\u000B\f\r\u0085\u2028\u2029]`
 
 #### Matchers, Quantifiers and Others
 
@@ -5162,7 +4268,6 @@
      - `boolean find()` -- find from the first character not matched by the previous match
      - `boolean find(int start)` -- reset and find from `start`
      - replace methods
-     - `boolean hitEnd()`
    - reset -- discards its explicit state information and sets the append position to zero
      - `boolean find(int start)` -- reset and find from `start`
      - `Matcher reset()`
@@ -5206,8 +4311,1237 @@
      - `Pattern pattern()`
      - `Matcher usePattern(Pattern newPattern)` -- position in the input and last append position are unaffected
      - `String toString()`
+     - `boolean hitEnd()`
 
 ## Format
 
 1. `java.util.Formatter`
    - `String::format`
+
+# IO
+
+1. `java.io` exceptions
+   - `java.io.IOException` extends `Exception`
+     - `java.io.CharConversionException`
+     - `java.io.EOFException`
+     - `java.io.FileNotFoundException`
+     - `java.io.InterruptedIOException`
+     - `java.io.ObjectStreamException`
+     - `java.io.InvalidClassException`
+     - `java.io.InvalidObjectException`
+     - `java.io.NotActiveException`
+     - `java.io.NotSerializableException`
+     - `java.io.OptionalDataException`
+     - `java.io.StreamCorruptedException`
+     - `java.io.WriteAbortedException`
+     - `java.io.SyncFailedException`
+     - `java.io.UnsupportedEncodingException`
+     - `java.io.UTFDataFormatException`
+   - `java.io.UncheckedIOException` extends `RuntimeException`
+
+## Console
+
+1. `java.io.Console` -- synchronized
+   ```java
+   public final class Console extends Object
+   implements Flushable
+   ```
+   - creation
+     - `System.console()`
+   - write
+     - `void flush()`
+     - `Console format(String fmt, Object... args)`
+     - `Console printf(String format, Object... args)`
+   - read
+     - `String readLine()`  
+       `String readLine(String fmt, Object... args)`
+     - `char[] readPassword()`  
+       `char[] readPassword(String fmt, Object... args)`
+   - get underlying stream
+     - `Reader reader()`
+     - `PrintWriter writer()`
+
+1. `java.util.Scanner` -- not synchronized
+   ```java
+   public final class Scanner extends Object
+   implements Iterator<String>, Closeable
+   ```
+   - constructors
+     - `Scanner(File source)`
+     - `Scanner(File source, String charsetName)`
+     - `Scanner(InputStream source)`
+       - `System.in` for stdin
+     - `Scanner(InputStream source, String charsetName)`
+     - `Scanner(Path source)`
+     - `Scanner(Path source, String charsetName)`
+     - `Scanner(String source)`
+     - `Scanner(Readable source)`
+     - `Scanner(ReadableByteChannel source)`
+     - `Scanner(ReadableByteChannel source, String charsetName)`
+   - settings -- delimiter, locale, regex
+     - `Scanner reset()`
+     - `Scanner useDelimiter(Pattern pattern)`
+     - `Scanner useDelimiter(String pattern)`
+     - `Pattern delimiter()`
+     - `Scanner useLocale(Locale locale)`
+     - `Locale locale()`
+     - `Scanner useRadix(int radix)`
+     - `int radix()`
+   - read
+     - `String next()`
+     - `String next(Pattern pattern)`
+     - `String next(String pattern)`
+     - `BigDecimal nextBigDecimal()`
+     - `BigInteger nextBigInteger()`
+     - `BigInteger nextBigInteger(int radix)`
+     - `boolean nextBoolean()`
+     - `byte nextByte()`
+     - `byte nextByte(int radix)`
+     - `double nextDouble()`
+     - `float nextFloat()`
+     - `int nextInt()`
+     - `int nextInt(int radix)`
+     - `String nextLine()`
+     - `long nextLong()`
+     - `long nextLong(int radix)`
+     - `short nextShort()`
+     - `short nextShort(int radix)`
+     - `MatchResult match()` -- the match result of the last scanning operation
+   - test -- `has-` prefixed version of read methods, `hasNext`
+   - find -- ignoring delimiters, the scanner returns and advances past the match if found, else returns `null` with position unchanged
+     - `String findInLine(Pattern pattern)`
+     - `String findInLine(String pattern)`
+     - `String findWithinHorizon(Pattern pattern, int horizon)` -- will never search more than `horizon` code points beyond its current position, `horizon` ignored if it is 0
+     - `String findWithinHorizon(String pattern, int horizon)`
+   - skip -- ignoring delimiters
+     - `Scanner skip(Pattern pattern)`
+     - `Scanner skip(String pattern)`
+   - `IOException ioException()` -- Returns the `IOException` last thrown by this Scanner's underlying `Readable`.
+
+1. `java.io.BufferedReader` -- synchronized
+   ```java
+   public class BufferedReader
+   extends Reader
+   ```
+   - `Stream<String> lines()`
+   - `String readLine()`
+   - `Reader` methods
+
+1. `System.out`, `static PrintStream`
+   - `print()`
+   - `println()`
+   - `PrintStream printf(String format, Object... args)`
+     - [formats](https://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html#syntax)
+
+## Basic IO Stream
+
+1. IO streams
+   - byte streams, byte oriented -- `InputStream`, `OutputStream`
+     - deal with bytes -- `FilterInputStream`, `FilterOutputStream` and their derivatives
+     - buffer -- use `BufferedInputStream` and `BufferedOutputStream` as an intermediate stream
+   - `char` streams, two-byte `char` values (UTF-16 codepoints) oriented -- `Reader`, `Writer`, can be converted from byte streams, both have a protected `Object` field `lock` for synchronization
+   - usage -- combination, filter streams as wrappers
+     ```java
+     DataInputStream din = new DataInputStream(
+         new BufferedInputStream(
+             new FileInputStream("employee.dat")));
+     ```
+
+1. IO interfaces
+   - `java.io.Closeable` -- idempotent variant with `IOException` compared to `AutoCloseable` with `Exception`
+     ```java
+     public interface Closeable
+     extends AutoCloseable
+     ```
+     - `close()` when already closed -- no effect if already closed, whereas `AutoCloseable::close` may have side effects
+   - `java.io.Flushable` -- write any buffered output to the underlying stream
+     ```java
+     public interface Flushable {
+         void flush() throws IOException;
+     }
+     ```
+   - `Readable`
+     ```java
+     public interface Readable {
+         public int read(java.nio.CharBuffer cb) throws IOException;
+     }
+     ```
+   - `Appendable` -- to which char sequences and values can be appended, must be implemented by any class whose instances are intended to receive formatted output from a `java.util.Formatter`
+     ```java
+     public interface Appendable {
+         Appendable append(char c) throws IOException;
+         Appendable append(CharSequence csq) throws IOException;
+         Appendable append(CharSequence csq, int start, int end) throws IOException;
+     }
+     ```
+
+1. `java.io.InputStream`
+   ```java
+   public abstract class InputStream extends Object
+   implements Closeable
+   ```
+   - lifecycle
+     - `int available()` -- an estimate of the number of bytes that can be read (or skipped over) without blocking
+     - `abstract int read()` -- block if necessary, read next byte (0 ~ 255), `-1` if at end, used by some other methods so only one method to implementing when inheriting  
+       `int read(byte[] b)`  
+       `int read(byte[] b, int off, int len)` -- reads up to `len` bytes of data from the offset into byte buffer `b`
+     - `long skip(long n)` -- returns the actual number of bytes skipped
+     - `void close()`
+   - mark -- the stream somehow remembers all the bytes read after the call to `mark` and stands ready to supply those same bytes again if and whenever the method `reset` is called, as long as within `readlimit`
+     - `boolean markSupported()`
+     - `void mark(int readlimit)`
+     - `void reset()`
+
+1. `java.io.OutputStream`
+   ```java
+   public abstract class OutputStream extends Object
+   implements Closeable, Flushable
+   ```
+   - `abstract void write(int b)` -- block if necessary  
+     `void write(byte[] b)`  
+     `void write(byte[] b, int off, int len)`
+   - `void flush()`
+   - `void close()` -- automatically `flush()` before close
+
+1. `java.io.Reader` -- see `InputStream`
+   ```java
+   public abstract class Reader extends Object
+   implements Readable, Closeable
+   ```
+   - lifecycle
+     - `boolean ready()`
+     - `abstract int read(char[] cbuf, int off, int len)` -- 0 ~ 65535 or -1  
+       `int read()`  
+       `int read(char[] cbuf)`  
+       `int read(CharBuffer target)`
+     - `long skip(long n)`
+     - `abstract void close()`
+   - mark
+     - `boolean markSupported()`
+     - `void mark(int readAheadLimit)`
+     - `void reset()`
+
+1. `java.io.Writer` -- see `OutputStream`
+   ```java
+   public abstract class Writer extends Object
+   implements Appendable, Closeable, Flushable
+   ```
+   - `Writer append(char c)`  
+     `Writer append(CharSequence csq)`  
+     `Writer append(CharSequence csq, int start, int end)`
+   - `abstract void write(char[] cbuf, int off, int len)`  
+     `void write(char[] cbuf)`  
+     `void write(int c)`  
+     `void write(String str)`  
+     `void write(String str, int off, int len)`
+   - `abstract void flush()`
+   - `abstract void close()`
+
+1. convert stream to reader or writer, uses `Charset.defaultCharset()` if not specified
+   - `java.io.InputStreamReader`
+     ```java
+     public class InputStreamReader
+     extends Reader
+     ```
+     - constructors
+       - `InputStreamReader(InputStream in)`
+       - `InputStreamReader(InputStream in, Charset cs)`
+       - `InputStreamReader(InputStream in, CharsetDecoder dec)`
+       - `InputStreamReader(InputStream in, String charsetName)`
+     - `String getEncoding()`
+   - `java.io.OutputStreamWriter`
+     ```java
+     public class OutputStreamWriter
+     extends Writer
+     ```
+     - constructors
+       - `OutputStreamWriter(OutputStream out)`
+       - `OutputStreamWriter(OutputStream out, Charset cs)`
+       - `OutputStreamWriter(OutputStream out, CharsetEncoder enc)`
+       - `OutputStreamWriter(OutputStream out, String charsetName)`
+     - `String getEncoding()`
+
+## Filter Stream
+
+1. filter stream -- contains some other stream, which it uses as its basic source or sink of data, possibly transforming the data along the way or providing additional functionality
+   - `java.io.FilterInputStream`
+     ```java
+     public class FilterInputStream
+     extends InputStream
+     ```
+     - constructor -- `protected FilterInputStream(InputStream in)`
+   - `java.io.FilterOutputStream`
+     ```java
+     public class FilterOutputStream
+     extends OutputStream
+     ```
+     - constructor -- `FilterOutputStream(OutputStream out)`
+   - `java.io.FilterReader`
+     ```java
+     public abstract class FilterReader
+     extends Reader
+     ```
+   - `java.io.FilterWriter`
+     ```java
+     public abstract class FilterWriter
+     extends Writer
+     ```
+
+1. buffer streams -- the ability to buffer the input and to support the mark and reset methods
+   - `java.io.BufferedInputStream`
+     ```java
+     public class BufferedInputStream
+     extends FilterInputStream
+     ```
+     - constructors
+       - `BufferedInputStream(InputStream in)`
+       - `BufferedInputStream(InputStream in, int size)`
+   - `java.io.BufferedOutputStream`
+     ```java
+     public class BufferedOutputStream
+     extends FilterOutputStream
+     ```
+     - constructors
+       - `BufferedOutputStream(OutputStream out)`
+       - `BufferedOutputStream(OutputStream out, int size)`
+   - `java.io.BufferedReader`
+     ```java
+     public class BufferedReader
+     extends Reader
+     ```
+   - `java.io.BufferedWriter`
+     ```java
+     public class BufferedWriter
+     extends Writer
+     ```
+
+1. data input -- conversation between bytes from a binary stream and Java data types, big endian
+   - [modified UTF-8](https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8) -- UTF-8 encoded UTF-16
+   - `java.io.DataInput`
+     ```java
+     public interface DataInput
+     ```
+     - `void readFully(byte[] b)`
+     - `void readFully(byte[] b, int off, int len)`
+     - `boolean readBoolean()`
+     - `byte readByte()`
+     - `char readChar()`
+     - `double readDouble()`
+     - `float readFloat()`
+     - `int readInt()`
+     - `String readLine()`
+     - `long readLong()`
+     - `short readShort()`
+     - `int readUnsignedByte()` -- 0 ~ 255
+     - `int readUnsignedShort()` -- 0 ~ 65535
+     - `String readUTF()` -- modified UTF-8 encoded string
+     - `int skipBytes(int n)`
+   - `java.io.DataOutput`
+     ```java
+     public interface DataOutput
+     ```
+   - `java.io.DataInputStream`
+     ```java
+     public class DataInputStream
+     extends FilterInputStream
+     implements DataInput
+     ```
+     - constructor -- `DataInputStream(InputStream in)`
+   - `java.io.DataOutputStream`
+     ```java
+     public class DataOutputStream
+     extends FilterOutputStream
+     implements DataOutput
+     ```
+     - constructor -- `DataOutputStream(OutputStream out)`
+
+1. peek -- push back stream
+   - `java.io.PushbackInputStream`
+     ```java
+     public class PushbackInputStream
+     extends FilterInputStream
+     ```
+     - constructors
+       - `PushbackInputStream(InputStream in)`
+       - `PushbackInputStream(InputStream in, int size)`
+     - push back
+       - `void unread(byte[] b)`
+       - `void unread(byte[] b, int off, int len)`
+       - `void unread(int b)`
+   - `java.io.PushbackReader`
+     ```java
+     public class PushbackReader
+     extends FilterReader
+     ```
+
+### ZIP Streams
+
+1. inflate and deflate
+   - `java.util.zip.InflaterInputStream`
+     ```java
+     public class InflaterInputStream
+     extends FilterInputStream
+     ```
+   - `java.util.zip.DeflaterOutputStream`
+     ```java
+     public class DeflaterOutputStream
+     extends FilterOutputStream
+     ```
+
+1. ZIP stream
+   - `java.util.zip.ZipInputStream`
+     ```java
+     public class ZipInputStream
+     extends InflaterInputStream
+     ```
+   - `java.util.zip.ZipOutputStream`
+     ```java
+     public class ZipOutputStream
+     extends DeflaterOutputStream
+     ```
+
+1. ZIP file system -- `FileSystems.newFileSystem(Paths.get(zipname), null)`
+
+## Files
+
+### File Classes
+
+1. `java.io.File` -- an abstract representation of file and directory pathnames, the old school way
+   ```java
+   public class File extends Object
+   implements Serializable, Comparable<File>
+   ```
+   - separators -- `System.getProperty("file.separator")`, `System.getProperty("path.separator")`
+     - `static String separator`
+     - `static char separatorChar`
+     - `static String pathSeparator`
+     - `static char pathSeparatorChar`
+   - permissions
+     - `boolean canExecute()`
+     - `boolean canRead()`
+     - `boolean canWrite()`
+     - `boolean isHidden()`
+     - `boolean setExecutable(boolean executable)
+     - `boolean setExecutable(boolean executable, boolean ownerOnly)
+     - `boolean setReadable(boolean readable)
+     - `boolean setReadable(boolean readable, boolean ownerOnly)
+     - `boolean setReadOnly()
+     - `boolean setWritable(boolean writable)
+     - `boolean setWritable(boolean writable, boolean ownerOnly)
+   - inherited
+     - `int compareTo(File pathname)` -- lexicographically
+   - CRUD
+     - `static File createTempFile(String prefix, String suffix)`
+     - `static File createTempFile(String prefix, String suffix, File directory)`
+     - `boolean createNewFile()`
+     - `boolean mkdir()`
+     - `boolean mkdirs()`
+     - `boolean delete()`
+     - `void deleteOnExit()`
+     - `boolean exists()`
+     - `boolean renameTo(File dest)`
+   - metadata and list
+     - `boolean isDirectory()`
+     - `boolean isFile()`
+     - `long lastModified()`
+     - `boolean setLastModified(long time)`
+     - `long length()`
+     - `String[] list()`  
+       `String[] list(FilenameFilter filter)`
+     - `File[] listFiles()`  
+       `File[] listFiles(FileFilter filter)`  
+       `File[] listFiles(FilenameFilter filter)`
+     - `static File[] listRoots()`
+   - path
+     - `File getAbsoluteFile()`
+     - `String getAbsolutePath()`
+     - `File getCanonicalFile()`
+     - `String getCanonicalPath()`
+     - `String getName()`
+     - `String getParent()`
+     - `File getParentFile()`
+     - `String getPath()`
+     - `boolean isAbsolute()`
+     - `String toString()`
+     - `Path toPath()`
+     - `URI toURI()`
+   - space -- the partition named by this abstract pathname
+     - `long getFreeSpace()`
+     - `long getTotalSpace()`
+     - `long getUsableSpace()`
+   - file filters
+     - `java.io.FilenameFilter`
+       ```java
+       @FunctionalInterface
+       public interface FilenameFilter {
+           boolean accept(File dir, String name);
+       }
+       ```
+     - `java.io.FileFilter`
+       ```java
+       @FunctionalInterface
+       public interface FileFilter {
+           boolean accept(File pathname);
+       }
+       ```
+   - `java.io.FileDescriptor` -- used in file streams
+      ```java
+      public final class FileDescriptor extends Object
+      ``
+
+1. `java.nio.file.Path` -- represents a system dependent file path, immutable
+   ```java
+   public interface Path
+   extends Comparable<Path>, Iterable<Path>, Watchable
+   ```
+   - creation
+     - `java.nio.file.Paths`
+       ```java
+       public final class Paths extends Object
+       ```
+       - `static Path get(String first, String... more)` -- join
+       - `static Path get(URI uri)`
+     - `File::toPath`
+   - components methods
+   - relative, absolute, real path methods
+   - `File toFile()`
+   - `URI toUri()`
+   - inherited methods
+
+1. `java.nio.file.Files` -- static methods take `Path` as arguments, operate its underlying files, usually atomically
+   ```java
+   public final class Files extends Object
+   ```
+   - limit -- some read / write methods are intended for text files of moderate length, use stream methods such as `newInputStream` for large or binary files
+   - glop pattern -- extended syntax, extended `**`, see [File Operations (The Java™ Tutorials > Essential Classes > Basic I/O)](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob), and [`FileSystem::getPathMatcher`](https://docs.oracle.com/javase/8/docs/api/java/nio/file/FileSystem.html#getPathMatcher-java.lang.String-)
+
+1. utility classes
+   - `java.nio.file.DirectoryStream` -- an object to iterate over the entries in a directory, supports only a single `Iterator`
+     ```java
+     public interface DirectoryStream<T>
+     extends Closeable, Iterable<T>
+     ```
+   - `java.nio.file.SimpleFileVisitor` -- a simple visitor of files with default behavior to visit all files and to re-throw I/O errors
+     ```java
+     public class SimpleFileVisitor<T> extends Object
+     implements FileVisitor<T>
+     ```
+     - `public interface java.nio.file.FileVisitor<T>`
+     - prevent termination by exceptions -- override `postVisitDirectory` to return `FileVisitResult.CONTINUE` and `visitFileFailed` to return `FileVisitResult.SKIP_SUBTREE`
+   - `java.nio.file.PathMatcher`
+     ```java
+     @FunctionalInterface
+     public interface PathMatcher
+     ```
+
+1. `java.nio.file.FileStore` -- a storage pool, device, partition, volume, concrete file system or other implementation specific means of file storage
+   ```java
+   public abstract class FileStore extends Object
+   ```
+
+1. `java.nio.file.FileSystem`
+   ```java
+   public abstract class FileSystem extends Object
+   implements Closeable
+   ```
+   - `abstract Path getPath(String first, String... more)`
+   - `abstract Iterable<Path> getRootDirectories()`
+   - `abstract boolean isOpen()`
+   - `abstract boolean isReadOnly()`
+   - `abstract Iterable<FileStore> getFileStores()`
+   - `abstract PathMatcher getPathMatcher(String syntaxAndPattern)`
+   - `abstract String getSeparator()`
+   - `abstract UserPrincipalLookupService getUserPrincipalLookupService()`
+   - `abstract WatchService newWatchService()`
+   - `abstract FileSystemProvider provider()`
+   - `abstract Set<String> supportedFileAttributeViews()`
+   - creation -- `FileSystems`
+
+1. `java.nio.file.FileSystems` -- factory methods for file systems
+   - initialization -- The first invocation of any of the methods defined by this class causes the default `FileSystemProvider` to be loaded. The default provider, identified by the URI scheme "file", creates the `FileSystem` that provides access to the file systems accessible to the JVM
+   - `static FileSystem getDefault()`
+   - `static FileSystem getFileSystem(URI uri)`
+   - `static FileSystem newFileSystem(Path path, ClassLoader loader)` -- constructs a new `FileSystem` to access the contents of a file as a file system, supports ZIP files
+   - `static FileSystem newFileSystem(URI uri, Map<String,?> env)`
+   - `static FileSystem newFileSystem(URI uri, Map<String,?> env, ClassLoader loader)`
+
+1. `java.nio.file.spi.FileSystemProvider` -- file system service provider, methods in `Files` under the hood
+   ```java
+   public abstract class FileSystemProvider extends Object
+   ```
+
+1. `java.nio.channels.FileChannel` -- reading, writing, mapping, locking, transferring and manipulating a file
+   ```java
+   public abstract class FileChannel
+   extends AbstractInterruptibleChannel
+   implements SeekableByteChannel, GatheringByteChannel, ScatteringByteChannel
+   ```
+   - creation
+     - `static FileChannel open(Path path, OpenOption... options)`
+     - `static FileChannel open(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs)`
+     - `FileInputStream::getChannel`, `FileOutputStream::getChannel`, `RandomAccessFile::getChannel`
+   - `abstract MappedByteBuffer map(FileChannel.MapMode mode, long position, long size)` -- maps a region of this channel's file directly into memory, recommended only for large files
+   - lock -- lock the given region of this channel's file
+     - `FileLock lock()` -- blocks, equivalent to `lock(0L, Long.MAX_VALUE, false)`  
+       `abstract FileLock lock(long position, long size, boolean shared)`
+     - `FileLock tryLock()` -- `null` if not available, equivalent to `tryLock(0L, Long.MAX_VALUE, false)`  
+       `abstract FileLock tryLock(long position, long size, boolean shared)`
+
+1. `java.nio.channels.FileLock` -- a lock on a region of a file, on behalf of the JVM
+   ```java
+   public abstract class FileLock extends Object
+   implements AutoCloseable
+   ```
+   - region is fixed -- the region stays fixed, the file can have uncovered portion or can grow beyond the region
+     - `boolean overlaps(long position, long size)`
+     - `long position()`
+     - `long size()`
+   - lock on behalf of the JVM -- not for multithreading, but for multiprocessing
+   - shared lock -- allow other programs to acquire overlapping shared locks while not allowing exclusive locks
+     - `shared` for read, exclusive for write -- `true` to request a shared lock, in which case this channel must be open for reading (and possibly writing); `false` to request an exclusive lock, in which case this channel must be open for writing (and possibly reading)
+   - OS dependent
+     - lock support -- On some systems, file locking is merely advisory
+     - shared support -- a request for a shared lock is automatically converted into a request for an exclusive lock if not supported
+     - memory map support -- on some systems, you cannot simultaneously lock a file and map it into memory
+     - avoid multiple channels on the same locked file -- on some systems, closing a channel releases all locks on the underlying file
+     - avoid locking files on a networked file system
+   - `abstract void release()`  
+     `void close()`
+
+### File Options and Attributes
+
+1. options
+   - `interface java.nio.file.OpenOption` -- mark interface
+   - `interface java.nio.file.CopyOption` -- mark interface
+   - `java.nio.file.LinkOption.NOFOLLOW_LINKS` -- Do not follow symbolic links
+     ```java
+     public enum LinkOption extends Enum<LinkOption>
+     implements OpenOption, CopyOption
+     ```
+   - `java.nio.file.StandardOpenOption`
+     ```java
+     public enum StandardOpenOption extends Enum<StandardOpenOption>
+     implements OpenOption
+     ```
+     - `READ`
+     - `CREATE`
+     - `CREATE_NEW`
+     - `DELETE_ON_CLOSE`
+     - `SPARSE` -- a hint to the file system that this file will be sparse
+     - `SYNC`, `DSYNC`
+     - `WRITE`
+     - `APPEND`
+     - `TRUNCATE_EXISTING`
+   - `java.nio.file.StandardCopyOption`
+     ```java
+     public enum StandardCopyOption extends Enum<StandardCopyOption>
+     implements CopyOption
+     ```
+     - `ATOMIC_MOVE`
+     - `COPY_ATTRIBUTES`
+     - `REPLACE_EXISTING`
+   - `java.nio.file.FileVisitOption.FOLLOW_LINKS` -- Follow symbolic links, neither `OpenOption` nor `CopyOption`
+
+1. file attributes -- `java.nio.file.attribute`
+   - `java.nio.file.attribute.UserPrincipal` -- a Principal representing an identity used to determine access rights to objects in a file system
+     ```java
+     public interface UserPrincipal extends Principal
+     ```
+   - `interface java.nio.file.attribute.BasicFileAttributes` -- basic file attributes, including times, file or dir or link, size, file key
+     - file key -- an object of some class, specific to the file system, that may or may not uniquely identify a file
+     - read attributes -- `Files::readAttributes`
+     - sub-interfaces
+       - `java.nio.file.attribute.DosFileAttributes`
+       - `java.nio.file.attribute.PosixFileAttributes`
+   - `java.nio.file.attribute.FileTime` -- a file's time stamp attribute
+     ```java
+     public final class FileTime extends Object
+     implements Comparable<FileTime>
+     ```
+
+### File Stream
+
+1. file streams
+   - `java.io.FileInputStream`
+      ```java
+      public class FileInputStream
+      extends InputStream
+      ```
+      - constructors
+        - `FileInputStream(File file)`
+        - `FileInputStream(FileDescriptor fdObj)`
+        - `FileInputStream(String name)`
+      - methods beyond `InputStream`
+        - `protected void finalize()` -- ensures that the close method of this file input stream is called when there are no more references to it
+        - `FileChannel getChannel()`
+        - `FileDescriptor getFD()`
+   - `java.io.FileOutputStream`
+     ```java
+     public class FileOutputStream
+     extends OutputStream
+     ```
+     - constructors
+       - `FileOutputStream(File file)`
+       - `FileOutputStream(File file, boolean append)`
+       - `FileOutputStream(FileDescriptor fdObj)`
+       - `FileOutputStream(String name)`
+       - `FileOutputStream(String name, boolean append)`
+     - see `FileInputStream`
+   - print streams
+   - `Scanner`, `BufferedReader`
+   - `java.io.RandomAccessFile` -- both reading and writing to a random access file, which has a file pointer, suitable for small and moderate files
+     ```java
+     public class RandomAccessFile extends Object
+     implements DataOutput, DataInput, Closeable
+     ```
+     - mode -- `"r"`, `"rw"`, `"rws"` (file content or metadata synchronized with storage), or `"rwd"` (only file content synchronized)
+     - constructors
+       - `RandomAccessFile(File file, String mode)`
+       - `RandomAccessFile(String name, String mode)`
+     - file info
+       - `FileChannel getChannel()`
+       - `FileDescriptor getFD()`
+       - `long length()`
+     - file pointer -- cursor for read / write
+       - `long getFilePointer()`
+       - `void seek(long pos)` -- Sets the file-pointer offset, measured from the beginning of this file, at which the next read or write occurs.
+       - `void setLength(long newLength)`
+       - `int skipBytes(int n)`
+     - read
+       - `int read()`
+       - `int read(byte[] b)`
+       - `int read(byte[] b, int off, int len)`
+       - `DataInput` methods
+     - write -- `DataOutput` methods
+
+1. char based file streams -- default encoding as `InputStreamReader`, `OutputStreamWriter`
+   - `java.io.FileReader`
+     ```java
+     public class FileReader
+     extends InputStreamReader
+     ```
+     - constructors
+       - `FileReader(File file)`
+       - `FileReader(FileDescriptor fd)`
+       - `FileReader(String fileName)`
+   - `java.io.FileWriter`
+     ```java
+     public class FileWriter
+     extends OutputStreamWriter
+     ```
+     - constructors
+       - `FileWriter(File file)`
+       - `FileWriter(File file, boolean append)`
+       - `FileWriter(FileDescriptor fd)`
+       - `FileWriter(String fileName)`
+       - `FileWriter(String fileName, boolean append)`
+   - print streams
+
+## Print Stream
+
+1. print streams -- add the ability to print representations of various data values conveniently
+   - never throws an `IOException` -- only `checkError()`
+   - auto flush -- support auto flush, defaults to `false`
+     - for `PrintStream` -- after a byte array is written, or a `\n` is written
+     - for `PrintWriter` -- after the invoke of `println`, `printf`, or `format`
+
+1. `java.io.PrintStream` -- print into bytes
+   ```java
+   public class PrintStream
+   extends FilterOutputStream
+   implements Appendable, Closeable
+   ```
+   - constructors
+     - `PrintStream(File file)`
+     - `PrintStream(File file, String csn)`
+     - `PrintStream(OutputStream out)`
+     - `PrintStream(OutputStream out, boolean autoFlush)`
+     - `PrintStream(OutputStream out, boolean autoFlush, String encoding)`
+     - `PrintStream(String fileName)`
+     - `PrintStream(String fileName, String csn)`
+   - `print` and `println` methods -- `void`, supports primitive types, `char[]` and `Object`
+   - `printf`
+     - `PrintStream printf(Locale l, String format, Object... args)`
+     - `PrintStream printf(String format, Object... args)`
+   - `boolean checkError()`
+
+1. `java.io.PrintWriter` -- print into text (chars)
+   ```java
+   public class PrintWriter
+   extends Writer
+   ```
+   - constructors
+     - `PrintWriter(File file)`
+     - `PrintWriter(File file, String csn)`
+     - `PrintWriter(OutputStream out)`
+     - `PrintWriter(OutputStream out, boolean autoFlush)`
+     - `PrintWriter(String fileName)`
+     - `PrintWriter(String fileName, String csn)`
+     - `PrintWriter(Writer out)`
+     - `PrintWriter(Writer out, boolean autoFlush)`
+   - methods -- see `PrintStream`
+     - difference -- `PrintStream::write` methods allow `int` and `byte[]`
+
+## Other Streams
+
+1. externally buffered streams -- save the data in an internal buffer (byte array, etc.), no effect for `close()` and no `IOException` afterwards
+   - `java.io.ByteArrayInputStream`
+     ```java
+     public class ByteArrayInputStream
+     extends InputStream
+     ```
+   - `java.io.ByteArrayOutputStream`
+     ```java
+     public class ByteArrayOutputStream
+     extends OutputStream
+     ```
+   - `java.io.StringReader` -- read from `String`: `StringReader(String s)`
+     ```java
+     public class StringReader
+     extends Reader
+     ```
+   - `java.io.StringWriter` -- uses `StringBuffer` as buffer
+     ```java
+     public class StringWriter
+     extends Writer
+     ```
+
+## Serialization
+
+1. `transient` -- mark fields not part of the persistent state, which is skipped in serialization
+
+1. `interface java.io.Serializable` -- mark only data fields serializable, superclass data or any other class information not included
+   - deserialize fields of classes not `Serializable` -- initialized using the public or protected no-arg constructor
+   - serialize subclasses whose parents are not `Serializable` -- serialize the super types only when they have accessible no-arg constructor
+   - serialization and deserialization control -- override default read and write behavior, special handling during the serialization and deserialization, by implementing methods below
+     ```java
+     private void writeObject(java.io.ObjectOutputStream out) throws IOException
+     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException
+     private void readObjectNoData() throws ObjectStreamException
+     ```
+   - version ID -- used during deserialization to verify that the sender and receiver of a serialized object have loaded classes compatible with serialization, `InvalidClassException` if no match
+     - declare explicitly
+       ```java
+       MODIFIER static final long serialVersionUID = 42L; // private is recommended
+       ```
+     - generate by default, not recommended -- the serialization runtime will calculate a default `serialVersionUID` value for that class based on various aspects of the class (fingerprint), which may vary depending on compiler implementations
+     - not applicable to array classes -- cannot declare explicitly, and the requirement for matching `serialVersionUID` values is waived for array classes
+     - get version ID via CLI -- `serialver ClassName`
+     - auto conversation when version ID match -- for data fields, skip when type is different, ignore additional, set absent to default
+   - write or read with another object
+     - when writing to stream -- implement `writeReplace`
+       ```java
+       MODIFIER Object writeReplace() throws ObjectStreamException;
+       ```
+     - when reading from stream -- implement `readResolve`
+       ```java
+       MODIFIER Object readResolve() throws ObjectStreamException;
+       ```
+   - serial number -- associate the object a number in encounter order and save or read the object data when first encounter, only save the serial number or read the object reference when encountered afterwards
+   - file structure
+     - magic number -- `ACED`
+     - version number of the object serialization format -- `0005` for JDK 8
+     - object sequences
+       - strings saved in modified UTF-8
+       - fingerprint stored in class -- first 8 bytes of SHA
+     - more
+
+1. `java.io.Externalizable` -- complete control over the format and contents of the stream for an object and its superclasses
+   ```java
+   public interface Externalizable
+   extends Serializable
+   ```
+   - taking precedence and mechanism -- If the object supports `Externalizable`, the `writeExternal` method is called. If the object does not support `Externalizable` and does implement `Serializable`, the object is saved using `ObjectOutputStream`
+   - no-arg constructor when reconstructing -- when reading, creates an object with the no-argument constructor and then calls the `readExternal` method
+   - use another object -- support `writeReplace` and `readResolve` methods
+   - `void readExternal(ObjectInputStream in) throws IOException, ClassNotFoundException`
+   - `void writeExternal(ObjectOutputStream out) throws IOException`
+
+1. interfaces for object streams
+   - `interface java.io.ObjectStreamConstants` -- Constants written into the Object Serialization Stream
+   - `java.io.ObjectOutput`
+     ```java
+     public interface ObjectOutput
+     extends DataOutput, AutoCloseable
+     ```
+     - inherited methods
+     - `void flush()`
+     - `void writeObject(Object obj)`
+   - `java.io.ObjectInput`
+     ```java
+     public interface ObjectInput
+     extends DataInput, AutoCloseable
+     ```
+     - inherited methods
+     - `int available()`
+     - `int read()`  
+       `int read(byte[] b)`  
+       `int read(byte[] b, int off, int len)`
+     - `Object readObject()`
+     - `long skip(long n)`
+
+1. `java.io.ObjectInputStream`
+   ```java
+   public class ObjectInputStream
+   extends InputStream
+   implements ObjectInput, ObjectStreamConstants
+   ```
+   - constructor -- `ObjectInputStream(InputStream in)`
+   - `void defaultReadObject()`
+
+1. `java.io.ObjectOutputStream`
+   ```java
+   public class ObjectOutputStream
+   extends OutputStream
+   implements ObjectOutput, ObjectStreamConstants
+   ```
+   - constructor -- `ObjectOutputStream(OutputStream out)`
+   - `void defaultWriteObject()`
+
+# NIO
+
+1. file related -- see [File Classes](#File-Classes)
+
+## NIO Buffers
+
+1. `java.nio`
+   - `ByteOrder`
+   - `Buffer` -- a container for a fixed amount of data of a specific primitive type
+     - `ByteBuffer` -- can be direct, can be mapped to memory, content can be heterogeneous or homogeneous, big-endian or little-endian
+       - `MappedByteBuffer`
+     - `CharBuffer`
+     - `DoubleBuffer`, `FloatBuffer`, `IntBuffer`, `LongBuffer`, `ShortBuffer`
+   - runtime exceptions
+     - `java.nio.BufferOverflowException`
+     - `java.nio.BufferUnderflowException`
+     - `java.lang.IllegalStateException`
+       - `java.nio.InvalidMarkException`
+     - `java.lang.UnsupportedOperationException`
+       - `java.nio.ReadOnlyBufferException`
+
+1. `java.nio.ByteOrder`
+   ```java
+   public final class ByteOrder extends Object
+   ```
+   - `static ByteOrder BIG_ENDIAN`
+   - `static ByteOrder LITTLE_ENDIAN`
+   - `static ByteOrder nativeOrder()` -- the native byte order of the underlying platform
+   - for buffers -- `ByteBuffer::order`
+
+1. `java.nio.Buffer` -- finite sequence of elements, not thread-safe
+   ```java
+   public abstract class Buffer extends Object
+   ```
+   - underlying array
+     - `abstract Object array()` -- Returns the array that backs this buffer (optional operation)
+     - `abstract int arrayOffset()` -- Returns the offset within this buffer's backing array of the first element of the buffer (optional operation)
+     - `abstract boolean hasArray()`
+   - indices
+     - `int capacity()`
+     - `int limit()` -- the index of the first element that should not be read or written
+     - `int position()` -- the index of the next element to be read or written
+     - relative operations -- from position
+     - absolute operations -- from explicit index
+   - change indices
+     - `Buffer clear()` -- for `put` or related, sets the limit to the capacity and the position to zero
+     - `Buffer flip()` -- for `get` or related, sets the limit to the current position and then sets the position to zero
+     - `Buffer rewind()` -- for re-read, sets the position to zero
+     - `Buffer limit(int newLimit)`
+     - `Buffer position(int newPosition)`
+     - mark and reset
+       - `Buffer mark()` -- set the current as the index to which its position will be set when `reset()`, otherwise `InvalidMarkException`
+       - `Buffer reset()`
+   - remaining
+     - `int remaining()` -- from position to limit
+     - `boolean hasRemaining()`
+   - attributes
+     - `abstract boolean isDirect()`
+     - `abstract boolean isReadOnly()`
+
+1. `java.nio.ByteBuffer` -- byte buffer with absolute and relative, bulk and not bulk `get` and `put`, not bulk `get` and `put` with other types, as well as views and other manipulating
+   ```java
+   public abstract class ByteBuffer
+   extends Buffer
+   implements Comparable<ByteBuffer>
+   ```
+   - view buffers -- another buffer whose content is backed by the byte buffer, changes on either one will be reflected on both
+   - get and put methods -- content can be heterogeneous or homogeneous, big-endian or little-endian
+   - creation
+     - `static ByteBuffer allocate(int capacity)`
+     - `static ByteBuffer allocateDirect(int capacity)`
+     - `static ByteBuffer wrap(byte[] array)`
+     - `static ByteBuffer wrap(byte[] array, int offset, int length)`
+   - manipulate
+     - `abstract ByteBuffer compact()`
+     - `abstract ByteBuffer duplicate()`
+     - `abstract ByteBuffer slice()`
+   - `java.nio.MappedByteBuffer` -- a direct byte buffer whose content is a memory-mapped region of a file
+     ```java
+     public abstract class MappedByteBuffer
+     extends ByteBuffer
+     ```
+     - `FileChannel::map`
+   - attributes
+     - direct buffers
+       - no intermediate buffer -- JVM will attempt to avoid copying the buffer's content to (or from) an intermediate buffer before (or after) each invocation of one of the underlying operating system's native I/O operations
+       - higher overhead -- have somewhat higher allocation and deallocation costs than non-direct buffers
+       - gc problems -- the contents of direct buffers may reside outside of the normal garbage-collected heap
+       - usage -- best to allocate direct buffers only when they yield a measurable gain in program performance
+       - creation -- `ByteBuffer::allocateDirect`, `FileChannel::map`, view buffers on direct buffers
+     - `abstract boolean isDirect()`
+     - `abstract boolean isReadOnly()`
+
+1. `java.nio.CharBuffer`
+   ```java
+   public abstract class CharBuffer
+   extends Buffer
+   implements Comparable<CharBuffer>, Appendable, CharSequence, Readable
+   ```
+
+1. `java.nio.ShortBuffer`, `java.nio.LongBuffer`, `java.nio.IntBuffer`, `java.nio.FloatBuffer`, `java.nio.DoubleBuffer`
+   ```java
+   public abstract class DoubleBuffer
+   extends Buffer
+   implements Comparable<DoubleBuffer>
+   ```
+
+## NIO Channels
+
+1. `java.nio.channels`
+   - hierarchy for `Channel`
+     - `ReadableByteChannel` -- can read into a buffer
+       - `ScatteringByteChannel` -- can read into a sequence of buffers
+     - `WritableByteChannel` -- can write from a buffer
+       - `GatheringByteChannel` -- can write from a sequence of buffers
+     - `ByteChannel` -- can read/write to/from a buffer
+       - `SeekableByteChannel` -- A ByteChannel connected to an entity that contains a variable-length sequence of bytes
+     - `AsynchronousChannel` -- supports asynchronous I/O operations
+       - `AsynchronousByteChannel` -- can read and write bytes asynchronously
+     - `NetworkChannel` -- to a network socket
+       - `MulticastChannel` -- can join IP multicast groups
+   - `Channels` -- utility methods for channel/stream interoperation
+   - exceptions extends `IOException`
+     - `java.nio.channels.ClosedChannelException`
+       - `java.nio.channels.AsynchronousCloseException`
+         - `java.nio.channels.ClosedByInterruptException`
+     - `java.nio.channels.FileLockInterruptionException`
+     - `java.nio.channels.InterruptedByTimeoutException`
+   - exceptions extends `RuntimeException`
+     - `IllegalArgumentException`
+       - `java.nio.channels.IllegalChannelGroupException`
+       - `java.nio.channels.IllegalSelectorException`
+       - `java.nio.channels.UnresolvedAddressException`
+       - `java.nio.channels.UnsupportedAddressTypeException`
+     - `IllegalStateException`
+       - `java.nio.channels.AcceptPendingException`
+       - `java.nio.channels.AlreadyBoundException`
+       - `java.nio.channels.AlreadyConnectedException`
+       - `java.nio.channels.CancelledKeyException`
+       - `java.nio.channels.ClosedSelectorException`
+       - `java.nio.channels.ConnectionPendingException`
+       - `java.nio.channels.IllegalBlockingModeException`
+       - `java.nio.channels.NoConnectionPendingException`
+       - `java.nio.channels.NonReadableChannelException`
+       - `java.nio.channels.NonWritableChannelException`
+       - `java.nio.channels.NotYetBoundException`
+       - `java.nio.channels.NotYetConnectedException`
+       - `java.nio.channels.OverlappingFileLockException`
+       - `java.nio.channels.ReadPendingException`
+       - `java.nio.channels.ShutdownChannelGroupException`
+       - `java.nio.channels.WritePendingException`
+
+1. `java.nio.channels.Channel` -- a nexus for I/O operations
+   ```java
+   public interface Channel
+   extends Closeable
+   ```
+   - `void close()`
+   - `boolean isOpen()` -- avoid `ClosedChannelException`
+
+<!-- TODO -->
+1. miscellanea TBD
+   - `new Scanner(ReadableByteChannel source)`
+   - `new Scanner(ReadableByteChannel source, String charsetName)`
+   - `Channels::newOutputStream`
+
+1. `java.nio.channels.SocketChannel` -- a selectable channel for stream-oriented connecting sockets
+   ```java
+   public abstract class SocketChannel
+   extends AbstractSelectableChannel
+   implements ByteChannel, ScatteringByteChannel, GatheringByteChannel, NetworkChannel
+   ```
+   - creation
+     - `static SocketChannel open()`
+     - `static SocketChannel open(SocketAddress remote)`
+
+# Network
+
+1. `java.net` -- networking like working with files
+   - low level API
+     - addresses -- `Inet4Address`, `Inet6Address`, `InetSocketAddress`
+     - sockets
+       - `Socket` -- a TCP client
+       - `ServerSocket` -- a TCP server
+       - `DatagramSocket` -- a UDP endpoint API and is used to send and receive `DatagramPacket`
+         - `MulticastSocket` -- a subclass of `DatagramSocket` used when dealing with multicast groups
+     - interfaces
+       - `NetworkInterface` -- a network interface (e.g. ethernet connection or PPP endpoint) made up of a name, and a list of IP addresses assigned to this interface
+   - high level API
+     - URI
+     - URL
+     - connections
+
+1. network exceptions
+   - `IOException`
+     - `java.net.HttpRetryException`
+     - `java.io.InterruptedIOException`
+       - `java.net.SocketTimeoutException`
+     - `java.net.MalformedURLException`
+     - `java.net.ProtocolException`
+     - `java.net.SocketException`
+       - `java.net.BindException`
+       - `java.net.ConnectException`
+       - `java.net.NoRouteToHostException`
+       - `java.net.PortUnreachableException`
+     - `java.net.UnknownHostException` -- `String host`
+     - `java.net.UnknownServiceException`
+   - `java.net.URISyntaxException`
+
+## Address
+
+1. `java.net.InetAddress`
+   ```java
+   public class InetAddress extends Object
+   implements Serializable
+   ```
+   - address types -- unicast, multicast
+   - IP address scope
+     - Link-local addresses -- designed to be used for addressing on a single link for purposes such as auto-address configuration, neighbor discovery, or when no routers are present.
+     - Site-local addresses -- designed to be used for addressing inside of a site without the need for a global prefix.
+     - Global addresses -- unique across the internet.
+   - host name resolution -- a combination of local configuration and network naming services such as, DNS and NIS
+   - caching -- `InetAddress` stores successful as well as unsuccessful host name resolutions
+     - property `networkaddress.cache.ttl` -- TTL for successful name lookups
+     - property `networkaddress.cache.negative.ttl` -- TTL for unsuccessful name lookups
+   - creation
+     - `static InetAddress[] getAllByName(String host)`
+     - `static InetAddress getByAddress(byte[] addr)`
+     - `static InetAddress getByAddress(String host, byte[] addr)`
+     - `static InetAddress getByName(String host)`
+     - `static InetAddress getLocalHost()`
+     - `static InetAddress getLoopbackAddress()`
+
+1. `java.net.Inet4Address`
+   ```java
+   public final class Inet4Address
+   extends InetAddress
+   ```
+
+1. `java.net.Inet6Address`
+   ```java
+   public final class Inet6Address
+   extends InetAddress
+   ```
+
+1. `java.net.InetSocketAddress` -- IP Socket Address (IP address + port number), can also be a pair (hostname + port number)
+   ```java
+   public class InetSocketAddress
+   extends SocketAddress
+   ```
+   - wildcard address -- means "any" and can only be used for `bind` operations, created with `null` or omitted `InetAddress`
+   - `java.net.SocketAddress` -- for extending
+     ```java
+     public abstract class SocketAddress extends Object
+     implements Serializable
+     ```
+
+## Sockets
+
+1. `java.net.SocketImplFactory`
+   ```java
+   interface SocketImplFactory {
+       SocketImpl createSocketImpl();
+   }
+   ```
+
+1. `java.net.SocketImpl` -- a common superclass for socket implementations
+   ```java
+   public abstract class SocketImpl extends Object
+   implements SocketOptions
+   ```
+
+1. `interface java.net.SocketOptions` -- socket options and get/set methods
+
+1. `java.net.Socket` -- TCP client
+   ```java
+   public class Socket extends Object
+   implements Closeable
+   ```
+   - use -- read/write is blocking and can not be interrupted
+     - `SocketChannel getChannel()` -- a socket will have a channel if, and only if, the channel itself was created via the `SocketChannel::open` or `ServerSocketChannel::accept` methods
+     - `InputStream getInputStream()`
+     - `OutputStream getOutputStream()`
+   - timeout
+     - `int getSoTimeout()`
+     - `void setSoTimeout(int timeout)`
+   - connect
+     - blocking constructors
+     - `void connect(SocketAddress endpoint)` -- blocking and cannot be interrupted
+     - `void connect(SocketAddress endpoint, int timeout)`
+     - `boolean isConnected()`
+   - half-close -- one end of a socket connection to terminate its output while still receiving data from the other end
+     - `void shutdownInput()`
+     - `void shutdownOutput()`
+     - `boolean isInputShutdown()`
+     - `boolean isOutputShutdown()`
+   - implementation -- defaults to an instance of package-visible class inheriting `SocketImpl`
+     - `static void setSocketImplFactory(SocketImplFactory fac)`
+   - more
+
+1. `java.net.ServerSocket` -- TCP server
+   ```java
+   public class ServerSocket extends Object
+   implements Closeable
+   ```
+   - similar methods in `Socket`
+   - `Socket accept()` -- wait indefinitely until a client connects to that port and then return the connection as `Socket`
+   - bind to local port
+     - constructors
+     - `void bind(SocketAddress endpoint)`
+     - `void bind(SocketAddress endpoint, int backlog)`
+
+## URI and URL
+
+1. `java.net.URI` -- uniform resource identifiers, to parsing, stringify, componentize, and process
+   ```java
+   public final class URI extends Object
+   implements Comparable<URI>, Serializable
+   ```
+   - `URL toURL()
+
+1. `java.net.URLStreamHandler` -- the common superclass for all stream protocol handlers, for making a connection for a particular protocol type
+   ```java
+   public abstract class URLStreamHandler extends Object
+   ```
+   - cache -- automatically loaded when first encounter, and stored in a hash table
+   - protected methods for interacting with `URL` and open connection
+
+1. `java.net.URL` -- uniform resource locators, can open connections (locate resource), a special kind of URI, which is not URN (uniform resource name)
+   ```java
+   public final class URL extends Object
+   implements Serializable
+   ```
+   - URL escaping -- not handled, it is the responsibility of the caller to encode and decode, recommended to use `URI` to manage
+   - creation
+     - constructors -- take string URL, string URL components, or `URL`, and optionally `URLStreamHandler` as arguments
+   - URL component get methods
+   - use
+     - `URLConnection openConnection()` -- uses `URLStreamHandler::openConnection`, establishes connection only after `URLConnection::connect` or `URLConnection::getInputStream`, etc.
+     - `URLConnection openConnection(Proxy proxy)`
+     - `InputStream openStream()` -- `openConnection().getInputStream()`
+     - `Object getContent()` -- `openConnection().getContent()`
+     - `Object getContent(Class[] classes)`
+   - conversation
+     - `String toExternalForm()` -- uses underlying `URLStreamHandler::toExternalForm`
+     - `String toString()`
+     - `URI toURI()`
