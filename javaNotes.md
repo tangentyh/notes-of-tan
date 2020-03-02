@@ -288,7 +288,7 @@
    int[] smallPrimes2 = new int[] { 17, 19, 23, 29, 31, 37 };
    new int[] { 17, 19, 23, 29, 31, 37 }; // anonymous array
    ```
-   - arrays are objects
+   - arrays are objects -- extends `Object` and implements `Cloneable`, `Serializable`
      - `final int length`
      - `T[] clone()`
      - `Object` methods
@@ -347,7 +347,7 @@
      1. explicit field initialization and initialization blocks -- all field initializers and initialization blocks are executed, in the order in which they occur in the class declaration
      1. the rest -- The body of the constructor is executed.
    - encapsulation
-     - getter, setter -- `private` data filed with `public` accessor and mutator
+     - getter, setter -- `private` data field with `public` accessor and mutator
      - return clone for mutable objects -- If you need to return a reference to a mutable object, return a clone
    - destructor
      - garbage collection -- Java does automatic garbage collection, does not support destructors
@@ -445,7 +445,7 @@
    public final class System extends Object
    ```
    - std
-     - `static InputStream in`
+     - `static InputStream in` -- instance of `BufferedInputStream`
      - `static PrintStream err`
      - `static PrintStream out`
      - `static Console console()`
@@ -603,6 +603,8 @@
      - `StringBuilder insert(int offset, String str)`
      - `StringBuilder insert(int offset, char c)`
      - `StringBuilder delete(int startIndex, int endIndex)`
+     - `StringBuilder deleteCharAt(int index)`
+     - more
    - output -- `String toString()`
 
 1. `StringBuffer`
@@ -671,8 +673,8 @@
      - `static int SIZE` -- usually 32
      - `static Class<Integer> TYPE` -- `int.class`
    - creation
-     - `Integer(int value)`
-     - `Integer(String s)` -- uses `parseInt` internally
+     - `Integer(int value)` -- deprecated since JDK 9
+     - `Integer(String s)` -- uses `parseInt` internally, deprecated since JDK 9
      - `static Integer decode(String nm)` -- accepts decimal, hexadecimal (`0x`, `0X`, `#` prefixed), octal (`0` prefixed), can be negative
      - `static Integer valueOf(int i)`  
        `static Integer valueOf(String s)` -- uses `parseInt` internally  
@@ -1485,11 +1487,13 @@
    - `static int binarySearch(type[] a, type v)`  
      `static int binarySearch(type[] a, int start, int end, type v)`
      - `Object[]` actually needs to be `Comparable[]`
-   - initialization and modifications
-     - `static void fill(type[] a, type v)`
+   - copy
      - `static type[] copyOf(type[] original, int newLength)` -- uses `System::arraycopy` behind the scenes
      - `static type[] copyOfRange(type[] a, int start, int end)`
      - `System::arraycopy`
+     - `T[]::clone`
+   - initialization and modifications
+     - `static void fill(type[] a, type v)`
      - `static void setAll(double[] array, IntToDoubleFunction generator)` -- generator takes indices as parameter  
        `static void setAll(int[] array, IntUnaryOperator generator)`  
        `static void setAll(long[] array, IntToLongFunction generator)`  
@@ -1539,6 +1543,10 @@
    public class EventObject extends Object
    implements Serializable
    ```
+
+1. MVC
+   - `java.util.Observable`
+   - `interface java.util.Observer`
 
 ## Collections and Maps
 
@@ -1703,12 +1711,21 @@
    ```
    - `private static final int DEFAULT_CAPACITY = 10`
    - constructors
-     - `ArrayList()` — Constructs an empty list with an initial capacity of ten.
+     - `ArrayList()` — constructs an empty list with an initial capacity of 10
      - `ArrayList(Collection<? extends E> c)`
      - `ArrayList(int initialCapacity)`
      - anonymous `ArrayList` — double brace initialization, actually a inner subclass
        ```java
        new ArrayList<String>() {{ add("Harry"); add("Tony"); }};
+       ```
+     - `int[]` to `ArrayList<Integer>` without loop -- for large arrays with sparse access patterns
+       ```java
+       public List<Integer> asList(final int[] is) {
+           return Collections.unmodifiableList(new AbstractList<Integer>() {
+               public Integer get(int i) { return is[i]; }
+               public int size() { return is.length; }
+           });
+       }
        ```
    - capacity
      - `void ensureCapacity(int minCapacity)`
@@ -1850,7 +1867,7 @@
    - underlying implementation — `RegularEnumSet` with a `long`, `JumboEnumSet` with a `long[]`, non-public in `java.util`
    - helper class — the abstract class itself acts as a static helper
 
-1. `java.util.LinkedHashSet` — ordered `HashSet` with underlying linked list
+1. `java.util.LinkedHashSet` — ordered `HashSet` with underlying linked list, have no control over `removeEldestEntry`
    ```java
    public class LinkedHashSet<E> extends HashSet<E>
    implements Set<E>, Cloneable, Serializable
@@ -2494,7 +2511,11 @@
      - `long|double getSum()`
      - `String toString()`
 
-## ZIP
+## ZIP, Checksum and Encrypto
+
+1. `java.util.Base64`
+   - `java.util.Base64.Decoder`
+   - `java.util.Base64.Encoder`
 
 1. `java.util.zip.CRC32`
    ```java
@@ -4369,13 +4390,16 @@
    - constructors
      - `Scanner(File source)`
      - `Scanner(File source, String charsetName)`
-     - `Scanner(InputStream source)`
+     - `Scanner(InputStream source)` -- uses `InputStreamReader` behind the scenes
        - `System.in` for stdin
      - `Scanner(InputStream source, String charsetName)`
      - `Scanner(Path source)`
      - `Scanner(Path source, String charsetName)`
      - `Scanner(String source)`
      - `Scanner(Readable source)`
+       ```java
+       Scanner in = new Scanner(new BufferedReader(new InputStreamReader(System.in)));
+       ```
      - `Scanner(ReadableByteChannel source)`
      - `Scanner(ReadableByteChannel source, String charsetName)`
    - settings -- delimiter, locale, regex
@@ -4391,6 +4415,7 @@
      - `String next()`
      - `String next(Pattern pattern)`
      - `String next(String pattern)`
+     - `String nextLine()`
      - `BigDecimal nextBigDecimal()`
      - `BigInteger nextBigInteger()`
      - `BigInteger nextBigInteger(int radix)`
@@ -4401,7 +4426,6 @@
      - `float nextFloat()`
      - `int nextInt()`
      - `int nextInt(int radix)`
-     - `String nextLine()`
      - `long nextLong()`
      - `long nextLong(int radix)`
      - `short nextShort()`
@@ -4427,11 +4451,9 @@
    - `String readLine()`
    - `Reader` methods
 
-1. `System.out`, `static PrintStream`
-   - `print()`
-   - `println()`
-   - `PrintStream printf(String format, Object... args)`
-     - [formats](https://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html#syntax)
+1. stdin, stdout, stderr
+   - see [`System`](#System)
+   - see `InputStream` (`BufferedInputStream`) and `PrintStream`
 
 ## Basic IO Stream
 
@@ -4491,6 +4513,28 @@
      - `boolean markSupported()`
      - `void mark(int readlimit)`
      - `void reset()`
+   - read all to `String` -- see [stack overflow](https://stackoverflow.com/questions/309424/how-do-i-read-convert-an-inputstream-into-a-string-in-java)
+     ```java
+     public String inputStreamToString(InputStream inputStream) throws IOException {
+         ByteArrayOutputStream bos = new ByteArrayOutputStream();
+         inputStream.transferTo(bos);
+         return bos.toString("utf-8");
+     }
+     ```
+     - `public long transferTo(OutputStream out)` -- since JDK 9
+       ```java
+       public long transferTo(OutputStream out) throws IOException {
+           Objects.requireNonNull(out, "out");
+           long transferred = 0;
+           byte[] buffer = new byte[DEFAULT_BUFFER_SIZE]; // 8192
+           int read;
+           while ((read = this.read(buffer, 0, DEFAULT_BUFFER_SIZE)) >= 0) {
+               out.write(buffer, 0, read);
+               transferred += read;
+           }
+           return transferred;
+       }
+       ```
 
 1. `java.io.OutputStream`
    ```java
@@ -4538,7 +4582,7 @@
    - `abstract void close()`
 
 1. convert stream to reader or writer, uses `Charset.defaultCharset()` if not specified
-   - `java.io.InputStreamReader`
+   - `java.io.InputStreamReader` -- used by `Scanner` behind the scenes
      ```java
      public class InputStreamReader
      extends Reader
@@ -4701,6 +4745,168 @@
      ```
 
 1. ZIP file system -- `FileSystems.newFileSystem(Paths.get(zipname), null)`
+
+## Print Stream
+
+1. print streams -- add the ability to print representations of various data values conveniently
+   - never throws an `IOException` -- only `checkError()`
+   - auto flush -- support auto flush, defaults to `false`
+     - for `PrintStream` -- after a byte array is written, or a `\n` is written
+     - for `PrintWriter` -- after the invoke of `println`, `printf`, or `format`
+   - `printf` -- [formats](https://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html#syntax)
+
+1. `java.io.PrintStream` -- print into bytes
+   ```java
+   public class PrintStream
+   extends FilterOutputStream
+   implements Appendable, Closeable
+   ```
+   - constructors
+     - `PrintStream(File file)`
+     - `PrintStream(File file, String csn)`
+     - `PrintStream(OutputStream out)`
+     - `PrintStream(OutputStream out, boolean autoFlush)`
+     - `PrintStream(OutputStream out, boolean autoFlush, String encoding)`
+     - `PrintStream(String fileName)`
+     - `PrintStream(String fileName, String csn)`
+   - `print` and `println` methods -- `void`, supports primitive types, `char[]` and `Object`
+   - `printf`
+     - `PrintStream printf(Locale l, String format, Object... args)`
+     - `PrintStream printf(String format, Object... args)`
+   - `boolean checkError()`
+
+1. `java.io.PrintWriter` -- print into text (chars)
+   ```java
+   public class PrintWriter
+   extends Writer
+   ```
+   - constructors
+     - `PrintWriter(File file)`
+     - `PrintWriter(File file, String csn)`
+     - `PrintWriter(OutputStream out)`
+     - `PrintWriter(OutputStream out, boolean autoFlush)`
+     - `PrintWriter(String fileName)`
+     - `PrintWriter(String fileName, String csn)`
+     - `PrintWriter(Writer out)`
+     - `PrintWriter(Writer out, boolean autoFlush)`
+   - methods -- see `PrintStream`
+     - difference -- `PrintStream::write` methods allow `int` and `byte[]`
+
+## Other Streams
+
+1. externally buffered streams -- save the data in an internal buffer (byte array, etc.), no effect for `close()` and no `IOException` afterwards
+   - `java.io.ByteArrayInputStream`
+     ```java
+     public class ByteArrayInputStream
+     extends InputStream
+     ```
+   - `java.io.ByteArrayOutputStream`
+     ```java
+     public class ByteArrayOutputStream
+     extends OutputStream
+     ```
+   - `java.io.StringReader` -- read from `String`: `StringReader(String s)`
+     ```java
+     public class StringReader
+     extends Reader
+     ```
+   - `java.io.StringWriter` -- uses `StringBuffer` as buffer
+     ```java
+     public class StringWriter
+     extends Writer
+     ```
+
+## Serialization
+
+1. `transient` -- mark fields not part of the persistent state, which is skipped in serialization
+
+1. `interface java.io.Serializable` -- mark only data fields serializable, superclass data or any other class information not included
+   - deserialize fields of classes not `Serializable` -- initialized using the public or protected no-arg constructor
+   - serialize subclasses whose parents are not `Serializable` -- serialize the super types only when they have accessible no-arg constructor
+   - serialization and deserialization control -- override default read and write behavior, special handling during the serialization and deserialization, by implementing methods below
+     ```java
+     private void writeObject(java.io.ObjectOutputStream out) throws IOException
+     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException
+     private void readObjectNoData() throws ObjectStreamException
+     ```
+   - version ID -- used during deserialization to verify that the sender and receiver of a serialized object have loaded classes compatible with serialization, `InvalidClassException` if no match
+     - declare explicitly
+       ```java
+       MODIFIER static final long serialVersionUID = 42L; // private is recommended
+       ```
+     - generate by default, not recommended -- the serialization runtime will calculate a default `serialVersionUID` value for that class based on various aspects of the class (fingerprint), which may vary depending on compiler implementations
+     - not applicable to array classes -- cannot declare explicitly, and the requirement for matching `serialVersionUID` values is waived for array classes
+     - get version ID via CLI -- `serialver ClassName`
+     - auto conversation when version ID match -- for data fields, skip when type is different, ignore additional, set absent to default
+   - write or read with another object
+     - when writing to stream -- implement `writeReplace`
+       ```java
+       MODIFIER Object writeReplace() throws ObjectStreamException;
+       ```
+     - when reading from stream -- implement `readResolve`
+       ```java
+       MODIFIER Object readResolve() throws ObjectStreamException;
+       ```
+   - serial number -- associate the object a number in encounter order and save or read the object data when first encounter, only save the serial number or read the object reference when encountered afterwards
+   - file structure
+     - magic number -- `ACED`
+     - version number of the object serialization format -- `0005` for JDK 8
+     - object sequences
+       - strings saved in modified UTF-8
+       - fingerprint stored in class -- first 8 bytes of SHA
+     - more
+
+1. `java.io.Externalizable` -- complete control over the format and contents of the stream for an object and its superclasses
+   ```java
+   public interface Externalizable
+   extends Serializable
+   ```
+   - taking precedence and mechanism -- If the object supports `Externalizable`, the `writeExternal` method is called. If the object does not support `Externalizable` and does implement `Serializable`, the object is saved using `ObjectOutputStream`
+   - no-arg constructor when reconstructing -- when reading, creates an object with the no-argument constructor and then calls the `readExternal` method
+   - use another object -- support `writeReplace` and `readResolve` methods
+   - `void readExternal(ObjectInputStream in) throws IOException, ClassNotFoundException`
+   - `void writeExternal(ObjectOutputStream out) throws IOException`
+
+1. interfaces for object streams
+   - `interface java.io.ObjectStreamConstants` -- Constants written into the Object Serialization Stream
+   - `java.io.ObjectOutput`
+     ```java
+     public interface ObjectOutput
+     extends DataOutput, AutoCloseable
+     ```
+     - inherited methods
+     - `void flush()`
+     - `void writeObject(Object obj)`
+   - `java.io.ObjectInput`
+     ```java
+     public interface ObjectInput
+     extends DataInput, AutoCloseable
+     ```
+     - inherited methods
+     - `int available()`
+     - `int read()`  
+       `int read(byte[] b)`  
+       `int read(byte[] b, int off, int len)`
+     - `Object readObject()`
+     - `long skip(long n)`
+
+1. `java.io.ObjectInputStream`
+   ```java
+   public class ObjectInputStream
+   extends InputStream
+   implements ObjectInput, ObjectStreamConstants
+   ```
+   - constructor -- `ObjectInputStream(InputStream in)`
+   - `void defaultReadObject()`
+
+1. `java.io.ObjectOutputStream`
+   ```java
+   public class ObjectOutputStream
+   extends OutputStream
+   implements ObjectOutput, ObjectStreamConstants
+   ```
+   - constructor -- `ObjectOutputStream(OutputStream out)`
+   - `void defaultWriteObject()`
 
 ## Files
 
@@ -5037,167 +5243,6 @@
        - `FileWriter(String fileName, boolean append)`
    - print streams
 
-## Print Stream
-
-1. print streams -- add the ability to print representations of various data values conveniently
-   - never throws an `IOException` -- only `checkError()`
-   - auto flush -- support auto flush, defaults to `false`
-     - for `PrintStream` -- after a byte array is written, or a `\n` is written
-     - for `PrintWriter` -- after the invoke of `println`, `printf`, or `format`
-
-1. `java.io.PrintStream` -- print into bytes
-   ```java
-   public class PrintStream
-   extends FilterOutputStream
-   implements Appendable, Closeable
-   ```
-   - constructors
-     - `PrintStream(File file)`
-     - `PrintStream(File file, String csn)`
-     - `PrintStream(OutputStream out)`
-     - `PrintStream(OutputStream out, boolean autoFlush)`
-     - `PrintStream(OutputStream out, boolean autoFlush, String encoding)`
-     - `PrintStream(String fileName)`
-     - `PrintStream(String fileName, String csn)`
-   - `print` and `println` methods -- `void`, supports primitive types, `char[]` and `Object`
-   - `printf`
-     - `PrintStream printf(Locale l, String format, Object... args)`
-     - `PrintStream printf(String format, Object... args)`
-   - `boolean checkError()`
-
-1. `java.io.PrintWriter` -- print into text (chars)
-   ```java
-   public class PrintWriter
-   extends Writer
-   ```
-   - constructors
-     - `PrintWriter(File file)`
-     - `PrintWriter(File file, String csn)`
-     - `PrintWriter(OutputStream out)`
-     - `PrintWriter(OutputStream out, boolean autoFlush)`
-     - `PrintWriter(String fileName)`
-     - `PrintWriter(String fileName, String csn)`
-     - `PrintWriter(Writer out)`
-     - `PrintWriter(Writer out, boolean autoFlush)`
-   - methods -- see `PrintStream`
-     - difference -- `PrintStream::write` methods allow `int` and `byte[]`
-
-## Other Streams
-
-1. externally buffered streams -- save the data in an internal buffer (byte array, etc.), no effect for `close()` and no `IOException` afterwards
-   - `java.io.ByteArrayInputStream`
-     ```java
-     public class ByteArrayInputStream
-     extends InputStream
-     ```
-   - `java.io.ByteArrayOutputStream`
-     ```java
-     public class ByteArrayOutputStream
-     extends OutputStream
-     ```
-   - `java.io.StringReader` -- read from `String`: `StringReader(String s)`
-     ```java
-     public class StringReader
-     extends Reader
-     ```
-   - `java.io.StringWriter` -- uses `StringBuffer` as buffer
-     ```java
-     public class StringWriter
-     extends Writer
-     ```
-
-## Serialization
-
-1. `transient` -- mark fields not part of the persistent state, which is skipped in serialization
-
-1. `interface java.io.Serializable` -- mark only data fields serializable, superclass data or any other class information not included
-   - deserialize fields of classes not `Serializable` -- initialized using the public or protected no-arg constructor
-   - serialize subclasses whose parents are not `Serializable` -- serialize the super types only when they have accessible no-arg constructor
-   - serialization and deserialization control -- override default read and write behavior, special handling during the serialization and deserialization, by implementing methods below
-     ```java
-     private void writeObject(java.io.ObjectOutputStream out) throws IOException
-     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException
-     private void readObjectNoData() throws ObjectStreamException
-     ```
-   - version ID -- used during deserialization to verify that the sender and receiver of a serialized object have loaded classes compatible with serialization, `InvalidClassException` if no match
-     - declare explicitly
-       ```java
-       MODIFIER static final long serialVersionUID = 42L; // private is recommended
-       ```
-     - generate by default, not recommended -- the serialization runtime will calculate a default `serialVersionUID` value for that class based on various aspects of the class (fingerprint), which may vary depending on compiler implementations
-     - not applicable to array classes -- cannot declare explicitly, and the requirement for matching `serialVersionUID` values is waived for array classes
-     - get version ID via CLI -- `serialver ClassName`
-     - auto conversation when version ID match -- for data fields, skip when type is different, ignore additional, set absent to default
-   - write or read with another object
-     - when writing to stream -- implement `writeReplace`
-       ```java
-       MODIFIER Object writeReplace() throws ObjectStreamException;
-       ```
-     - when reading from stream -- implement `readResolve`
-       ```java
-       MODIFIER Object readResolve() throws ObjectStreamException;
-       ```
-   - serial number -- associate the object a number in encounter order and save or read the object data when first encounter, only save the serial number or read the object reference when encountered afterwards
-   - file structure
-     - magic number -- `ACED`
-     - version number of the object serialization format -- `0005` for JDK 8
-     - object sequences
-       - strings saved in modified UTF-8
-       - fingerprint stored in class -- first 8 bytes of SHA
-     - more
-
-1. `java.io.Externalizable` -- complete control over the format and contents of the stream for an object and its superclasses
-   ```java
-   public interface Externalizable
-   extends Serializable
-   ```
-   - taking precedence and mechanism -- If the object supports `Externalizable`, the `writeExternal` method is called. If the object does not support `Externalizable` and does implement `Serializable`, the object is saved using `ObjectOutputStream`
-   - no-arg constructor when reconstructing -- when reading, creates an object with the no-argument constructor and then calls the `readExternal` method
-   - use another object -- support `writeReplace` and `readResolve` methods
-   - `void readExternal(ObjectInputStream in) throws IOException, ClassNotFoundException`
-   - `void writeExternal(ObjectOutputStream out) throws IOException`
-
-1. interfaces for object streams
-   - `interface java.io.ObjectStreamConstants` -- Constants written into the Object Serialization Stream
-   - `java.io.ObjectOutput`
-     ```java
-     public interface ObjectOutput
-     extends DataOutput, AutoCloseable
-     ```
-     - inherited methods
-     - `void flush()`
-     - `void writeObject(Object obj)`
-   - `java.io.ObjectInput`
-     ```java
-     public interface ObjectInput
-     extends DataInput, AutoCloseable
-     ```
-     - inherited methods
-     - `int available()`
-     - `int read()`  
-       `int read(byte[] b)`  
-       `int read(byte[] b, int off, int len)`
-     - `Object readObject()`
-     - `long skip(long n)`
-
-1. `java.io.ObjectInputStream`
-   ```java
-   public class ObjectInputStream
-   extends InputStream
-   implements ObjectInput, ObjectStreamConstants
-   ```
-   - constructor -- `ObjectInputStream(InputStream in)`
-   - `void defaultReadObject()`
-
-1. `java.io.ObjectOutputStream`
-   ```java
-   public class ObjectOutputStream
-   extends OutputStream
-   implements ObjectOutput, ObjectStreamConstants
-   ```
-   - constructor -- `ObjectOutputStream(OutputStream out)`
-   - `void defaultWriteObject()`
-
 # NIO
 
 1. file related -- see [File Classes](#File-Classes)
@@ -5478,7 +5523,7 @@
    implements Closeable
    ```
    - use -- read/write is blocking and can not be interrupted
-     - `SocketChannel getChannel()` -- a socket will have a channel if, and only if, the channel itself was created via the `SocketChannel::open` or `ServerSocketChannel::accept` methods
+     - `SocketChannel getChannel()` -- a socket will have a channel iff the channel itself was created via the `SocketChannel::open` or `ServerSocketChannel::accept` methods
      - `InputStream getInputStream()`
      - `OutputStream getOutputStream()`
    - timeout
@@ -5517,7 +5562,11 @@
    public final class URI extends Object
    implements Comparable<URI>, Serializable
    ```
-   - `URL toURL()
+   - `URL toURL()`
+
+1. encoder and decoder -- for `application/x-www-form-urlencoded`
+   - `java.net.URLEncoder` -- `static String encode(String s, String enc)`
+   - `java.net.URLDecoder` -- `static String decode(String s, String enc)`
 
 1. `java.net.URLStreamHandler` -- the common superclass for all stream protocol handlers, for making a connection for a particular protocol type
    ```java
@@ -5526,7 +5575,7 @@
    - cache -- automatically loaded when first encounter, and stored in a hash table
    - protected methods for interacting with `URL` and open connection
 
-1. `java.net.URL` -- uniform resource locators, can open connections (locate resource), a special kind of URI, which is not URN (uniform resource name)
+1. `java.net.URL` -- uniform resource locators, can open connections (locate resource), a special kind of URI, which is not URN (uniform resource name); supports common protocols (schemas) and `jar:`
    ```java
    public final class URL extends Object
    implements Serializable
@@ -5539,9 +5588,90 @@
      - `URLConnection openConnection()` -- uses `URLStreamHandler::openConnection`, establishes connection only after `URLConnection::connect` or `URLConnection::getInputStream`, etc.
      - `URLConnection openConnection(Proxy proxy)`
      - `InputStream openStream()` -- `openConnection().getInputStream()`
-     - `Object getContent()` -- `openConnection().getContent()`
-     - `Object getContent(Class[] classes)`
+     - `Object getContent()` -- `openConnection().getContent()`, see blow  
+       `Object getContent(Class[] classes)`
    - conversation
      - `String toExternalForm()` -- uses underlying `URLStreamHandler::toExternalForm`
      - `String toString()`
      - `URI toURI()`
+
+1. `java.net.URLConnection` -- URL connection
+   ```java
+   public abstract class URLConnection extends Object
+   ```
+   - establish connections
+     - `abstract void connect()`
+     - get methods
+   - get methods -- get settings and results, some will open connections implicitly
+     - `static void setContentHandlerFactory(ContentHandlerFactory fac)`
+     - `Object getContent()` -- not very useful, `sun.net.www.content.<contentType>` is used if no custom content handler by `ContentHandlerFactory`  
+       `Object getContent(Class[] classes)` -- `null` if all `Class::isInstance` fails
+     - `InputStream getInputStream()`
+     - more
+   - set methods
+     - `void addRequestProperty(String key, String value)`
+     - `void setDoOutput(boolean dooutput)` -- set `doOutput` (defaults to `false`) field to `true` to write to the URL connection
+       - `doInput` defaults to `true`
+     - `OutputStream getOutputStream()`
+     - set methods for applets only
+     - more
+   - `java.net.JarURLConnection` -- use cast from `URLConnection` for creation, for URLs like `jar:<url>!/{entry}`, for example
+     ```
+     jar:http://www.foo.com/bar/baz.jar!/COM/foo/Quux.class
+     jar:file:/home/duke/duke.jar!/
+     ```
+   - `java.net.HttpURLConnection` -- use cast from `URLConnection` for creation
+     ```java
+     public abstract class HttpURLConnection
+     extends URLConnection
+     ```
+     - `static int` HTTP status codes
+     - `InputStream getErrorStream()` -- 404 will throw `FileNotFoundException`, but response data can be also useful
+     - cookies -- see [HTTP Cookie](#HTTP-Cookie)
+
+### HTTP Cookie
+
+1. hierarchy of HTTP cookie classes
+   ```
+                    use
+   CookieHandler <------- HttpURLConnection
+         ^
+         | impl
+         |         use
+   CookieManager -------> CookiePolicy
+               |   use
+               |--------> HttpCookie
+               |              ^
+               |              | use
+               |   use        |
+               |--------> CookieStore
+                              ^
+                              | impl
+                              |
+                    Internal in-memory implementation
+   ```
+
+1. `java.net.CookieHandler` -- provides a callback mechanism to hook up a HTTP state management policy implementation into the HTTP protocol handler
+   ```java
+   public abstract class CookieHandler extends Object
+   ```
+   - `static void setDefault(CookieHandler cHandler)`
+
+1. `java.net.CookieManager`
+   ```java
+   public class CookieManager
+   extends CookieHandler
+   ```
+   - creation
+     - `CookieManager(CookieStore store, CookiePolicy cookiePolicy)` -- `null` parameters means default value
+
+1. `interface java.net.CookieStore` -- store and retrieve cookies, and remove when expired
+
+1. `interface java.net.CookiePolicy`
+   - predefined
+     - `static CookiePolicy ACCEPT_ALL`
+     - `static CookiePolicy ACCEPT_NONE`
+     - `static CookiePolicy ACCEPT_ORIGINAL_SERVER`
+   - `boolean shouldAccept(URI uri, HttpCookie cookie)`
+
+1. `java.net.HttpCookie` -- key-value pair with information like `isHttpOnly()`, `getMaxAge()`
