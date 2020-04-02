@@ -384,6 +384,8 @@
    - `Math.E`, `Math.PI`
    - `static double random()` -- uses `java.util.Random` behind scenes
    - `min`, `max`
+   - double
+     - `public static double ulp(double d)` -- An ulp, unit in the last place, of a double value is the positive distance between this floating-point value and the double value next larger in magnitude
    - rounding
      - `static double ceil(double a)`
      - `static long round(double a)`  
@@ -399,7 +401,7 @@
      - `static int toIntExact(long value)`
    - more
 
-1. `java.util.Random` — generate a stream of pseudorandom numbers, `Math.random()` simpler to use
+1. `java.util.Random` — generate a stream of pseudorandom numbers, of which `Math.random()` uses an `static final` instance
    ```java
    public class Random extends Object
    implements Serializable
@@ -407,6 +409,7 @@
    - creation
      - `Random()`
      - `Random(long seed)`
+   - thread-safe -- use `ThreadLocalRandom` to avoid `AtomicLong::compareAndSet`
    - set -- `void setSeed(long seed)`
    - next -- for `boolean`, `byte`, `double`, `float`, `int`, `long`
      - `int nextInt()`
@@ -456,7 +459,7 @@
      - `static native void arraycopy(Object src, int srcPos, Object dest, int destPos, int length)`
      - `static long currentTimeMillis()`
      - `static long nanoTime()`
-     - `static native int identityHashCode(Object x)` -- `Object::hashCode` regardless of overrided or not, 0 for `null`
+     - `static native int identityHashCode(Object x)` -- `Object::hashCode` regardless of overriden or not, 0 for `null`
    - system property -- see [Legacy Collections](#Legacy-Collections) for the list of system properties
      - `static Properties getProperties()`
      - `static String getProperty(String key)`  
@@ -1456,24 +1459,6 @@
 
 # Utils
 
-## Time
-
-1. `System`
-   - `static long nanoTime()`
-   - `static long currentTimeMillis()`
-
-1. `java.time.LocalDate` — A date without a time-zone in the ISO-8601 calendar system
-   ```java
-   public final class LocalDate extends Object
-   implements Temporal, TemporalAdjuster, ChronoLocalDate, Serializable
-   ```
-
-1. `java.util.Date` — represents a specific instant in time, with millisecond precision
-   ```java
-   public class Date extends Object
-   implements Serializable, Cloneable, Comparable<Date>
-   ```
-
 ## Arrays
 
 1. `java.util.Arrays`
@@ -1985,7 +1970,7 @@
    implements Map<K,V>
    ```
    - `LinkedHashMap(int initialCapacity, float loadFactor, boolean accessOrder)`
-     - `final boolean accessOrder` -- `true` for access order, `false` for insertion order
+     - `final boolean accessOrder` -- `true` for access order, `false` for insertion order (default)
    - insertion order -- the order is not affected if a key is re-inserted, even the value changes
    - access order -- get methods and modify methods make corresponding entries place at last: `put`, `putIfAbsent`, `get`, `getOrDefault`, `compute`, `computeIfAbsent`, `computeIfPresent`, or `merge`
      - `Map::replace` -- results an access only when the value is replaced
@@ -2446,9 +2431,15 @@
    - `Iterator<S> iterator()` -- Lazily loads the available providers of this loader's service.
    - `static <S> ServiceLoader<S> load(Class<S> service)` -- Creates a new service loader for the given service type, using the current thread's context class loader.
 
-## Other (tbd)
+## Other Utils (tbd)
 
 <!-- TODO -->
+
+1. date and time related -- see [Time](#Time)
+
+1. `java.util.PropertyPermission` -- system property permissions
+
+1. `java.util.UUID` -- an immutable universally unique identifier (UUID). A UUID represents a 128-bit value.
 
 1. `java.util.Objects` — null-safe
    - `static <T> int compare(T a, T b, Comparator<? super T> c)` — `return (a == b) ? 0 : c.compare(a, b);`
@@ -3495,7 +3486,8 @@
      - `E put(E e)`
      - `E take()`
    - timeout
-     - `boolean offer(E e, long timeout, TimeUnit unit)`
+     - `boolean offer(E e, long timeout, TimeUnit unit)`  
+       `boolean offer(E e)` -- 0 timeout
      - `E poll(long timeout, TimeUnit unit)`
 
 1. `java.util.concurrent.BlockingDeque`
@@ -3948,7 +3940,7 @@
    - `void countDown()` -- decrements the count of the latch, releasing all waiting threads if the count reaches zero
    - `long getCount()`
 
-1. `java.util.concurrent.CyclicBarrier` -- Allows a set of threads to wait until a predefined count of them has reached a common barrier, and then optionally executes a barrier action
+1. `java.util.concurrent.CyclicBarrier` -- Allows a set of threads to wait until a predefined count of them has reached a common barrier, and then optionally executes a barrier action, and the count is reset
    ```java
    public class CyclicBarrier extends Object
    ```
@@ -4019,10 +4011,7 @@
    - constructors
      - `SynchronousQueue()` -- LIFO for non-fair mode
      - `SynchronousQueue(boolean fair)` -- FIFO for fairness, performance is similar for this collection
-   - `E poll()`  
-     `E poll(long timeout, TimeUnit unit)`
-   - `boolean offer(E e)`  
-     `boolean offer(E e, long timeout, TimeUnit unit)`
+   - `E poll()` -- 0 timeout
    - other inherited methods
 
 # Text
@@ -5810,3 +5799,138 @@
    - `update-` prefixed methods -- like `get-` methods, for DB write methods
    - DB write
      - `void insertRow()`
+
+# Time
+
+1. current timestamps
+   - `System`
+     - `static long nanoTime()`
+     - `static long currentTimeMillis()`
+
+1. SQL and legacy classes
+   - timestamps (`Instant`) -- `java.util.Date`: represents a specific instant in time, with millisecond precision
+     ```java
+     public class Date extends Object
+     implements Serializable, Cloneable, Comparable<Date>
+     ```
+     - `java.sql.Date` -- interoperable with SQL `DATE`
+     - `java.sql.Time` -- interoperable with SQL `TIME` without a timezone
+     - `java.sql.Timestamp` -- interoperable with SQL `TIMESTAMP`, adds the ability to hold the SQL `TIMESTAMP` fractional seconds value, by allowing the specification of fractional seconds to a precision of nanoseconds
+   - calendars -- `java.util.Calendar`: for converting between a specific instant in time and a set of calendar fields, and for manipulating the calendar fields
+     ```java
+     public abstract class Calendar extends Object
+     implements Serializable, Cloneable, Comparable<Calendar>
+     ```
+     - `java.util.GregorianCalendar` -- a concrete subclass of `Calendar` and provides the standard calendar system used by most of the world
+   - timezones -- `java.util.TimeZone`
+     ```java
+     public abstract class TimeZone extends Object
+     implements Serializable, Cloneable
+     ```
+     - `java.util.SimpleTimeZone`
+   - formats
+     - `java.text.DateFormat`
+       ```java
+       public abstract class DateFormat
+       extends Format
+       ```
+
+1. `java.time` -- dates, times, instants, and durations
+   - `java.time.temporal` -- lower level access to the fields
+   - `java.time.format` -- printing and parsing all manner of dates and times
+   - `java.time.chrono` -- calendar neutral APIs, localized calendars, for interactions with users
+   - non-null -- non-null constructors and methods, except checking and validating methods
+   - API convention
+     - `of` -- static factory method
+     - `parse` -- static factory method focussed on parsing
+     - `get` -- gets the value of something
+     - `is` -- checks if something is true
+     - `with` -- the immutable equivalent of a setter
+     - `plus` -- adds an amount to an object
+     - `minus` -- subtracts an amount from an object
+     - `to` -- converts this object to another type
+     - `at` -- combines this object with another, such as `date.atTime(time)`
+     - `from`
+   - enums
+     - `java.time.Month`
+       ```java
+       public enum Month extends Enum<Month>
+       implements TemporalAccessor, TemporalAdjuster
+       ```
+     - `java.time.DayOfWeek`
+       ```java
+       public enum DayOfWeek extends Enum<DayOfWeek>
+       implements TemporalAccessor, TemporalAdjuster
+       ```
+
+1. `java.time.Instant`
+   ```java
+   public final class Instant extends Object
+   implements Temporal, TemporalAdjuster, Comparable<Instant>, Serializable
+   ```
+   - SQL type -- `TIMESTAMP` with a timezone
+   - epoch
+     - `static Instant EPOCH` -- Constant for the 1970-01-01T00:00:00Z epoch instant.
+     - `static Instant MAX` -- The maximum supported Instant, '1000000000-12-31T23:59:59.999999999Z'.
+     - `static Instant MIN` -- The minimum supported Instant, '-1000000000-01-01T00:00Z'.
+   - creation
+     - `now`
+     - `of-` prefixed methods
+     - `static Instant parse(CharSequence text)`
+   - conversation
+     - `long toEpochMilli()`
+     - `String toString()`
+     - `int getNano()`
+     - `getLong`
+
+1. `java.time.Duration` -- amount of time, kept in several `long` for seconds, an `int` for nanoseconds
+   ```java
+   public final class Duration extends Object
+   implements TemporalAmount, Comparable<Duration>, Serializable
+   ```
+   - creation
+     - `static Duration between(Temporal startInclusive, Temporal endExclusive)`
+     - more
+
+1. `java.time.OffsetDateTime`
+   - SQL type -- `TIMESTAMP` with a timezone
+
+1. `java.time.ZonedDateTime`
+   - SQL type -- `TIMESTAMP` with a timezone
+   - The Internet Assigned Numbers Authority (IANA) [database](www.iana.org/time-zones)
+
+1. `java.time.LocalDateTime`
+   - SQL type -- `TIMESTAMP` without a timezone
+
+1. `java.time.LocalDate` — A date without a time-zone in the ISO-8601 calendar system
+   ```java
+   public final class LocalDate extends Object
+   implements Temporal, TemporalAdjuster, ChronoLocalDate, Serializable
+   ```
+   - SQL type -- `DATE`
+   - overflow when `plusMonth` or `minusMonth` -- return the last valid day of the month
+
+1. `java.time.Period` -- A date-based amount of time in the ISO-8601 calendar system, counterpart of `Duration`
+   ```java
+   public final class Period
+   extends Object
+   implements ChronoPeriod, Serializable
+   ```
+
+1. `java.time.OffsetTime`
+   - SQL type -- `TIME` with a timezone
+
+1. `java.time.LocalTime`
+   - SQL type -- `TIME` without a timezone
+
+1. `java.time.format.DateTimeFormatter` -- Formatter for printing and parsing date-time objects
+   - predefined -- see javadoc
+   - localized -- `ofLocalized-` prefixed
+     - `DateTimeFormatter withLocale(Locale locale)`
+   - `enum java.time.format.FormatStyle` -- `FULL`, `LONG`, `MEDIUM`, `SHORT`
+   - conversation
+     - `toFormat`
+   - patterns -- see javadoc for patterns like `"E yyyy-MM-dd HH:mm"`
+     - `static DateTimeFormatter ofPattern(String pattern)`
+     - `static DateTimeFormatter ofPattern(String pattern, Locale locale)`
+   - parse methods
