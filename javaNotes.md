@@ -3,6 +3,7 @@
 1. docs
    - [oracle JDK 1.8](https://docs.oracle.com/javase/8/docs/api/index.html)
    - [jshell](https://docs.oracle.com/javase/9/jshell/toc.htm)
+   - [Java Platform, Standard Edition Tools Reference for Oracle JDK on Solaris, Linux, and OS X, Release 8](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/toc.html)
    - [download](https://stackoverflow.com/questions/6986993/how-to-download-javadoc-to-read-offline/36497090)
      - [Java Development Kit 8 Documentation](https://www.oracle.com/technetwork/java/javase/documentation/jdk8-doc-downloads-2133158.html)
 
@@ -210,7 +211,7 @@
      - `Double.POSITIVE_INFINITY`, `Double.NEGATIVE_INFINITY`, and `Double.NaN`
      - `Double.isNaN()`
 
-1. `char` -- describes a code unit in the UTF-16 encoding
+1. `char` -- describes a code unit in the UTF-16 BE encoding
    - syntax -- single quote
    - Unicode escaping, e.g. `\u0fff` — inside and outside quotes
      ```Java
@@ -222,6 +223,7 @@
      ```
      - processing -- Unicode escape sequences are processed before the code is parsed
      - other escapes -- `\b`, `\t`, `\n`, `\r`
+     - `native2ascii` -- CLI for converting the native character encoding to plain ASCII, removed in JDK 9 due to the ability to support UTF-8 based properties resource bundles
    - code unit -- a 16-bit value
      - supplementary characters -- whose code points are greater than `U+FFFF`, encoded as consecutive pairs of code units, a range of 2048 unused values of the basic multilingual plane
      - surrogates area -- high-surrogates range `U+D800` to `U+DBFF` for the first code unit, low-surrogates range `U+DC00` to `U+DFFF` for the second code unit
@@ -233,12 +235,12 @@
    - `if (x = 0)` does not compile
    - stored as `int`
 
-#### primitive types conversation
+#### primitive type conversion
 
-1. conversation
-   - legal conversation — types with less information to types with more information, but not vice versa
+1. conversion
+   - legal conversion — types with less information to types with more information, but not vice versa
    - type priority -- `double` > `float` > `long` > `int` > `char`
-   - implicit conversation using operators — converted to a common type before the operation is carried out
+   - implicit conversion using operators — converted to a common type before the operation is carried out
      - example -- for `int x`, `x += 3.5` is `x = (int)(x + 3.5)`
 
 1. casts
@@ -426,8 +428,11 @@
    extends Number
    implements Comparable<BigInteger>
    ```
-   - constructor
+   - creation
      - `static BigInteger valueOf(long val)`
+     - `static BigInteger ONE`
+     - `static BigInteger TEN`
+     - `static BigInteger ZERO`
    - arithmetic
      - `BigInteger add(BigInteger other)`
      - `BigInteger subtract(BigInteger other)`
@@ -513,7 +518,7 @@
        ```
    - substring or transform
      - `char charAt(int index)`, `int codePointAt(int index)`, `codePointBefore`
-     - conversation methods to and from `bytes[]`, `char[]`
+     - conversion methods to and from `bytes[]`, `char[]`
      - `String substring(int beginIndex)` `String substring(int beginIndex, int endIndex)`
      - `String replace(char oldChar, char newChar)`  
        `String replace(CharSequence target, CharSequence replacement)`  
@@ -634,7 +639,7 @@
 
 1. wrappers
    - `Integer` , `Long` , `Float` , `Double` , `Short` , `Byte` , `Character` , and `Boolean`
-   - all extends `Number` except `Boolean` -- no arithmetic operations and number conversations for boolean
+   - all extends `Number` except `Boolean` -- no arithmetic operations and number conversions for boolean
    - immutable and `final`
    - autowrapping (autoboxing) — done by compiler, nothing related to VM
      - `valueOf` -- example: `list.add(3);` is automatically translated to `list.add(Integer.valueOf(3));`
@@ -682,7 +687,7 @@
      - `static Integer valueOf(int i)`  
        `static Integer valueOf(String s)` -- uses `parseInt` internally  
        `static Integer valueOf(String s, int radix)`
-   - conversation to primitive types
+   - conversion to primitive types
      - methods in `Number`
        - `int intValue()`
      - `static int parseInt(String s)`  
@@ -1084,7 +1089,7 @@
    - inferred return type -- return type is always inferred, cannot be specified
 
 1. functional interface — an interface with a single abstract method, like `Comparator<T>`
-   - for conversation from lambdas -- conversion to a functional interface is the only function for lambdas
+   - for conversion from lambdas -- conversion to a functional interface is the only function for lambdas
    - object instance used behind the scenes -- methods like `Arrays::sort` receives an object of some class that implements the interface, lambda is executed when invoking the method of that interface
    - `@FunctionalInterface`
    - lambda expression holders (also function interface) — see [Common Functional Interfaces](#Common-Functional-Interfaces) for `java.util.function`
@@ -1462,7 +1467,7 @@
 ## Arrays
 
 1. `java.util.Arrays`
-   - conversation
+   - conversion
      - `static String toString(type[] a)`
      - `static String deepToString(Object[] a)`
      - `static <T> List<T> asList(T... a)` — `return new ArrayList<>(a);`
@@ -1583,7 +1588,7 @@
      - `boolean removeAll(Collection<?> c)`
      - `boolean remove(Object o)`
      - `boolean retainAll(Collection<?> c)`
-   - conversation
+   - conversion
      - `<T> T[] toArray(T[] a)` -- no new array created if `a` is of the correct size
      - `default Stream<E> stream()`
      - `default Stream<E> parallelStream()`
@@ -1972,7 +1977,7 @@
    - `LinkedHashMap(int initialCapacity, float loadFactor, boolean accessOrder)`
      - `final boolean accessOrder` -- `true` for access order, `false` for insertion order (default)
    - insertion order -- the order is not affected if a key is re-inserted, even the value changes
-   - access order -- get methods and modify methods make corresponding entries place at last: `put`, `putIfAbsent`, `get`, `getOrDefault`, `compute`, `computeIfAbsent`, `computeIfPresent`, or `merge`
+   - access order -- get methods and modify methods make corresponding entries place at the last position: `put`, `putIfAbsent`, `get`, `getOrDefault`, `compute`, `computeIfAbsent`, `computeIfPresent`, or `merge`
      - `Map::replace` -- results an access only when the value is replaced
      - operations on views -- no effect on order
    - `protected boolean removeEldestEntry(Map.Entry<K,V> eldest)` -- invoked by `put` and `putAll` after inserting a new entry into the map, returns `true` if this map should remove its eldest entry
@@ -2431,9 +2436,7 @@
    - `Iterator<S> iterator()` -- Lazily loads the available providers of this loader's service.
    - `static <S> ServiceLoader<S> load(Class<S> service)` -- Creates a new service loader for the given service type, using the current thread's context class loader.
 
-## Other Utils (tbd)
-
-<!-- TODO -->
+## Other Utils
 
 1. date and time related -- see [Time](#Time)
 
@@ -2942,6 +2945,7 @@
      - `FileHandler` — send records to a file `java<number>.log` in homedir, or some default dir in Windows, `XMLFormatter` by default
        - supports `append` flag
        - supports file rotation
+       - use platform encoding by default -- set via property `java.util.logging.FileHandler.encoding=UTF-8`
      - `SocketHandler` — sends records to a specified host and port, `XMLFormatter` by default
    - `java.util.logging.MemoryHandler` — Handler that buffers requests in a circular buffer in memory.
 
@@ -4032,7 +4036,7 @@
      - `Character(char value)`
      - `static Character valueOf(char c)`
      - `char charValue()`
-   - conversation between code points
+   - conversion between code points
      - casts and `0 + 'a'`
      - `static char[] toChars(int codePoint)`
      - `static int toChars(int codePoint, char[] dst, int dstIndex)`
@@ -4061,6 +4065,13 @@
      - `static Character.UnicodeBlock of(int codePoint)`
    - `Character.Subset` -- for extending, represents particular subsets of the Unicode character set
    - more
+
+1. `java.nio.charset.Charset` -- A named mapping between sequences of sixteen-bit Unicode code units and sequences of byte
+   ```java
+   public abstract class Charset extends Object
+   implements Comparable<Charset>
+   ```
+   - `static Charset defaultCharset()`
 
 ## Regex
 
@@ -4329,6 +4340,17 @@
 
 1. `java.util.Formatter`
    - `String::format`
+
+1. `java.text.MessageFormat` -- partially similar to `str.format` in Python
+   ```java
+   public class MessageFormat
+   extends Format
+   ```
+   - creation
+     - `MessageFormat(String pattern)`
+   - `static String format(String pattern, Object... arguments)` -- uses the current locale
+   - `public final String format(Object obj)`
+   - choice formatting -- `{1,choice,0#no houses|1#one house|2#{1} houses}`, see javadoc for more
 
 # IO
 
@@ -4650,7 +4672,7 @@
      extends Writer
      ```
 
-1. data input -- conversation between bytes from a binary stream and Java data types, big endian
+1. data input -- conversion between bytes from a binary stream and Java data types, big endian
    - [modified UTF-8](https://docs.oracle.com/javase/8/docs/api/java/io/DataInput.html#modified-utf-8) -- UTF-8 encoded UTF-16
    - `java.io.DataInput`
      ```java
@@ -4828,7 +4850,7 @@
      - generate by default, not recommended -- the serialization runtime will calculate a default `serialVersionUID` value for that class based on various aspects of the class (fingerprint), which may vary depending on compiler implementations
      - not applicable to array classes -- cannot declare explicitly, and the requirement for matching `serialVersionUID` values is waived for array classes
      - get version ID via CLI -- `serialver ClassName`
-     - auto conversation when version ID match -- for data fields, skip when type is different, ignore additional, set absent to default
+     - auto conversion when version ID match -- for data fields, skip when type is different, ignore additional, set absent to default
    - write or read with another object
      - when writing to stream -- implement `writeReplace`
        ```java
@@ -5581,7 +5603,7 @@
      - `InputStream openStream()` -- `openConnection().getInputStream()`
      - `Object getContent()` -- `openConnection().getContent()`, see blow  
        `Object getContent(Class[] classes)`
-   - conversation
+   - conversion
      - `String toExternalForm()` -- uses underlying `URLStreamHandler::toExternalForm`
      - `String toString()`
      - `URI toURI()`
@@ -5877,7 +5899,7 @@
      - `now`
      - `of-` prefixed methods
      - `static Instant parse(CharSequence text)`
-   - conversation
+   - conversion
      - `long toEpochMilli()`
      - `String toString()`
      - `int getNano()`
@@ -5924,13 +5946,280 @@
    - SQL type -- `TIME` without a timezone
 
 1. `java.time.format.DateTimeFormatter` -- Formatter for printing and parsing date-time objects
-   - predefined -- see javadoc
-   - localized -- `ofLocalized-` prefixed
+   ```java
+   public final class DateTimeFormatter extends Object
+   ```
+   - creation
+     - predefined -- see javadoc
+     - `ofLocalized-` prefixed methods to create from `FormatStyle`
+     - patterns -- see javadoc for patterns like `"E yyyy-MM-dd HH:mm"`
+       - `static DateTimeFormatter ofPattern(String pattern)`
+       - `static DateTimeFormatter ofPattern(String pattern, Locale locale)`
+   - localized
      - `DateTimeFormatter withLocale(Locale locale)`
-   - `enum java.time.format.FormatStyle` -- `FULL`, `LONG`, `MEDIUM`, `SHORT`
-   - conversation
+   - conversion
      - `toFormat`
-   - patterns -- see javadoc for patterns like `"E yyyy-MM-dd HH:mm"`
-     - `static DateTimeFormatter ofPattern(String pattern)`
-     - `static DateTimeFormatter ofPattern(String pattern, Locale locale)`
+   - format
+     - `String format(TemporalAccessor temporal)`
+     - `void formatTo(TemporalAccessor temporal, Appendable appendable)`
    - parse methods
+     - `LocalDate::parse`, `LocalDateTime::parse`, `LocalTime::parse`, or `ZonedDateTime::parse`, not suitable for parsing human input
+     - other parse methods
+   - `enum java.time.format.FormatStyle` -- `FULL`, `LONG`, `MEDIUM`, `SHORT`
+   - `java.time.format.TextStyle`
+     ```java
+     public enum TextStyle extends Enum<TextStyle>
+     ```
+     - `FULL` / `FULL_STANDALONE`
+     - `SHORT` / `SHORT_STANDALONE`
+     - `NARROW` / `NARROW_STANDALONE`
+     - `Month::getDisplayName` -- `String getDisplayName(TextStyle style, Locale locale)`
+
+# i18n
+
+1. locale -- language code and optionally other codes; language tag like `en-US`
+   ```
+   lang-script-region-extension
+   ```
+   - language code -- two or three lowercase letters, such as `en`
+   - script code -- four letters with an initial uppercase, such as `Latn` (Latin), `Cyrl` (Cyrillic), or `Hant` (traditional Chinese characters)
+   - country (region) code -- two uppercase letters or three digits such as US (United States) or CH (Switzerland)
+   - variant: miscellaneous (such as dialects or spelling rules) codes -- rarely used or made into extension
+   - extension -- start with `u-` and a two-letter code specifying whether the extension deals with the calendar (`ca`), numbers (`nu`), and so on; Other extensions are entirely arbitrary and start with `x-`, such as `x-java`
+     - describe local preferences -- calendars (such as the Japanese calendar), numbers (`u-nu-thai` Thai instead of Western digits), and so on
+   - example
+     - `"zh-Hans-CN"` -- Chinese written in simplified characters as used in China (primary language with script and country codes)
+     - `"ja-JP-u-ca-japanese"` -- Use the Japanese calendar in date and time formatting, so that 2013 is expressed as the year 25 of the Heisei period, or 平成25
+   - reference
+     - [“Best Current Practices” BCP 47 - Tags for Identifying Languages](https://tools.ietf.org/html/bcp47)
+     - [Language tags in HTML and XML](https://www.w3.org/International/articles/language-tags/)
+
+1. `java.util.Locale`
+   - creation
+     - constructors
+       - `Locale(String language)`
+       - `Locale(String language, String country)`
+       - `Locale(String language, String country, String variant)`
+     - `static Locale forLanguageTag(String languageTag)`
+     - `static Locale[] getAvailableLocales()`
+     - predefined
+       - `static char PRIVATE_USE_EXTENSION` -- The key for the private use extension ('x').
+       - `static char UNICODE_LOCALE_EXTENSION` -- `'u'`
+       - `static Locale ROOT`
+       - `static Locale SIMPLIFIED_CHINESE`
+       - `static Locale US`
+       - `static Locale UK`
+       - more
+     - from locale-dependent utility classes -- `NumberFormat.getAvailableLocales()`
+     - `Locale.Builder`
+       ```java
+       public static final class Locale.Builder extends Object
+       ```
+       ```java
+       Locale aLocale = new Builder().setLanguage("sr").setScript("Latn").setRegion("RS").build();
+       ```
+   - default -- `System.getProperty("user.language")`, `System.getProperty("user.region")`
+     - `static Locale getDefault()`
+     - `static Locale getDefault(Locale.Category category)`
+     - `static void setDefault(Locale.Category category, Locale newLocale)`
+     - `static void setDefault(Locale newLocale)`
+   - get methods -- show info about this locale
+   - transformation
+     - `Locale stripExtensions()`
+     - `String toLanguageTag()`
+
+1. `java.text.Format` -- abstract base class for formatting locale-sensitive information such as dates, messages, and numbers
+   ```java
+   public abstract class Format extends Object
+   implements Serializable, Cloneable
+   ```
+   - format
+     - `String format(Object obj)`
+     - `abstract StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos)`
+     - `AttributedCharacterIterator formatToCharacterIterator(Object obj)`
+   - parse
+     - `Object parseObject(String source)`
+     - `abstract Object parseObject(String source, ParsePosition pos)`
+     - use a Scanner to read localized integers and floating-point numbers -- `Scanner::useLocale` <!-- TODO -->
+
+1. `MessageFormat`
+   - creation
+     - `MessageFormat(String pattern, Locale locale)`
+   - public final String format(Object obj)
+
+## Number Format
+
+1. `java.text.NumberFormat`
+   ```java
+   public abstract class NumberFormat
+   extends Format
+   ```
+   - creation
+     - `static Locale[] getAvailableLocales()`
+     - `static NumberFormat getCurrencyInstance()`
+     - `static NumberFormat getCurrencyInstance(Locale inLocale)`
+     - `static NumberFormat getInstance()`
+     - `static NumberFormat getInstance(Locale inLocale)`
+     - `static NumberFormat getIntegerInstance()`
+     - `static NumberFormat getIntegerInstance(Locale inLocale)`
+     - `static NumberFormat getNumberInstance()`
+     - `static NumberFormat getNumberInstance(Locale inLocale)`
+     - `static NumberFormat getPercentInstance()`
+     - `static NumberFormat getPercentInstance(Locale inLocale)`
+   - settings -- get, set methods
+
+1. `java.util.Currency` -- control the currency used by the formatters
+   ```java
+   public final class Currency extends Object
+   implements Serializable
+   ```
+   - `NumberFormat::serCurrency` -- `void setCurrency(Currency currency)`
+   - creation
+     - `static Set<Currency> getAvailableCurrencies()`
+     - `static Currency getInstance(Locale locale)`
+     - `static Currency getInstance(String currencyCode)`
+   - display
+     - `String getCurrencyCode()`
+     - `int getDefaultFractionDigits()`
+     - `String getDisplayName()`
+     - `String getDisplayName(Locale locale)`
+     - `int getNumericCode()`
+     - `String getSymbol()`
+     - `String getSymbol(Locale locale)`
+     - `String toString()`
+
+1. `java.time.format.DateTimeFormatter` -- see [Time](#Time)
+
+## Collator and Normalizer
+
+1. `java.text.Collator` -- locale-sensitive String comparison
+   ```java
+   public abstract class Collator extends Object
+   implements Comparator<Object>, Cloneable
+   ```
+   - decomposition -- four normalization forms (D, KD, C, and KC)
+     - normalization forms
+       - In the normalization form C, accented characters are always composed. For example, a sequence of A and a combining ring above ° is combined into a single character Å (recommended by W3C)
+       - In form D, accented characters are always decomposed into their base letters and combining accents: Å is turned into A followed by °
+       - Forms KC and KD also decompose characters such as ligatures or the trademark symbol
+     - `static int NO_DECOMPOSITION`
+     - `static int CANONICAL_DECOMPOSITION`
+     - `static int FULL_DECOMPOSITION`
+   - strength -- in Czech, "e" and "f" are considered primary differences, while "e" and "ě" are secondary differences, "e" and "E" are tertiary differences and "e" and "e" are identical
+     - `PRIMARY`, `SECONDARY`, `TERTIARY`, and `IDENTICAL`
+     - `int getStrength()`
+     - `void setStrength(int newStrength)`
+   - creation
+     - `static Locale[] getAvailableLocales()`
+     - `static Collator getInstance()`
+     - `static Collator getInstance(Locale desiredLocale)`
+   - compare
+     - `int compare(Object o1, Object o2)`
+     - `abstract int compare(String source, String target)`
+   - sort -- `abstract CollationKey getCollationKey(String source)` for better performance
+   - `java.text.CollationKey` -- a series of bits that can be compared bitwise against other `CollationKeys` of the same `Collator` object
+     ```java
+     public abstract class CollationKey extends Object
+     implements Comparable<CollationKey>
+     ```
+     - `abstract int compareTo(CollationKey target)`
+     - `String getSourceString()`
+     - `abstract byte[] toByteArray()`
+   - example
+     ```java
+     var ss = new String[] {"Peter Öhlund", "Peter Ohlin", "Peter Olsdal", "Peter Zorn"};
+     Arrays.sort(ss);
+     Arrays.sort(ss, Collator.getInstance(Locale.GERMANY));
+     Arrays.sort(ss, Collator.getInstance(Locale.forLanguageTag("sv")));
+     Arrays.stream(ss)
+         .map((s) -> collator.getCollationKey(s))
+         .sorted()
+         .map((k) -> k.getSourceString())
+         .toArray((i) -> new String[i]);
+     ```
+
+1. `java.text.Normalizer` -- decomposition in `Collator`, see [Unicode Standard Annex #15 — Unicode Normalization Forms](http://www.unicode.org/reports/tr15/tr15-23.html)
+   ```java
+   public final class Normalizer extends Object
+   ```
+   - `static boolean isNormalized(CharSequence src, Normalizer.Form form)`
+   - `static String normalize(CharSequence src, Normalizer.Form form)`
+     ```java
+     String name = "Ångström";
+     String normalized = Normalizer.normalize(name, Normalizer.Form.NFD);
+     ```
+   - `Normalizer.Form`
+     ```java
+     public static enum Normalizer.Form extends Enum<Normalizer.Form>
+     ```
+     - `NFC`
+     - `NFD`
+     - `NFKC`
+     - `NFKD`
+
+## Resource Bundles
+
+1. resource bundles -- locale-specific items
+   - naming convention
+     - country specific -- `bundleName_language_country`
+     - language specific -- `bundleName_language`
+   - load order
+     - `bundleName_currentLocaleLanguage_currentLocaleCountry`
+     - `bundleName_currentLocaleLanguage`
+     - `bundleName_currentLocaleLanguage_defaultLocaleCountry`
+     - `bundleName_defaultLocaleLanguage`
+     - `bundleName`
+   - resource hierarchy -- the parents are searched if a lookup was not successful in the current bundle
+     - load -- parents are looked up when a bundle is already located
+     - order -- `bundleName_de_DE`, then the `bundleName_de` and `bundleName`
+   - property files
+     - supported by `ResourceBundle::getBundle`
+       ```java
+       // MyProgramStrings.properties
+       // MyProgramStrings_en.properties
+       // MyProgramStrings_de_DE.properties
+       ResourceBundle bundle = ResourceBundle.getBundle("MyProgramStrings", locale);
+       ```
+     - only ASCII in property files -- use `\uxxxx` for unicode
+   - bundle classes -- to provide resources that are not strings
+     - priority -- more prior than property files
+     - supported by `ResourceBundle::getBundle`
+       ```java
+       // MyProgramResources.java
+       // MyProgramResources_en.java
+       // MyProgramResources_de_DE.java
+       ResourceBundle bundle = ResourceBundle.getBundle("MyProgramResources", locale);
+       ```
+     - define bundle classes
+       - extend `ListResourceBundle`
+         ```java
+         public class MyProgramResources_de_DE extends ListResourceBundle {
+             private static final Object[][] contents = {
+                 { "backgroundColor", Color.black },
+                 { "defaultPaperSize", new double[] { 210, 297 } }
+             }
+             @Override
+             public Object[][] getContents() { return contents; }
+         }
+         ```
+       - extend `ResourceBundle` and override below methods
+         ```java
+         abstract Enumeration<String> getKeys()
+         protected abstract Object handleGetObject(String key)
+         ```
+
+1. `java.util.ResourceBundle`
+   ```java
+   public abstract class ResourceBundle extends Object
+   ```
+   - load
+     - `static ResourceBundle getBundle(String baseName)`
+     - `static ResourceBundle getBundle(String baseName, Locale locale)`
+     - `static ResourceBundle getBundle(String baseName, Locale locale, ClassLoader loader)`
+     - `static ResourceBundle getBundle(String baseName, Locale targetLocale, ClassLoader loader, ResourceBundle.Control control)`
+     - `static ResourceBundle getBundle(String baseName, Locale targetLocale, ResourceBundle.Control control)`
+     - `static ResourceBundle getBundle(String baseName, ResourceBundle.Control control)`
+   - get
+     - `Object getObject(String key)`
+     - `String getString(String key)`
+     - `String[] getStringArray(String key)`
