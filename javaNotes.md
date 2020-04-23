@@ -8,6 +8,7 @@
      - [Java Development Kit 8 Documentation](https://www.oracle.com/technetwork/java/javase/documentation/jdk8-doc-downloads-2133158.html)
 
 1. [specification](http://docs.oracle.com/javase/specs)
+   - [The Java® Virtual Machine Specification](https://docs.oracle.com/javase/specs/jvms/se8/html/)
 
 # Miscellanea
 
@@ -46,7 +47,7 @@
        java Message -g cruel world
        # args: ["-g", "cruel", "world"]
        ```
-     - jar -- `java -jar MyProgram.jar`
+     - jar -- `java -jar MyProgram.jar`, see [Jar](#JAR)
        ```
        java [options] -jar <jarfile> [args...]
        ```
@@ -330,6 +331,7 @@
    - `this`
      - field variable shadowing -- `this.` is optional, local variables can shadow instance fields
      - implicit parameter -- implicit parameter `this` does not appear in the method declaration
+       - can be explicitly declared as the first parameter, usually for annotations
      - as constructor -- the form `this(...)`, constructor call must be the first statement in a constructor
    - initialization
      - implicit field initialization -- fields automatically set to a default zero
@@ -1091,7 +1093,7 @@
 1. functional interface — an interface with a single abstract method, like `Comparator<T>`
    - for conversion from lambdas -- conversion to a functional interface is the only function for lambdas
    - object instance used behind the scenes -- methods like `Arrays::sort` receives an object of some class that implements the interface, lambda is executed when invoking the method of that interface
-   - `@FunctionalInterface`
+   - `@FunctionalInterface` -- optional annotation
    - lambda expression holders (also function interface) — see [Common Functional Interfaces](#Common-Functional-Interfaces) for `java.util.function`
 
 1. method reference -- use as lambdas
@@ -1198,6 +1200,7 @@
 
 1. inner class
    - explicit reference to the outer class — outer class can be explicitly referred to as `OuterClass.this`
+     - passed as implicit parameter to inner class constructors
    - implicit reference — can access the data from the scope in which they are defined
      - synthesized constructor parameter for implicit reference -- the compiler modifies all inner class constructors, adding a parameter for the outer class reference
    - constructing inner classes -- `new` keyword changes for implicit reference
@@ -3142,13 +3145,216 @@
 
 # Annotations
 
-1. `@SuppressWarnings("fallthrough")`
+1. annotations
+   - syntax -- each annotation is preceded by an `@` symbol, used like a modifier and is placed before the annotated item without a semicolon
+     - an item can have multiple annotations
+     - one annotation can be used multiple times on one item if `@Repeatable`
+   - annotation interfaces -- define annotations, creates actual Java interfaces, implicitly extend `Annotation`
+     ```java
+     modifiers @interface AnnotationName {
+       type elementName();
+       type elementName() default value;
+     }
+     ```
+     - cannot be extended or implemented explicitly
+     - when being processed -- tools that process annotations receive objects implementing annotation interfaces, and call methods to retrieve elements
+     - `java.lang.annotation.Annotation` -- The common interface extended by all annotation types. Note that an interface that manually extends this one does not define an annotation type.
+       ```java
+       public interface Annotation
+       ```
+       - `Class<? extends Annotation> annotationType()`
+   - annotation places
+     - declarations
+     - type uses
 
-1. `@Override` -- error when not overriding but define a new method
+1. annotation elements
+   - elements of annotations -- parameters when annotating, all element values must be compile-time constants, correspond to methods of annotation interfaces
+     ```java
+     @AnnotationName(elementName1=value1, elementName2=value2, ...)
+     @AnnotationName
+     @AnnotationName(valueForSingleElement)
+     ```
+     - marker annotation -- annotations no elements need to be specified when annotating
+     - single value annotation -- only one element called `value`
+   - annotation element types -- non-null, usually `""` or `Void.class` as substitution
+     - primitive types
+     - `String`
+     - `Class`
+     - `Enum`
+     - annotation types, error to introduce circular dependencies
+       ```java
+       Reference ref() default @Reference(); // an annotation type
+       @BugReport(ref=@Reference(id="3352627"), ...) // when annotating
+       ```
+     - arrays of the preceding types (flat), enclosed in braces when annotating
+       ```java
+       @BugReport(..., reportedBy={"Harry", "Carl"})
+       @BugReport(..., reportedBy="Joe") // OK, same as {"Joe"}
+       ```
 
-1. `@FunctionalInterface` -- error if conditions of functional interfaces not meet
+1. declaration annotations
+   - annotation target -- implementing classes of `AnnotatedElement`: `Class` (also interfaces), `Constructor`, `Executable`, `Field`, `Method`, `Package`, `Parameter`; sub-interface `TypeVariable` and local variables
+     - package annotations -- in `package-info.java`, can only be processed at the source level
+       ```java
+       /**
+        * Package-level javadoc
+        */
+       @GPL(version="3")
+       package com.a.b;
+       import org.gnu.GPL;
+       ```
+     - parameter annotations -- explicitly declare `this` if necessary
+   - local variable annotations -- can only be processed at the source level
+   - an annotation can annotate itself
 
-1. `@SafeVarargs`
+1. type use annotations -- annotate types, as sub-interfaces of `AnnotatedElement`
+   - type arguments -- `List<@NonNull String>`, `List<@Localized ? extends Message>`, `List<? extends @Localized Message>`
+   - arrays -- `@NonNull String[][] words` (`words[i][j]` is not `null`), `String @NonNull [][] words` (`words` is not `null`), `String[] @NonNull [] words` (`words[i]` is not `null`)
+   - when inheriting -- `class Warning extends @Localized Message`
+   - when `new` -- `new @Localized String(...)`
+   - casts and `instanceof` -- `(@Localized String) text`, `if (text instanceof @Localized String)`
+   - exception specifications -- `public String read() throws @Localized IOException`
+   - method references -- `@Localized Message::getText`
+   - cannot
+     ```java
+     @NonNull String.class // ERROR: Cannot annotate class literal
+     import java.lang.@NonNull String; // ERROR: Cannot annotate import
+     ```
+
+## Standard Annotations
+
+1. for compilation
+   - `@Deprecated`
+     ```java
+     @Documented
+      @Retention(value=RUNTIME)
+      @Target(value={CONSTRUCTOR,FIELD,LOCAL_VARIABLE,METHOD,PACKAGE,PARAMETER,TYPE})
+     public @interface Deprecated
+     ```
+   - `@SuppressWarnings`
+     ```java
+     @Target(value={TYPE,FIELD,METHOD,PARAMETER,CONSTRUCTOR,LOCAL_VARIABLE})
+      @Retention(value=SOURCE)
+     public @interface SuppressWarnings
+     ```
+     - `@SuppressWarnings("fallthrough")`
+   - `@Override` -- error when not overriding but define a new method
+     ```java
+     @Target(value=METHOD)
+      @Retention(value=SOURCE)
+     public @interface Override
+     ```
+   - `@javax.annotation.Generated` -- mark source code that has been generated. It can also be used to differentiate user written code from generated code in a single file (`javax.annotation.processing` for post JDK 8)
+     ```java
+     @Documented
+      @Retention(value=SOURCE)
+      @Target(value={PACKAGE,TYPE,ANNOTATION_TYPE,METHOD,CONSTRUCTOR,FIELD,LOCAL_VARIABLE,PARAMETER})
+     public @interface Generated
+     ```
+   - `@FunctionalInterface` -- error if conditions of functional interfaces not meet
+     ```java
+     @Documented
+      @Retention(value=RUNTIME)
+      @Target(value=TYPE)
+     public @interface FunctionalInterface
+     ```
+   - `@SafeVarargs` -- assertion that the body of the annotated method or constructor does not perform potentially unsafe operations on its varargs parameter
+     ```java
+     @Documented
+      @Retention(value=RUNTIME)
+      @Target(value={CONSTRUCTOR,METHOD})
+     public @interface SafeVarargs
+     ```
+
+1. meta
+   ```java
+   @Documented
+    @Retention(value=RUNTIME)
+    @Target(value=ANNOTATION_TYPE)
+   ```
+   - `@java.lang.annotation.Target` -- the contexts in which an annotation type is applicable, any declaration except a type parameter declaration if absent
+     - `ElementType[] value`
+     - `enum java.lang.annotation.ElementType` -- `ANNOTATION_TYPE`, `CONSTRUCTOR`, `FIELD`, `LOCAL_VARIABLE`, `METHOD`, `PACKAGE`, `PARAMETER`, `TYPE`, `TYPE_PARAMETER`, `TYPE_USE`
+   - `@java.lang.annotation.Retention` -- how long annotations with the annotated type are to be retained, defaults to `RetentionPolicy.CLASS` if absent
+     - `RetentionPolicy value`
+     - `enum java.lang.annotation.RetentionPolicy`
+       - `CLASS` -- in class files but not the VM
+       - `RUNTIME`
+       - `SOURCE`
+   - `@java.lang.annotation.Documented` -- indicates that annotations with a type are to be documented by javadoc and similar tools by default
+   - `@java.lang.annotation.Inherited` -- indicates that an annotation type is automatically inherited, has no effect if the annotated type is used to annotate anything other than a class
+   - `@java.lang.annotation.Repeatable` -- indicates the containing annotation type for the repeatable annotation type
+     ```java
+     @Repeatable(TestCases.class)
+     @interface TestCase {
+         String params();
+         String expected();
+     }
+     @interface TestCases { TestCase[] value(); }
+     ```
+     - `Class<? extends Annotation> value` -- a container annotation that holds the repeated annotations in an array
+
+1. for resource managing (deprecated from JDK 9 and removed from JDK 11, available in Maven)
+   - `@javax.annotation.PostConstruct` -- used on a method that needs to be executed after dependency injection is done
+     ```java
+     @Documented
+      @Retention(value=RUNTIME)
+      @Target(value=METHOD)
+     public @interface PostConstruct
+     ```
+     - Only one method can be annotated with this annotation
+     - annotated method signature -- see javadoc
+   - `@javax.annotation.PreDestroy` -- used on methods as a callback notification to signal that the instance is in the process of being removed by the container
+     ```java
+     @Documented
+      @Retention(value=RUNTIME)
+      @Target(value=METHOD)
+     public @interface PreDestroy
+     ```
+     - annotated method requirements -- see javadoc
+   - `@javax.annotation.Resource` -- marks a resource that is needed by the application
+     ```java
+     @Target(value={TYPE,FIELD,METHOD})
+      @Retention(value=RUNTIME)
+     public @interface Resource
+     ```
+     - example
+       ```java
+       @Resource(name="jdbc/mydb") private DataSource source;
+       ```
+   - `@javax.annotation.Resources` -- multiple resources
+
+## Source-Level Annotation Processing
+
+1. CLI
+   ```
+   javac -processor <class1>[,<class2>,<class3>...] sourceFiles
+   ```
+   - also other alternatives
+   - produce new source files until no more -- Each annotation processor is executed in turn and given the annotations in which it expressed an interest. If an annotation processor creates a new source file, the process is repeated. Once a processing round yields no further source files, all source files are compiled.
+     - `-XprintRounds` -- show rounds
+     - cannot modify source files -- use with agents or bytecode engineering tools
+
+1. `javax.annotation.processing`
+   ```java
+   @SupportedAnnotationTypes("com.example.annotations.ToString")
+   @SupportedSourceVersion(SourceVersion.RELEASE_8)
+   public class ToStringAnnotationProcessor extends AbstractProcessor {
+       public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment currentRound) { }
+   }
+   ```
+   - `javax.annotation.processing.AbstractProcessor` -- for processors to extend
+     ```java
+     public abstract class AbstractProcessor extends Object
+     implements Processor
+     ```
+   - `interface` `javax.annotation.processing.RoundEnvironment`
+   - `@javax.annotation.processing.SupportedAnnotationTypes`
+   - `@javax.annotation.processing.SupportedOptions`
+   - `@javax.annotation.processing.SupportedSourceVersion`
+
+1. language model (AST) -- `javax.lang.model`
+   - `javax.lang.model.element.Element` -- AST nodes
 
 # Concurrency
 
@@ -6223,3 +6429,52 @@
      - `Object getObject(String key)`
      - `String getString(String key)`
      - `String[] getStringArray(String key)`
+
+# Other Java APIs
+
+1. scripting
+   ```java
+   var $1 = new javax.script.ScriptEngineManager().getEngineByName("nashorn");
+   String json = "{\"a\": 5}";
+   var $7 = (jdk.nashorn.api.scripting.ScriptObjectMirror) $1.eval("JSON.parse('" + json + "')");
+   $7.getMember("a"); // 5, Integer
+   ```
+   - engines
+     - nashorn -- JavaScript engine, included from JDK 8, deprecated from JDK 11
+     - groovy
+     - Renjin -- R language
+     - sisc
+   - bindings -- variable contexts
+   - new polyglot solution: GraalVM -- a Java VM and JDK based on HotSpot/OpenJDK, for running applications written in JavaScript, Python, Ruby, R, JVM-based languages like Java, Scala, Groovy, Kotlin, Clojure, and LLVM-based languages such as C and C++
+
+1. compiling -- `javax.tools.JavaCompiler` and more
+   ```java
+   JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+   OutputStream outStream = ; // null for System.out
+   OutputStream errStream = ; // null for System.err
+   int result = compiler.run(null, outStream, errStream, "-sourcepath", "src", "Test.java");
+   ```
+
+1. agents -- bytecode engineering at load time
+   - bytecode engineering compiled classes -- [ASM](https://asm.ow2.io/)
+   - CLI
+     - `-agentlib:<libname>[=<options>]`
+     - `-agentpath:<pathname>[=<options>]`
+     - `-javaagent:<jarpath>[=<options>]`
+   - `java.lang.instrument` -- allow agents to instrument programs running on the JVM. The mechanism for instrumentation is modification of the byte-codes of methods.
+   - build an agent when launching JVM
+     - write an agent class with `premain`, called when the agent is loaded, before `main` of programs
+       ```java
+       public static void premain(String arg, Instrumentation instr)
+       ```
+       - CLI options (args) -- can get a single one
+       - `agentmain` method for agents starting sometime after JVM launched
+     - write a manifest setting `Premain-Class`
+       ```
+       Premain-Class: bytecodeAnnotations.EntryLoggingAgent
+       ```
+     - package the agent class and the manifest
+       ```shell
+       jar cvfm EntryLoggingAgent.jar bytecodeAnnotations/EntryLoggingAgent.mf \
+           bytecodeAnnotations/Entry*.class
+       ```
