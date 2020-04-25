@@ -10,14 +10,6 @@
 1. [specification](http://docs.oracle.com/javase/specs)
    - [The Java® Virtual Machine Specification](https://docs.oracle.com/javase/specs/jvms/se8/html/)
 
-# Miscellanea
-
-1. localization
-   - resource bundles — Localized applications contain locale-specific information in resource bundles
-   - localized messages — A message may contain placeholders: `{0}` , `{1}`
-
-1. `java.lang.ref.WeakReference` -- weak reference objects, which do not prevent their referents from being made finalizable, finalized, and then reclaimed
-
 # CLI
 
 1. `javac` — compile
@@ -180,6 +172,110 @@
 1. initialize local variables before read otherwise compilation error
 
 1. does not have operator overloading
+
+## Control Flow
+
+1. no block variable shadowing -- may not declare identically named variables in two nested blocks
+   - in JS and C++ inner one shadows outer one
+
+1. `switch`
+   - A case label can be
+     - primitive type expressions -- a constant expression of type `char` , `byte` , `short` , or `int`
+     - `Enum` -- like `with` in JS
+       ```java
+       Size sz = . . .;
+       switch (sz)
+       {
+           case SMALL: // no need to use Size.SMALL
+               // . . .
+               break;
+           // . . .
+       }
+       ```
+     - strings -- Starting with Java SE 7, a string literal, uses `hashCode()` behind scenes
+
+1. labeled `break` and `continue` -- for labeled blocks, can only jump out of a block, never into a block
+
+1. iterator -- `for (variable : collection) statement`
+   - `collection` — an array or an object of a class that implements the `Iterable` interface
+   - see [Collections](#Collections)
+
+1. vararg parameter — `...`
+   - if only an array passed, then that array is used, without nesting
+
+## Package
+
+1. package
+   - package name — reversely ordered domain
+   - package availability — A class can use all classes from its own package and all public classes from other packages.
+   - package at runtime
+     - locating classes is done by compiler -- the only benefit of the `import` statement is convenience
+     - canonical name after compilation -- the byte codes in class files always canonical names to refer to other classes
+
+1. class importation
+   - built-in -- `java.lang`
+   - without `import` -- use canonical name
+   - `import` statement
+     ```java
+     import java.time.*;
+     import java.time.LocalDate;
+     ```
+     - import a class -- canonical name
+     - import a package -- `*`
+     - import a inner class -- `java.util.AbstractMap.SimpleEntry`
+     - solve name conflict -- import the specific class, or use canonical name
+       ```java
+       import java.util.*;
+       import java.sql.*;
+       // compile-time error when use `Date` class
+       ```
+   - static imports — the importing of static methods and fields
+     ```java
+     import static java.lang.System.*;
+     import static java.lang.System.out;
+     ```
+
+1. add to package -- put the name of the package at the top of a source file
+   ```java
+   package com.example;
+   ```
+   - directory -- match the canonical name
+     ```shell
+     javac com/mycompany/PayrollApp.java
+     java com.mycompany.PayrollApp
+     ```
+   - default package -- classes belong to the default package if no `package` statement
+   - no custom `java.` prefixed packages -- disallow loading of user-defined classes whose package name starts with "`java.`"
+
+1. class path
+   ```
+   /home/user/classdir:.:/home/user/archives/archive.jar
+   c:\classdir;.;c:\archives\archive.jar
+   ```
+   - system property -- `java.class.path`
+   - possible components
+     ```shell
+     /home/user/classdir:.:/home/user/archives/'*'
+     # - In UNIX, the `*` must be escaped to prevent shell expansion.
+     # c:\classdir;.;c:\archives\*
+     ```
+     - base directory for the package tree
+     - jar files
+     - jar file directory
+     - do not add runtime libary files -- `rt.jar` and the other JAR files in the `jre/lib` and `jre/lib/ext` directories are always searched for classes
+   - used by `java` but not `javac`
+     - the `javac` compiler -- always looks for files in the current directory
+     - the `java` virtual machine -- launcher only looks into the class path, default class path is `.`
+   - class search order
+     - for `javac` -- from `java.lang` to imports to current package
+     - for `java` -- from runtime libary to the class path
+   - set class path
+     - `-cp` or `-classpath` option
+       ```shell
+       java -classpath /home/user/classdir:.:/home/user/archives/archive.jar MyProg
+       # java -classpath c:\classdir;.;c:\archives\archive.jar MyProg
+       ```
+     - the `CLASSPATH` environment variable
 
 # Fundamentals
 
@@ -384,7 +480,7 @@
 
 ## Math
 
-1. `java.lang.Math` -- elementary exponential, logarithm, square root, and trigonometric functions
+1. `Math` -- elementary exponential, logarithm, square root, and trigonometric functions
    - `Math.E`, `Math.PI`
    - `static double random()` -- uses `java.util.Random` behind scenes
    - `min`, `max`
@@ -422,7 +518,7 @@
      - `double nextGaussian()`
    - stream
 
-1. `java.lang.StrictMath` — guaranteeing identical results on all platforms
+1. `StrictMath` — guaranteeing identical results on all platforms
 
 1. `java.math.BigInteger`
    ```java
@@ -749,129 +845,6 @@
    implements Serializable, Comparable<Boolean>
    ```
 
-# Control Flow
-
-1. no block variable shadowing -- may not declare identically named variables in two nested blocks
-   - in JS and C++ inner one shadows outer one
-
-1. `switch`
-   - A case label can be
-     - primitive type expressions -- a constant expression of type `char` , `byte` , `short` , or `int`
-     - `Enum` -- like `with` in JS
-       ```java
-       Size sz = . . .;
-       switch (sz)
-       {
-           case SMALL: // no need to use Size.SMALL
-               // . . .
-               break;
-           // . . .
-       }
-       ```
-     - strings -- Starting with Java SE 7, a string literal, uses `hashCode()` behind scenes
-
-1. labeled `break` and `continue` -- for labeled blocks, can only jump out of a block, never into a block
-
-1. iterator -- `for (variable : collection) statement`
-   - `collection` — an array or an object of a class that implements the `Iterable` interface
-   - see [Collections](#Collections)
-
-1. vararg parameter — `...`
-   - if only an array passed, then that array is used, without nesting
-
-# Package
-
-1. package
-   - package name — reversely ordered domain
-   - package availability — A class can use all classes from its own package and all public classes from other packages.
-   - package at runtime
-     - locating classes is done by compiler -- the only benefit of the `import` statement is convenience
-     - canonical name after compilation -- the byte codes in class files always canonical names to refer to other classes
-
-1. class importation
-   - without `import` -- use canonical name
-   - `import` statement
-     ```java
-     import java.time.*;
-     import java.time.LocalDate;
-     ```
-     - import a class -- canonical name
-     - import a package -- `*`
-     - import a inner class -- `java.util.AbstractMap.SimpleEntry`
-     - solve name conflict -- import the specific class, or use canonical name
-       ```java
-       import java.util.*;
-       import java.sql.*;
-       // compile-time error when use `Date` class
-       ```
-   - static imports — the importing of static methods and fields
-     ```java
-     import static java.lang.System.*;
-     import static java.lang.System.out;
-     ```
-
-1. add to package -- put the name of the package at the top of a source file
-   ```java
-   package com.example;
-   ```
-   - directory -- match the canonical name
-     ```shell
-     javac com/mycompany/PayrollApp.java
-     java com.mycompany.PayrollApp
-     ```
-   - default package -- classes belong to the default package if no `package` statement
-   - no custom `java.` prefixed packages -- disallow loading of user-defined classes whose package name starts with "`java.`"
-
-1. class path
-   ```
-   /home/user/classdir:.:/home/user/archives/archive.jar
-   c:\classdir;.;c:\archives\archive.jar
-   ```
-   - system property -- `java.class.path`
-   - possible components
-     ```shell
-     /home/user/classdir:.:/home/user/archives/'*'
-     # - In UNIX, the `*` must be escaped to prevent shell expansion.
-     # c:\classdir;.;c:\archives\*
-     ```
-     - base directory for the package tree
-     - jar files
-     - jar file directory
-     - do not add runtime libary files -- `rt.jar` and the other JAR files in the `jre/lib` and `jre/lib/ext` directories are always searched for classes
-   - used by `java` but not `javac`
-     - the `javac` compiler -- always looks for files in the current directory
-     - the `java` virtual machine -- launcher only looks into the class path, default class path is `.`
-   - class search order
-     - for `javac` -- from `java.lang` to imports to current package
-     - for `java` -- from runtime libary to the class path
-   - set class path
-     - `-cp` or `-classpath` option
-       ```shell
-       java -classpath /home/user/classdir:.:/home/user/archives/archive.jar MyProg
-       # java -classpath c:\classdir;.;c:\archives\archive.jar MyProg
-       ```
-     - the `CLASSPATH` environment variable
-
-## Package Related Classes
-
-1. `Package`
-   ```java
-   public class Package extends Object
-   implements AnnotatedElement
-   ```
-
-1. `ClassLoader`
-   ```java
-   public abstract class ClassLoader extends Object
-   ```
-   - creation
-     - `Class::getClassLoader`
-   - assertion
-     - `void clearAssertionStatus()`
-     - `void setClassAssertionStatus(String className, boolean enabled)`
-     - `void setDefaultAssertionStatus(boolean enabled)`
-     - `void setPackageAssertionStatus(String packageName, boolean enabled)`
-
 # Inheritance
 
 1. inheritance
@@ -1045,7 +1018,8 @@
    - make a class cloneable — implement this interface, redefine `clone` to be `public`
      - `Object::clone` -- protected, and does a shallow copy
      - use `Object::clone` -- `(T) super.clone()`
-   <!-- - Up to Java SE 1.4, the clone method always had return type `Object`, but now the correct return type can be specified -->
+   - return `Object` by convention -- Up to Java SE 1.4, the clone method always had return type `Object`, but now the correct return type can be specified
+     - inconsistency -- `HashMap::clone` and `ArrayList::clone` etc. return `Object`, whereas `int[]::clone` and `ArrayDeque::clone` etc. return specific type
 
 ## Lambdas
 
@@ -1400,6 +1374,12 @@
    - `static void set(Object array)`
    - `static Object get(Object array)`
    - `static type getType(Object array)`
+
+1. `Package`
+   ```java
+   public class Package extends Object
+   implements AnnotatedElement
+   ```
 
 ## Proxy
 
@@ -2174,6 +2154,11 @@
    implements Cloneable, Serializable
    ```
    - no boundary check -- some methods (such as `size()`) may overflow
+   - creation
+     - constructors
+     - `valueOf`
+     - `clone`
+     - `BitSet get(int fromIndex, int toIndex)`
 
 ## Preferences
 
@@ -6387,6 +6372,7 @@
        ResourceBundle bundle = ResourceBundle.getBundle("MyProgramStrings", locale);
        ```
      - only ASCII in property files -- use `\uxxxx` for unicode
+     - property with placeholder — `readingFile=Achtung! Datei {0} wird eingelesen`
    - bundle classes -- to provide resources that are not strings
      - priority -- more prior than property files
      - supported by `ResourceBundle::getBundle`
@@ -6432,6 +6418,31 @@
 
 # Other Java APIs
 
+1. agents -- bytecode engineering at load time
+   - bytecode engineering compiled classes -- [ASM](https://asm.ow2.io/)
+   - CLI
+     - `-agentlib:<libname>[=<options>]`
+     - `-agentpath:<pathname>[=<options>]`
+     - `-javaagent:<jarpath>[=<options>]`
+   - `java.lang.instrument` -- allow agents to instrument programs running on the JVM. The mechanism for instrumentation is modification of the byte-codes of methods.
+     - more in package javadoc
+   - build an agent when launching JVM
+     - write an agent class with `premain`, called when the agent is loaded, before `main` of programs
+       ```java
+       public static void premain(String arg, Instrumentation instr)
+       ```
+       - CLI options (args) -- can get a single one
+       - `agentmain` method for agents starting sometime after JVM launched
+     - write a manifest setting `Premain-Class`
+       ```
+       Premain-Class: bytecodeAnnotations.EntryLoggingAgent
+       ```
+     - package the agent class and the manifest
+       ```shell
+       jar cvfm EntryLoggingAgent.jar bytecodeAnnotations/EntryLoggingAgent.mf \
+           bytecodeAnnotations/Entry*.class
+       ```
+
 1. scripting
    ```java
    var $1 = new javax.script.ScriptEngineManager().getEngineByName("nashorn");
@@ -6455,26 +6466,29 @@
    int result = compiler.run(null, outStream, errStream, "-sourcepath", "src", "Test.java");
    ```
 
-1. agents -- bytecode engineering at load time
-   - bytecode engineering compiled classes -- [ASM](https://asm.ow2.io/)
-   - CLI
-     - `-agentlib:<libname>[=<options>]`
-     - `-agentpath:<pathname>[=<options>]`
-     - `-javaagent:<jarpath>[=<options>]`
-   - `java.lang.instrument` -- allow agents to instrument programs running on the JVM. The mechanism for instrumentation is modification of the byte-codes of methods.
-   - build an agent when launching JVM
-     - write an agent class with `premain`, called when the agent is loaded, before `main` of programs
-       ```java
-       public static void premain(String arg, Instrumentation instr)
-       ```
-       - CLI options (args) -- can get a single one
-       - `agentmain` method for agents starting sometime after JVM launched
-     - write a manifest setting `Premain-Class`
-       ```
-       Premain-Class: bytecodeAnnotations.EntryLoggingAgent
-       ```
-     - package the agent class and the manifest
-       ```shell
-       jar cvfm EntryLoggingAgent.jar bytecodeAnnotations/EntryLoggingAgent.mf \
-           bytecodeAnnotations/Entry*.class
-       ```
+# JVM
+
+1. `java.lang.ref.WeakReference` -- weak reference objects, which do not prevent their referents from being made finalizable, finalized, and then reclaimed
+
+1. JVM in `System`
+   - `static void exit(int status)`
+   - `static void gc()` -- run garbage collector
+   - `static SecurityManager getSecurityManager()`
+   - `static Channel inheritedChannel()` -- the channel inherited from the entity that created this Java virtual machine
+   - `static void load(String filename)`
+   - `static void loadLibrary(String libname)`
+   - `static String mapLibraryName(String libname)`
+   - `static void runFinalization()`
+   - `static void setSecurityManager(SecurityManager s)`
+
+1. `ClassLoader`
+   ```java
+   public abstract class ClassLoader extends Object
+   ```
+   - creation
+     - `Class::getClassLoader`
+   - assertion
+     - `void clearAssertionStatus()`
+     - `void setClassAssertionStatus(String className, boolean enabled)`
+     - `void setDefaultAssertionStatus(boolean enabled)`
+     - `void setPackageAssertionStatus(String packageName, boolean enabled)`
