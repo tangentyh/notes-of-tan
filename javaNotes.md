@@ -58,6 +58,7 @@
    - `java -X` — a listing of all nonstandard options
      - `-Xprof` — profiling, support was removed in 10.0
      - `-XshowSettings:properties`, `-XshowSettings:locale`
+     - `-Xverify:none`, or `-noverify` -- turn off verification when loading classes
    - enable and disable assertion — see [Assertion](#Assertion)
    - system properties — `-D`, `System::getProperty`, `System::getProperties`
      - log related — see [Logging](#Logging)
@@ -105,6 +106,13 @@
 1. `jmap` and `jhat` (deprecated) for heap dump and examining dump -- see [Debugging](#Debugging)
 
 1. `serialver` -- get serial version ID
+
+1. sign
+   - `keytool` -- signatures, certificates
+     - password for cacerts -- `changeit`
+   - `jarsigner` -- add a signature to a (jar) file
+
+1. `javah` -- produces a C header file from class files for `native` methods
 
 ## JAR
 
@@ -262,7 +270,7 @@
      - base directory for the package tree
      - jar files
      - jar file directory
-     - do not add runtime libary files -- `rt.jar` and the other JAR files in the `jre/lib` and `jre/lib/ext` directories are always searched for classes
+     - do not add runtime libary files -- `rt.jar` and the other JAR files in the `jre/lib` and `jre/lib/ext` directories are always searched for classes (modules from JDK 9, and no more `ext`)
    - used by `java` but not `javac`
      - the `javac` compiler -- always looks for files in the current directory
      - the `java` virtual machine -- launcher only looks into the class path, default class path is `.`
@@ -517,6 +525,7 @@
      - more
      - `double nextGaussian()`
    - stream
+   - `java.security.SecureRandom`
 
 1. `StrictMath` — guaranteeing identical results on all platforms
 
@@ -2071,6 +2080,7 @@
    public class Properties extends Hashtable<Object,Object>
    ```
    - `String` keys and values
+   - property file syntax -- [.properties - Wikipedia](https://en.wikipedia.org/wiki/.properties)
    - can be saved to a stream or loaded from a stream
      - `void store(OutputStream out, String comments)`
      - more
@@ -2493,7 +2503,7 @@
      - `long|double getSum()`
      - `String toString()`
 
-## ZIP, Checksum and Encrypto
+## ZIP, Checksum and Encryption
 
 1. `java.util.Base64`
    - `java.util.Base64.Decoder`
@@ -2507,6 +2517,27 @@
    - `interface java.util.zip.Checksum`
 
 1. ZIP streams -- see [ZIP Streams](#ZIP-Streams)
+
+1. `java.security.MessageDigest` -- MD5, SHA-1, SHA-256, SHA-384, and SHA-512
+   ```java
+   bytesToHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(Paths.get("temp.py"))));
+   ```
+   ```java
+   static char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+   static String bytesToHex(byte[] bytes) {
+       char[] hexChars = new char[bytes.length << 1];
+       for (int j = 0; j < bytes.length; ++j) {
+           int v = bytes[j] & 0xFF;
+           hexChars[j << 1] = HEX_ARRAY[v >>> 4];
+           hexChars[(j << 1) + 1] = HEX_ARRAY[v & 0x0F];
+       }
+       return String.valueOf(hexChars);
+   }
+   ```
+   - CLI -- `keytool`
+
+1. `javax.crypto.Cipher` -- AES, DES, RSA
+   - `java.security.KeyPairGenerator`
 
 # Error Handling
 
@@ -5224,6 +5255,7 @@
    ```
    - limit -- some read / write methods are intended for text files of moderate length, use stream methods such as `newInputStream` for large or binary files
    - glop pattern -- extended syntax, extended `**`, see [File Operations (The Java™ Tutorials > Essential Classes > Basic I/O)](https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob), and [`FileSystem::getPathMatcher`](https://docs.oracle.com/javase/8/docs/api/java/nio/file/FileSystem.html#getPathMatcher-java.lang.String-)
+   - `readAllBytes`, `readAllLines`, etc.
 
 1. utility classes
    - `java.nio.file.DirectoryStream` -- an object to iterate over the entries in a directory, supports only a single `Iterator`
@@ -6481,6 +6513,43 @@
    - `static void runFinalization()`
    - `static void setSecurityManager(SecurityManager s)`
 
+1. security manager -- `SecurityManager`
+   - usage -- no security manager installed by default, use by `System::setSecurityManager`, or CLI option `-Djava.security.manager`
+   - permission checking -- `SecurityException`
+   - security policy, `java.security.Policy` -- code sources to permission sets, `java.security.Permission`
+     - protection domain -- tbd
+     - policy files -- tbd
+       - system property -- `java.security.policy`, double equals sign (`==`) to exclude other standard policy files
+   - Java Authentication and Authorization Service (JAAS) -- `javax.security.auth.login.LoginContext`, tbd
+     - login policies
+   - tbd
+
+## Class Loading
+
+1. class loading
+   - class loading process -- only classes needed for the execution loaded
+     - load main program from disk or web
+     - resolving -- load fields or superclasses of another class type of the main program class
+     - load classes required as the `main` method executes
+   - class loaders
+     - The bootstrap class loader -- loads the system classes (typically, from the JAR file `rt.jar`, modules from JDK 9)
+       - usually implemented in C -- as an integral part of the virtual machine, no `ClassLoader` object involved, `String.class.getClassLoader()` is `null`
+     - The extension class loader -- loads “standard extensions” from the `jre/lib/ext` directory, the loader does not use the class path
+       - no more `jre/lib/ext` from JDK 9 -- The javac compiler and java launcher will exit if the `java.ext.dirs` system property is set, or if the `lib/ext` directory exists
+       - the platform class loader -- the extension class loader is retained from JDK 9 and is specified as the platform class loader, see `ClassLoader::getPlatformClassLoader`
+     - The system class loader -- loads the application classes
+   - class loader hierarchy
+     - cosmic root -- the bootstrap class loader
+     - parents first -- load only if the parent has failed
+     - default parent when constructing `ClassLoader` -- system class loader
+   - context class loader -- each thread has a reference to a class loader
+     - `Thread::getContextClassLoader`, `Thread::setContextClassLoader`
+     - class loader inversion -- the phenomenon when loading classes programmatically, classes to load are not visible to default class loaders, can be solved by using context class loader
+   - class loaders as namespaces -- in JVM, a class is determined by its full name **and** the class loader
+     - useful for loading code from multiple sources, hot deployment etc.
+   - bytecode verification -- bytecode, except system classes, verified for safety before loaded into JVM
+     - turn off on CLI -- `-noverify` (or `-Xverify:none`)
+
 1. `ClassLoader`
    ```java
    public abstract class ClassLoader extends Object
@@ -6492,3 +6561,22 @@
      - `void setClassAssertionStatus(String className, boolean enabled)`
      - `void setDefaultAssertionStatus(boolean enabled)`
      - `void setPackageAssertionStatus(String packageName, boolean enabled)`
+   - load classes
+     - `protected Class<?> loadClass(String name, boolean resolve)` -- Loads the class with the specified binary name, in below order
+       1. `protected final Class<?> findLoadedClass(String name)`
+       1. `loadClass` of the parent class loader or the build-in JVM class loader if the parent is `null`
+       1. `protected Class<?> findClass​(String name)` -- for overloading with own implementation
+     - `protected final Class<?> defineClass(...)` -- convert bytes to classes, typically used by `findClass`
+
+1. `java.net.URLClassLoader`
+   ```java
+   public class URLClassLoader
+   extends SecureClassLoader
+   implements Closeable
+   ```
+   - example usage
+     ```java
+     URL url = new URL("file:///path/to/plugin.jar");
+     URLClassLoader pluginLoader = new URLClassLoader(new URL[] { url });
+     Class<?> cl = pluginLoader.loadClass("mypackage.MyClass");
+     ```
