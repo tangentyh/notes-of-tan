@@ -6,8 +6,23 @@
 
 1. help
    ```
-   mysql> help
+   help
+   HELP 'search_string'
    ```
+   - corresponding table in `mysql` -- `help_category`, `help_keyword`, `help_relation`, `help_topic`
+   - the top-level help categories
+     ```
+     HELP 'contents'
+     ```
+   - topics in help categories -- use the category name
+     ```
+     HELP 'data types'
+     ```
+   - keywords
+     ```
+     HELP 'ascii'
+     HELP 'create table'
+     ```
 
 1. after `brew install`
    - secure with a root password -- `mysql_secure_installation`
@@ -43,6 +58,9 @@
    - case sensitivity -- see after
      - `--lower-case-table-names[=#]`
    - autocomplete -- `--auto-rehash`, `mysql> \#`, `mysql> rehash`
+   - output format
+     - `--xml`
+     - `--html`
 
 1. at `mysql>` -- statements should end with `;` if accidentally enters multiline mode
    - `quit`, `exit`
@@ -76,23 +94,29 @@
      - natural key or surrogate key
    - foreign key
 
-1. normalization -- refining a database design to ensure that each independent piece of information is in only one place (except for foreign keys)
+1. normalization -- no duplicate or compound columns: refining a database design to ensure that each independent piece of information is in only one place (except for foreign keys)
 
 1. case sensitivity
    - SQL statements -- case insensitive
    - table names -- depends on CLI option `--lower-case-table-names[=#]` or system variable `lower_case_table_names`, `1` suggested with lowercase storing and insensitive comparisons
 
+1. index -- start from 1
+
 1. comment
    - inline comment -- `--`, `#` (less commonly supported)
    - comment block: `/**/`
 
-1. functions
+1. functions -- tbd
    - dummy table for `FROM` -- `dual`
      ```SQL
      SELECT now();
      SELECT now() FROM dual; -- only option for some DBMS, like Oracle
      ```
-   - `now()`
+   - `NOW([fsp])`
+   - `CONNECTION_ID()`
+   - date
+     - `STR_TO_DATE(str,format)`
+     - `DATE_FORMAT(date,format)`
 
 # Data Types
 
@@ -240,36 +264,74 @@
 
 1. `USE db_name` -- use the named database as the default (current) database for subsequent statements
 
+1. `EXPLAIN`, `DESCRIBE`, `DESC`
+   - `SHOW TABLES` -- usually `DESCRIBE` or `DESC`
+     ```
+     {EXPLAIN | DESCRIBE | DESC}
+         tbl_name [col_name | wild]
+     ```
+   - execution plan, usually `EXPLAIN` -- displays information from the optimizer, i.e. how it would process the statement, including information about how tables are joined and in which order
+     ```
+     {EXPLAIN | DESCRIBE | DESC}
+         [FORMAT = {TRADITIONAL | JSON | TREE}]
+         {explainable_stmt | FOR CONNECTION connection_id}
+     ```
+     - `explainable_stmt` -- `SELECT`, `DELETE`, `INSERT`, `REPLACE`, and `UPDATE`; also `TABLE` from MySQL 8.0.19
+     - `FOR CONNECTION connection_id` -- the last statement in the named connection
+       - `connection_id` -- `CONNECTION_ID()` for current session
+     - `FORMAT`
+       - `TRADITIONAL` -- tabular
+       - `TREE` -- the only format which shows hash join usage
+   - `EXPLAIN ANALYZE` -- execution plan along with timing and additional, iterator-based, information about how the optimizer's expectations matched the actual execution
+     ```
+     {EXPLAIN | DESCRIBE | DESC} ANALYZE select_statement
+     ```
+     - `select_statement` -- besides `SELECT`, also multi-table `UPDATE` and `DELETE` statements; also `TABLE` from MySQL 8.0.19
+
 ## SHOW
 
 1. `SHOW` -- provide information about databases, tables, columns, or status information about the server
    - correspond to tables in `INFORMATION_SCHEMA` -- `SELECT` corresponding tables yields the same result
    - `WHERE` clause -- evaluated against the column names in the result
 
-1. `SHOW DATABASES`, `SHOW SCHEMAS` -- lists the databases on the MySQL server host
-   ```
-   SHOW {DATABASES | SCHEMAS}
-       [LIKE 'pattern' | WHERE expr]
-   ```
-   - CLI
-     - `mysqlshow`
-     - `mysql` option `--skip-show-database` -- sets the `skip_show_database` system variable that controls who is permitted to use
-   - corrsponding table in `INFORMATION_SCHEMA` -- `INFORMATION_SCHEMA.SCHEMATA`
+1. show database information
+   - `SHOW DATABASES`, `SHOW SCHEMAS` -- lists the databases on the MySQL server host
+     ```
+     SHOW {DATABASES | SCHEMAS}
+         [LIKE 'pattern' | WHERE expr]
+     ```
+     - CLI
+       - `mysqlshow`
+       - `mysql` option `--skip-show-database` -- sets the `skip_show_database` system variable that controls who is permitted to use
+     - corrsponding table in `INFORMATION_SCHEMA` -- `INFORMATION_SCHEMA.SCHEMATA`
+   - `SHOW CREATE DATABASE`
+     ```
+     SHOW CREATE {DATABASE | SCHEMA} [IF NOT EXISTS] db_name
+     ```
 
-1. `SHOW TABLES` -- lists the non-`TEMPORARY` tables in a given database
-   ```
-   SHOW [EXTENDED] [FULL] TABLES
-       [{FROM | IN} db_name]
-       [LIKE 'pattern' | WHERE expr]
-   ```
-   - `EXTENDED` -- list hidden tables prefixed with `#sq1` created by failed `ALTER TABLE` statements
-   - `FULL` -- an additional `Table_type` column, with values `BASE TABLE`, `VIEW` and `SYSTEM VIEW` (only for `INFORMATION_SCHEMA`)
-   - corresponding table in `INFORMATION_SCHEMA` -- `INFORMATION_SCHEMA.TABLES`
-   - CLI -- `mysqlshow db_name`
-
-1. `SHOW TABLE STATUS` -- works likes SHOW TABLES, but provides a lot of information
-   - CLI -- `mysqlshow --status db_name command`
-   - corresponding table in `INFORMATION_SCHEMA` -- `INFORMATION_SCHEMA.TABLES`
+1. show table information
+   - `SHOW TABLES` -- lists the non-`TEMPORARY` tables in a given database
+     ```
+     SHOW [EXTENDED] [FULL] TABLES
+         [{FROM | IN} db_name]
+         [LIKE 'pattern' | WHERE expr]
+     ```
+     - `EXTENDED` -- list hidden tables prefixed with `#sq1` created by failed `ALTER TABLE` statements
+     - `FULL` -- an additional `Table_type` column, with values `BASE TABLE`, `VIEW` and `SYSTEM VIEW` (only for `INFORMATION_SCHEMA`)
+     - corresponding table in `INFORMATION_SCHEMA` -- `INFORMATION_SCHEMA.TABLES`
+     - CLI -- `mysqlshow db_name`
+   - `SHOW TABLE STATUS` -- works likes SHOW TABLES, but provides a lot of information
+     ```
+     SHOW TABLE STATUS
+         [{FROM | IN} db_name]
+         [LIKE 'pattern' | WHERE expr]
+     ```
+     - CLI -- `mysqlshow --status db_name command`
+     - corresponding table in `INFORMATION_SCHEMA` -- `INFORMATION_SCHEMA.TABLES`
+   - `SHOW CREATE TABLE`
+     ```
+     SHOW CREATE TABLE tbl_name
+     ```
 
 1. `SHOW COLUMNS`
    ```
@@ -289,6 +351,67 @@
    - hidden character set -- `filename`, internal use only
 
 1. `SHOW VARIABLES` -- see [System Variables](#System-Variables)
+
+## CREATE TABLE, ALTER TABLE, DROP TABLE
+
+1. `CREATE TABLE`
+   ```
+   CREATE [TEMPORARY] TABLE [IF NOT EXISTS] tbl_name
+       (create_definition,...)
+       [table_options]
+       [partition_options]
+   ```
+   - `create_definition`
+     ```
+       col_name column_definition
+     | {INDEX|KEY} [index_name] [index_type] (key_part,...)
+         [index_option] ...
+     | {FULLTEXT|SPATIAL} [INDEX|KEY] [index_name] (key_part,...)
+         [index_option] ...
+     | [CONSTRAINT [symbol]] PRIMARY KEY
+         [index_type] (key_part,...)
+         [index_option] ...
+     | [CONSTRAINT [symbol]] UNIQUE [INDEX|KEY]
+         [index_name] [index_type] (key_part,...)
+         [index_option] ...
+     | [CONSTRAINT [symbol]] FOREIGN KEY
+         [index_name] (col_name,...)
+         reference_definition
+     | check_constraint_definition
+     ```
+     - `column_definition`
+       ```
+         data_type [NOT NULL | NULL] [DEFAULT {literal | (expr)} ]
+           [AUTO_INCREMENT] [UNIQUE [KEY]] [[PRIMARY] KEY]
+           [COMMENT 'string']
+           [COLLATE collation_name]
+           [COLUMN_FORMAT {FIXED|DYNAMIC|DEFAULT}]
+           [STORAGE {DISK|MEMORY}]
+           [reference_definition]
+           [check_constraint_definition]
+       | data_type
+           [COLLATE collation_name]
+           [GENERATED ALWAYS] AS (expr)
+           [VIRTUAL | STORED] [NOT NULL | NULL]
+           [UNIQUE [KEY]] [[PRIMARY] KEY]
+           [COMMENT 'string']
+           [reference_definition]
+           [check_constraint_definition]
+       ```
+       - `key_part` -- `{col_name [(length)] | (expr)} [ASC | DESC]`
+       - `check_constraint_definition`
+         ```
+         [CONSTRAINT [symbol]] CHECK (expr) [[NOT] ENFORCED]
+         ```
+   - more
+
+1. `ALTER TABLE`
+
+1. `DROP TABLE`
+
+## INSERT
+
+1. `INSERT`
 
 # System Variables
 
