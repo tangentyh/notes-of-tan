@@ -41,6 +41,11 @@
    x & (-x);
    ```
 
+1. two pointers, one from head and one from tail
+   ```python
+   nums[i] + nums[~i]
+   ```
+
 1. number of digits
    ```javascript
    (n) => {
@@ -69,7 +74,7 @@
    (F) => {
        const log_phi = Math.log(0.5 + Math.sqrt(5) / 2);
        return Math.floor(Math.log(F * Math.sqrt(5) + 0.5) / log_phi)
-   }
+   };
    ```
 
 1. Catalan number
@@ -89,6 +94,9 @@
 
 1. multiplication of two numbers -- Karatsuba algorithm
    - [wikipedia](https://en.wikipedia.org/wiki/Karatsuba_algorithm)
+
+1. [Exponentiation by squaring - Wikipedia](https://en.wikipedia.org/wiki/Exponentiation_by_squaring)
+   - [example](https://leetcode.com/problems/student-attendance-record-ii/discuss/101633/Improving-the-runtime-from-O(n)-to-O(log-n))
 
 1. Sieve of Eratosthenes -- bit vector masking
    ```java
@@ -140,6 +148,21 @@
    ```
    - [wikipedia](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes)
 
+1. Bézout's identity
+   $$
+   \forall a, b \in \mathbb{Z}, \quad \exists k_1, k_2 \in \mathbb{Z} \\
+   \text{s.t.} \quad k_1 a + k_2 b = \operatorname{GCD}(a, b)
+   $$
+   - [Bézout's identity - Wikipedia](https://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity)
+
+1. modulo related
+   - [Euler's theorem - Wikipedia](https://en.wikipedia.org/wiki/Euler%27s_theorem)
+     - [Fermat's little theorem - Wikipedia](https://en.wikipedia.org/wiki/Fermat%27s_little_theorem)
+   - [Chinese remainder theorem - Wikipedia](https://en.wikipedia.org/wiki/Chinese_remainder_theorem)
+
+1. geometry
+   - [Convex hull algorithms - Wikipedia](https://en.wikipedia.org/wiki/Convex_hull_algorithms)
+
 # Strings
 
 1. references
@@ -160,7 +183,7 @@
        private int getPrefixLenByManacher(char[] cs) {
            final int[] p = new int[(cs.length << 1) + 1];
            DelimitedChars s = new DelimitedChars(cs);
-           int c = 0, r = 0;
+           int c = 0, r = 0; // center, right
            int prefixLen = 0;
            for (int i = 1; i != p.length; ++i) {
                p[i] = (r > i) ? Math.min(r - i, p[(c << 1) - i]) : 0;
@@ -173,7 +196,7 @@
                    c = i;
                    r = i + p[i];
                }
-               if(i - p[i] == 0) prefixLen = Math.max(prefixLen, p[i]);
+               if (i - p[i] == 0) prefixLen = Math.max(prefixLen, p[i]);
            }
            return prefixLen;
        }
@@ -299,6 +322,7 @@
      1. report all intervals stored along the path
 
 1. segment tree for range sum -- [Efficient and easy segment trees - Codeforces](http://codeforces.com/blog/entry/18051)
+   - for interval query -- discretization possible values
 
 1. interval tree
    - [Interval tree - Wikipedia](https://en.wikipedia.org/wiki/Interval_tree)
@@ -315,3 +339,41 @@
 1. Cycle detection
    - [Cycle detection - Wikipedia](https://en.wikipedia.org/wiki/Cycle_detection#Floyd%27s_Tortoise_and_Hare)
    - directed graph representation -- array: `i -> a[i]` for vertex i to vertex `a[i]`
+
+1. Eulerian path
+   - [Fleury's algorithm](https://en.wikipedia.org/wiki/Eulerian_path#Fleury.27s_algorithm)
+   - [Hierholzer's algorithm](https://en.wikipedia.org/wiki/Eulerian_path#Hierholzer's_algorithm)
+
+1. use DAGs in lieu of `boolean[] visited` or `BitSet` or `Map<Integer, List<Integer>> val2indexList`
+   ```java
+   Map<Integer, Integer> lasts = new HashMap<>();
+   int[] colorDAGs = new int[boxes.length];
+   for (int i = boxes.length - 1; i > -1; --i) {
+       int color = boxes[i];
+       colorDAGs[i] = lasts.getOrDefault(color, boxes.length);
+       lasts.put(color, i);
+   }
+   ```
+
+1. path find
+   - [A* search algorithm - Wikipedia](https://en.wikipedia.org/wiki/A*_search_algorithm)
+     - [leetcode 675](https://leetcode.com/problems/cut-off-trees-for-golf-event/solution/)
+   - [Lee algorithm - Wikipedia](https://en.wikipedia.org/wiki/Lee_algorithm) -- BFS, wave propagation
+     - Hadlock's Algorithm -- BFS, but put non-detours at the head of the searching queue while put detours at the tail of the searching queue
+       ```
+       [0, 0, 0, 0, 0, 1, 2]
+       [0, 0, 0, 0, 1, s, 1]
+       [0, 0, 0, 0, 2, 1, 2]
+       [0, 0, 0, 0, 3, 2, 3]
+       [0, 0, 0, 0, 4, 3, 4]
+       [0, 0, 0, 0, 5, -1, -1]
+       [0, 0, 0, 0, 6, 7, 8]
+       [0, 0, 0, 0, 0, 0, 9]
+       [0, 0, 0, 0, 0, 0, 10]
+                            ↖ end
+       s: start
+       -1: blockage encountered
+       0: untouched area
+       nonzero int: path length
+       ```
+       - detour example -- in a grid, it is a detour if `abs(to_i - i) + abs(to_j - j)` will be larger when `i` or `j` changes
