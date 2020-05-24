@@ -172,6 +172,19 @@
    - wikipedia
 
 1. `__substring_find.py`
+   - KMP
+     ```java
+     static int[] kmpTable(String s) {
+         char[] cs = s.toCharArray();
+         int[] prefTable = new int[cs.length + 1];
+         for (int i = 1, cnt = 0; i < cs.length; )
+             if (cs[i] == cs[cnt]) prefTable[++i] = ++cnt;
+             else if (cnt == 0) prefTable[++i] = 0;
+             else cnt = prefTable[cnt];
+         return prefTable;
+     }
+     ```
+     - alternative -- see `__substring_find.py`
 
 1. Longest palindromic substring -- [Manacher's algorithm](https://en.wikipedia.org/wiki/Longest_palindromic_substring)
    ```java

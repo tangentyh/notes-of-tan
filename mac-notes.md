@@ -78,6 +78,7 @@
      - `⌥` `number` — digit-argument
      - `⌥` `-` — neg-argument
    - movement
+     - `⌥` left click
      - `^x` `⌃` `f` — vi-find-next-char
      - `^x` `⌃` `b` — vi-match-bracket
      - `⌥` `⇧` `|` (vim: `|`) — vi-goto-column, use with number argument
@@ -90,7 +91,7 @@
      - `⌥` `p`, `⌥` `n` — history-search-backward, history-search-forward
      - `^x` `⌃` `n` — infer-next-history, search in the history list for a line matching the current one and fetch the event following it
      - `⌥` `.`, `⌥` `-` — insert-last-word, use with positive and negative (can be `-0`) argument, loop through previous lines when used consecutively
-     - `⌥` `,`, `⌥` `/` — _history-complete-newer, _history-complete-older, Complete words from the history
+     - `⌥` `,`, `⌥` `/` — \_history-complete-newer, \_history-complete-older, Complete words from the history
      - search
        - keymap — `bindkey -M isearch`
        - `⌃` `r`, `^x` `r` — history-incremental-search-backward, reverse search, a second `⌃` `r` recalls the previous search
@@ -221,6 +222,9 @@
      - `⌥` and click — scroll to
    - [rectangle](https://github.com/rxhanson/Rectangle) app
    - virtual desktops
+   - show launchpad and show desktop
+     - show launchpad -- `⌃` `F10`, in System Preferences > Keyboard > Shortcuts > Launchpad & Dock
+     - show desktop -- in System Preferences > Mission Control
 
 1. force quit app — `⌥` `⌘` `esc`
 
@@ -293,6 +297,8 @@
      - location — `~/Library/Preferences`, `/Library/Preferences`
      - mouse acceleration — `defaults write .GlobalPreferences com.apple.mouse.scaling -1`
      - hidden files — `defaults write com.apple.finder AppleShowAllFiles -bool true`
+     - power chime — `defaults write com.apple.PowerChime ChimeOnAllHardware -bool false && killall PowerChime`
+   - ip — `ifconfig`
 
 1. command utilities
    - `say` — text to speech
@@ -301,7 +307,7 @@
      - `displaysleepnow`
      - `sleepnow`
    - `caffeinate` — prevent the system from sleeping on behalf of a utility (the assertion releases after the exit of the utility)
-     - `-t timeout`
+     - `-t timeout`, in seconds
      - `-w pid`
      - `-i utility arguments...`
      - `-s utility arguments...` — the assertion is valid only when on AC power
@@ -363,9 +369,12 @@
 
 # pkg and brew
 
-1. sha
+1. SHA
    ```shell
    openssl dgst -sha256 ./file
+   ```
+   ```shell
+   shasum -a 256 filename
    ```
 
 1. pkg — `pkgutil`

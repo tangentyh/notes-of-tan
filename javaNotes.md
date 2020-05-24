@@ -1049,6 +1049,22 @@
    - no block variable shadowing — illegal to declare a parameter or a local variable in the lambda that has the same name as a local variable
    - block scope — the same scope as a nested block
    - same `this` — `this` is the same as what outside the lambda
+   - effective final effect -- only one instantiation inside loops
+     ```java
+     static IntUnaryOperator oper = null;
+     static int opCounter = 0;
+     static int lambdaTest(IntUnaryOperator op) {
+         if (op != oper) ++opCounter;
+         oper = op;
+         return op.applyAsInt(3);
+     }
+     static void test() {
+         for (int i = 0; i < 100; ++i) {
+             lambdaTest(j -> j * j);
+         }
+         System.out.println(opCounter); // 1
+     }
+     ```
 
 1. lambda expression syntax
    - inline
@@ -6138,15 +6154,17 @@
      - `static Duration between(Temporal startInclusive, Temporal endExclusive)`
      - more
 
-1. `java.time.OffsetDateTime`
+1. `java.time.OffsetDateTime` -- A date-time with an offset from UTC/Greenwich in the ISO-8601 calendar system, such as `2007-12-03T10:15:30+01:00`
    - SQL type — `TIMESTAMP` with a timezone
 
-1. `java.time.ZonedDateTime`
+1. `java.time.ZonedDateTime` -- `OffsetDateTime` with `ZoneId`, such as `2007-12-03T10:15:30+01:00 Europe/Paris`
    - SQL type — `TIMESTAMP` with a timezone
    - The Internet Assigned Numbers Authority (IANA) [database](www.iana.org/time-zones)
+   - `ZoneId getZone()`
+   - `OffsetDateTime toOffsetDateTime()`
 
 1. `java.time.LocalDateTime`
-   - SQL type — `TIMESTAMP` without a timezone
+   - SQL type — `TIMESTAMP` without a timezone, `DATETIME`
 
 1. `java.time.LocalDate` — A date without a time-zone in the ISO-8601 calendar system
    ```java
@@ -6158,8 +6176,7 @@
 
 1. `java.time.Period` — A date-based amount of time in the ISO-8601 calendar system, counterpart of `Duration`
    ```java
-   public final class Period
-   extends Object
+   public final class Period extends Object
    implements ChronoPeriod, Serializable
    ```
 
