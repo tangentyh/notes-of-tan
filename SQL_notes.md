@@ -88,6 +88,11 @@
 
 # Miscellanea
 
+1. correspondents
+   - databases -- directories within `/data`
+   - tables -- files
+   - triggers -- files
+
 1. keys
    - primary key
      - compound key -- primary key consisting of two or more columns
@@ -98,25 +103,10 @@
 
 1. case sensitivity
    - SQL statements -- case insensitive
-   - table names -- depends on CLI option `--lower-case-table-names[=#]` or system variable `lower_case_table_names`, `1` suggested with lowercase storing and insensitive comparisons
+   - database, trigger, table names -- depends on file system and CLI option `--lower-case-table-names[=#]` or system variable `lower_case_table_names`, `1` suggested with lowercase storing and insensitive comparisons
+   - table aliases -- platform dependent
 
 1. index -- start from 1
-
-1. comment
-   - inline comment -- `--`, `#` (less commonly supported)
-   - comment block: `/**/`
-
-1. functions -- tbd
-   - dummy table for `FROM` -- `dual`
-     ```SQL
-     SELECT now();
-     SELECT now() FROM dual; -- only option for some DBMS, like Oracle
-     ```
-   - `NOW([fsp])`
-   - `CONNECTION_ID()`
-   - date
-     - `STR_TO_DATE(str,format)`
-     - `DATE_FORMAT(date,format)`
 
 # Data Types
 
@@ -126,7 +116,7 @@
      - string-to-number conversion -- automatically, to `DOUBLE` or `BIGINT`
      - `SIGNED` by default, no effect when using
      - `UNSIGNED` -- deprecated for columns of type `FLOAT`, `DOUBLE`, and `DECIMAL` (and any synonyms), use `CHECK` instead
-       - subtraction between integer values -- the result is unsigned if one of the two is `UNSIGNED`, unless `SET sql_mode = 'NO_UNSIGNED_SUBTRACTION'`
+       - subtraction between integer values -- the result is unsigned if one of the two is `UNSIGNED`, unless `sql_mode` `NO_UNSIGNED_SUBTRACTION`
      - `ZEROFILL` -- deprecated, automatically `UNSIGNED` if used, use `LPAD()` or `CHAR` instead
    - `TINYINT`, `SMALLINT`, `MEDIUMINT`, `INT` or `INTEGER`, `BIGINT` -- 1 B, 2 B, 3 B, 4 B, 8 B
      ```
@@ -144,7 +134,7 @@
    - `FLOAT`, `DOUBLE`, `DOUBLE PRECISION`
      - deprecated -- `FLOAT(p)`, `FLOAT(M,D)`, `DOUBLE(M,D)`, `DOUBLE PRECISION[(M,D)]`
    - `BIT[(M)]` -- `M` indicates the number of bits from 1 (default) to 64
-     - literal syntax -- `b'value'`, `x''`, like `b'111'`
+     - literal syntax -- see after
 
 1. date and time
    - attribute
@@ -173,14 +163,6 @@
    - `YEAR` -- from `1901` to `2155`, 1 byte
 
 1. string
-   - literal syntax
-     ```
-     [_charset_name] literal [COLLATE collation_name]
-     ```
-     ```SQL
-     SELECT _utf8mb4'abc' COLLATE utf8mb4_danish_ci;
-     SELECT _utf8mb4 0x4D7953514C COLLATE utf8mb4_danish_ci;
-     ```
    - attribute
      - `CHARACTER SET`, `CHARSET` -- see `SHOW CHARACTER SET`, defaults to `utf8mb4` from version 8, `latin1` previously
        ```SQL
@@ -212,7 +194,7 @@
      ```
      - `CHAR(0)` -- only `NULL` and `''`
      - trailing spaces removed upon retrieval
-       - no trailing space removal -- `SET sql_mode = 'PAD_CHAR_TO_FULL_LENGTH';`
+       - no trailing space removal -- `sql_mode` `PAD_CHAR_TO_FULL_LENGTH`
      - when assigning size exceeded values -- truncated with warning if not in strict mode, error in strict mode for truncation of non-space characters
        - excessive trailing spaces -- truncated silently regardless of strict mode
      - variable-length off-page storage when ≥ 768 B -- InnoDB encodes fixed-length fields greater than or equal to 768 bytes in length as variable-length fields, which can be stored off-page, for example, `CHAR(255)` with `utf8mb4`
@@ -263,6 +245,7 @@
    - SQL transaction statements
 
 1. `USE db_name` -- use the named database as the default (current) database for subsequent statements
+   - `DATABASE()`
 
 1. `EXPLAIN`, `DESCRIBE`, `DESC`
    - `SHOW TABLES` -- usually `DESCRIBE` or `DESC`
@@ -352,7 +335,7 @@
 
 1. `SHOW VARIABLES` -- see [System Variables](#System-Variables)
 
-## CREATE TABLE, ALTER TABLE, DROP TABLE
+## CREATE TABLE, ALTER TABLE, DROP TABLE and Views
 
 1. `CREATE TABLE`
    ```
@@ -361,6 +344,7 @@
        [table_options]
        [partition_options]
    ```
+   - `TEMPORARY` -- tbd, temporary tables kept until the end of transaction or session
    - `create_definition`
      ```
        col_name column_definition
@@ -409,9 +393,655 @@
 
 1. `DROP TABLE`
 
+1. `CREATE VIEW`
+
 ## INSERT
 
 1. `INSERT`
+
+## SELECT
+
+1. `SELECT`
+   ```
+   SELECT
+       [ALL | DISTINCT | DISTINCTROW ]
+       [other_modifiers]
+       select_expr [, select_expr] ...
+       [FROM table_references [PARTITION partition_list]]
+       [WHERE where_condition]
+       [GROUP BY {col_name | expr | position}, ... [WITH ROLLUP]]
+       [HAVING where_condition]
+       [WINDOW window_name AS (window_spec) [, window_name AS (window_spec)] ...]
+       [ORDER BY {col_name | expr | position}
+         [ASC | DESC], ... [WITH ROLLUP]]
+       [LIMIT {[offset,] row_count | row_count OFFSET offset}]
+   ```
+   - in CTE -- `SELECT` can start with a `WITH` clause to define common table expressions accessible within the `SELECT`
+   - modifiers -- affect the operation of the statement, modifiers beginning with `SQL_` are MySQL extensions
+     - `ALL` (default), `DISTINCT` -- `DISTINCT` implicitly sorts the data, `DISTINCTROW` is an alias
+     - more
+   - `PARTITION` -- tbd
+   - `position` -- deprecated
+   - `INTO` -- tbd, result to be written to a file or stored in variables
+   - `WINDOW` -- tbd
+   - `LIMIT` -- outermost one take precedence if used in nested multiple subqueries
+     - `offset` -- use 0 to include first row
+     - up to end -- use a large number `row_count`
+   - `FOR UPDATE` -- tbd
+
+1. `select_expr` -- the select list that indicates which columns to retrieve
+   ```
+   col_name [[AS] alias_name]
+   ```
+   - `col_name` -- `col_name`, `tbl_name.col_name`, or `db_name.tbl_name.col_name`, `*`, `tbl_name.*`
+     - single `*` -- all columns from all tables, probable error when used with other items
+     - `tbl_name.*` -- all columns from the named table
+   - alias and column index scope -- can be used in `GROUP BY`, `ORDER BY`, or `HAVING` clauses, but cannot be used in `WHERE` clause, because the column value might not yet be determined when the `WHERE` clause is executed
+     ```SQL
+     SELECT college, region AS r, seed AS s FROM tournament ORDER BY r, s;
+     SELECT college, region, seed FROM tournament ORDER BY 2, 3;
+     ```
+
+1. `FROM` `table_references` -- the table or tables from which to retrieve rows
+   ```
+   tbl_name [[AS] alias] [index_hint_list]
+   ```
+   - `tbl_name` -- `tbl_name`, or `db_name.tbl_name`
+     - derived tables
+       ```SQL
+       FROM (SELECT first_name, last_name, email
+        FROM customer WHERE first_name = 'JESSIE'
+       ) AS cust;
+       ```
+   - `JOIN` -- join if more than one table specified
+     - tbd
+   - `DUAL` -- dummy table name, for rows computed without reference to any table
+   - `index_hint_list` -- give the optimizer information about how to choose indexes during query processing
+     - tbd
+
+1. `WHERE` `where_condition` -- an expression that evaluates to true for each row to be selected
+   - no aggregate functions -- can use any of the functions and operators, except for aggregate (summary) functions
+   - see tbd
+
+1. `GROUP BY`, `ORDER BY`
+   - `ORDER BY` -- defaults to `ACS`, outermost one take precedence if used in nested multiple subqueries
+     - resolve unqualified column or alias -- by searching in the `select_expr` values, then in the columns of the tables in the `FROM` clause
+   - `GROUP BY`
+     - resolve unqualified column or alias -- reverse order of `ORDER BY`
+     - `WITH ROLLUP` -- produce another (super-aggregate) row for each `GROUP BY` column
+       ```
+       mysql> SELECT year, SUM(profit) AS profit
+              FROM sales
+              GROUP BY year WITH ROLLUP;
+       +------+--------+
+       | year | profit |
+       +------+--------+
+       | 2000 |   4525 |
+       | 2001 |   3010 |
+       | NULL |   7535 |
+       +------+--------+
+       ```
+       - name super-aggregate row -- `GROUPING(expr [, expr] ...)` return a bit vector, big endian, 1 when super-aggregate
+         ```SQL
+         SELECT
+           IF(GROUPING(year), 'All years', year) AS year,
+           IF(GROUPING(country), 'All countries', country) AS country,
+           IF(GROUPING(product), 'All products', product) AS product,
+           SUM(profit) AS profit
+         FROM sales
+         GROUP BY year, country, product WITH ROLLUP;
+         ```
+   - `max_sort_length` system variable -- only `max_sort_length` bytes compared
+
+1. `HAVING`
+   - for filter after `GROUP BY` -- must reference only columns in the `GROUP BY` clause or columns used in aggregate functions
+     - extended in MySQL -- permits `HAVING` to refer to columns in the `SELECT` list and columns in outer subqueries as well
+     - applied nearly last (before `LIMIT`), with no optimization
+
+1. `WINDOW` -- windows for window functions, tbd
+   ```SQL
+   SELECT
+     val,
+     ROW_NUMBER()   OVER w AS 'row_number',
+     CUME_DIST()    OVER w AS 'cume_dist',
+     PERCENT_RANK() OVER w AS 'percent_rank'
+   FROM numbers
+   WINDOW w AS (ORDER BY val);
+   ```
+
+# Language Structure
+
+## Identifiers, Variables and Comments
+
+1. comment
+   - inline comment -- `--`, `#` (less commonly supported)
+   - comment block: `/**/`
+     - `/*! */` -- MySQL-specific code
+       ```
+       /*![version] MySQL-specific code */
+       ```
+     - `/*+ */` -- optimizer hints
+
+1. identifiers
+   <!-- markdownlint-disable MD033 -->
+   - identifier quote -- the <code>\`</code> character
+     - also `"` if `sql_mode` `ANSI_QUOTES` -- Treat `"` as an identifier quote character and not as a string quote character
+     - escape backtick -- <code>\`\`</code>
+   - identifier characters
+     - permitted characters when unquoted -- `[$_0-9a-zA-Z\x80-\uFFFF]`, cannot be all numbers
+     - permitted characters when quoted -- `[\x01-\uFFFF]`
+     - Database, table, and column names cannot end with space characters
+   - qualifier -- `schema_name.func_name()`, <code>\`my-table\`.\`my-column\`</code>
+   - mapping to filenames -- refer to docs
+
+1. user defined variables -- session specific
+   ```
+   SET @var_name = expr [, @var_name = expr] ...
+   SET @var_name := expr [, @var_name = expr] ...
+   ```
+   - `@var_name`, `@'my-var'`, `@"my-var"`, or <code>@\`my-var\`</code>
+   <!-- markdownlint-enable MD033 -->
+   - corresponding table in `PERFORMANCE_SCHEMA` -- `PERFORMANCE_SCHEMA.user_variables_by_thread`
+   - supported data types -- integer, decimal (no precision), floating-point, binary or nonbinary string, or `NULL`
+     - auto conversion -- other types are converted
+     - defaults to `NULL`, as string when selected in a result set
+   - use in expressions -- `@var_name`, intended to provide data values, cannot be used directly as identifiers
+   - evaluated on the client -- a variable that is assigned a value in the select expression list, does not work in `HAVING`, `GROUP BY`, and `ORDER BY`
+
+## Literals
+
+1. `NULL`
+
+1. strings literals -- `'`, or `"` if not in `sql_mode` `ANSI_QUOTES`
+   ```
+   [_charset_name]'string' [COLLATE collation_name]
+   ```
+   ```SQL
+   SELECT _utf8mb4'abc' COLLATE utf8mb4_danish_ci;
+   SELECT _utf8mb4 0x4D7953514C COLLATE utf8mb4_danish_ci;
+   ```
+   - escape sequences - `\0`, `\'`, `\"`, `\b` (backspace), `\n`, `\r`, `\t`, `\Z` (ASCII 26 (Control+Z)), `\\`, `\%`, `\_`
+     - `\'`, `\"` -- also `"'"`, `'"'`, `''` enclosed in single quotes, `""` enclosed in double quotes
+     - `\%`, `\_` -- only in in pattern-matching contexts, otherwise just the strings `\%` and `\_`, not to `%` and `_`
+     - backslash ignored for all other escape sequences -- `\x` is just `x`
+     - raw string -- `QUOTE(str)`
+     - controlled by `sql_mode` `NO_BACKSLASH_ESCAPES`
+
+1. numbers literals
+   - (fixed-point) number
+     ```SQL
+     SELECT 1, .2, 3.4, -5, -6.78, +9.10
+     ```
+   - approximate-value (floating-point) number
+     ```SQL
+     SELECT 1.2E3, 1.2E-3, -1.2E3, -1.2E-3, 1e3
+     ```
+   - `TRUE`, `FALSE` -- 1, 0
+
+1. `BIT`, number or binary string literals
+   - hexidecimal
+     ```
+     [_charset_name] X'val' [COLLATE collation_name]
+     ```
+     - `X'val'`, `x'val'`, `val` must contain an even number of digits
+     - `0xval`, case sensitive not `0X`
+     - `charset_name` -- defaults to `binary`
+     - numeric contexts -- treated like `BIGINT`, to ensure numeric treatment, `+0` or `CAST(X'41' AS UNSIGNED)`
+     - bit operators -- defaults to numeric context, for binary string context, use a `_binary` introducer for at least one of the arguments
+     - get hex -- `HEX(str)`, `HEX(N)`
+   - binary -- like hexidecimal, but no constraint on number of digits
+     ```
+     [_charset_name] b'val' [COLLATE collation_name]
+     ```
+
+1. date and time literals
+   - quoted strings and numbers -- like `'2015-07-21'`, `'20150721'`, and `20150721`
+     - `'YYYY-MM-DD'` or `'YY-MM-DD'`, `'YYYY-MM-DD hh:mm:ss'` or `'YY-MM-DD hh:mm:ss'`, any punctuation character may be used as the delimiter
+     - `'YYYYMMDD'` or `'YYMMDD'`, `'YYYYMMDDhhmmss'` or `'YYMMDDhhmmss'`, `'hhmmss'`
+     - `YYYYMMDD` or `YYMMDD`, `YYYYMMDDhhmmss`, `YYMMDDhhmmss`, `ss`, `mmss`, or `hhmmss` formatted numbers
+     - trailing fractional seconds
+     - preceding zeros in delimited strings -- optional
+     - `TIME` with or without days -- `'D hh:mm:ss'`, `'hh:mm:ss'`, `'hh:mm'`, `'D hh:mm'`, `'D hh'`, or `'ss'`, `D` from 0 to 34 days
+   - standard SQL -- space delimiter is optional
+     ```SQL
+     DATE 'str'
+     TIME 'str'
+     TIMESTAMP 'str'
+     ```
+
+## Operators and Functions
+
+1. implicit type conversion -- use `CAST()` for explict conversion
+   - between strings and numbers -- `1+'1'`, `CONCAT(1)`
+     - character set and collation when implicitly converted to string -- by `character_set_connection` and `collation_connection`
+   - when comparing
+     - `NULL` -- result in `NULL` if one or both arguments are `NULL`, except `<=>`
+     - hexidecimal values -- as binary strings if not compared to a number
+     - when `TIMESTAMP` or `DATETIME` compared to constants -- constants converted
+     - when comparing strings to numbers -- convert to floating point numbers
+
+1. operator priority
+   1. unary operators -- `-`, `~` (bit inversion)
+   1. `^`, arithmetic operators
+   1. bitwise operators
+   1. comparison operators
+   1. logical operators
+   1. assignment operators -- `:=`, `=` (in `SET` statements and `SET` clauses of `UPDATE`); support multiple assignments
+
+1. numeric operators and functions
+   - `+`, `-`, `*` -- result is floating-point if any operand is floating-point, otherwise `UNSIGNED` if any operand is `UNSIGNED`
+   - `/`
+     - scale of the result -- when using two exact-value operands, the scale of the result is the scale of the first operand plus the value of the `div_precision_increment` (defaults to 4) system variable
+     - division by zero -- `NULL` or error, controlled by `sql_mode` `ERROR_FOR_DIVISION_BY_ZERO`
+   - `DIV` -- integer division returning `BIGINT`, non-integer types are converted to `DECIMAL` and use `DECIMAL` arithmetic, error when overflow
+   - `%`, `MOD`, `MOD(N,M)`
+   - mathmatical functions -- `NULL` when error
+     - sign
+       - `ABS(X)`
+       - `SIGN(X)`
+     - rounding
+       - `CEIL(X)`, `CEILING(X)`, `FLOOR(X)` -- return floating type when string or floating-point arguments
+       - `ROUND(X)`, `ROUND(X,D)` -- precision `D` can be negative
+       - `TRUNCATE(X,D)`
+     - `RAND([N])` -- `Math.random()` in Java, `N` for seed
+       - retrieve in random order -- `ORDER BY RAND()`
+     - `POW(X,Y)`, `POWER(X,Y)`, `SQRT(X)`
+     - `EXP(X)`, `LN(X)`, `LOG(X)`, `LOG(B,X)`, `LOG2(X)`, `LOG10(X)`, `LOG2(X)`, `LOG10(X)`
+     - trigonometric -- in radian
+       - `PI()`
+       - `DEGREES(X)`, `RADIANS(X)` -- conversion between radians and degrees
+       - `ACOS(X)`, `ASIN(X)`
+       - `ATAN(X)`, `ATAN(Y,X)`, `ATAN2(Y,X)` -- the latter two as `Y/X`
+       - `COT(X)` -- cotangent
+       - `COS(X)`, `SIN(X)`, `TAN(X)`
+     - `CRC32(expr)`
+
+1. bitwise operators and functions
+   - `&`, `>>`, `<<`, `^`, `|`, `~`
+   - `BIT_COUNT(N)`
+
+1. comparison operators and functions -- result in a value of `1` (`TRUE`), `0` (`FALSE`), or `NULL`
+   - L, E and G, also row operands -- for example, `(a, b) <= (x, y)`
+     ```
+     =  >  <  >=  <=  <>  !=  <=>
+     ```
+     - `<=>` -- `NULL`-safe equal, equivalent to the standard SQL `IS NOT DISTINCT FROM`
+     - `<>` or `!=` -- not equal
+   - `expr [NOT] IN (value,...)` -- also row operands, use `CAST()` for best results, `NULL` if left value is `NULL` or `NULL` among right values when not found
+   - `IS`
+     - `IS [NOT] boolean_value` -- `boolean_value`: `TRUE`, `FALSE`, or `UNKNOWN` (for `NULL`)
+     - `IS [NOT] NULL`, `ISNULL(expr)`
+       - `AUTO_INCREMENT` columns -- controlled by system variable `sql_auto_is_null`
+       - zero values for `DATE` nad `DATETIME` columns -- zero values `IS NULL` when the column defined as `NOT NULL`
+   - string related -- `NULL` if any parameter is `NULL`
+     - `expr1 SOUNDS LIKE expr2` -- `SOUNDEX(expr1) = SOUNDEX(expr2)`
+     - `expr [NOT] LIKE pat [ESCAPE 'escape_char']`
+       - matching on a per-character basis -- some collate rules may not work, trailing space significant
+       - wildcard -- `%` for any number of characters, `_` for one character
+       - escape -- defaults to use `\` as escape character
+     - `expr [NOT] REGEXP pat`, `expr [NOT] RLIKE pat` -- `REGEXP_LIKE()`
+     - `REGEXP_LIKE(expr, pat[, match_type])`
+       - compatibility -- not multibyte safe prior to 8.0.4, and more
+       - `match_type` options -- `c` case sensitive, `i` case insensitive, more
+       - regex syntax -- limited support, see docs
+     - `STRCMP(expr1,expr2)`
+   - `expr [NOT] BETWEEN min AND max` -- inclusive, equivalent to the expression `(min <= expr AND expr <= max)` if of same type, use `CAST()` for best results
+   - `CASE` -- control flow, `NULL` if no else, different when use inside stored programs
+     - switch case
+       ```
+       CASE value
+           WHEN [compare_value] THEN result
+           [WHEN [compare_value] THEN result ...]
+           [ELSE result]
+       END
+       ```
+     - if else
+       ```
+       CASE
+           WHEN [condition] THEN result
+           [WHEN [condition] THEN result ...]
+           [ELSE result]
+       END
+       ```
+     - `result` -- the aggregated type of all result values, see docs for details
+     - in tandem -- `ELT()`, `FIELD()`
+   - pick value or index
+     - `COALESCE(value,...)` -- the first non-`NULL` argument
+     - `GREATEST(value1,value2,...)`, `LEAST(value1,value2,...)` -- with implicit type conversion, `NULL` if any `NULL` argument
+     - `INTERVAL(N,N1,N2,N3,...)` -- binary search `N`, `N_i` required to be incremental, arguments treated as integers, `-1` if `N` is `NULL`, `0` if `N < N1`, `1` if `N1 <= N < N2` and so on
+     - `IF(expr1,expr2,expr3)` -- ternary `expr1 ? expr2 : expr3` in other languages, return type is aggregated
+     - `IFNULL(expr1,expr2)` -- `expr1 ?? expr2` in other languages, `NULL` coalescing, return type is the generalized type
+     - `NULLIF(expr1,expr2)` -- `IF(expr1 = expr2, NULL, expr1)`, return type as `expr1`, `expr1` may be evaluated twice
+
+1. logical operators
+   - short circuit -- undefined
+   - `NOT` -- `NOT NULL` is `NULL`
+   - `AND` -- `1 AND NULL` and `NULL AND 1` is `NULL`
+   - `OR` -- `1 OR NULL` and `NULL or 1` is `NULL`
+     - `||` -- deprecated as `OR`, when in `sql_mode` `PIPES_AS_CONCAT`, `||` is SQL-standard string concatenation
+   - `XOR` -- `NULL` if any `NULL`
+
+## Cast, Date, Time and string Functions
+
+1. cast
+   - use extract functions for date times
+   - string to number -- use arithmetic, like `'1' | 0`
+   - convert between character sets
+     ```
+     CONVERT(expr USING transcoding_name) [COLLATE collation_name]
+     CONVERT(string, CHAR[(N)] CHARACTER SET charset_name) [COLLATE collation_name]
+     CAST(string AS CHAR[(N)] CHARACTER SET charset_name) [COLLATE collation_name]
+     ```
+   - `BINARY expr` -- to a binary string, force byte comparaison and trailing spaces significant
+   - `CAST(expr AS type [ARRAY])`, `CONVERT(expr,type)`
+     - `type` -- see docs, some data types and `SIGNED`, `UNSIGNED`
+
+1. date and time functions
+   - excess information ignored -- ignore the time part if expect date values and vice versa
+   - current date or time evaluated at start -- functions like `NOW()` evaluated only once per query at the start of query execution, except `SYSDATE()`
+     - `NOW([fsp])`, `CURRENT_TIMESTAMP`, `CURRENT_TIMESTAMP([fsp])`, `LOCALTIME`, `LOCALTIME([fsp])`, `LOCALTIMESTAMP`, `LOCALTIMESTAMP([fsp])`
+     - `SYSDATE([fsp])` -- nondeterministic, evaluated to the time at which executed
+     - `CURDATE()`, `CURRENT_DATE`, `CURRENT_DATE()`
+     - `CURTIME([fsp])`, `CURRENT_TIME`, `CURRENT_TIME([fsp])`
+     - `UNIX_TIMESTAMP([date])` -- when without parameters
+     - `UTC_DATE`, `UTC_DATE()`; `UTC_TIME`, `UTC_TIME([fsp])`; `UTC_TIMESTAMP`, `UTC_TIMESTAMP([fsp])`
+   - arithmetic
+     - `ADDDATE(date,INTERVAL expr unit)`, `DATE_ADD(date,INTERVAL expr unit)`
+     - `SUBDATE(date,INTERVAL expr unit)`, `DATE_SUB(date,INTERVAL expr unit)`
+     - `ADDDATE(expr,days)`; `SUBDATE(expr,days)`
+     - `FROM_DAYS(N)`
+     - `ADDTIME(expr1,expr2)`; `SUBTIME(expr1,expr2)`
+     - `TIMEDIFF(expr1,expr2)`
+     - `DATEDIFF(expr1,expr2)`
+     - `PERIOD_ADD(P,N)`
+     - `PERIOD_DIFF(P1,P2)`
+     - `TIMESTAMP(expr1,expr2)`
+     - `TIMESTAMPADD(unit,interval,datetime_expr)`, `TIMESTAMPDIFF(unit,datetime_expr1,datetime_expr2)`
+   - of
+     - `LAST_DAY(date)` -- last day of the month
+     - `MAKEDATE(year,dayofyear)`
+     - `MAKETIME(hour,minute,second)`
+     - `SEC_TO_TIME(seconds)`
+     - `STR_TO_DATE(str,format)`
+     - `FROM_UNIXTIME(unix_timestamp[,format])`
+     - `TIMESTAMP(expr)`
+   - timezone
+     - `CONVERT_TZ(dt,from_tz,to_tz)`
+   - format
+     - with format
+       - `DATE_FORMAT(date,format)` -- see docs for formats, `STR_TO_DATE(str,format)` for inversion
+       - `TIME_FORMAT(time,format)`
+       - `FROM_UNIXTIME(unix_timestamp[,format])`
+       - `GET_FORMAT({DATE|TIME|DATETIME}, {'EUR'|'USA'|'JIS'|'ISO'|'INTERNAL'})`
+     - name
+       - `DAYNAME(date)` -- Saturday, etc.
+       - `MONTHNAME(date)`
+     - extract
+       - `EXTRACT(unit FROM date)`
+       - `MICROSECOND(expr)`
+       - `SECOND(time)`
+       - `MINUTE(time)`
+       - `HOUR(time)`
+       - `TIME(expr)`
+       - `DAY(date)`, `DAYOFMONTH(date)`
+       - `MONTH(date)`
+       - `YEAR(date)`
+       - `DATE(expr)`
+     - index
+       - `DAYOFMONTH(date)`, `DAY(date)`
+       - `DAYOFYEAR(date)`
+       - `DAYOFWEEK(date)` -- start from 1 = Sunday
+        -`WEEKDAY(date)` -- start from 0 = Monday
+       - `QUARTER(date)`
+       - `WEEK(date[,mode])`
+       - `WEEKOFYEAR(date)` -- `WEEK(date,3)`
+       - `YEARWEEK(date)`, `YEARWEEK(date,mode)` -- return year and week
+     - conversion
+       - `TIME_TO_SEC(time)`
+       - `TO_DAYS(date)` -- since year 0
+       - `TO_SECONDS(expr)`
+       - `UNIX_TIMESTAMP([date])`
+
+1. string functions
+   - char at
+     - `ASCII(str)`
+     - `ORD(str)` -- byte representation
+   - length
+     - `BIT_LENGTH(str)`
+     - `OCTET_LENGTH(str)`, `LENGTH(str)` -- byte length
+     - `CHAR_LENGTH(str)`, CHARACTER_LENGTH(str)
+   - to string, of
+     - `BIN(N)`
+     - `OCT(N)`
+     - `HEX(N)`
+     - `CONV(N,from_base,to_base)` -- `N` treated as unsigned unless `from_base` is negative
+     - `EXPORT_SET(bits,on,off[,separator[,number_of_bits]])` -- `BIN()` but `on` as 1 and `off` as 0
+     - `MAKE_SET(bits,str1,str2,...)` -- choose from bit vector `bits`, little endian
+     - `CHAR(N,... [USING charset_name])` -- from byte array
+     - `FORMAT(X,D[,locale])` -- localization
+     - `LOAD_FILE(file_name)`
+   - find -- 0 if not found
+     - `INSTR(str,substr)`
+     - `REGEXP_INSTR(expr, pat[, pos[, occurrence[, return_option[, match_type]]]])`
+       - `REGEXP_SUBSTR(expr, pat[, pos[, occurrence[, match_type]]])` -- `REGEXP_INSTR()` but return matched result
+     - `LOCATE(substr,str)`, `LOCATE(substr,str,pos)`, `POSITION(substr IN str)`
+   - transform
+     - `CONCAT(str1,str2,...)`
+     - `CONCAT_WS(separator,str1,str2,...)`
+     - `INSERT(str,pos,len,newstr)`
+     - `REPLACE(str,from_str,to_str)`
+     - `REPEAT(str,count)`
+     - `SPACE(N)` -- `REPEAT(' ', N)`
+     - `REVERSE(str)`
+     - case
+       - `LOWER(str)`, `LCASE(str)` -- for a binary string, first convert it to a non-binary string
+       - `UPPER(str)`, `UCASE(str)`
+     - substring -- multibyte safe
+       - `LEFT(str,len)` -- from start
+       - `RIGHT(str,len)` -- from end
+       - `SUBSTRING(str,pos,len)`, `MID(str,pos,len)`
+       - `SUBSTR(str,pos)`, `SUBSTR(str FROM pos)`, `SUBSTR(str,pos,len)`, `SUBSTR(str FROM pos FOR len)`
+       - `SUBSTRING(str,pos)`, `SUBSTRING(str FROM pos)`, `SUBSTRING(str,pos,len)`, `SUBSTRING(str FROM pos FOR len)`
+       - `SUBSTRING_INDEX(str,delim,count)` -- start from end if `count` is negative
+     - padding
+       - `LPAD(str,len,padstr)`
+       - `RPAD(str,len,padstr)`
+     - trim
+       - `LTRIM(str)`
+       - `RTRIM(str)`
+       - `TRIM([{BOTH | LEADING | TRAILING} [remstr] FROM] str)`, `TRIM([remstr FROM] str)`
+   - mapping
+     - `ELT(N,str1,str2,str3,...)` -- select `strN` from string array starting from `str1`
+     - `FIELD(str,str1,str2,str3,...)` -- ordinal in the string array starting from `str1`
+   - encoding
+     - `HEX(str)` -- hex representation
+     - `UNHEX(str)`
+     - `TO_BASE64(str)`
+     - `FROM_BASE64(str)`
+     - `QUOTE(str)`
+     - `SOUNDEX(str)`
+     - `CHARSET(str)`
+     - `COLLATION(str)`
+
+## Aggregate and Window Functions
+
+1. group functions
+   - ignore `NULL` values
+   - return type -- `DOUBLE` or `DECIMAL` if exact-value arguments, `BIGINT` (or binary strings) for bitwise
+   - `over_clause` -- use as window functions
+
+1. statistic group functions
+   - `SUM([DISTINCT] expr) [over_clause]`
+   - `AVG([DISTINCT] expr) [over_clause]`
+   - `MAX([DISTINCT] expr) [over_clause]`
+   - `MIN([DISTINCT] expr) [over_clause]`
+   - `STDDEV_POP(expr) [over_clause]`, `STDDEV(expr) [over_clause]`, `STD(expr) [over_clause]`
+   - `STDDEV_SAMP(expr) [over_clause]`
+   - `VAR_POP(expr) [over_clause]`, `VARIANCE(expr) [over_clause]`
+   - `VAR_SAMP(expr) [over_clause]`
+
+1. bitwise group functions
+   - `BIT_AND(expr) [over_clause]`
+   - `BIT_OR(expr) [over_clause]`
+   - `BIT_XOR(expr) [over_clause]`
+
+1. other group functions
+   - `COUNT(expr) [over_clause]`
+   - `COUNT(DISTINCT expr,[expr...])`
+   - `GROUP_CONCAT(expr)`
+     ```
+     GROUP_CONCAT([DISTINCT] expr [,expr ...]
+                  [ORDER BY {unsigned_integer | col_name | expr}
+                      [ASC | DESC] [,col_name ...]]
+                  [SEPARATOR str_val])
+     ```
+
+1. window functions -- tbd
+
+## Other Functions
+
+1. full-text search functions -- for `FULLTEXT` index types, tbd
+   ```
+   MATCH (col1,col2,...) AGAINST (expr [search_modifier])
+   search_modifier:
+     {
+          IN NATURAL LANGUAGE MODE
+        | IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION
+        | IN BOOLEAN MODE
+        | WITH QUERY EXPANSION
+     }
+   ```
+
+1. encryption and compression
+   - `SHA1()`, `SHA2()`, `SHA()`
+   - `MD5()`
+   - more
+
+1. lock functions
+
+1. information functions
+   - `BENCHMARK(count,expr)` -- executes the expression `expr` repeatedly `count` times, scalar expressions only
+   - last query
+     - `FOUND_ROWS()` -- for last `LIMIT`
+     - `ROW_COUNT()`
+     - `LAST_INSERT_ID()`, `LAST_INSERT_ID(expr)`
+   - client, current session
+     - `VERSION()`
+     - `USER()`, `SESSION_USER()`, `SYSTEM_USER()`
+     - `CONNECTION_ID()`
+     - `CURRENT_ROLE()`
+     - `CURRENT_USER`, `CURRENT_USER()`
+     - `DATABASE()`, `SCHEMA()`
+
+1. miscellaneous functions
+   - UUID -- arguments tbd
+     - `BIN_TO_UUID()`
+     - `IS_UUID()`
+     - `UUID()`
+     - `UUID_SHORT()`
+     - `UUID_TO_BIN()`
+   - column related during statements
+     - `DEFAULT(col_name)` -- default value for `col_name`
+     - `GROUPING(expr [, expr] ...)` -- see `GROUP BY`
+
+## Expressions
+
+1. expression
+   ```
+   expr:
+       expr OR expr
+     | expr || expr
+     | expr XOR expr
+     | expr AND expr
+     | expr && expr
+     | NOT expr
+     | ! expr
+     | boolean_primary IS [NOT] {TRUE | FALSE | UNKNOWN}
+     | boolean_primary
+   ```
+
+1. `boolean_primary`
+   ```
+   boolean_primary:
+       boolean_primary IS [NOT] NULL
+     | boolean_primary <=> predicate
+     | boolean_primary comparison_operator predicate
+     | boolean_primary comparison_operator {ALL | ANY} (subquery)
+     | predicate
+   ```
+   - `comparison_operator`
+     ```
+     comparison_operator: = | >= | > | <= | < | <> | !=
+     ```
+
+1. `predicate`
+   ```
+   predicate:
+       bit_expr [NOT] IN (subquery)
+     | bit_expr [NOT] IN (expr [, expr] ...)
+     | bit_expr [NOT] BETWEEN bit_expr AND predicate
+     | bit_expr SOUNDS LIKE bit_expr
+     | bit_expr [NOT] LIKE simple_expr [ESCAPE simple_expr]
+     | bit_expr [NOT] REGEXP bit_expr
+     | bit_expr
+   ```
+
+1. `bit_expr`
+   ```
+   bit_expr:
+       bit_expr | bit_expr
+     | bit_expr & bit_expr
+     | bit_expr << bit_expr
+     | bit_expr >> bit_expr
+     | bit_expr + bit_expr
+     | bit_expr - bit_expr
+     | bit_expr * bit_expr
+     | bit_expr / bit_expr
+     | bit_expr DIV bit_expr
+     | bit_expr MOD bit_expr
+     | bit_expr % bit_expr
+     | bit_expr ^ bit_expr
+     | bit_expr + interval_expr
+     | bit_expr - interval_expr
+     | simple_expr
+   ```
+
+1. `simple_expr`
+   ```
+   simple_expr:
+       literal
+     | identifier
+     | function_call
+     | simple_expr COLLATE collation_name
+     | param_marker
+     | variable
+     | simple_expr || simple_expr
+     | + simple_expr
+     | - simple_expr
+     | ~ simple_expr
+     | ! simple_expr
+     | BINARY simple_expr
+     | (expr [, expr] ...)
+     | ROW (expr, expr [, expr] ...)
+     | (subquery)
+     | EXISTS (subquery)
+     | match_expr
+     | case_expr
+     | interval_expr
+   ```
+   - `variable` -- user variables, system variables, or stored program local variables or parameters
+   - `param_marker` -- `?` in `PREPARE`
+
+1. `interval_expr` -- represents a temporal interval, for `+`, `-` and functions like `DATE_ADD()` and `DATE_SUB()`
+   ```
+   INTERVAL expr unit
+   ```
+   - `expr` here -- quantity in `unit`, should be in the format according to `unit`
+   - `unit`
+     - `MICROSECOND`, `SECOND`, `MINUTE`, `HOUR`, `DAY`, `WEEK`, `MONTH`, `QUARTER`, `YEAR` -- expect number
+     - `SECOND_MICROSECOND`, `MINUTE_MICROSECOND`, `MINUTE_SECOND`, `HOUR_MICROSECOND`, `HOUR_SECOND`, `HOUR_MINUTE` -- from left part to right part, expect any punctuation delimited string
+     - `DAY_MICROSECOND`, `DAY_SECOND`, `DAY_MINUTE`, `DAY_HOUR` -- like above but with days spaced: `'DAYS HOURS:MINUTES:SECONDS.MICROSECONDS'`
+     - `YEAR_MONTH` -- `'YEARS-MONTHS'`
 
 # System Variables
 
@@ -441,8 +1071,20 @@
    - `NO_UNSIGNED_SUBTRACTION`
    - `PAD_CHAR_TO_FULL_LENGTH`
    - `NO_ZERO_IN_DATE`
+   <!-- markdownlint-disable MD033 -->
+   - `ANSI_QUOTES` -- Treat `"` as an identifier quote character (like the <code>\`</code> quote character) and not as a string quote character
+   <!-- markdownlint-enable MD033 -->
+   - `NO_BACKSLASH_ESCAPES` -- Disable the use of the backslash character (`\`) as an escape character within strings and identifiers
+   - `PIPES_AS_CONCAT`
 
 1. `time_zone`
+
+1. `max_sort_length`
+
+1. `sql_auto_is_null`
+
+1. character set
+   - `character_set_connection`
 
 # InnoDB
 
