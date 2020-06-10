@@ -311,10 +311,6 @@
      ```
      - CLI -- `mysqlshow --status db_name command`
      - corresponding table in `INFORMATION_SCHEMA` -- `INFORMATION_SCHEMA.TABLES`
-   - `SHOW CREATE TABLE`
-     ```
-     SHOW CREATE TABLE tbl_name
-     ```
 
 1. `SHOW COLUMNS`
    ```
@@ -327,6 +323,10 @@
    - `FULL` -- include the column collation and comments, as well as the privileges
    - corresponding table in `INFORMATION_SCHEMA` -- `INFORMATION_SCHEMA.COLUMNS`
    - CLI -- `mysqlshow db_name tbl_name`
+   - `SHOW CREATE TABLE`
+     ```
+     SHOW CREATE TABLE tbl_name
+     ```
    - see also -- `DESCRIBE`
 
 1. `SHOW CHARACTER SET`
@@ -406,27 +406,23 @@
    SELECT
        [ALL | DISTINCT | DISTINCTROW ]
        [other_modifiers]
-       select_expr [, select_expr] ...
+     select_expr [, select_expr] ...
        [FROM table_references [PARTITION partition_list]]
        [WHERE where_condition]
        [GROUP BY {col_name | expr | position}, ... [WITH ROLLUP]]
        [HAVING where_condition]
        [WINDOW window_name AS (window_spec) [, window_name AS (window_spec)] ...]
-       [ORDER BY {col_name | expr | position}
-         [ASC | DESC], ... [WITH ROLLUP]]
+       [ORDER BY {col_name | expr | position} [ASC | DESC], ... [WITH ROLLUP]]
        [LIMIT {[offset,] row_count | row_count OFFSET offset}]
+       [FOR {UPDATE | SHARE} [OF tbl_name [, tbl_name] ...]
+           [NOWAIT | SKIP LOCKED] | LOCK IN SHARE MODE]
+       [into_option]
    ```
    - in CTE -- `SELECT` can start with a `WITH` clause to define common table expressions accessible within the `SELECT`
    - modifiers -- affect the operation of the statement, modifiers beginning with `SQL_` are MySQL extensions
      - `ALL` (default), `DISTINCT` -- `DISTINCT` implicitly sorts the data, `DISTINCTROW` is an alias
-     - more
-   - `PARTITION` -- tbd
-   - `position` -- deprecated
-   - `INTO` -- tbd, result to be written to a file or stored in variables
-   - `WINDOW` -- tbd
-   - `LIMIT` -- outermost one take precedence if used in nested multiple subqueries
-     - `offset` -- use 0 to include first row
-     - up to end -- use a large number `row_count`
+     - tbd -- `HIGH_PRIORITY`, `STRAIGHT_JOIN`, `SQL_SMALL_RESULT`, `SQL_BIG_RESULT`, `SQL_BUFFER_RESULT`, `SQL_NO_CACHE`, `SQL_CALC_FOUND_ROWS`
+   - `position` -- column index, non-standard, deprecated
    - `FOR UPDATE` -- tbd
 
 1. `select_expr` -- the select list that indicates which columns to retrieve
@@ -436,13 +432,38 @@
    - `col_name` -- `col_name`, `tbl_name.col_name`, or `db_name.tbl_name.col_name`, `*`, `tbl_name.*`
      - single `*` -- all columns from all tables, probable error when used with other items
      - `tbl_name.*` -- all columns from the named table
-   - alias and column index scope -- can be used in `GROUP BY`, `ORDER BY`, or `HAVING` clauses, but cannot be used in `WHERE` clause, because the column value might not yet be determined when the `WHERE` clause is executed
+   - alias and position scope -- can be used in `GROUP BY`, `ORDER BY`, or `HAVING` clauses, but cannot be used in `WHERE` clause, because the column value might not yet be determined when the `WHERE` clause is executed
      ```SQL
      SELECT college, region AS r, seed AS s FROM tournament ORDER BY r, s;
      SELECT college, region, seed FROM tournament ORDER BY 2, 3;
      ```
 
-1. `FROM` `table_references` -- the table or tables from which to retrieve rows
+1. `into_option`, `INTO`
+   ```
+   {
+       INTO OUTFILE 'file_name' [CHARACTER SET charset_name] export_options
+     | INTO DUMPFILE 'file_name'
+     | INTO var_name [, var_name] ...
+   }
+   ```
+   - `var_list` -- the number of variables must match the number of columns; the query should return a single row
+   - `OUTFILE`
+   - `DUMPFILE` -- writes a single row to a file without any formatting
+   - more
+
+### FROM
+
+1. `FROM` -- the table or tables from which to retrieve rows
+   ```
+   [FROM table_references [PARTITION partition_list]]
+   ```
+   - `PARTITION` -- partition selection
+   - `table_references`
+     ```
+     table_reference [, table_reference] ...
+     ```
+
+1. `table_reference` in `FROM`, simplified
    ```
    tbl_name [[AS] alias] [index_hint_list]
    ```
@@ -454,10 +475,69 @@
        ) AS cust;
        ```
    - `JOIN` -- join if more than one table specified
-     - tbd
    - `DUAL` -- dummy table name, for rows computed without reference to any table
    - `index_hint_list` -- give the optimizer information about how to choose indexes during query processing
-     - tbd
+
+1. `table_reference` in `FROM`
+   ```
+   table_factor | joined_table
+   ```
+   - `table_factor`
+     ```
+     tbl_name [PARTITION (partition_names)]
+         [[AS] alias] [index_hint_list]
+     | table_subquery [AS] alias [(col_list)]
+     | ( table_references )
+     ```
+     - `( table_references )` -- MySQL extension to allow a list instead of a single `table_reference`, each comma is considered as equivalent to an inner join
+     - `index_hint_list`
+       ```
+       index_hint_list:
+           index_hint [, index_hint] ...
+       index_hint:
+           USE {INDEX|KEY}
+             [FOR {JOIN|ORDER BY|GROUP BY}] ([index_list])
+         | {IGNORE|FORCE} {INDEX|KEY}
+             [FOR {JOIN|ORDER BY|GROUP BY}] (index_list)
+       index_list:
+           index_name [, index_name] ...
+       ```
+     - `col_list` -- a list of names for the derived table columns
+
+1. `joined_table` in `table_reference`
+   ```
+   joined_table:
+       table_reference {[INNER | CROSS] JOIN | STRAIGHT_JOIN} table_factor [join_specification]
+     | table_reference LEFT [OUTER] JOIN table_reference join_specification
+     | table_reference NATURAL [INNER | LEFT [OUTER]] JOIN table_factor
+   ```
+   - special joins
+     - tables joined multiple times -- use alias for name resolving
+     - self joins -- when self-referencing foreign keys exist, like a prequel column in a film table
+   - cross join or inner join, order of `table_reference` or `table_factor` does not matter
+     - `CROSS JOIN` -- Cartesian product, all permutations, no `join_specification`
+     - `INNER JOIN` -- only matches matching `join_specification`, multiple records if multiple matches
+     - MySQL extension -- `JOIN`, `INNER JOIN`, `CROSS JOIN` are equivalent syntactically, although not semantically
+     - `STRAIGHT_JOIN` -- like `JOIN`, but the left table is always read before the right table
+   - `LEFT [OUTER] JOIN` -- `NULL` if no matching
+   - `NATURAL [...] JOIN` -- equivalent to an `INNER JOIN` or a `LEFT JOIN` with a `USING` clause that names all columns that exist in both tables
+   - `join_specification`
+     ```
+     ON search_condition | USING (join_column_list)
+     ```
+     - `search_condition` -- filtering like `WHERE`
+     - `join_column_list` -- list of columns that must exist in both tables
+       ```
+       column_name [, column_name] ...
+       ```
+     - `USING` vs `ON` -- `USING` with redundant column elimination, `ON` without
+       - redundant column elimination -- by `COALESCE()` columns with the same name, as in outer joins `NULL` if no matching
+         ```
+         COALESCE(a.c1, b.c1), COALESCE(a.c2, b.c2), COALESCE(a.c3, b.c3)
+         a.c1, a.c2, a.c3, b.c1, b.c2, b.c3
+         ```
+
+## Filtering
 
 1. `WHERE` `where_condition` -- an expression that evaluates to true for each row to be selected
    - no aggregate functions -- can use any of the functions and operators, except for aggregate (summary) functions
@@ -508,6 +588,16 @@
    FROM numbers
    WINDOW w AS (ORDER BY val);
    ```
+
+1. `LIMIT` -- outermost one take precedence if used in nested multiple subqueries
+   - `offset` -- use 0 to include first row
+   - up to end -- use a large number `row_count`
+
+## UPDATE and DELETE
+
+1. `UPDATE`
+
+1. `DELETE`
 
 # Language Structure
 
@@ -619,6 +709,7 @@
      - hexidecimal values -- as binary strings if not compared to a number
      - when `TIMESTAMP` or `DATETIME` compared to constants -- constants converted
      - when comparing strings to numbers -- convert to floating point numbers
+   - when arithmetic -- see below
 
 1. operator priority
    1. unary operators -- `-`, `~` (bit inversion)
@@ -667,7 +758,7 @@
      ```
      - `<=>` -- `NULL`-safe equal, equivalent to the standard SQL `IS NOT DISTINCT FROM`
      - `<>` or `!=` -- not equal
-   - `expr [NOT] IN (value,...)` -- also row operands, use `CAST()` for best results, `NULL` if left value is `NULL` or `NULL` among right values when not found
+   - `expr [NOT] IN (value,...)` -- also as row operands, use `CAST()` for best results, `NULL` if left value is `NULL` or `NULL` among right values when not found
    - `IS`
      - `IS [NOT] boolean_value` -- `boolean_value`: `TRUE`, `FALSE`, or `UNKNOWN` (for `NULL`)
      - `IS [NOT] NULL`, `ISNULL(expr)`
