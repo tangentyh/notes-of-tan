@@ -141,7 +141,7 @@
      - invalid value -- zero value, out of range or otherwise invalid values are converted to zero value, except `TIME`, controlled by `sql_mode` `NO_ZERO_DATE`
      - zero date -- useful for applications that need to store birthdays for which you may not know the exact date, like `2009-00-00`, controlled by `sql_mode` `NO_ZERO_IN_DATE`
        - dummy date `0000-00-00` (zero value) -- sometimes more convenient than using `NULL` values, and uses less data and index space
-     - `fsp` fractional seconds part -- defaults to 0, up to 6 (microsecond, standard SQL default), rounded for excessive values, controlled by `sql_mode` `TIME_TRUNCATE_FRACTIONAL`
+     - `fsp` fractional seconds part -- defaults to 0, up to 6 (microsecond, ANSI SQL default), rounded for excessive values, controlled by `sql_mode` `TIME_TRUNCATE_FRACTIONAL`
      - automatic initialization and updating -- for `TIMESTAMP` or `DATETIME`
      - string and number -- accept both string and number when assigning, but need to convert to numbers (`TIME_TO_SEC()`, `TO_DAYS()`) before `SUM()` and `AVG()`
      - specify a time zone offset when inserting `TIMESTAMP` and `DATETIME` values -- suffices like `+08:00`, from `-14:00` to `+14:00`
@@ -537,6 +537,28 @@
          a.c1, a.c2, a.c3, b.c1, b.c2, b.c3
          ```
 
+### UNION
+
+1. `UNION`
+   ```
+   SELECT ...
+   UNION [ALL | DISTINCT] SELECT ...
+   [UNION [ALL | DISTINCT] SELECT ...]
+   ```
+   - order -- unordered, intermediate `ORDER BY` are optimized out when without `LIMIT`
+   - column name and type -- names taken from the first `SELECT`; corresponding columns should be the same type, otherwise determined by all values of the column
+   - `ALL` or `DISTINCT` -- `DISTINCT` by default, duplicate rows removed; when mixed, a `DISTINCT` union overrides any `ALL` union to its left
+   - additional column -- help determine which `SELECT` each row comes from, and by which optionally order
+     ```SQL
+     (SELECT 1 AS sort_col, col1a, col1b, ... FROM t1)
+     UNION
+     (SELECT 2, col2a, col2b, ... FROM t2) ORDER BY sort_col;
+     ```
+
+1. `INTERSECT` -- ANSI SQL but not in MySQL
+
+1. `EXCEPT` -- ANSI SQL but not in MySQL
+
 ## Filtering
 
 1. `WHERE` `where_condition` -- an expression that evaluates to true for each row to be selected
@@ -578,6 +600,7 @@
      - extended in MySQL -- permits `HAVING` to refer to columns in the `SELECT` list and columns in outer subqueries as well
      - applied nearly last (before `LIMIT`), with no optimization
 
+<!-- TODO -->
 1. `WINDOW` -- windows for window functions, tbd
    ```SQL
    SELECT
@@ -593,6 +616,86 @@
    - `offset` -- use 0 to include first row
    - up to end -- use a large number `row_count`
 
+## Subqueries
+
+1. subqueries
+   - return type -- scalar, column, row, and table
+   - parentheses -- even in functions, like `UPPER((SELECT s1 FROM t1))`
+   - correlated subquery -- a subquery that contains a reference to a table that also appears in the outer query
+   - limitations -- see docs
+
+1. row constructors -- `(1, 2)` or `ROW(1, 2)`, scalar if only one column
+
+1. comparaison subqueries
+   - subquery type when no modifiers-- correspondent. For a comparison of the subquery to a scalar, the subquery must return a scalar. For a comparison of the subquery to a row constructor, the subquery must be a row subquery that returns a row with the same number of values as the row constructor
+     ```
+     non_subquery_operand comparison_operator (subquery)
+     ```
+     - `NULL` when empty
+   - `ANY`, `IN`, `SOME`
+     ```
+     operand comparison_operator { ANY | SOME } (subquery)
+     operand IN (subquery)
+     ```
+   - `ALL` -- `TRUE` when empty subquery, `UNKNOWN` when containing `NULL`
+     ```
+     operand comparison_operator ALL (subquery)
+     ```
+     - `NULL` when empty and aggregated
+       ```SQL
+       SELECT * FROM t1 WHERE 1 > ALL (SELECT MAX(s1) FROM t2);
+       ```
+
+1. `EXISTS` or `NOT EXISTS` -- whether a subquery is empty
+   - example: What kind of store is present in all cities?
+     ```SQL
+     SELECT DISTINCT store_type FROM stores s1
+       WHERE NOT EXISTS (
+         SELECT * FROM cities WHERE NOT EXISTS (
+           SELECT * FROM cities_stores
+            WHERE cities_stores.city = cities.city
+     AND cities_stores.store_type = stores.store_type));
+     ```
+
+1. derived table
+   ```
+   SELECT ... FROM (subquery) [AS] tbl_name [(col_list)] ...
+   ```
+   - alias -- mandatory, because every table in a `FROM` clause must have a name
+   - `col_list` -- names for the derived table, must cover all columns
+   - limitation -- prior to MySQL 8.0.14, a derived table cannot contain outer references
+   - example
+     ```SQL
+     select Num as 'ConsecutiveNums' from
+         `Logs`,
+         (select @cnt := 0, @prev := 0) as _init
+     where (@cnt := IF(@prev = (@prev := Num), @cnt + 1, 1)) = 3;
+     ```
+   - `LATERAL` -- can refer to columns from other tables, “this derived table depends on previous tables on its left side”
+     ```SQL
+     SELECT
+       salesperson.name,
+       max_sale.amount,
+       max_sale_customer.customer_name
+     FROM
+       salesperson,
+       -- calculate maximum size, cache it in transient derived table max_sale
+       LATERAL
+       (SELECT MAX(amount) AS amount
+         FROM all_sales
+         WHERE all_sales.salesperson_id = salesperson.id)
+       AS max_sale,
+       -- find customer, reusing cached maximum size
+       LATERAL
+       (SELECT customer_name
+         FROM all_sales
+         WHERE all_sales.salesperson_id = salesperson.id
+         AND all_sales.amount =
+             -- the cached maximum size
+             max_sale.amount)
+       AS max_sale_customer;
+     ```
+
 ## UPDATE and DELETE
 
 1. `UPDATE`
@@ -601,7 +704,7 @@
 
 # Language Structure
 
-## Identifiers, Variables and Comments
+## Identifiers, User Variables and Comments
 
 1. comment
    - inline comment -- `--`, `#` (less commonly supported)
@@ -637,6 +740,13 @@
      - defaults to `NULL`, as string when selected in a result set
    - use in expressions -- `@var_name`, intended to provide data values, cannot be used directly as identifiers
    - evaluated on the client -- a variable that is assigned a value in the select expression list, does not work in `HAVING`, `GROUP BY`, and `ORDER BY`
+   - example
+     ```SQL
+     select Num as 'ConsecutiveNums' from
+         `Logs`,
+         (select @cnt := 0, @prev := 0) as _init
+     where (@cnt := IF(@prev = (@prev := Num), @cnt + 1, 1)) = 3;
+     ```
 
 ## Literals
 
@@ -692,7 +802,7 @@
      - trailing fractional seconds
      - preceding zeros in delimited strings -- optional
      - `TIME` with or without days -- `'D hh:mm:ss'`, `'hh:mm:ss'`, `'hh:mm'`, `'D hh:mm'`, `'D hh'`, or `'ss'`, `D` from 0 to 34 days
-   - standard SQL -- space delimiter is optional
+   - ANSI SQL -- space delimiter is optional
      ```SQL
      DATE 'str'
      TIME 'str'
@@ -756,7 +866,7 @@
      ```
      =  >  <  >=  <=  <>  !=  <=>
      ```
-     - `<=>` -- `NULL`-safe equal, equivalent to the standard SQL `IS NOT DISTINCT FROM`
+     - `<=>` -- `NULL`-safe equal, equivalent to the ANSI SQL `IS NOT DISTINCT FROM`
      - `<>` or `!=` -- not equal
    - `expr [NOT] IN (value,...)` -- also as row operands, use `CAST()` for best results, `NULL` if left value is `NULL` or `NULL` among right values when not found
    - `IS`
