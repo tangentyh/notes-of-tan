@@ -108,6 +108,26 @@
 
 1. index -- start from 1
 
+1. performance benchmark profiling
+   - system variable `profiling`
+     ```SQL
+     SET profiling=1;
+     SELECT SQL_NO_CACHE * FROM my_table;
+     -- ...
+     SHOW PROFILE;
+     SET profiling=0;
+     ```
+   - `STATUS` starting with `Select`
+     ```SQL
+     FLUSH STATUS;
+     SELECT SQL_NO_CACHE * FROM my_table;
+     SHOW SESSION STATUS LIKE 'Select%';
+     ```
+   - `STATUS` `last_query_cost`
+     ```SQL
+     SHOW STATUS LIKE 'last_query_cost';
+     ```
+
 # Data Types
 
 1. numeric
@@ -241,8 +261,12 @@
 
 1. statements
    - SQL schema statements
+     - DDL -- Data Definition Language
    - SQL data statements
+     - DML -- Data Manipulation Language
    - SQL transaction statements
+     - TCL -- Transaction Control Language
+   - DCL -- Data Control Language, `GRANT`, `REVOKE`
 
 1. `USE db_name` -- use the named database as the default (current) database for subsequent statements
    - `DATABASE()`
@@ -423,7 +447,7 @@
      - `ALL` (default), `DISTINCT` -- `DISTINCT` implicitly sorts the data, `DISTINCTROW` is an alias
      - tbd -- `HIGH_PRIORITY`, `STRAIGHT_JOIN`, `SQL_SMALL_RESULT`, `SQL_BIG_RESULT`, `SQL_BUFFER_RESULT`, `SQL_NO_CACHE`, `SQL_CALC_FOUND_ROWS`
    - `position` -- column index, non-standard, deprecated
-   - `FOR UPDATE` -- tbd
+   - `FOR UPDATE`, `FOR SHARE` -- locking reads, tbd
 
 1. `select_expr` -- the select list that indicates which columns to retrieve
    ```
@@ -450,6 +474,24 @@
    - `OUTFILE`
    - `DUMPFILE` -- writes a single row to a file without any formatting
    - more
+
+1. execution order -- gross, subject to optimizer
+   ```SQL
+   SET @mysql_order := '';
+   SELECT @mysql_order := CONCAT(@mysql_order," SELECT ")
+   FROM (SELECT @mysql_order := CONCAT(@mysql_order," FROM ")) AS t1
+       JOIN (SELECT @mysql_order := CONCAT(@mysql_order," JOIN1 ")) AS t ON ((SELECT @mysql_order := CONCAT(@mysql_order," ON1 ")) | (RAND() < 1))
+       JOIN (SELECT @mysql_order := CONCAT(@mysql_order," JOIN2 ")) AS t2 ON ((SELECT @mysql_order := CONCAT(@mysql_order," ON2 ")) | (RAND() < 1))
+   WHERE ((SELECT @mysql_order := CONCAT(@mysql_order," WHERE ")) | (RAND() < 1))
+   GROUP BY (SELECT @mysql_order := CONCAT(@mysql_order," GROUP_BY "))
+   HAVING (SELECT @mysql_order := CONCAT(@mysql_order," HAVING "))
+   ORDER BY (SELECT @mysql_order := CONCAT(@mysql_order," ORDER_BY "));
+   SELECT @mysql_order;
+   ```
+   ```
+   FROM  JOIN1  JOIN2  WHERE  ON2  ON1  SELECT  ORDER_BY  GROUP_BY  HAVING
+   ```
+   - execution order defined in ANSI SQL -- `FROM`, `WHERE`, `GROUP BY`, `HAVING`, `SELECT`, `ORDER BY`
 
 ### FROM
 
@@ -559,17 +601,20 @@
 
 1. `EXCEPT` -- ANSI SQL but not in MySQL
 
-## Filtering
+## Filtering, Ordering, Grouping, Limiting, Windowing
 
 1. `WHERE` `where_condition` -- an expression that evaluates to true for each row to be selected
    - no aggregate functions -- can use any of the functions and operators, except for aggregate (summary) functions
-   - see tbd
+   - see [Operators and Functions](#Operators-and-Functions)
 
 1. `GROUP BY`, `ORDER BY`
    - `ORDER BY` -- defaults to `ACS`, outermost one take precedence if used in nested multiple subqueries
      - resolve unqualified column or alias -- by searching in the `select_expr` values, then in the columns of the tables in the `FROM` clause
    - `GROUP BY`
      - resolve unqualified column or alias -- reverse order of `ORDER BY`
+     - implicit groups -- all rows as a implicit group when no `GROUP BY` clause present
+     - `sql_mode` `ONLY_FULL_GROUP_BY` -- reject queries for which the select list, `HAVING` condition, or `ORDER BY` list refer to non-aggregated columns that are neither named in the `GROUP BY` clause nor are functionally dependent on (uniquely determined by) `GROUP BY` columns
+     - `ANY_VALUE(arg)` -- suppress the test for nondeterminism, equivalent to disable `sql_mode` `ONLY_FULL_GROUP_BY`; use when a selected non-aggregated column is effectively functionally dependent on a `GROUP BY` column by MySQL cannot determine it
      - `WITH ROLLUP` -- produce another (super-aggregate) row for each `GROUP BY` column
        ```
        mysql> SELECT year, SUM(profit) AS profit
@@ -593,6 +638,10 @@
          FROM sales
          GROUP BY year, country, product WITH ROLLUP;
          ```
+     - no aggregation in `SELECT` clause -- return first row of a group
+       ```SQL
+       SELECT Email FROM Person GROUP BY Email HAVING COUNT(Email) > 1;
+       ```
    - `max_sort_length` system variable -- only `max_sort_length` bytes compared
 
 1. `HAVING`
@@ -672,35 +721,129 @@
      where (@cnt := IF(@prev = (@prev := Num), @cnt + 1, 1)) = 3;
      ```
    - `LATERAL` -- can refer to columns from other tables, “this derived table depends on previous tables on its left side”
+     - example -- solve the problem that max value would be calculated twice if using subqueries in `SELECT` clause, because a subquery in `SELECT` clause can only produce one column
+       ```SQL
+       SELECT
+         salesperson.name,
+         max_sale.amount,
+         max_sale_customer.customer_name
+       FROM
+         salesperson,
+         -- calculate maximum size, cache it in transient derived table max_sale
+         LATERAL
+         (SELECT MAX(amount) AS amount
+           FROM all_sales
+           WHERE all_sales.salesperson_id = salesperson.id)
+         AS max_sale,
+         -- find customer, reusing cached maximum size
+         LATERAL
+         (SELECT customer_name
+           FROM all_sales
+           WHERE all_sales.salesperson_id = salesperson.id
+           AND all_sales.amount =
+               -- the cached maximum size
+               max_sale.amount)
+         AS max_sale_customer;
+       ```
+
+## WITH (Common Table Expressions, CTE)
+
+1. CTE -- a named temporary result set that exists within the scope of a single statement, from MySQL 8.0
+   - use
+     - at the beginning of `SELECT`, `UPDATE`, and `DELETE` statements
+       ```
+       WITH ... SELECT ...
+       WITH ... UPDATE ...
+       WITH ... DELETE ...
+       ```
+       - CTE not updatable -- need to refer to the original table to update / delete rows, use CTE in other clauses or joining CTE with original table one-to-one as workaround
+     - at the beginning of subqueries
+       ```
+       SELECT ... WHERE id IN (WITH ... SELECT ...) ...
+       SELECT * FROM (WITH ... SELECT ...) AS dt ...
+       ```
+     - immediately preceding SELECT for statements that include a SELECT statement
+       ```
+       INSERT ... WITH ... SELECT ...
+       REPLACE ... WITH ... SELECT ...
+       CREATE TABLE ... WITH ... SELECT ...
+       CREATE VIEW ... WITH ... SELECT ...
+       DECLARE CURSOR ... WITH ... SELECT ...
+       EXPLAIN ... WITH ... SELECT ...
+       ```
+
+1. `WITH`
+   ```
+   with_clause:
+       WITH [RECURSIVE]
+           cte_name [(col_name [, col_name] ...)] AS (subquery)
+           [, cte_name [(col_name [, col_name] ...)] AS (subquery)] ...
+   ```
+   - more tbd
+   - example
      ```SQL
-     SELECT
-       salesperson.name,
-       max_sale.amount,
-       max_sale_customer.customer_name
-     FROM
-       salesperson,
-       -- calculate maximum size, cache it in transient derived table max_sale
-       LATERAL
-       (SELECT MAX(amount) AS amount
-         FROM all_sales
-         WHERE all_sales.salesperson_id = salesperson.id)
-       AS max_sale,
-       -- find customer, reusing cached maximum size
-       LATERAL
-       (SELECT customer_name
-         FROM all_sales
-         WHERE all_sales.salesperson_id = salesperson.id
-         AND all_sales.amount =
-             -- the cached maximum size
-             max_sale.amount)
-       AS max_sale_customer;
+     WITH
+       cte1 AS (SELECT a, b FROM table1),
+       cte2 AS (SELECT c, d FROM table2)
+     SELECT b, d FROM cte1 JOIN cte2
+     WHERE cte1.a = cte2.c;
      ```
 
-## UPDATE and DELETE
+## DELETE
 
-1. `UPDATE`
+1. `DELETE` syntax
+   - single table delete
+     ```
+     DELETE [LOW_PRIORITY] [QUICK] [IGNORE] FROM tbl_name [[AS] tbl_alias]
+         [PARTITION (partition_name [, partition_name] ...)]
+         [WHERE where_condition]
+         [ORDER BY ...]
+         [LIMIT row_count]
+     ```
+     - `ORDER BY` -- delete by the order specified
+   - multiple table delete
+     ```
+     DELETE [LOW_PRIORITY] [QUICK] [IGNORE]
+         tbl_name[.*] [, tbl_name[.*]] ...
+         FROM table_references
+         [WHERE where_condition]
+     ```
+     ```
+     DELETE [LOW_PRIORITY] [QUICK] [IGNORE]
+         FROM tbl_name[.*] [, tbl_name[.*]] ...
+         USING table_references
+         [WHERE where_condition]
+     ```
+     - target -- matching rows
+     - alias coerced when declared, can only be declared in `table_references`
+       ```SQL
+       DELETE t1 FROM test AS t1, test2 WHERE ...
+       ```
 
 1. `DELETE`
+   - subqueries -- cannot delete from a table and select from the same table in a subquery
+     - workaround -- intermediate cache
+       ```SQL
+       delete from Person where Person.Id not in (select * from (select min(Id) from Person group by Email) as _temp);
+       ```
+       - still error if optimizer optimize out the subquery -- see [release notes](https://dev.mysql.com/doc/relnotes/mysql/5.7/en/news-5-7-6.html#mysqld-5-7-6-optimizer) for details and workarounds
+     - workaround -- use CTE
+       ```SQL
+       with
+           rem as (select min(Id) as id from Person group by Email)
+       delete from Person where Person.Id not in (select * from rem);
+       ```
+   - modifiers -- `LOW_PRIORITY`, `QUICK`, `IGNORE`, see docs
+   - keep desired in lieu of delete unwanted
+     ```SQL
+     INSERT INTO t_copy SELECT * FROM t WHERE ... ;
+     RENAME TABLE t TO t_old, t_copy TO t;
+     DROP TABLE t_old;
+     ```
+
+## UPDATE
+
+1. `UPDATE`
 
 # Language Structure
 
@@ -836,26 +979,6 @@
      - division by zero -- `NULL` or error, controlled by `sql_mode` `ERROR_FOR_DIVISION_BY_ZERO`
    - `DIV` -- integer division returning `BIGINT`, non-integer types are converted to `DECIMAL` and use `DECIMAL` arithmetic, error when overflow
    - `%`, `MOD`, `MOD(N,M)`
-   - mathmatical functions -- `NULL` when error
-     - sign
-       - `ABS(X)`
-       - `SIGN(X)`
-     - rounding
-       - `CEIL(X)`, `CEILING(X)`, `FLOOR(X)` -- return floating type when string or floating-point arguments
-       - `ROUND(X)`, `ROUND(X,D)` -- precision `D` can be negative
-       - `TRUNCATE(X,D)`
-     - `RAND([N])` -- `Math.random()` in Java, `N` for seed
-       - retrieve in random order -- `ORDER BY RAND()`
-     - `POW(X,Y)`, `POWER(X,Y)`, `SQRT(X)`
-     - `EXP(X)`, `LN(X)`, `LOG(X)`, `LOG(B,X)`, `LOG2(X)`, `LOG10(X)`, `LOG2(X)`, `LOG10(X)`
-     - trigonometric -- in radian
-       - `PI()`
-       - `DEGREES(X)`, `RADIANS(X)` -- conversion between radians and degrees
-       - `ACOS(X)`, `ASIN(X)`
-       - `ATAN(X)`, `ATAN(Y,X)`, `ATAN2(Y,X)` -- the latter two as `Y/X`
-       - `COT(X)` -- cotangent
-       - `COS(X)`, `SIN(X)`, `TAN(X)`
-     - `CRC32(expr)`
 
 1. bitwise operators and functions
    - `&`, `>>`, `<<`, `^`, `|`, `~`
@@ -915,14 +1038,14 @@
      - `NULLIF(expr1,expr2)` -- `IF(expr1 = expr2, NULL, expr1)`, return type as `expr1`, `expr1` may be evaluated twice
 
 1. logical operators
-   - short circuit -- undefined
+   - short circuit -- undefined and should not rely on, use `CASE` for guaranteed order or bitwise operator to ensure execution
    - `NOT` -- `NOT NULL` is `NULL`
    - `AND` -- `1 AND NULL` and `NULL AND 1` is `NULL`
    - `OR` -- `1 OR NULL` and `NULL or 1` is `NULL`
      - `||` -- deprecated as `OR`, when in `sql_mode` `PIPES_AS_CONCAT`, `||` is SQL-standard string concatenation
    - `XOR` -- `NULL` if any `NULL`
 
-## Cast, Date, Time and string Functions
+## Cast, Math, Date, Time and String Functions
 
 1. cast
    - use extract functions for date times
@@ -936,6 +1059,27 @@
    - `BINARY expr` -- to a binary string, force byte comparaison and trailing spaces significant
    - `CAST(expr AS type [ARRAY])`, `CONVERT(expr,type)`
      - `type` -- see docs, some data types and `SIGNED`, `UNSIGNED`
+
+1. mathmatical functions -- `NULL` when error
+   - sign
+     - `ABS(X)`
+     - `SIGN(X)`
+   - rounding
+     - `CEIL(X)`, `CEILING(X)`, `FLOOR(X)` -- return floating type when string or floating-point arguments
+     - `ROUND(X)`, `ROUND(X,D)` -- precision `D` can be negative
+     - `TRUNCATE(X,D)`
+   - `RAND([N])` -- `Math.random()` in Java, `N` for seed
+     - retrieve in random order -- `ORDER BY RAND()`
+   - `POW(X,Y)`, `POWER(X,Y)`, `SQRT(X)`
+   - `EXP(X)`, `LN(X)`, `LOG(X)`, `LOG(B,X)`, `LOG2(X)`, `LOG10(X)`, `LOG2(X)`, `LOG10(X)`
+   - trigonometric -- in radian
+     - `PI()`
+     - `DEGREES(X)`, `RADIANS(X)` -- conversion between radians and degrees
+     - `ACOS(X)`, `ASIN(X)`
+     - `ATAN(X)`, `ATAN(Y,X)`, `ATAN2(Y,X)` -- the latter two as `Y/X`
+     - `COT(X)` -- cotangent
+     - `COS(X)`, `SIN(X)`, `TAN(X)`
+   - `CRC32(expr)`
 
 1. date and time functions
    - excess information ignored -- ignore the time part if expect date values and vice versa
@@ -1135,15 +1279,16 @@
      - `DATABASE()`, `SCHEMA()`
 
 1. miscellaneous functions
-   - UUID -- arguments tbd
+   - UUID -- see docs for arguments
      - `BIN_TO_UUID()`
      - `IS_UUID()`
      - `UUID()`
      - `UUID_SHORT()`
      - `UUID_TO_BIN()`
    - column related during statements
-     - `DEFAULT(col_name)` -- default value for `col_name`
+     - `DEFAULT(col_name)` -- `DEFAULT` value for `col_name`
      - `GROUPING(expr [, expr] ...)` -- see `GROUP BY`
+     - `ANY_VALUE(arg)` -- see `GROUP BY`
 
 ## Expressions
 
@@ -1267,7 +1412,7 @@
    SET @@sql_mode = sys.list_add(@@sql_mode, 'TIME_TRUNCATE_FRACTIONAL');
    ```
    - strict mode --  `STRICT_ALL_TABLES` or `STRICT_TRANS_TABLES`
-     - effects -- warnings become errors, tbd at [5.1.11 Server SQL Modes](https://dev.mysql.com/doc/refman/8.0/en/sql-mode.html#sql-mode-strict)
+     - effects -- warnings become errors, see docs [5.1.11 Server SQL Modes](https://dev.mysql.com/doc/refman/8.0/en/sql-mode.html#sql-mode-strict)
      - temporarily non-strict -- `INSERT IGNORE` or `UPDATE IGNORE`
    - `NO_UNSIGNED_SUBTRACTION`
    - `PAD_CHAR_TO_FULL_LENGTH`
