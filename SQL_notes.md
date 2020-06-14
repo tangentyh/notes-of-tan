@@ -193,7 +193,7 @@
        );
        ```
        ```SQL
-       create database european_sales character set latin1;
+       CREATE DATABASE european_sales CHARACTER SET latin1;
        ```
        - `ASCII` attribute -- shorthand for `CHARACTER SET latin1`
      - `COLLATE`
@@ -206,7 +206,6 @@
          +--------------------+--------------------+
          |                  1 |                  1 |
          +--------------------+--------------------+
-         1 row in set (0.00 sec)
          ```
    - `CHAR` -- space right padded with `M` from 0 to 255 default 1
      ```
@@ -252,6 +251,7 @@
      - maximum element length -- `M <= 255` and another constraint
    - `SET` -- `ENUM` but a string object that can have zero or more values, `NULL` or `''` not permitted, and up to 64 distinct members
      - bit vectors internally
+     - literal -- comma separated string, like `'a,b'`
 
 1. spatial
 
@@ -493,7 +493,7 @@
    ```
    - execution order defined in ANSI SQL -- `FROM`, `WHERE`, `GROUP BY`, `HAVING`, `SELECT`, `ORDER BY`
 
-### FROM
+### FROM, JOIN
 
 1. `FROM` -- the table or tables from which to retrieve rows
    ```
@@ -909,6 +909,7 @@
      - backslash ignored for all other escape sequences -- `\x` is just `x`
      - raw string -- `QUOTE(str)`
      - controlled by `sql_mode` `NO_BACKSLASH_ESCAPES`
+   - `SET` type -- comma separated string, like `'a,b'`
 
 1. numbers literals
    - (fixed-point) number
@@ -1231,7 +1232,7 @@
    - `BIT_XOR(expr) [over_clause]`
 
 1. other group functions
-   - `COUNT(expr) [over_clause]`
+   - `COUNT(expr) [over_clause]` -- non-`NULL` values, also `NULL` if `COUNT(*)`
    - `COUNT(DISTINCT expr,[expr...])`
    - `GROUP_CONCAT(expr)`
      ```
@@ -1242,6 +1243,8 @@
      ```
 
 1. window functions -- tbd
+   - `LEAD`
+   - `LAG`
 
 ## Other Functions
 
