@@ -359,7 +359,9 @@
 
 1. `SHOW VARIABLES` -- see [System Variables](#System-Variables)
 
-## CREATE TABLE, ALTER TABLE, DROP TABLE and Views
+## DDL
+
+### CREATE TABLE, ALTER TABLE, DROP TABLE and Views
 
 1. `CREATE TABLE`
    ```
@@ -419,11 +421,9 @@
 
 1. `CREATE VIEW`
 
-## INSERT
+## DML
 
-1. `INSERT`
-
-## SELECT
+### SELECT
 
 1. `SELECT`
    ```
@@ -493,7 +493,7 @@
    ```
    - execution order defined in ANSI SQL -- `FROM`, `WHERE`, `GROUP BY`, `HAVING`, `SELECT`, `ORDER BY`
 
-### FROM, JOIN
+#### FROM, JOIN
 
 1. `FROM` -- the table or tables from which to retrieve rows
    ```
@@ -579,7 +579,7 @@
          a.c1, a.c2, a.c3, b.c1, b.c2, b.c3
          ```
 
-### UNION
+#### UNION
 
 1. `UNION`
    ```
@@ -601,7 +601,7 @@
 
 1. `EXCEPT` -- ANSI SQL but not in MySQL
 
-## Filtering, Ordering, Grouping, Limiting, Windowing
+### Filtering, Ordering, Grouping, Limiting, Windowing
 
 1. `WHERE` `where_condition` -- an expression that evaluates to true for each row to be selected
    - no aggregate functions -- can use any of the functions and operators, except for aggregate (summary) functions
@@ -665,7 +665,7 @@
    - `offset` -- use 0 to include first row
    - up to end -- use a large number `row_count`
 
-## Subqueries
+### Subqueries
 
 1. subqueries
    - return type -- scalar, column, row, and table
@@ -746,7 +746,7 @@
          AS max_sale_customer;
        ```
 
-## WITH (Common Table Expressions, CTE)
+### WITH (Common Table Expressions, CTE)
 
 1. CTE -- a named temporary result set that exists within the scope of a single statement, from MySQL 8.0
    - use
@@ -789,7 +789,7 @@
      WHERE cte1.a = cte2.c;
      ```
 
-## DELETE
+### DELETE
 
 1. `DELETE` syntax
    - single table delete
@@ -820,7 +820,7 @@
        DELETE t1 FROM test AS t1, test2 WHERE ...
        ```
 
-1. `DELETE`
+1. `DELETE` attributes
    - subqueries -- cannot delete from a table and select from the same table in a subquery
      - workaround -- intermediate cache
        ```SQL
@@ -841,9 +841,87 @@
      DROP TABLE t_old;
      ```
 
-## UPDATE
+### UPDATE
 
 1. `UPDATE`
+   ```
+   value:
+       {expr | DEFAULT}
+   assignment:
+       col_name = value
+   assignment_list:
+       assignment [, assignment] ...
+   ```
+   - single table `UPDATE`
+     ```
+     UPDATE [LOW_PRIORITY] [IGNORE] table_reference
+         SET assignment_list
+         [WHERE where_condition]
+         [ORDER BY ...]
+         [LIMIT row_count]
+     ```
+   - multi-table update -- each matching row is updated once
+     ```
+     UPDATE [LOW_PRIORITY] [IGNORE] table_references
+         SET assignment_list
+         [WHERE where_condition]
+     ```
+
+### INSERT
+
+1. `INSERT` syntax
+   ```
+   value_list:
+       value [, value] ...
+   value:
+       {expr | DEFAULT}
+   assignment:
+       col_name = [row_alias.]value
+   assignment_list:
+       assignment [, assignment] ...
+   ```
+   - `INSERT ... VALUES`
+     ```
+     INSERT [LOW_PRIORITY | HIGH_PRIORITY] [IGNORE]
+         [INTO] tbl_name
+         [PARTITION (partition_name [, partition_name] ...)]
+         [(col_name [, col_name] ...)]
+         { VALUES (value_list) [, (value_list)] ...
+           |
+           VALUES ROW(value_list)[, ROW(value_list)][, ...]
+         }
+         [AS row_alias[(col_alias [, col_alias] ...)]]
+         [ON DUPLICATE KEY UPDATE assignment_list]
+     ```
+   - `INSERT ... SET`
+     ```
+     INSERT [LOW_PRIORITY | HIGH_PRIORITY] [IGNORE]
+         [INTO] tbl_name
+         [PARTITION (partition_name [, partition_name] ...)]
+         [AS row_alias[(col_alias [, col_alias] ...)]]
+         SET assignment_list
+         [ON DUPLICATE KEY UPDATE assignment_list]
+     ```
+   - `INSERT ... SELECT` -- insert many rows into a table from the result of a `SELECT` statement
+     ```
+     INSERT [LOW_PRIORITY | HIGH_PRIORITY] [IGNORE]
+         [INTO] tbl_name
+         [PARTITION (partition_name [, partition_name] ...)]
+         [(col_name [, col_name] ...)]
+         [AS row_alias[(col_alias [, col_alias] ...)]]
+         {SELECT ... | TABLE table_name}
+         [ON DUPLICATE KEY UPDATE assignment_list]
+     ```
+
+1. clauses in `INSERT`
+   - resort to update when not permitted duplicates -- update using `assignment_list` when a duplicate value in a `UNIQUE` index or `PRIMARY KEY`
+     ```
+     [ON DUPLICATE KEY UPDATE assignment_list]
+     ```
+   - refer to previous columns
+     ```SQL
+     INSERT INTO tbl_name (col1,col2) VALUES(15,col1*2);
+     ```
 
 # Language Structure
 
