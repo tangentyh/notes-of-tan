@@ -923,6 +923,97 @@
      INSERT INTO tbl_name (col1,col2) VALUES(15,col1*2);
      ```
 
+## TCL
+
+### Transactions
+
+1. `START TRANSACTION` or `BEGIN` -- start a new transaction
+   ```
+   START TRANSACTION
+       [transaction_characteristic [, transaction_characteristic] ...]
+   transaction_characteristic: {
+       WITH CONSISTENT SNAPSHOT
+     | READ WRITE
+     | READ ONLY
+   }
+   ```
+   - `WITH CONSISTENT SNAPSHOT` -- starts a consistent read; the effect is the same as issuing a START TRANSACTION followed by a SELECT from any InnoDB table
+   - `READ WRITE`, `READ ONLY` -- set the transaction access mode; in `READ ONLY` mode, MySQL enables extra optimizations for queries on InnoDB tables, the transaction can still modify or lock `TEMPORARY` tables
+   - implicit commits -- beginning a transaction and some statements including DDLs causes any pending transaction to be committed
+   - implicit unlock -- beginning a transaction also causes table locks acquired with `LOCK TABLES` to be released, as though you had executed `UNLOCK TABLES`
+   - `BEGIN [WORK]` -- aliases of `START TRANSACTION`
+
+1. `COMMIT`, and `ROLLBACK` statements
+   ```
+   COMMIT [WORK] [AND [NO] CHAIN] [[NO] RELEASE]
+   ROLLBACK [WORK] [AND [NO] CHAIN] [[NO] RELEASE]
+   SET autocommit = {0 | 1}
+   ```
+   - `COMMIT` -- commits the current transaction, making its changes permanent, stored in the binary log in one chunk??
+   - `ROLLBACK` -- rolls back the current transaction, canceling its changes
+     - DDL cannot be rolled back
+   - `SET autocommit` -- disables or enables the default autocommit mode for the current session
+     - defaults to `1` -- each statement is atomic, as if it were surrounded by `START TRANSACTION` and `COMMIT`
+   - `WORK` -- optional
+   - after completion
+     - `AND CHAIN` -- a new transaction to begin with the same isolation level and access mode as soon as the current one ends
+     - `RELEASE` -- causes the server to disconnect the current client session after terminating the current transaction
+     - `NO` -- negate
+     - system variable `completion_type`
+
+1. `SAVEPOINT`
+   ```
+   SAVEPOINT identifier
+   ROLLBACK [WORK] TO [SAVEPOINT] identifier
+   RELEASE SAVEPOINT identifier
+   ```
+   - `identifier` -- overwrite when collison
+   - `ROLLBACK TO` -- without terminating the transaction, changes are undone, but InnoDB does not release the row locks that were stored in memory after the savepoint, except new insert rows; later save points discarded
+   - `RELEASE SAVEPOINT` -- delete a save point
+   - deconstruction -- all deleted after single `COMMIT` or `ROLLBACK`
+
+### SET TRANSACTION
+
+1. `SET TRANSACTION`
+   ```
+   SET [GLOBAL | SESSION] TRANSACTION
+       transaction_characteristic [, transaction_characteristic] ...
+   transaction_characteristic: {
+       ISOLATION LEVEL level
+     | access_mode
+   }
+   ```
+   - `GLOBAL` or `SESSION` -- global scope, or session scope, defaults to only next transaction within the same session
+   - `level` -- isolation levels for InnoDB
+     - `REPEATABLE READ` (default)
+     - `READ COMMITTED`
+     - `READ UNCOMMITTED`
+     - `SERIALIZABLE`
+   - `access_mode`
+     - `READ WRITE` (default)
+     - `READ ONLY`
+
+### Locks
+
+1. instance lock -- prevents files from being created, renamed, or removed
+   ```
+   LOCK INSTANCE FOR BACKUP
+   UNLOCK INSTANCE
+   ```
+
+1. table lock -- explicitly acquires table locks for the current client session
+   ```
+   LOCK TABLES
+       tbl_name [[AS] alias] lock_type
+       [, tbl_name [[AS] alias] lock_type] ...
+   lock_type: {
+       READ [LOCAL]
+     | [LOW_PRIORITY] WRITE
+   }
+   UNLOCK TABLES
+   ```
+   - more
+
 # Language Structure
 
 ## Identifiers, User Variables and Comments
@@ -1521,3 +1612,17 @@
    - stored off-page -- not stored in page, does not effect main index, but a 20 B pointer is stored
 
 1. InnoDB Row Formats -- tbd
+
+# Concepts
+
+1. ACID -- transaction properties
+   - atomicity -- when transaction ends, either all the changes succeed or all the changes undone
+   - consistency -- in transactions, the database remains in a consistent state at all times, after each commit or rollback; queries never see mix of old and new values
+   - isolation -- transactions cannot interfere with each other or see each other's uncommitted data; achieved through the locking mechanism
+   - durability -- the changes made by transactions are safe from power failures, system crashes, race conditions, or other potential dangers that many non-database applications are vulnerable to
+     - In InnoDB, the doublewrite buffer assists with durability
+
+1. consistent read -- isolation: A read operation that uses snapshot information to present query results based on a point in time, regardless of changes performed by other transactions running at the same time
+   - undo log -- If queried data has been changed by another transaction, the original data is reconstructed based on the contents of the undo log. This technique avoids some of the locking issues that can reduce concurrency by forcing transactions to wait for other transactions to finish.
+   - With `REPEATABLE READ` isolation level, the snapshot is based on the time when the first read operation is performed. With `READ COMMITTED` isolation level, the snapshot is reset to the time of each consistent read operation.
+   - default mode -- Consistent read is the default mode in which InnoDB processes `SELECT` statements in `READ COMMITTED` and `REPEATABLE READ` isolation levels. Because a consistent read does not set any locks on the tables it accesses, other sessions are free to modify those tables while a consistent read is being performed on the table.
