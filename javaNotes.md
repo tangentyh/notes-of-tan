@@ -546,6 +546,9 @@
      - `BigInteger multiply(BigInteger other)`
      - `BigInteger divide(BigInteger other)`
      - `BigInteger mod(BigInteger other)`
+     - `BigInteger modInverse(BigInteger m)`
+     - `BigInteger modPow(BigInteger exponent, BigInteger m)`
+     - more
 
 1. `java.math.BigDecimal` — Immutable, arbitrary-precision signed decimal numbers, decimal version of `BigInteger`
 
@@ -1049,7 +1052,7 @@
    - no block variable shadowing — illegal to declare a parameter or a local variable in the lambda that has the same name as a local variable
    - block scope — the same scope as a nested block
    - same `this` — `this` is the same as what outside the lambda
-   - effective final effect -- only one instantiation inside loops
+   - number of instantiations -- only one instantiation inside loops when no closure
      ```java
      static IntUnaryOperator oper = null;
      static int opCounter = 0;
@@ -1063,6 +1066,12 @@
              lambdaTest(j -> j * j);
          }
          System.out.println(opCounter); // 1
+     }
+     static void test2(int num) {
+         for (int i = 0; i < 100; ++i) {
+             lambdaTest(j -> j * j * num);
+         }
+         System.out.println(opCounter); // 100
      }
      ```
 
@@ -1892,23 +1901,25 @@
    ```
    - modify
      - `void clear()`
-     - `V remove(Object key)` — returns the previous value or `null`
-     - `default boolean remove(Object key, Object value)` — remove if `get(key)` equals `value`
-     - `default V replace(K key, V value)`
-     - `default boolean replace(K key, V oldValue, V newValue)`
-     - `default void replaceAll(BiFunction<? super K,? super V,? extends V> function)`
-     - `V put(K key, V value)` — returns as `remove` method
-     - `void putAll(Map<? extends K,? extends V> m)`
-     - `default V putIfAbsent(K key, V value)` — `null` value is also absent
-     - `default V compute(K key, BiFunction<? super K,? super V,? extends V> remappingFunction)`
-     - `default V computeIfAbsent(K key, Function<? super K,? extends V> mappingFunction)` — `null` value is also absent
-     - `default V computeIfPresent(K key, BiFunction<? super K,? super V,? extends V> remappingFunction)`
-     - `default V merge(K key, V value, BiFunction<? super V,? super V,? extends V> remappingFunction)`
-       ```java
-       V newValue = (oldValue == null) ? value : remappingFunction.apply(oldValue, value);
-       ```
-       - example
+     - return old value if not `void`
+       - `V remove(Object key)` — returns the previous value or `null`
+       - `default boolean remove(Object key, Object value)` — remove if `get(key)` equals `value`
+       - `V put(K key, V value)` — returns as `remove` method
+       - `default V putIfAbsent(K key, V value)` — `null` value is also absent
+       - `void putAll(Map<? extends K,? extends V> m)`
+       - `default V replace(K key, V value)`
+       - `default boolean replace(K key, V oldValue, V newValue)`
+       - `default void replaceAll(BiFunction<? super K,? super V,? extends V> function)`
+     - return new value if not `void`
+       - `default V compute(K key, BiFunction<? super K,? super V,? extends V> remappingFunction)`
+       - `default V computeIfAbsent(K key, Function<? super K,? extends V> mappingFunction)` — `null` value is also absent
+       - `default V computeIfPresent(K key, BiFunction<? super K,? super V,? extends V> remappingFunction)`
+       - `default V merge(K key, V value, BiFunction<? super V,? super V,? extends V> remappingFunction)`
          ```java
+         V newValue = (oldValue == null) ? value : remappingFunction.apply(oldValue, value);
+         ```
+         ```java
+         // example
          counts.put(word, counts.getOrDefault(word, 0) + 1);
          counts.merge(word, 1, Integer::sum);
          ```
@@ -4683,6 +4694,11 @@
      - `short nextShort()`
      - `short nextShort(int radix)`
      - `MatchResult match()` — the match result of the last scanning operation
+       - peek
+         ```java
+         s.hasNext(".*"); // ".*" matches anything, similar to hasNext(), but updates the scanner's internal match variable
+         s.match().group(0)​;​
+         ```
    - test — `has-` prefixed version of read methods, `hasNext`
    - find — ignoring delimiters, the scanner returns and advances past the match if found, else returns `null` with position unchanged
      - `String findInLine(Pattern pattern)`

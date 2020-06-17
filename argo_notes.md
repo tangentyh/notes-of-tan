@@ -158,7 +158,32 @@
 1. modulo related
    - [Euler's theorem - Wikipedia](https://en.wikipedia.org/wiki/Euler%27s_theorem)
      - [Fermat's little theorem - Wikipedia](https://en.wikipedia.org/wiki/Fermat%27s_little_theorem)
+       $$
+       a^p \equiv a \pmod{p}
+       $$
    - [Chinese remainder theorem - Wikipedia](https://en.wikipedia.org/wiki/Chinese_remainder_theorem)
+   - [Extended Euclidean algorithm - Wikipedia](https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm)
+     ```java
+     public static int gcdExtended(int a, int b, int[] x, int[] y) {
+         if (a == 0) {
+             x[0] = 0;
+             y[0] = 1;
+             return b;
+         }
+         int gcd = gcdExtended(b%a, a, x, y);
+         int x1 = x[0], y1 = y[0];
+         x[0] = y1 - b / a * x1;
+         y[0] = x1;
+         return gcd;
+     }
+     ```
+   - [Modular multiplicative inverse - Wikipedia](https://en.wikipedia.org/wiki/Modular_multiplicative_inverse)
+   - [Rolling hash - Wikipedia](https://en.wikipedia.org/wiki/Rolling_hash)
+     - choice of base and modulus -- tbd
+     - order reverse to the one in wiki -- use mod inverse to compute `(hash(S) - S[0]) / p`
+       ```
+       h = (h - A[i - (len - 1)]) * P_inv % MOD
+       ```
 
 1. geometry
    - [Convex hull algorithms - Wikipedia](https://en.wikipedia.org/wiki/Convex_hull_algorithms)
@@ -169,6 +194,7 @@
    - [string.pdf](http://www-igm.univ-mlv.fr/~lecroq/string/string.pdf)
    - [string.pdf.html](http://www-igm.univ-mlv.fr/~lecroq/string/node1.html)
    - [Boyer--Moore](https://www.cnblogs.com/xubenben/p/3359364.html)
+   - [Rabin–Karp algorithm - Wikipedia](https://en.wikipedia.org/wiki/Rabin%E2%80%93Karp_algorithm)
    - wikipedia
 
 1. `__substring_find.py`
@@ -336,6 +362,27 @@
 
 1. segment tree for range sum -- [Efficient and easy segment trees - Codeforces](http://codeforces.com/blog/entry/18051)
    - for interval query -- discretization possible values
+   - implementation -- see `Sol699.java` and `_SegTree.java`
+   - top-down segment trees, lc 732
+     ```python
+     class MyCalendarThree:
+         def __init__(self):
+             self.seg = collections.defaultdict(int)
+             self.lazy = collections.defaultdict(int)
+         def book(self, start, end):
+             def update(s, e, l = 0, r = 10**9, ID = 1):
+                 if r <= s or e <= l: return
+                 if s <= l < r <= e:
+                     self.seg[ID] += 1
+                     self.lazy[ID] += 1
+                 else:
+                     m = (l + r) // 2
+                     update(s, e, l, m, 2 * ID)
+                     update(s, e, m, r, 2*ID+1)
+                     self.seg[ID] = self.lazy[ID] + max(self.seg[2*ID], self.seg[2*ID+1])
+             update(start, end)
+             return self.seg[1] + self.lazy[1]
+     ```
 
 1. interval tree
    - [Interval tree - Wikipedia](https://en.wikipedia.org/wiki/Interval_tree)
