@@ -93,12 +93,6 @@
    - tables -- files
    - triggers -- files
 
-1. keys
-   - primary key
-     - compound key -- primary key consisting of two or more columns
-     - natural key or surrogate key
-   - foreign key
-
 1. normalization -- no duplicate or compound columns: refining a database design to ensure that each independent piece of information is in only one place (except for foreign keys)
 
 1. case sensitivity
@@ -269,33 +263,11 @@
    - DCL -- Data Control Language, `GRANT`, `REVOKE`
 
 1. `USE db_name` -- use the named database as the default (current) database for subsequent statements
-   - `DATABASE()`
+   - currently using -- `DATABASE()`
 
-1. `EXPLAIN`, `DESCRIBE`, `DESC`
-   - `SHOW TABLES` -- usually `DESCRIBE` or `DESC`
-     ```
-     {EXPLAIN | DESCRIBE | DESC}
-         tbl_name [col_name | wild]
-     ```
-   - execution plan, usually `EXPLAIN` -- displays information from the optimizer, i.e. how it would process the statement, including information about how tables are joined and in which order
-     ```
-     {EXPLAIN | DESCRIBE | DESC}
-         [FORMAT = {TRADITIONAL | JSON | TREE}]
-         {explainable_stmt | FOR CONNECTION connection_id}
-     ```
-     - `explainable_stmt` -- `SELECT`, `DELETE`, `INSERT`, `REPLACE`, and `UPDATE`; also `TABLE` from MySQL 8.0.19
-     - `FOR CONNECTION connection_id` -- the last statement in the named connection
-       - `connection_id` -- `CONNECTION_ID()` for current session
-     - `FORMAT`
-       - `TRADITIONAL` -- tabular
-       - `TREE` -- the only format which shows hash join usage
-   - `EXPLAIN ANALYZE` -- execution plan along with timing and additional, iterator-based, information about how the optimizer's expectations matched the actual execution
-     ```
-     {EXPLAIN | DESCRIBE | DESC} ANALYZE select_statement
-     ```
-     - `select_statement` -- besides `SELECT`, also multi-table `UPDATE` and `DELETE` statements; also `TABLE` from MySQL 8.0.19
+## Inspection
 
-## SHOW
+### SHOW
 
 1. `SHOW` -- provide information about databases, tables, columns, or status information about the server
    - correspond to tables in `INFORMATION_SCHEMA` -- `SELECT` corresponding tables yields the same result
@@ -335,6 +307,13 @@
      ```
      - CLI -- `mysqlshow --status db_name command`
      - corresponding table in `INFORMATION_SCHEMA` -- `INFORMATION_SCHEMA.TABLES`
+   - `SHOW INDEX`
+     ```
+     SHOW [EXTENDED] {INDEX | INDEXES | KEYS}
+         {FROM | IN} tbl_name
+         [{FROM | IN} db_name]
+         [WHERE expr]
+     ```
 
 1. `SHOW COLUMNS`
    ```
@@ -351,7 +330,11 @@
      ```
      SHOW CREATE TABLE tbl_name
      ```
-   - see also -- `DESCRIBE`
+   - `DESCRIBE`
+     ```
+     {EXPLAIN | DESCRIBE | DESC}
+         tbl_name [col_name | wild]
+     ```
 
 1. `SHOW CHARACTER SET`
    - corresponding table in `INFORMATION_SCHEMA` -- `INFORMATION_SCHEMA.CHARACTER_SETS`
@@ -359,9 +342,31 @@
 
 1. `SHOW VARIABLES` -- see [System Variables](#System-Variables)
 
+### EXPLAIN
+
+1. `EXPLAIN`, `DESCRIBE`, `DESC`
+   - see `SHOW COLUMNS`
+   - execution plan, usually `EXPLAIN` -- displays information from the optimizer, i.e. how it would process the statement, including information about how tables are joined and in which order
+     ```
+     {EXPLAIN | DESCRIBE | DESC}
+         [FORMAT = {TRADITIONAL | JSON | TREE}]
+         {explainable_stmt | FOR CONNECTION connection_id}
+     ```
+     - `explainable_stmt` -- `SELECT`, `DELETE`, `INSERT`, `REPLACE`, and `UPDATE`; also `TABLE` from MySQL 8.0.19
+     - `FOR CONNECTION connection_id` -- the last statement in the named connection
+       - `connection_id` -- `CONNECTION_ID()` for current session
+     - `FORMAT`
+       - `TRADITIONAL` -- tabular
+       - `TREE` -- the only format which shows hash join usage
+   - `EXPLAIN ANALYZE` -- execution plan along with timing and additional, iterator-based, information about how the optimizer's expectations matched the actual execution
+     ```
+     {EXPLAIN | DESCRIBE | DESC} ANALYZE select_statement
+     ```
+     - `select_statement` -- besides `SELECT`, also multi-table `UPDATE` and `DELETE` statements; also `TABLE` from MySQL 8.0.19
+
 ## DDL
 
-### CREATE TABLE, ALTER TABLE, DROP TABLE and Views
+### CREATE TABLE
 
 1. `CREATE TABLE`
    ```
@@ -371,55 +376,142 @@
        [partition_options]
    ```
    - `TEMPORARY` -- tbd, temporary tables kept until the end of transaction or session
-   - `create_definition`
+   - `table_options`
      ```
-       col_name column_definition
-     | {INDEX|KEY} [index_name] [index_type] (key_part,...)
-         [index_option] ...
-     | {FULLTEXT|SPATIAL} [INDEX|KEY] [index_name] (key_part,...)
-         [index_option] ...
-     | [CONSTRAINT [symbol]] PRIMARY KEY
-         [index_type] (key_part,...)
-         [index_option] ...
-     | [CONSTRAINT [symbol]] UNIQUE [INDEX|KEY]
-         [index_name] [index_type] (key_part,...)
-         [index_option] ...
-     | [CONSTRAINT [symbol]] FOREIGN KEY
-         [index_name] (col_name,...)
-         reference_definition
-     | check_constraint_definition
+     table_option [[,] table_option] ...
      ```
-     - `column_definition`
-       ```
-         data_type [NOT NULL | NULL] [DEFAULT {literal | (expr)} ]
-           [AUTO_INCREMENT] [UNIQUE [KEY]] [[PRIMARY] KEY]
-           [COMMENT 'string']
-           [COLLATE collation_name]
-           [COLUMN_FORMAT {FIXED|DYNAMIC|DEFAULT}]
-           [STORAGE {DISK|MEMORY}]
-           [reference_definition]
-           [check_constraint_definition]
-       | data_type
-           [COLLATE collation_name]
-           [GENERATED ALWAYS] AS (expr)
-           [VIRTUAL | STORED] [NOT NULL | NULL]
-           [UNIQUE [KEY]] [[PRIMARY] KEY]
-           [COMMENT 'string']
-           [reference_definition]
-           [check_constraint_definition]
-       ```
-       - `key_part` -- `{col_name [(length)] | (expr)} [ASC | DESC]`
-       - `check_constraint_definition`
-         ```
-         [CONSTRAINT [symbol]] CHECK (expr) [[NOT] ENFORCED]
-         ```
+     - `table_option`
+       - `AUTO_INCREMENT [=] value`
+       - `COMMENT [=] 'string'`
+       - more
    - more
 
+1. `create_definition`
+   ```
+     col_name column_definition
+   | {INDEX|KEY} [index_name] [index_type] (key_part,...)
+       [index_option] ...
+   | {FULLTEXT|SPATIAL} [INDEX|KEY] [index_name] (key_part,...)
+       [index_option] ...
+   | [CONSTRAINT [symbol]] PRIMARY KEY
+       [index_type] (key_part,...)
+       [index_option] ...
+   | [CONSTRAINT [symbol]] UNIQUE [INDEX|KEY]
+       [index_name] [index_type] (key_part,...)
+       [index_option] ...
+   | [CONSTRAINT [symbol]] FOREIGN KEY
+       [index_name] (col_name,...)
+       reference_definition
+   | check_constraint_definition
+   ```
+   - syntax -- column definition with constraint attributes or a sole constraint or index definition
+   - `key_part` -- `{col_name [(length)] | (expr)} [ASC | DESC]`, order matters
+   - `check_constraint_definition`
+     ```
+     [CONSTRAINT [symbol]] CHECK (expr) [[NOT] ENFORCED]
+     ```
+
+1. `column_definition`
+   ```
+     data_type [NOT NULL | NULL] [DEFAULT {literal | (expr)} ]
+       [AUTO_INCREMENT] [UNIQUE [KEY]] [[PRIMARY] KEY]
+       [COMMENT 'string']
+       [COLLATE collation_name]
+       [COLUMN_FORMAT {FIXED|DYNAMIC|DEFAULT}]
+       [STORAGE {DISK|MEMORY}]
+       [reference_definition]
+       [check_constraint_definition]
+   | data_type
+       [COLLATE collation_name]
+       [GENERATED ALWAYS] AS (expr)
+       [VIRTUAL | STORED] [NOT NULL | NULL]
+       [UNIQUE [KEY]] [[PRIMARY] KEY]
+       [COMMENT 'string']
+       [reference_definition]
+       [check_constraint_definition]
+   ```
+
+1. key / index
+   ```
+   index_type:
+       USING {BTREE | HASH}
+   index_option:
+       KEY_BLOCK_SIZE [=] value
+     | index_type
+     | WITH PARSER parser_name
+     | COMMENT 'string'
+     | {VISIBLE | INVISIBLE}
+   ```
+   - `KEY | INDEX` -- as index
+   - `PRIMARY KEY` -- implicitly `NOT NULL`, name is `PRIMARY`
+   - `UNIQUE [INDEX|KEY]` -- error when duplicate
+   - `FOREIGN KEY` -- only InnoDB and NDB tables support checking of foreign key constraints
+     ```
+     reference_definition:
+         REFERENCES tbl_name (col_name,...)
+         [ON DELETE reference_option]
+         [ON UPDATE reference_option]
+     reference_option:
+         RESTRICT | CASCADE | SET NULL | NO ACTION
+     ```
+     - switch -- system variable `foreign_key_checks`
+     - `CASCADE` -- delete or update from the parent table is cascaded to the matching rows in the child table; cascaded actions do not activate triggers
+     - `SET NULL` -- literally
+     - `RESTRICT` or `NO ACTION` (default) -- rejects the delete or update operation for the parent table if there is a related foreign key value in the referenced table
+     - corresponding tables in `INFORMATION_SCHEMA` -- `INFORMATION_SCHEMA.KEY_COLUMN_USAGE`, `INFORMATION_SCHEMA.INNODB_FOREIGN`, `INFORMATION_SCHEMA.INNODB_FOREIGN_COLS`
+   - `FULLTEXT`, `SPATIAL` keys -- tbd
+
+### ALTER TABLE, DROP TABLE
+
 1. `ALTER TABLE`
+   ```
+   ALTER TABLE tbl_name
+       [alter_specification [, alter_specification] ...]
+       [partition_options]
+   ```
+   - `alter_specification` -- one of below, see docs
+     - `table_options`
+     - add
+       - add column
+         ```
+           ADD [COLUMN] col_name column_definition [FIRST | AFTER col_name]
+         | ADD [COLUMN] (col_name column_definition,...)
+         ```
+       - add index key
+         ```
+           ADD {INDEX|KEY} [index_name] [index_type] (key_part,...) [index_option] ...
+         | ADD [CONSTRAINT [symbol]] PRIMARY KEY [index_type] (key_part,...) [index_option] ...
+         | ADD [CONSTRAINT [symbol]] UNIQUE [INDEX|KEY] [index_name] [index_type] (key_part,...) [index_option] ...
+         | ADD [CONSTRAINT [symbol]] FOREIGN KEY [index_name] (col_name,...) reference_definition
+         ```
+     - delete
+       ```
+         DROP {CHECK|CONSTRAINT} symbol
+       | DROP [COLUMN] col_name
+       | DROP {INDEX|KEY} index_name
+       | DROP PRIMARY KEY
+       | DROP FOREIGN KEY fk_symbol
+       ```
 
 1. `DROP TABLE`
 
+### CREATE VIEW
+
 1. `CREATE VIEW`
+   ```
+   CREATE
+       [OR REPLACE]
+       [ALGORITHM = {UNDEFINED | MERGE | TEMPTABLE}]
+       [DEFINER = user]
+       [SQL SECURITY { DEFINER | INVOKER }]
+       VIEW view_name [(column_list)]
+       AS select_statement
+       [WITH [CASCADED | LOCAL] CHECK OPTION]
+   ```
+   - `OR REPLACE` -- literally
+   - frozen after creation -- for a `SELECT *` view on a table, new columns added to the table are unknown to the view, and errors when selecting from the view if relevent columns dropped from the table
+   - updatable and insertable views -- see docs
+   - more
 
 ## DML
 
@@ -1619,6 +1711,13 @@
 1. InnoDB Row Formats -- tbd
 
 # Concepts
+
+1. keys
+   - primary key
+     - compound key -- primary key consisting of two or more columns
+     - natural key or surrogate key
+   - foreign key -- help keep spread-out data consistent
+   - large data update -- bootstrap with delete indexes before and re-create after
 
 1. ACID -- transaction properties
    - atomicity -- when transaction ends, either all the changes succeed or all the changes undone
