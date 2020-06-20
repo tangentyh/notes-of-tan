@@ -88,13 +88,6 @@
 
 # Miscellanea
 
-1. correspondents
-   - databases -- directories within `/data`
-   - tables -- files
-   - triggers -- files
-
-1. normalization -- no duplicate or compound columns: refining a database design to ensure that each independent piece of information is in only one place (except for foreign keys)
-
 1. case sensitivity
    - SQL statements -- case insensitive
    - database, trigger, table names -- depends on file system and CLI option `--lower-case-table-names[=#]` or system variable `lower_case_table_names`, `1` suggested with lowercase storing and insensitive comparisons
@@ -495,7 +488,7 @@
 
 1. `DROP TABLE`
 
-### CREATE VIEW
+### CREATE VIEW, PROCEDURE, FUNCTION, TRIGGER
 
 1. `CREATE VIEW`
    ```
@@ -512,6 +505,26 @@
    - frozen after creation -- for a `SELECT *` view on a table, new columns added to the table are unknown to the view, and errors when selecting from the view if relevent columns dropped from the table
    - updatable and insertable views -- see docs
    - more
+
+1. `CREATE PROCEDURE`
+   ```
+   CREATE
+       [DEFINER = user]
+       PROCEDURE sp_name ([proc_parameter[,...]])
+       [characteristic ...] routine_body
+   ```
+   - `CURSOR` -- MySQL supports cursors inside stored programs
+
+1. `CREATE FUNCTION`
+   ```
+   CREATE
+       [DEFINER = user]
+       FUNCTION sp_name ([func_parameter[,...]])
+       RETURNS type
+       [characteristic ...] routine_body
+   ```
+
+1. `CREATE TRIGGER`
 
 ## DML
 
@@ -553,6 +566,7 @@
      SELECT college, region AS r, seed AS s FROM tournament ORDER BY r, s;
      SELECT college, region, seed FROM tournament ORDER BY 2, 3;
      ```
+   - `OVER` -- see `WINDOW`
 
 1. `into_option`, `INTO`
    ```
@@ -693,7 +707,7 @@
 
 1. `EXCEPT` -- ANSI SQL but not in MySQL
 
-### Filtering, Ordering, Grouping, Limiting, Windowing
+### Filtering, Ordering, Grouping, Limiting
 
 1. `WHERE` `where_condition` -- an expression that evaluates to true for each row to be selected
    - no aggregate functions -- can use any of the functions and operators, except for aggregate (summary) functions
@@ -741,21 +755,89 @@
      - extended in MySQL -- permits `HAVING` to refer to columns in the `SELECT` list and columns in outer subqueries as well
      - applied nearly last (before `LIMIT`), with no optimization
 
-<!-- TODO -->
+1. `LIMIT` -- outermost one take precedence if used in nested multiple subqueries
+   - `offset` -- use 0 to include first row
+   - up to end -- use a large number `row_count`
+
+#### WINDOW
+
 1. `WINDOW` -- windows for window functions, tbd
+   - `WINDOW` clause in `SELECT`
+     ```
+     [WINDOW window_name AS (window_spec) [, window_name AS (window_spec)] ...]
+     ```
+   - `over_clause` in aggregation and window functions
+     ```
+     over_clause:
+         {OVER (window_spec) | OVER window_name}
+     ```
+     - `window_spec`
+       ```
+       window_spec:
+           [window_name] [partition_clause] [order_clause] [frame_clause]
+       ```
+       - empty -- all rows
+       - `partition_clause` -- like `GROUP BY`, differs from table partitioning
+         ```
+         PARTITION BY expr [, expr] ...
+         ```
+       - `order_clause` -- applies within individual partitions
+         ```
+         ORDER BY expr [ASC|DESC] [, expr [ASC|DESC]] ...
+         ```
+       - `frame_clause` -- a subset of the current partition, see below
+
+1. `frame_clause` -- a subset of the current partition, enabling move within a partition depending on the location of the current row
+   ```
+   frame_clause:
+       frame_units frame_extent
+   ```
+   - limitation -- some window functions operate on the entire partition, frames are ignored for them
+   - `frame_units`
+     ```
+     {ROWS | RANGE}
+     ```
+     - `ROWS` -- the frame is defined by beginning and ending row positions
+     - `RANGE` -- the frame is defined by rows within a value range
+   - `frame_extent`
+     ```
+     frame_extent:
+         {frame_start | BETWEEN frame_start AND frame_end}
+     frame_start, frame_end: {
+         CURRENT ROW
+       | UNBOUNDED PRECEDING
+       | UNBOUNDED FOLLOWING
+       | expr PRECEDING
+       | expr FOLLOWING
+     }
+     ```
+     - single `frame_start` -- `CURRENT ROW` is implicitly the end
+     - `BETWEEN` -- `frame_start` must not occur later than `frame_end`
+   - default frame depends on `ORDER BY`
+     - with `ORDER BY`
+       ```
+       RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+       ```
+     - without `ORDER BY`
+       ```
+       RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+       ```
+   - example
+     ```
+     ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
+     ```
+
+1. example
    ```SQL
    SELECT
      val,
      ROW_NUMBER()   OVER w AS 'row_number',
      CUME_DIST()    OVER w AS 'cume_dist',
-     PERCENT_RANK() OVER w AS 'percent_rank'
+     PERCENT_RANK() OVER w AS 'percent_rank',
+     SUM(val)       OVER () AS total_profit
    FROM numbers
    WINDOW w AS (ORDER BY val);
    ```
-
-1. `LIMIT` -- outermost one take precedence if used in nested multiple subqueries
-   - `offset` -- use 0 to include first row
-   - up to end -- use a large number `row_count`
 
 ### Subqueries
 
@@ -1029,7 +1111,7 @@
      | READ ONLY
    }
    ```
-   - `WITH CONSISTENT SNAPSHOT` -- starts a consistent read; the effect is the same as issuing a START TRANSACTION followed by a SELECT from any InnoDB table
+   - `WITH CONSISTENT SNAPSHOT` -- starts a consistent read; the effect is the same as issuing a `START TRANSACTION` followed by a `SELECT` from any InnoDB table
    - `READ WRITE`, `READ ONLY` -- set the transaction access mode; in `READ ONLY` mode, MySQL enables extra optimizations for queries on InnoDB tables, the transaction can still modify or lock `TEMPORARY` tables
    - implicit commits -- beginning a transaction and some statements including DDLs causes any pending transaction to be committed
    - implicit unlock -- beginning a transaction also causes table locks acquired with `LOCK TABLES` to be released, as though you had executed `UNLOCK TABLES`
@@ -1110,6 +1192,33 @@
    UNLOCK TABLES
    ```
    - more
+
+## Dynamic SQL
+
+1. prepared statements
+   - merits
+     - less overhead for parsing the statement each time it is executed
+     - protection against SQL injection attacks
+   - scope -- session specific if created in a session, global if created in a stored routine
+   - control -- system variable `max_prepared_stmt_count`
+   - allowed statements -- see docs
+
+1. `PREPARE`
+   ```
+   PREPARE stmt_name FROM preparable_stmt
+   ```
+   - `preparable_stmt` -- string literal or a user variable of a single SQL statement, `?` as parameter markers, keywords and identifiers cannot be parameters
+   - implicit `DEALLOCATE` -- prepared statements with the same `stmt_name` are deallocated implicitly
+
+1. `EXECUTE`
+   ```
+   EXECUTE stmt_name [USING @var_name [, @var_name] ...]
+   ```
+
+1. `DEALLOCATE PREPARE`
+   ```
+   {DEALLOCATE | DROP} PREPARE stmt_name
+   ```
 
 # Language Structure
 
@@ -1509,8 +1618,15 @@
      ```
 
 1. window functions -- tbd
-   - `LEAD`
-   - `LAG`
+   - `null_treatment` -- for ANSI SQL conformance, permits only `RESPECT NULLS`
+   - `LEAD(expr [, N[, default]]) [null_treatment] over_clause`
+   - `LAG(expr [, N[, default]]) [null_treatment] over_clause`
+   - `NTILE`
+   - `CUME_DIST`
+   - `DENSE_RANK() over_clause` -- consecutive even when duplicates
+   - `PERCENT_RANK`
+   - `RANK() over_clause` -- not consecutive when duplicate
+   - `ROW_NUMBER() over_clause`
 
 ## Other Functions
 
@@ -1658,6 +1774,108 @@
      - `DAY_MICROSECOND`, `DAY_SECOND`, `DAY_MINUTE`, `DAY_HOUR` -- like above but with days spaced: `'DAYS HOURS:MINUTES:SECONDS.MICROSECONDS'`
      - `YEAR_MONTH` -- `'YEARS-MONTHS'`
 
+# Big Data
+
+1. 3 V
+   - Volume
+   - Velocity
+   - Variety -- unstructured data, like documents, pictures, audios and videos
+
+## Partition
+
+1. partition -- distribute portions of individual tables across a file system, even in different tablespaces according to a user-defined partition function
+   - table partitioning -- horizontal partitioning, partitioning rows; vertically partitioning, partitioning columns
+   - index partitioning -- global index on whole table, local index on a single partition
+   - partitioning types in MySQL, horizontal, error when cannot decide partition
+     - `RANGE` partitioning -- partitions based on column values falling within a given range
+       - `RANGE COLUMNS` partitioning -- enables the use of multiple columns in partitioning keys
+     - `LIST` partitioning -- partitions based on column values matching one of a set of discrete values
+       - `LIST COLUMNS` partitioning -- enables the use of multiple columns in partitioning keys
+     - `HASH` partitioning -- partitions based on server provided hash function on column values
+     - `KEY` partitioning -- only for NDB, see docs
+   - composite partitioning -- with `SUBPARTITION`
+   - limitation -- all columns used in the table's partitioning expression must be part of every unique key that the table may have, including any primary key, see docs for more
+   - corresponding table in `INFORMATION_SCHEMA` -- `INFORMATION_SCHEMA.PARTITIONS`
+
+1. partition benefits
+   - overcome physical partition limit -- makes it possible to store more data in one table than can be held on a single disk or file system partition
+   - convenience for data manipulation -- operate on partitions, e.g. easily delete old data if partitioned by date
+   - partition pruning, partition-wise joins -- optimizer: do not scan partitions where there can be no matching values
+   - concurrency -- perform updates on multiple partitions simultaneously
+
+1. `partition_options` in `CREATE TABLE`
+   ```
+   PARTITION BY
+       { [LINEAR] HASH(expr)
+       | [LINEAR] KEY [ALGORITHM={1|2}] (column_list)
+       | RANGE{(expr) | COLUMNS(column_list)}
+       | LIST{(expr) | COLUMNS(column_list)} }
+   [PARTITIONS num]
+   [SUBPARTITION BY
+       { [LINEAR] HASH(expr)
+       | [LINEAR] KEY [ALGORITHM={1|2}] (column_list) }
+     [SUBPARTITIONS num]
+   ]
+   [(partition_definition [, partition_definition] ...)]
+   ```
+   - `partition_definition`
+     ```
+     PARTITION partition_name
+         [VALUES
+             {LESS THAN {(expr | value_list) | MAXVALUE}
+             |
+             IN (value_list)}]
+         [[STORAGE] ENGINE [=] engine_name]
+         [COMMENT [=] 'string' ]
+         [DATA DIRECTORY [=] 'data_dir']
+         [INDEX DIRECTORY [=] 'index_dir']
+         [MAX_ROWS [=] max_number_of_rows]
+         [MIN_ROWS [=] min_number_of_rows]
+         [TABLESPACE [=] tablespace_name]
+         [(subpartition_definition [, subpartition_definition] ...)]
+     ```
+     - `subpartition_definition`
+       ```
+       SUBPARTITION logical_name
+           [[STORAGE] ENGINE [=] engine_name]
+           [COMMENT [=] 'string' ]
+           [DATA DIRECTORY [=] 'data_dir']
+           [INDEX DIRECTORY [=] 'index_dir']
+           [MAX_ROWS [=] max_number_of_rows]
+           [MIN_ROWS [=] min_number_of_rows]
+           [TABLESPACE [=] tablespace_name]
+       ```
+
+1. `partition_options` in `ALTER TABLE`
+   ```
+   partition_options:
+       partition_option [partition_option] ...
+   partition_option:
+       ADD PARTITION (partition_definition)
+     | DROP PARTITION partition_names
+     | DISCARD PARTITION {partition_names | ALL} TABLESPACE
+     | IMPORT PARTITION {partition_names | ALL} TABLESPACE
+     | TRUNCATE PARTITION {partition_names | ALL}
+     | COALESCE PARTITION number
+     | REORGANIZE PARTITION partition_names INTO (partition_definitions)
+     | EXCHANGE PARTITION partition_name WITH TABLE tbl_name [{WITH|WITHOUT} VALIDATION]
+     | ANALYZE PARTITION {partition_names | ALL}
+     | CHECK PARTITION {partition_names | ALL}
+     | OPTIMIZE PARTITION {partition_names | ALL}
+     | REBUILD PARTITION {partition_names | ALL}
+     | REPAIR PARTITION {partition_names | ALL}
+     | REMOVE PARTITIONING
+   ```
+   - see `partition_options` in `CREATE TABLE` for other syntax
+
+1. `PARTITION` clause in DML -- see corresponding DML
+
+## Other Big Data Tech
+
+1. clustering -- multiple servers to act as a single database, see docs for InnoDB cluster
+
+1. sharding -- partitioning on a larger scale and with more complexity
+
 # System Variables
 
 1. `SHOW VARIABLES`
@@ -1692,14 +1910,12 @@
    - `NO_BACKSLASH_ESCAPES` -- Disable the use of the backslash character (`\`) as an escape character within strings and identifiers
    - `PIPES_AS_CONCAT`
 
-1. `time_zone`
-
-1. `max_sort_length`
-
-1. `sql_auto_is_null`
-
-1. character set
-   - `character_set_connection`
+1. system variables -- tbd
+   - `time_zone`
+   - `max_sort_length`
+   - `sql_auto_is_null`
+   - character set
+     - `character_set_connection`
 
 # InnoDB
 
@@ -1711,6 +1927,13 @@
 1. InnoDB Row Formats -- tbd
 
 # Concepts
+
+1. correspondents
+   - databases -- directories within `/data`
+   - tables -- files
+   - triggers -- files
+
+1. normalization -- no duplicate or compound columns: refining a database design to ensure that each independent piece of information is in only one place (except for foreign keys)
 
 1. keys
    - primary key
