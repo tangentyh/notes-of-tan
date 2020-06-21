@@ -4,6 +4,7 @@
    - [oracle JDK 1.8](https://docs.oracle.com/javase/8/docs/api/index.html)
    - [jshell](https://docs.oracle.com/javase/9/jshell/toc.htm)
    - [Java Platform, Standard Edition Tools Reference for Oracle JDK on Solaris, Linux, and OS X, Release 8](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/toc.html)
+   - [JSR-000221 JDBC API 4.3 Maintenance Release 3](https://download.oracle.com/otndocs/jcp/jdbc-4_3-mrel3-spec/index.html)
    - [download](https://stackoverflow.com/questions/6986993/how-to-download-javadoc-to-read-offline/36497090)
      - [Java Development Kit 8 Documentation](https://www.oracle.com/technetwork/java/javase/documentation/jdk8-doc-downloads-2133158.html)
 
@@ -5985,7 +5986,7 @@
      - type 1 driver, no in use anymore — translates JDBC to ODBC and relies on an ODBC driver to communicate with the database
      - type 2 driver, deprecated — written partly in Java and partly in native code; it communicates with the client API of a database, platform-specific code required
      - type 3 driver — a pure Java client library that uses a database-independent protocol to communicate database requests to a server component, which then translates the requests into a database-specific protocol
-     - type 4 driver — a pure Java library that translates JDBC requests directly to a database-specific protocol.
+     - type 4 driver — a pure Java library that translates JDBC requests directly to a database-specific protocol
    - driver class register — the driver manager iterates through the registered drivers to find a driver that can use the subprotocol specified in the database URL
      - automatic register as service provider — a jar file is automatically registered if it contains the file `META-INF/services/java.sql.Driver`
      - hard code — load a class and its static initializers executed
@@ -5999,18 +6000,61 @@
 
 1. JDBC url
    ```
-   jdbc:subprotocol:other stuff
+   jdbc:subprotocol:others
    jdbc:derby://localhost:1527/example;create=true
    jdbc:postgresql:example
    ```
 
+1. JDBC escape syntax -- translate to database-specific syntax variations, see [JDBC Reference Information](https://docs.oracle.com/en/database/oracle/oracle-database/18/jjdbc/JDBC-reference-information.html#GUID-DFF83C4A-D0F8-420C-BA66-8681B939B787)
+   - control -- `Statement::setEscapeProcessing`
+   - temporal
+     ```
+     {d '2008-01-24'}
+     {t '23:59:59'}
+     {ts '2008-01-24 23:59:59.999'}
+     ```
+   - scalar function
+     ```
+     {fn left(?, 20)}
+     {fn user()}
+     ```
+   - calling stored procedures
+   - outer joins -- `oj`
+   - the escape character in `LIKE` clauses
+
 ## JDBC Classes
+
+1. example: establish a connection and execute statements
+   ```java
+   public static void runTest() throws SQLException, IOException {
+       try (Connection conn = getConnection(); Statement stat = conn.createStatement()) {
+           stat.executeUpdate("CREATE TABLE Greetings (Message CHAR(20))");
+           stat.executeUpdate("INSERT INTO Greetings VALUES ('Hello, World!')");
+           try (ResultSet result = stat.executeQuery("SELECT * FROM Greetings")) {
+               if (result.next()) System.out.println(result.getString(1));
+           }
+           stat.executeUpdate("DROP TABLE Greetings");
+       }
+   }
+   public static Connection getConnection() throws SQLException, IOException {
+       Properties props = new Properties();
+       try (InputStream in = Files.newInputStream(Paths.get("database.properties"))) {
+           props.load(in);
+       }
+       String drivers = props.getProperty("jdbc.drivers");
+       if (drivers != null) System.setProperty("jdbc.drivers", drivers);
+       String url = props.getProperty("jdbc.url");
+       String username = props.getProperty("jdbc.username");
+       String password = props.getProperty("jdbc.password");
+       return DriverManager.getConnection(url, username, password);
+   }
+   ```
 
 1. `java.sql.DriverManager` — for managing a set of JDBC drivers
    ```java
    public class DriverManager extends Object
    ```
-   - `static Connection getConnection(String url)`  
+   - `static Connection getConnection(String url)` — the driver manager iterates through the registered drivers to find a driver that can use the subprotocol specified in the database URL  
      `static Connection getConnection(String url, Properties info)`  
      `static Connection getConnection(String url, String user, String password)`
    - `static void setLogWriter(PrintWriter out)`
@@ -6020,63 +6064,162 @@
    - `boolean isWrapperFor(Class<?> iface)`
    - `<T> T unwrap(Class<T> iface)`
 
-<!-- TODO -->
-1. `java.sql.Connection` — A connection (session) with a specific database. SQL statements are executed and results are returned within the context of a connection.
+1. `java.sql.Connection` — A connection (session) with a specific database. SQL statements are executed and results are returned within the context of a connection
    ```java
    public interface Connection
    extends Wrapper, AutoCloseable
    ```
-   - configuration
+   - metadata
+     - `DatabaseMetaData getMetaData()` -- information about the database's tables, its supported SQL grammar, its stored procedures, the capabilities of this connection, and so on
+   - configuration -- should not use a SQL statements to configure if a JDBC method available
+     - `void abort(Executor executor)`
+     - `void close()`
+     - `SQLWarning getWarnings()`, `void clearWarnings()`
+     - `String getSchema()`, `void setSchema(String schema)`
+     - `getClientInfo`, `setClientInfo`
+   - transaction -- should not use a SQL statements to configure if a JDBC method available
      - `void setAutoCommit(boolean autoCommit)` — defaults to `true`
+     - `boolean getAutoCommit()`
      - `void setTransactionIsolation(int level)`
-   - create
+       - isolation levels as `static int` fields -- `TRANSACTION_NONE`, `TRANSACTION_READ_COMMITTED`, `TRANSACTION_READ_UNCOMMITTED`, `TRANSACTION_REPEATABLE_READ`, `TRANSACTION_SERIALIZABLE`
+     - `int getTransactionIsolation()`
+     - `void commit()`
+     - `Savepoint setSavepoint()`  
+       `Savepoint setSavepoint(String name)`
+     - `void releaseSavepoint(Savepoint savepoint)`
+     - `void rollback()`  
+       `void rollback(Savepoint savepoint)`
+   - statements -- one or more, according to `DatabaseMetaData::getMaxStatements`
      - `Statement createStatement()`  
        `Statement createStatement(int resultSetType, int resultSetConcurrency)`  
        `Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability)`
+       - `resultSetType` -- `ResultSet.TYPE_FORWARD_ONLY`, `ResultSet.TYPE_SCROLL_INSENSITIVE`, `ResultSet.TYPE_SCROLL_SENSITIVE`
+       - `resultSetConcurrency` -- `ResultSet.CONCUR_READ_ONLY`, `ResultSet.CONCUR_UPDATABLE`
+       - `resultSetHoldability` -- `ResultSet.HOLD_CURSORS_OVER_COMMIT`, `ResultSet.CLOSE_CURSORS_AT_COMMIT`
+     - `prepareCall` -- for `CALL` stored procedures
+     - `prepareStatement` -- `PREPARE` and `EXECUTE`
+   - `java.sql.DatabaseMetaData` -- information about the DBMS, the driver, and the results of some `SHOW` statements
+      ```java
+      public interface DatabaseMetaData extends Wrapper
+      ```
+      - `ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types)`
 
-<!-- TODO -->
 1. `java.sql.Statement` — executing a static SQL statement and returning the results
    ```java
    public interface Statement
    extends Wrapper, AutoCloseable
    ```
    - one `ResultSet` a time — all execution methods in the `Statement` interface implicitly close a current `ResultSet` object of the statement if an open one exists
+   - `ResultSet getResultSet()`
+   - `getMoreResults` -- for databases that also allow submission of multiple SELECT statements in a single query
+   - `void setEscapeProcessing(boolean enable)` -- defaults to `true`
+   - autogenerated keys -- whether retrieve autogenerated keys, often the primary key
+     - `int executeUpdate(String sql, int autoGeneratedKeys)` and other methods
+       - `static int RETURN_GENERATED_KEYS`
+       - `static int NO_GENERATED_KEYS`
+   - batch -- no `SELECT`
+     - `void addBatch(String sql)`
+     - `int[] executeBatch()`
    - execute
-     - `boolean execute(String sql)`
-     - `boolean execute(String sql, int autoGeneratedKeys)`
-     - `boolean execute(String sql, int[] columnIndexes)`
-     - `boolean execute(String sql, String[] columnNames)`
+     - `execute`
      - `int[] executeBatch()`
      - `default long[] executeLargeBatch()`
-     - `default long executeLargeUpdate(String sql)`
-     - `default long executeLargeUpdate(String sql, int autoGeneratedKeys)`
-     - `default long executeLargeUpdate(String sql, int[] columnIndexes)`
-     - `default long executeLargeUpdate(String sql, String[] columnNames)`
+     - `executeLargeUpdate`
      - `ResultSet executeQuery(String sql)`
-     - `int executeUpdate(String sql)` — for `INSERT`, `UPDATE`, `DELETE` or DDL statements (`CREATE TABLE`, `DROP TABLE`), returns count for rows affected or 0
-     - `int executeUpdate(String sql, int autoGeneratedKeys)`
-     - `int executeUpdate(String sql, int[] columnIndexes)`
-     - `int executeUpdate(String sql, String[] columnNames)`
+     - `executeUpdate` — returns count for rows affected or 0
 
-<!-- TODO: 5.4.2 -->
+1. `java.sql.PreparedStatement`
+   ```java
+   public interface PreparedStatement extends Statement
+   ```
+   - `void clearParameters()`
+   - example
+     ```java
+     PreparedStatement pSt = con.prepareStatement("UPDATE EMPLOYEES
+                                       SET SALARY = ? WHERE ID = ?");
+     pSt.setBigDecimal(1, 153833.00);
+     pSt.setInt(2, 110592);
+     pSt.executeUpdate();
+     ```
+
 1. `java.sql.ResultSet` — a table of data representing a database result set
    ```java
    public interface ResultSet
    extends Wrapper, AutoCloseable
    ```
-   - cursor — tbd
-   - `boolean next()` — moves the cursor forward one row from its current position, initially positioned before the first row, `false` when at last row
-     ```java
-     while (rs.next()) {
-         // look at a row of the result set
-     }
-     ```
+   - cursor — initially positioned before the first row; no `hasNext`, keep calling `next` until `false`
+     - `boolean next()` — moves the cursor forward one row from its current position, initially positioned before the first row, `false` when at last row
+       ```java
+       while (rs.next()) { }
+       ```
+     - scrollable cursor
+       - `boolean absolute(int row)`
+       - `boolean relative(int rows)`
+       - `boolean previous()`
+       - `first`, `last`, `beforeFirst`, and `afterLast`
+       - `isFirst`, `isLast`, `isBeforeFirst`, and `isAfterLast`
+   - `ResultSetMetaData getMetaData()`
+     - `ResultSetMetaData::getColumnTypeName`
    - `get-` prefixed methods — get results as a certain type from the current row, two forms of parameters, for types like `Array`, `Blob`, `Clob`, `int`, `String` etc.
-     - `Array getArray(int columnIndex)` — index starts from 1
-     - `Array getArray(String columnLabel)`
-   - `update-` prefixed methods — like `get-` methods, for DB write methods
-   - DB write
-     - `void insertRow()`
+     - `__ get__(int columnIndex)` — index starts from 1
+     - `__ get__(String columnLabel)`
+   - `update-` prefixed methods — like `get-` methods, for interactive update
+     - `void updateRow()` -- updates the underlying database with the new contents of the current row, changes will be discarded if not called
+     - `void cancelRowUpdates()`
+   - insert -- for interactive scenarios
+     1. `void moveToInsertRow()`
+     1. `update-` methods
+     1. `void insertRow()`
+     1. `void moveToCurrentRow()`
+   - `void deleteRow()` -- for interactive scenarios
+
+1. JDBC type interfaces
+   - `java.lang` type classes, `String` and stream type classes, `java.math` type classes, primitive types
+   - `java.net.URL` type class
+   - `java.sql.Array`
+   - `java.sql.Blob`
+   - `java.sql.Clob`
+   - `java.sql.Ref`
+   - `java.sql.RowId`
+   - `java.sql.SQLData` -- SQL user-defined type (UDT)
+   - `java.sql.SQLType` -- a generic SQL type, called a JDBC type or a vendor specific data type
+   - `java.sql.Date`
+     ```java
+     public class Date extends java.util.Date
+     ```
+   - `java.sql.Time`
+     ```java
+     public class Time extends java.util.Date
+     ```
+   - `java.sql.Timestamp`
+     ```java
+     public class Timestamp extends java.util.Date
+     ```
+   - `java.sql.Types` -- `static int` constants that are used to identify generic SQL types
+     - `ARRAY`, `BIGINT`, `BINARY`, `BIT`, `BLOB`, `BOOLEAN`, `TINYINT`, `VARBINARY`, `VARCHAR`
+     - more
+
+### Row Sets
+
+1. `javax.sql.RowSet` -- a connected rowset or more commonly, a disconnected rowset
+   ```java
+   public interface RowSet extends ResultSet
+   ```
+   - `javax.sql.rowset.JdbcRowSet -- added functionality of connections, like transaction
+   - `javax.sql.rowset.CachedRowSet` -- a disconnected rowset
+     ```java
+     public interface CachedRowSet extends RowSet, Joinable
+     ```
+     - `javax.sql.rowset.WebRowSet` -- a cached row set that can be saved to an XML file
+       - `javax.sql.rowset.FilteredRowSet` -- for filtering
+       - `javax.sql.rowset.JoinRowSet` -- for `JOIN`
+
+1. `interface javax.sql.rowset.RowSetFactory`
+   - `__RowSet create__RowSet()`
+
+1. `javax.sql.rowset.RowSetProvider`
+   - `static RowSetFactory newFactory()`
+   - `static RowSetFactory newFactory(String factoryClassName, ClassLoader cl)`
 
 # Time
 
@@ -6180,7 +6323,7 @@
    - `OffsetDateTime toOffsetDateTime()`
 
 1. `java.time.LocalDateTime`
-   - SQL type — `TIMESTAMP` without a timezone, `DATETIME`
+   - SQL type — `DATETIME`
 
 1. `java.time.LocalDate` — A date without a time-zone in the ISO-8601 calendar system
    ```java
