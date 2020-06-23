@@ -338,28 +338,6 @@
 
 1. `__Trie.py` -- trie and Finwick tree
 
-1. Segment tree -- allows querying which of the stored segments contain a given point at O(log *n+k*)  
-   ![][p1]
-
-   [p1]: images/1.png
-   - [wikipedia](https://en.wikipedia.org/wiki/Segment_tree)
-   - introduction
-     - static, cannot be modified once it's built
-     - A segment tree for a set *I* of *n* intervals uses O(*n* log *n*) storage and can be built in O(*n* log *n*) time
-     - support searching for all the intervals that contain a query point in O(log *n + k*), *k* being the number of retrieved intervals or segments
-   - build backbone
-     1. sort all endpoints of given intervals
-     1. build leaves according to endpoints
-     1. internal nodes represent the union of the intervals of its childs
-   - insert interval *X*
-     1. start from root, the current node is *T*
-     1. if the interval of *T* $\subseteq$ *X*, store *X* at *T* and finish
-     1. If *X* intersects the interval of the left child of *T*, then insert *X* in that child, recursively. If *X* intersects the interval of the right child of *T*, then insert *X* in that child, recursively.
-   - query the point *q*
-     1. start from root
-     1. query the child of the current node if the current node has childs and *q* is in the interval of that child
-     1. report all intervals stored along the path
-
 1. segment tree for range sum -- [Efficient and easy segment trees - Codeforces](http://codeforces.com/blog/entry/18051)
    - for interval query -- discretization possible values
    - implementation -- see `Sol699.java` and `_SegTree.java`
@@ -383,6 +361,7 @@
              update(start, end)
              return self.seg[1] + self.lazy[1]
      ```
+     - alternative -- start or end of the first sub-interval as the mid value, O(*n*) when worst case
 
 1. interval tree
    - [Interval tree - Wikipedia](https://en.wikipedia.org/wiki/Interval_tree)
