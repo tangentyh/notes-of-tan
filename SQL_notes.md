@@ -399,6 +399,7 @@
    ```
    - syntax -- column definition with constraint attributes or a sole constraint or index definition
    - `key_part` -- `{col_name [(length)] | (expr)} [ASC | DESC]`, order matters
+     - `length` -- up to 767 bytes long for InnoDB tables that use the `REDUNDANT` or `COMPACT` row format, 3072 bytes for `DYNAMIC` or `COMPRESSED` row format
    - `check_constraint_definition`
      ```
      [CONSTRAINT [symbol]] CHECK (expr) [[NOT] ENFORCED]
@@ -1928,6 +1929,8 @@
 
 # Concepts
 
+Glossary part in MySQL docs.
+
 1. correspondents
    - databases -- directories within `/data`
    - tables -- files
@@ -1941,6 +1944,7 @@
      - natural key or surrogate key
    - foreign key -- help keep spread-out data consistent
    - large data update -- bootstrap with delete indexes before and re-create after
+   - covering index -- An index that includes all the columns retrieved by a query. Instead of using the index values as pointers to find the full table rows, the query returns values from the index structure. Any column index or composite index could act as a covering index
 
 1. ACID -- transaction properties
    - atomicity -- when transaction ends, either all the changes succeed or all the changes undone
@@ -1950,21 +1954,81 @@
      - In InnoDB, the doublewrite buffer assists with durability
 
 1. read phenomena
-   - consistent read -- isolation: A read operation that uses snapshot information to present query results based on a point in time, regardless of changes performed by other transactions running at the same time
-     - related isolation level -- `READ COMMITTED` and `REPEATABLE READ` isolation levels
-     - lock-free -- because a consistent read does not set any locks on the tables it accesses, other sessions are free to modify those tables while a consistent read is being performed on the table
-     - undo log to mitigate lock congestion -- If queried data has been changed by another transaction, the original data is reconstructed based on the contents of the undo log. This technique avoids some of the locking issues that can reduce concurrency by forcing transactions to wait for other transactions to finish.
    - dirty read -- read data that was updated by another transaction but not yet committed, possible in `READ UNCOMMITTED`
    - non-repeatable read -- within the same transaction, a later query retrieve data should be the same but changed by another transaction committing in the meantime, possible in `READ COMMITTED` and below
    - phantom read -- within the same transaction, a row that appears in the result set of a query, but not in the result set of an earlier query, possible in `REPEATABLE READ` and below
-     - gap lock needed -- locking all the rows from the first query result set does not prevent the changes that cause the phantom to appear
-   - other consistency problem -- change lost: modifications overwritten by other transactions
+     - gap lock needed, see next-key locks below -- locking all the rows from the first query result set does not prevent the changes that cause the phantom to appear
+   - other consistency problem: 丢失修改
+
+1. consistent read -- isolation: A read operation that uses snapshot information to present query results based on a point in time, regardless of changes performed by other transactions running at the same time
+   - related isolation level -- `READ COMMITTED` and `REPEATABLE READ` isolation levels
+   - lock-free -- because a consistent read does not set any locks on the tables it accesses, other sessions are free to modify those tables while a consistent read is being performed on the table
+   - undo log to mitigate lock congestion -- If queried data has been changed by another transaction, the original data is reconstructed based on the contents of the undo log. This technique avoids some of the locking issues that can reduce concurrency by forcing transactions to wait for other transactions to finish.
+
+1. MVCC -- multiversion concurrency control, technique used in consistent read
+   - read view -- 当前系统未提交的事务列表 `DB_TRX_ID`s and their minimum and maximum, for each consistent read
+   - rollback segment -- the storage area containing the undo logs
+   - undo log -- the information necessary to rebuild the content of the row before it was updated
+     - insert undo log -- only needed when rollback
+     - update undo log -- for rollback and consistent reads, cannot be discarded if potentially required by any snapshot to build an earlier version
+   - three internal columns for each row
+     - `DB_TRX_ID` -- 6 byte, transaction identifier, the last transaction that inserted or updated the row
+     - `DB_ROLL_PTR` -- 7 byte, roll pointer, points to an undo log record written to the rollback segment
+     - `DB_ROW_ID` -- 6 byte, a row ID that increases monotonically as new rows are inserted
+   - constructing a row with `DB_TRX_ID` and `TRX_ID_MIN` and `TRX_ID_MAX` in read view when `SELECT`
+     - TRX_ID < TRX_ID_MIN，表示该数据行快照时在当前所有未提交事务之前进行更改的，因此可以使用。
+     - TRX_ID > TRX_ID_MAX，表示该数据行快照是在事务启动之后被更改的，因此不可使用。???
+     - TRX_ID_MIN <= TRX_ID <= TRX_ID_MAX，需要根据隔离级别再进行判断：
+       - 提交读：如果 TRX_ID 在 TRX_IDs 列表中，表示该数据行快照对应的事务还未提交，则该快照不可使用。否则表示已经提交，可以使用。
+       - 可重复读：都不可以使用。因为如果可以使用的话，那么其它事务也可以读到这个数据行快照并进行修改，那么当前事务再去读这个数据行得到的值就会发生改变，也就是出现了不可重复读问题。
+     - 在数据行快照不可使用的情况下，需要沿着 Undo Log 的回滚指针 ROLL_PTR 找到下一个快照，再进行上面的判断。
+   - indexes
+     - clustered indexes -- updated in-place, have hidden system columns
+     - secondary indexes -- no hidden system columns, when updated, old secondary index records are delete-marked, new records are inserted, and delete-marked records are eventually purged; cluster index looked up when undo, covering index technique not used
+   - delete and purge
+     - delete -- internally delete is an update on delete mark
+     - purge -- a type of garbage collection performed by one or more separate background threads (controlled by `innodb_purge_threads`) that runs on a periodic schedule, parses and processes undo log pages from the history list for removing delete-marked clustered and secondary index records
+     - history list -- A list of transactions with delete-marked records scheduled to be processed by the InnoDB purge operation. Recorded in the undo log.
 
 1. locks
    - locking mechanism
      - like `java.util.concurrent.locks.ReentrantReadWriteLock`
+       - X lock, aka write lock -- exclusive
+       - S lock, aka read lock -- shared
      - only write locks while make sure read is consistent
    - lock granularity
+     - db lock
      - table lock
      - page lock
      - row lock
+   - intention locks -- apply to the table, and are used to indicate what kind of lock the transaction intends to acquire on rows in the table
+     - IX lock -- before a transaction can acquire an exclusive lock on a row in a table, it must first acquire an IX lock on the table
+     - IS lock -- before a transaction can acquire a shared lock on a row in a table, it must first acquire an IS lock or stronger on the table
+   - row locks
+     - record locks -- a lock on an index record; if a table is defined with no indexes, InnoDB creates a hidden clustered index and uses this index for record locking
+     - gap locks -- a lock on a gap between index records
+     - next-key lock -- a combination of a record lock on the index record and a gap lock on the gap before the index record; used in `REPEATABLE READ` to prevent phantom rows
+   - more locks, see docs
+
+1. locking protocols
+   - 三级封锁协议
+     - 一级封锁协议 -- 事务 T 要修改数据 A 时必须加 X 锁，直到 T 结束才释放锁。解决丢失修改。
+     - 二级封锁协议 -- 在一级的基础上，要求读取数据 A 时必须加 S 锁，读取完马上释放 S 锁。解决 dirty read。
+     - 三级封锁协议 -- 在二级的基础上，要求直到事务结束了才能释放 S 锁。解决 non-repeatable read。
+   - two phase locking protocol -- sufficient condition for being serializable
+     - expanding phase -- locks are acquired and no locks are released
+     - shrinking phase -- locks are released and no locks are acquired
+
+1. 范式 -- 为了解决四种异常。高级别范式的依赖于低级别的范式，1NF 是最低级别的范式
+   - 函数依赖
+     - 键码
+     - 完全函数依赖，部分函数依赖
+     - 传递函数依赖
+   - 四种异常
+     - 冗余数据：例如 学生-2 出现了两次。
+     - 修改异常：修改了一个记录中的信息，但是另一个记录中相同的信息却没有被修改。
+     - 删除异常：删除一个信息，那么也会丢失其它信息。例如删除了 课程-1 需要删除第一行和第三行，那么 学生-1 的信息就会丢失。
+     - 插入异常：例如想要插入一个学生的信息，如果这个学生还没选课，那么就无法插入。
+   - 第一范式 (1NF) -- 属性不可分。
+   - 第二范式 (2NF) -- 每个非主属性完全函数依赖于键码。可以通过分解来满足。
+   - 第三范式 (3NF) -- 非主属性不传递函数依赖于键码。
