@@ -3252,7 +3252,7 @@
    - local variable annotations — can only be processed at the source level
    - an annotation can annotate itself
 
-1. type use annotations — annotate types, as sub-interfaces of `AnnotatedElement`
+1. type use (`TYPE_USE`) annotations — annotate types, as sub-interfaces of `AnnotatedElement`
    - type arguments — `List<@NonNull String>`, `List<@Localized ? extends Message>`, `List<? extends @Localized Message>`
    - arrays — `@NonNull String[][] words` (`words[i][j]` is not `null`), `String @NonNull [][] words` (`words` is not `null`), `String[] @NonNull [] words` (`words[i]` is not `null`)
    - when inheriting — `class Warning extends @Localized Message`
@@ -3289,7 +3289,7 @@
       @Retention(value=SOURCE)
      public @interface Override
      ```
-   - `@javax.annotation.Generated` — mark source code that has been generated. It can also be used to differentiate user written code from generated code in a single file (`javax.annotation.processing` for post JDK 8)
+   - `@javax.annotation.Generated` — mark source code that has been generated. It can also be used to differentiate user written code from generated code in a single file (in `javax.annotation.processing` for post JDK 8)
      ```java
      @Documented
       @Retention(value=SOURCE)
@@ -3328,7 +3328,7 @@
        - `SOURCE`
    - `@java.lang.annotation.Documented` — indicates that annotations with a type are to be documented by javadoc and similar tools by default
    - `@java.lang.annotation.Inherited` — indicates that an annotation type is automatically inherited, has no effect if the annotated type is used to annotate anything other than a class
-   - `@java.lang.annotation.Repeatable` — indicates the containing annotation type for the repeatable annotation type
+   - `@java.lang.annotation.Repeatable` — indicates the annotation type is repeatable, with the containing annotation type to hold repeated annotations
      ```java
      @Repeatable(TestCases.class)
      @interface TestCase {

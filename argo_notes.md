@@ -380,8 +380,7 @@
    - directed graph representation -- array: `i -> a[i]` for vertex i to vertex `a[i]`
 
 1. Eulerian path
-   - [Fleury's algorithm](https://en.wikipedia.org/wiki/Eulerian_path#Fleury.27s_algorithm)
-   - [Hierholzer's algorithm](https://en.wikipedia.org/wiki/Eulerian_path#Hierholzer's_algorithm)
+   - [Fleury's algorithm, Hierholzer's algorithm](https://en.wikipedia.org/wiki/Eulerian_path#Fleury.27s_algorithm)
 
 1. use DAGs in lieu of `boolean[] visited` or `BitSet` or `Map<Integer, List<Integer>> val2indexList`
    ```java
@@ -416,3 +415,8 @@
        nonzero int: path length
        ```
        - detour example -- in a grid, it is a detour if `abs(to_i - i) + abs(to_j - j)` will be larger when `i` or `j` changes
+
+1. shortest path
+   - Dijkstra
+   - Floyd–Warshall algorithm
+   - [Bellman–Ford algorithm - Wikipedia](https://en.wikipedia.org/wiki/Bellman%E2%80%93Ford_algorithm)
