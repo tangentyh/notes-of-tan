@@ -195,6 +195,7 @@
    - [string.pdf.html](http://www-igm.univ-mlv.fr/~lecroq/string/node1.html)
    - [Boyer--Moore](https://www.cnblogs.com/xubenben/p/3359364.html)
    - [Rabin–Karp algorithm - Wikipedia](https://en.wikipedia.org/wiki/Rabin%E2%80%93Karp_algorithm)
+   - [Aho–Corasick algorithm - Wikipedia](https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm)
    - wikipedia
 
 1. `__substring_find.py`

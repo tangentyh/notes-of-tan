@@ -2599,6 +2599,7 @@
    - `java`
      - use `-verbose` when launching JVM for diagnosing class path problems
      - use `Xprof` for profiling, note that support was removed in 10.0
+     - `-XX:+HeapDumpOnOutOfMemoryError`
    - use `-Xlint:all` when `javac`
    - use `jconsole` to track memory consumption, thread usage, class loading
    - `jmap` and `jhat` (`jhat` removed in JDK 9) — `jmap` to get a heap dump and `jhat` to examine
@@ -2612,6 +2613,7 @@
    - `hprof`
    - `jps`
    - `jstack`
+   - `syslog`
 
 ## Exceptions
 
@@ -2873,6 +2875,31 @@
    ```
 
 ## Logging
+
+1. log4j2 with slf4j
+   ```xml
+   <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter</artifactId>
+      <!-- 使用log4j2要排除logBack依赖 -->
+      <exclusions>
+         <exclusion>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-logging</artifactId>
+         </exclusion>
+      </exclusions>
+   </dependency>
+   <!-- Spring已经写好了一个log4j2-starter但缺少桥接包 -->
+   <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-log4j2</artifactId>
+   </dependency>
+   <!-- 引入缺少的桥接包 -->
+   <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+   </dependency>
+   ```
 
 ### Logger
 
@@ -3252,7 +3279,7 @@
    - local variable annotations — can only be processed at the source level
    - an annotation can annotate itself
 
-1. type use (`TYPE_USE`) annotations — annotate types, as sub-interfaces of `AnnotatedElement`
+1. type use (`ElementType.TYPE_USE`) annotations — annotate types, as sub-interfaces of `AnnotatedElement`
    - type arguments — `List<@NonNull String>`, `List<@Localized ? extends Message>`, `List<? extends @Localized Message>`
    - arrays — `@NonNull String[][] words` (`words[i][j]` is not `null`), `String @NonNull [][] words` (`words` is not `null`), `String[] @NonNull [] words` (`words[i]` is not `null`)
    - when inheriting — `class Warning extends @Localized Message`
@@ -3320,6 +3347,7 @@
    - `@java.lang.annotation.Target` — the contexts in which an annotation type is applicable, any declaration except a type parameter declaration if absent
      - `ElementType[] value`
      - `enum java.lang.annotation.ElementType` — `ANNOTATION_TYPE`, `CONSTRUCTOR`, `FIELD`, `LOCAL_VARIABLE`, `METHOD`, `PACKAGE`, `PARAMETER`, `TYPE`, `TYPE_PARAMETER`, `TYPE_USE`
+       - `TYPE` -- class, interface (including annotation type), or enum declaration
    - `@java.lang.annotation.Retention` — how long annotations with the annotated type are to be retained, defaults to `RetentionPolicy.CLASS` if absent
      - `RetentionPolicy value`
      - `enum java.lang.annotation.RetentionPolicy`
@@ -4323,6 +4351,8 @@
    implements Comparable<Charset>
    ```
    - `static Charset defaultCharset()`
+
+1. `java.text.StringCharacterIterator`
 
 ## Regex
 
@@ -6255,6 +6285,7 @@
        public abstract class DateFormat
        extends Format
        ```
+       - `java.text.SimpleDateFormat`
 
 1. `java.time` — dates, times, instants, and durations
    - `java.time.temporal` — lower level access to the fields

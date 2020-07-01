@@ -394,6 +394,12 @@
      - overwrite — `brew cask install --force`
    - `brew cleanup`
    - `brew tap buo/cask-upgrade` for `brew cu`
+   - install older version
+     1. `cd` to `brew --repo homebrew/cask`
+     1. `git log ./Casks/visual-studio-code.rb`
+     1. `git checkout b9381533f8c8af449c8cb05103afc8418fcf5e4e`
+     1. `brew cask reinstall visual-studio-code`
+     1. `git switch master`
 
 1. appleID association to app -- `/path_to_app/Contents/_MASReceipt`
 

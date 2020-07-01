@@ -3482,10 +3482,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    ```
    - unsafe
 
-1. Comet
-   - Comet is described as the server pushing data to the page
-     - long polling or HTTP streaming
-   - a hack before the advent of `WebSocket` and server-sent events
+1. refresh data from server
    - short polling: where the browser sends a request to the server in regular intervals to see if there’s any data
      ```javascript
      (function poll(){
@@ -3499,7 +3496,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
        }, 30000);
      })();
      ```
-   - Long polling flips short polling around: The page initiates a request to the server and the server holds that connection open until it has data to send
+   - Long polling, aka. comet, flips short polling around: The page initiates a request to the server and the server holds that connection open until it has data to send
      ```javascript
      (function poll(){
        $.ajax({ url: "server", success: function(data){
@@ -3509,11 +3506,14 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      })();
      ```
      - Once the data is sent, the connection is closed by the browser and a new connection is immediately opened up to the server
-   - HTTP streaming
+     - timeout problem
+     - the HTTP specification requiring browsers to limit simultaneous connections to two per hostname, the limitation is removed in 2014, but browsers still has the cap, higher than 2 though
+   - HTTP streaming -- use `Transfer Encoding: chunked` header to indicate data is sent in a series of chunks, originally used to indicate the `Content-Length` is uncertain and omitted
      - uses a single HTTP connection for the entire lifetime of the page
      - The browser sends a request to the server and the server holds that connection open, periodically sending data through the connection to the server
      - printing to the output buffer and then flushing (sending the contents of the output buffer to the client). This is the core of HTTP streaming
      - client side: listening for the `readystatechange` event and focusing on `readyState` 3, keep track of the progress and slice the response
+   - `WebSocket` and server-sent events
 
 ### Server-Sent Events (SSE)
 
@@ -3571,6 +3571,10 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - smaller overhead than HTTP
    - The same-origin policy does not apply to Web Sockets
    - When a Web Socket is created in JavaScript, an HTTP request is sent to the server to initiate a connection. When the server responds, the connection uses HTTP upgrade to switch from HTTP to the Web Socket protocol
+     - `Connection: Upgrade`, `Upgrade: websocket`
+     - `101 Switching Protocols`, `Upgrade: websocket`
+     - timeout problem -- heartbeat messages called pings and pongs, one peer periodically sends a tiny packet to the other (the ping), and the other peer responds with a packet containing the same data (the pong)
+     - no limit on the number of open connections per hostname
    - constructor: `WebSocket(url, protocol?)`
      - connection is established upon construct
      - url example: `ws://localhost:8080`, `wss://localhost:8080` (secured)
@@ -3722,7 +3726,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 
 ## Data Storage
 
-### Cookies, the old fashioned way
+### Cookies
 
 1. `Navigator.cookieEnabled` Read only
 
@@ -3744,15 +3748,16 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `__Secure-` prefix: Cookies with a name starting with `__Secure-` (dash is part of the prefix) must be set with the `secure` flag and must be from a secure page (HTTPS).
      - `__Host-` prefix: Cookies with a name starting with `__Host-` must be set with the `secure` flag, must be from a secure page (HTTPS), must not have a domain specified (and therefore aren't sent to subdomains) and the path must be "/".
      - subcookies: `name=name1=value1&name2=value2&name3=value3`
-   - Session cookies
-     - default setting for cookies
-     - deleted when the client shuts down
-   - Permanent cookies -- expire at a specific date (`Expires`) or after a specific length of time in seconds (`Max-Age`)
-     ```
-     Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT;
-     ```
-     - the time and date set is relative to the client
-     - `Max-Age` has precedence
+   - persistence
+     - Session cookies
+       - default setting for cookies
+       - deleted when the client shuts down
+     - Permanent cookies -- expire at a specific date (`Expires`) or after a specific length of time in seconds (`Max-Age`)
+       ```
+       Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT;
+       ```
+       - the time and date set is relative to the client
+       - `Max-Age` has precedence
    - security flags
      ```
      Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT; Secure; HttpOnly
