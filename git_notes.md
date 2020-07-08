@@ -92,6 +92,15 @@
          --data '{"body":"A new comment, :+1:"}' \
          https://api.github.com/repos/schacon/blink/issues/6/comments
      ```
+   - gist -- like normal git repo
+     - anonymous
+       ```
+       git clone https://gist.github.com/<gist-id>.git
+       ```
+     - with user
+       ```
+       git clone https://<user>@gist.github.com/<gist-id>.git
+       ```
 
 # Quick Reference
 
@@ -451,6 +460,7 @@
      - `--ff` -- default, fast forward whenever possible
      - `--no-ff` -- merge commit in all cases
      - `--ff-only` -- fast forward or no merge
+   - `--allow-unrelated-histories` -- can merge another repo
    - conflict -- also for `git rebase`, `git cherry-pick` etc.
      ```
      git merge (--continue | --abort | --quit)

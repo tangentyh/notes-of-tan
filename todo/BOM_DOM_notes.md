@@ -1723,7 +1723,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 
 1. Ranges in IE8 and earlier: P424
 
-# New BOM and DOM Related
+## New BOM and DOM Related
 
 1. `window.getSelection(): Selection`
    - represents the range of text selected by the user or the current position of the caret
@@ -3676,7 +3676,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - Requiring SSL to access resources that can be requested via XHR
    - Requiring a computed token to be sent along with every request
 
-1. the following are ineffective against CSRF attacks: ???
+1. the following are ineffective against CSRF attacks
    - Requiring a POST instead of a GET — This is easily changed
    - Using the referrer as a determination of origin — Referrers are easily spoofed
    - Validating based on cookie information — Also easily spoofed

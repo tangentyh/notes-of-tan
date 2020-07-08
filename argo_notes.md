@@ -369,6 +369,10 @@
 
 1. Range minimum query
    - [Range minimum query - Wikipedia](https://en.wikipedia.org/wiki/Range_minimum_query)
+   - [Cartesian tree - Wikipedia](https://en.wikipedia.org/wiki/Cartesian_tree)
+     - [LCA in a tree using Binary Lifting Technique - GeeksforGeeks](https://www.geeksforgeeks.org/lca-in-a-tree-using-binary-lifting-technique/)
+   - example
+     - [Locked Doors - Kick Start](https://codingcompetitions.withgoogle.com/kickstart/round/000000000019ff08/0000000000386d5c), segment tree also applicable
 
 # Probabilistic data structures
 

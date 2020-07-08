@@ -1421,14 +1421,14 @@
 1. proxies
    - usage — at runtime, create new classes that implement given interfaces, with a method invocation handler
    - proxy class definition
-     - runtime defined name — proxy objects belong to classes defined at runtime with names such as `$Proxy0`
+     - runtime defined class — proxy objects are of classes defined at runtime with names such as `$Proxy0`
      - modifiers and inheritance — all proxies are `public final` and extends `Proxy`
-     - singleton — only one proxy class for a particular class loader and ordered set of interfaces
+     - cached — only one proxy class for a particular class loader and ordered set of interfaces
      - package — default package if given interfaces all public, else belongs to the package of given non-public interfaces
    - proxying — all proxy classes override the `toString()`, `equals()`, and `hashCode()`, and given interface methods with `InvocationHandler::invoke`
      - other methods in `Object` are untouched
 
-1. `Interface java.lang.reflect.InvocationHandler` — invocation handlers
+1. `interface java.lang.reflect.InvocationHandler` — invocation handlers
    - `public Object invoke(Object proxy, Method method, Object[] args) throws Throwable`
    - additional data is stored in the invocation handler
 
@@ -2900,6 +2900,7 @@
       <artifactId>jcl-over-slf4j</artifactId>
    </dependency>
    ```
+   - `org.apache.logging.log4j.ThreadContext` -- stores properties in the current thread
 
 ### Logger
 
@@ -3147,7 +3148,7 @@
 
 1. limits of generics
    - type parameters cannot be primitive types — not compatible with `Object` when type erased at runtime
-   - in static context — type variables not valid in static context (parameterized types are available)
+   - not in static context — type variables not valid in static context (parameterized types are available)
      ```java
      public class Singleton<T> {
          private static T singleInstance; // Error
@@ -3367,7 +3368,7 @@
      ```
      - `Class<? extends Annotation> value` — a container annotation that holds the repeated annotations in an array
 
-1. for resource managing (deprecated from JDK 9 and removed from JDK 11, available in Maven)
+1. for java EE resource managing (deprecated from JDK 9 and removed from JDK 11, available in Maven)
    - `@javax.annotation.PostConstruct` — used on a method that needs to be executed after dependency injection is done
      ```java
      @Documented
@@ -3616,7 +3617,7 @@
    - wait set — a thread enters wait set and stays deactivated after the call to `await`, until `signal`ed by other threads
    - deadlock — when all threads are in wait set
 
-1. `synchronized` — use intrinsic lock, a method or code block that is atomic to a thread
+1. `synchronized` — use intrinsic lock, a method or code block that is atomic to a thread, reentrant
    ```java
    public synchronized void transfer(int from, int to, int amount) throws InterruptedException {
        while (accounts[from] < amount) wait(); // wait on intrinsic object lock's single condition
@@ -3642,6 +3643,7 @@
      - `void wait(long timeout, int nanos)`
    - monitor — intrinsic lock is the loose adaption of the monitor concept
      - [Monitor (synchronization) - Wikipedia](https://en.wikipedia.org/wiki/Monitor_(synchronization))
+   - JVM optimization -- see [zhihu](https://zhuanlan.zhihu.com/p/75880892)
 
 1. `interface java.util.concurrent.locks.Lock`
    - `void lock()` — other threads are blocked if the lock cannot be acquired, cannot be interrupted
@@ -3878,14 +3880,15 @@
    - `concurrencyLevel` — the estimated number of concurrently updating threads, defaults to 16, other write threads will be blocked if the number exceeded
    - `long mappingCount()` — used in lieu of `size()` for `long`; an estimate, the actual count may differ if there are concurrent insertions or removals
    - atomicity
-     - vanilla — `putIfAbsent`, `remove`
-     - CAS — `V replace(K key, V value)`, `boolean replace(K key, V oldValue, V newValue)`
+     - value non-null -- `null` is for absent; if also for value, incompatible with the operation that use `synchronized` on the old value
+     - put -- `synchronized` on the old value, CAS if `null`
+     - replace -- `synchronized` on the old value
+     - lambda -- CAS a dummy value and `synchronized` on the dummy value, compute lambda, set computed value, exit lock block
      - use `ConcurrentHashMap<String, LongAdder>` with `putIfAbsent`
        ```java
        map.putIfAbsent(word, new LongAdder()).increment();
        map.computeIfAbsent(word, k -> new LongAdder()).increment(); // better
        ```
-     - use lambda — `compute`, `computeIfAbsent`, `computeIfPresent`, `merge`
    - `parallelismThreshold` of bulk operations — if the map contains more elements than the threshold, the bulk operation is parallelized, fully utilize the `ForkJoinPool.commonPool()` if set to 1
    - `java.util.concurrent.ConcurrentMap`
      ```java
