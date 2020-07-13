@@ -1,6 +1,6 @@
 # Docs
 
-1. [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference)
+1. [JavaScript reference - JavaScript | MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference)
 
 1. [ECMA-262 Github](https://tc39.github.io/ecma262/)
    - [ECMA official](http://www.ecma-international.org/ecma-262/)
@@ -805,7 +805,13 @@
 
 1. [tbc](https://www.typescriptlang.org/docs/handbook/integrating-with-build-tools.html)
 
+1. webpack
+   - [webpack-dev-server](https://survivejs.com/webpack/developing/webpack-dev-server/)
+   - [Concepts | webpack](https://webpack.js.org/concepts/)
+
 # TypeScript -- superset of JavaScript
+
+1. docs -- [Basic Types · TypeScript](https://www.typescriptlang.org/docs/handbook/basic-types.html)
 
 ## CLI
 

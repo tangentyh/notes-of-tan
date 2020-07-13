@@ -4,9 +4,8 @@
    - [official](https://nodejs.org/en/docs/)
    - [guides](https://nodejs.org/en/docs/guides/)
 
-1. [Node Hosting](https://github.com/nodejs/node-v0.x-archive/wiki/Node-Hosting)
-   - [azure](http://azure.microsoft.com/en-us/develop/nodejs/)
-   - vps
+1. to learn
+   - [nswbmw/node-in-debugging: 《Node.js 调试指南》](https://github.com/nswbmw/node-in-debugging)
 
 # Event Loop
 

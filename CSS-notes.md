@@ -7,6 +7,9 @@
    - [image compression](https://tinypng.com/)
    - [Front-End-Performance-Checklist/README.md at master · thedaviddias/Front-End-Performance-Checklist](https://github.com/thedaviddias/Front-End-Performance-Checklist/blob/master/README.md)
 
+1. to learn
+   - [you-dont-need/You-Dont-Need-JavaScript: CSS is powerful, you can do a lot of things without JS.](https://github.com/you-dont-need/You-Dont-Need-JavaScript)
+
 # Use CSS
 
 ## In JS, user agent stylesheets

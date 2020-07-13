@@ -17,6 +17,8 @@
             [-i|--info|-m|--man|-w|--web] [COMMAND|GUIDE]
      ```
    - `-h` `--help` option
+   - [GitHub.com Help Documentation](https://docs.github.com/en)
+   - [GitHub Learning Lab](https://lab.github.com/)
 
 1. `git`
    ```shell
