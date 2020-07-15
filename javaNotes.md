@@ -65,6 +65,11 @@
      - log related — see [Logging](#Logging)
        - log configuration file location — `-Djava.util.logging.config.file=configFile`
      - see [`Properties`](#Legacy%20Collections) for list of system properties
+   - remote debug
+     ```shell
+     java -Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=8000,suspend=n \
+       -jar target/myapplication-0.0.1-SNAPSHOT.jar # remote debug
+     ```
 
 1. `javaw` — `java` without a shell window
 
@@ -4069,6 +4074,11 @@
    public class ThreadPoolExecutor extends AbstractExecutorService
    ```
    - creation — returned by `Executors.newCachedThreadPool()`, `Executors.newFixedThreadPool(int)`, `Executors.newSingleThreadExecutor()`
+   - reject policies when task queue overflow, as static inner classes
+     - `ThreadPoolExecutor.AbortPolicy` -- `RejectedExecutionException`
+     - `ThreadPoolExecutor.CallerRunsPolicy`
+     - `ThreadPoolExecutor.DiscardOldestPolicy`
+     - `ThreadPoolExecutor.DiscardPolicy`
    - more
 
 1. `java.util.concurrent.ScheduledThreadPoolExecutor` — `ThreadPoolExecutor` that can additionally schedule commands to run after a given delay, or to execute periodically, preferable to `java.util.Timer`
