@@ -2013,12 +2013,11 @@
    public class WeakHashMap<K,V> extends AbstractMap<K,V>
    implements Map<K,V>
    ```
+   - underlying implementation — `Entry` extends `WeakReference` and registered to a `ReferenceQueue` upon construction
    - not count for gc — the presence of a mapping for a given key will not prevent the key from being discarded by the garbage collector
-     - entry auto removal — an entry is automatically removed when its key is no longer in ordinary use
-       - `WeakHashMap` periodically checks reclaimed `WeakReference` queue, and removes associated entry
-     - `WeakReference` queue — objects reachable only by a `WeakReference` will not only be reclaimed by gc, but also be queued
+     - `private final ReferenceQueue<Object> queue` -- `WeakReference` keys are registered with a `queue` when created; when the referent of `WeakReference` is reclaimed by GC, `WeakReference::enqueue` is called at the same time or at some later time
+     - `expungeStaleEntries()` -- private method that scan `WeakReference` keys in `queue` and set corresponding values to `null`; called every time in access methods, `size()`, and internal resize method
    - `null` support — both keys and values
-   - underlying implementation — `key` is wrapped with `WeakReference`
    - values with strong reference to the keys — prevent keys from gc, can be alleviated by wrapping values with `new WeakReference(value)`
 
 1. `java.util.IdentityHashMap` — `HashMap` with keys (and values) that are compared by `==`, not `equals`
@@ -3548,9 +3547,23 @@
    public class ThreadLocal<T>
    ```
    - `T get()`
-   - `void remove()`
+   - `void remove()` -- can prevent possible memory leak
    - `void set(T value)`
+     ```java
+     public void set(T value) {
+         Thread t = Thread.currentThread();
+         ThreadLocalMap map = getMap(t);
+         if (map != null) {
+             map.set(this, value);
+         } else {
+             createMap(t, value);
+         }
+     }
+     ```
    - `static <S> ThreadLocal<S> withInitial(Supplier<? extends S> supplier)`
+   - `ThreadLocal.ThreadLocalMap`, referenced by `Thread` field -- open addressing hash table
+     - entry -- `WeakReference<ThreadLocal<?>>` as key, whose hash value managed by a static `AtomicInteger`, `getAndAdd` for every `ThreadLocal` instance
+     - memory leak -- referent of `WeakReference<ThreadLocal<?>>` keys can be reclaimed by GC, but no `ReferenceQueue` like in `WeakHashMap`, `expungeStaleEntries()` called only when rehash, and single entry expunge method called only when a stale entry encountered, possibly leaving stale entries not expunged
 
 1. `java.util.concurrent.ThreadLocalRandom`
    ```java
@@ -3648,7 +3661,7 @@
      - `void wait(long timeout, int nanos)`
    - monitor — intrinsic lock is the loose adaption of the monitor concept
      - [Monitor (synchronization) - Wikipedia](https://en.wikipedia.org/wiki/Monitor_(synchronization))
-   - JVM optimization -- see [zhihu](https://zhuanlan.zhihu.com/p/75880892)
+   - JVM optimization -- see [zhihu](https://zhuanlan.zhihu.com/p/75880892), [CS-Notes/Java 并发.md at master · CyC2018/CS-Notes](https://github.com/CyC2018/CS-Notes/blob/master/notes/Java%20%E5%B9%B6%E5%8F%91.md#%E5%8D%81%E4%BA%8C%E9%94%81%E4%BC%98%E5%8C%96)
 
 1. `interface java.util.concurrent.locks.Lock`
    - `void lock()` — other threads are blocked if the lock cannot be acquired, cannot be interrupted
@@ -3677,6 +3690,7 @@
    - fair — a lot slower, a fair lock can still be unfair if the thread scheduler is unfair
      - `ReentrantLock()`
      - `ReentrantLock(boolean fair)`
+   - underlying implementation -- `AbstractQueuedSynchronizer::compareAndSetState`
 
 1. `java.util.concurrent.locks.ReentrantReadWriteLock` — read lock for accessors, write lock for mutators
    ```java
@@ -3693,22 +3707,97 @@
      - `writeLock` happen-before — must guarantee that the memory synchronization effects of `writeLock` operations: a thread successfully acquiring the read lock will see all updates made upon previous release of the write lock
      - simultaneous read and write lock — a writer can acquire the read lock, but not vice-versa
      - overhead — the read-write lock implementation (which is inherently more complex than a mutual exclusion lock) can dominate the execution cost if the read operations are too short
+   - underlying implementation -- `AbstractQueuedSynchronizer::compareAndSetState`
 
-1. `java.util.concurrent.locks.StampedLock` — a capability-based lock, lock acquisition methods return a stamp that represents and controls access with respect to a lock state
-   - [tbd, zhihu](https://zhuanlan.zhihu.com/p/33422168)
-   <!-- TODO -->
+1. `java.util.concurrent.locks.StampedLock` — a capability-based lock, lock acquisition methods return a stamp that represents and controls access with respect to a lock state; lock release and conversion methods require stamps as arguments
+   ```java
+   public class StampedLock implements Serializable
+   ```
+   - stamp -- zero value for failure, the state of a `StampedLock` consists of a version and mode
+   - three modes
+     - write -- blocks waiting for exclusive access
+       - `long writeLock()`
+       - `void unlockWrite(long stamp)`
+     - read -- blocks waiting for non-exclusive access
+       - `long readLock()`
+       - `void unlockRead(long stamp)`
+       - `int getReadLockCount()`
+     - optimistic read -- an extremely weak version of a read-lock, that can be broken by a writer at any time, for short read-only code segments
+       - `long tryOptimisticRead()` -- returns a non-zero stamp only if the lock is not currently held in write mode
+       - `boolean validate(long stamp)` -- returns true if the lock has not been acquired in write mode since obtaining a given stamp
+     - `void unlock(long stamp)`
+   - mode conversion methods
+   - `Lock` conversion
+     - `Lock asReadLock()`
+     - `Lock asWriteLock()`
+     - `ReadWriteLock asReadWriteLock()`
+   - underlying implementation -- memory fence methods in `VarHandle`, and `VarHandle::compareAndSet`
+   - example
+     ```java
+     class Point {
+        private double x, y;
+        private final StampedLock sl = new StampedLock();
+        void move(double deltaX, double deltaY) { // an exclusively locked method
+          long stamp = sl.writeLock();
+          try {
+            x += deltaX;
+            y += deltaY;
+          } finally {
+            sl.unlockWrite(stamp);
+          }
+        }
+        double distanceFromOrigin() { // A read-only method
+          long stamp = sl.tryOptimisticRead();
+          double currentX = x, currentY = y;
+          if (!sl.validate(stamp)) {
+             stamp = sl.readLock();
+             try {
+               currentX = x;
+               currentY = y;
+             } finally {
+                sl.unlockRead(stamp);
+             }
+          }
+          return Math.sqrt(currentX * currentX + currentY * currentY);
+        }
+        void moveIfAtOrigin(double newX, double newY) { // upgrade
+          // Could instead start with optimistic, not read mode
+          long stamp = sl.readLock();
+          try {
+            while (x == 0.0 && y == 0.0) {
+              long ws = sl.tryConvertToWriteLock(stamp);
+              if (ws != 0L) {
+                stamp = ws;
+                x = newX;
+                y = newY;
+                break;
+              }
+              else {
+                sl.unlockRead(stamp);
+                stamp = sl.writeLock();
+              }
+            }
+          } finally {
+            sl.unlock(stamp);
+          }
+        }
+      }
+     ```
 
 ## volatile and Atomics
 
 1. `volatile` — ensures that a field is coherently accessed by multiple threads
    - problems of concurrent write and read to instance fields
      - cache coherence — threads running in different processors may see different values for the same memory location
-     - reorder?? — a memory value can be changed by another thread, but compilers assume memory values are only changed with explicit instructions, and compilers reorder instructions to maximize throughput
+     - reorder — a memory value can be changed by another thread, but compilers assume memory values are only changed with explicit instructions, and compilers reorder instructions to maximize throughput
+     - memory barrier, membar, memory fence or fence instruction -- a type of barrier instruction that causes a CPU or compiler to enforce an ordering constraint on memory operations issued before and after the barrier instruction. This typically means that operations issued prior to the barrier are guaranteed to be performed before operations issued after the barrier
+     - barrier -- a barrier for a group of threads or processes in the source code means any thread/process must stop at this point and cannot proceed until all other threads/processes reach this barrier
    - ensure changes visible — compiler will insert the appropriate code to ensure that a change to the a variable in one thread is visible from any other thread that reads the variable
      - [happen-before order](https://docs.oracle.com/javase/specs/jls/se11/html/jls-17.html#jls-17.4.5) — a write to a volatile field is visible to and ordered before every subsequent read of that field
    - atomicity — volatile variables do not provide any atomicity, but makes read and write to `long` and `double` atomic
      - [JLS 17.7. Non-Atomic Treatment of double and long](https://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.7)  
        > For the purposes of the Java programming language memory model, a single write to a non-volatile `long` or `double` value is treated as two separate writes: one to each 32-bit half. This can result in a situation where a thread sees the first 32 bits of a 64-bit value from one write, and the second 32 bits from another write.
+   - also `synchronized` -- changes visible before a variable is unlocked
 
 1. `java.util.concurrent.atomic` — use efficient machine-level instructions to guarantee atomicity without using locks
    - optimistic update — `compareAndSet` method, or use lambda like `accumulateAndGet` method
@@ -3722,6 +3811,7 @@
      } while (!largest.compareAndSet(oldValue, newValue));
      ```
      - CAS, [Compare-and-swap - Wikipedia](https://en.wikipedia.org/wiki/Compare-and-swap)
+       - ABA problem -- use `AtomicStampedReference`, or traditional synchronization
    - delayed computation — `LongAdder`, `LongAccumulator`, `DoubleAdder`, `DoubleAccumulator`
      - under high contention, performance suffers because the optimistic updates require too many retries
      - the computation must be associative and commutative
@@ -4116,9 +4206,11 @@
 
 1. fork-join framework
    - work stealing
-     - task queue — each thread has a deque for tasks, and pushes subtasks onto the head
+     - task queue — each thread has a deque for tasks, and pushes subtasks onto the head, LIFO
      - work stealing — when a worker thread is idle, it “steals” a task from the tail of another deque
-       - Since large subtasks are at the tail, such stealing is rare
+       - stealing is rare -- since large subtasks are at the tail, such stealing is rare
+       - stealing is expensive -- context switch between threads, even between CPUs if not the same core
+       - only steal from adjacent thread to mitigate contention
      - `ForkJoinPool` employing work stealing — efficient for recursive tasks, and event-style tasks (especially `asyncMode` for the latter)
    - use and limitations
      - high volume — Huge numbers of tasks and subtasks may be hosted by a small number of actual threads in a `ForkJoinPool`. The pool attempts to maintain enough active (or available) threads by dynamically adding, suspending, or resuming internal worker threads, even if some tasks are stalled waiting to join others
@@ -4131,6 +4223,10 @@
      - loosely enforced guideline — by not permitting checked exceptions such as `IOException` to be thrown
      - like a call (fork) and return (join) from a parallel recursive function — `a.fork(); b.fork(); b.join(); a.join();` is likely to be substantially more efficient than `a.join(); b.join()`
      - task size rule of thumb — a task should perform more than 100 and less than 10000 basic computational steps
+   - dependency
+     - who fork who join -- parent thread must join all its forks
+     - unordered join -- forks from the same parent thread can be joined in arbitrary order
+     - join all before being joined -- a thread can be joined only when all its forks joined
 
 1. `java.util.concurrent.ForkJoinTask` — tasks that run within a `ForkJoinPool`, a thread-like entity but much lighter, lightweight form of `Future`
    ```java
@@ -4200,12 +4296,13 @@
 
 1. Memory consistency effects — happen-before, see [volatile](#volatile-and-Atomics)
 
-### Count
+1. `AbstractQueuedSynchronizer::compareAndSetState` -- uses `VarHandle::compareAndSet`
+
+### Count Synchronizers
 
 1. `java.util.concurrent.Semaphore` — Allows a set of threads to wait until permits are available for proceeding, often used to restrict the number of threads than can access some (physical or logical) resource
    ```java
-   public class Semaphore extends Object
-   implements Serializable
+   public class Semaphore implements Serializable
    ```
    - use
      - permit — a count, can be acquired or released, by any caller
@@ -4225,21 +4322,17 @@
      - `boolean tryAcquire(int permits)`
      - `boolean tryAcquire(int permits, long timeout, TimeUnit unit)`
      - `boolean tryAcquire(long timeout, TimeUnit unit)`
+   - underlying implementation -- `AbstractQueuedSynchronizer::compareAndSetState`
 
 1. `java.util.concurrent.CountDownLatch` — Allows a set of threads to wait until a count has been decremented to 0, and the count cannot be increased
-   ```java
-   public class CountDownLatch extends Object
-   ```
    - constructor — `CountDownLatch(int count)`
    - `void await()` — Causes the current thread to wait until the latch has counted down to zero and return immediately upon subsequent call, unless the thread is interrupted  
      `boolean await(long timeout, TimeUnit unit)`
    - `void countDown()` — decrements the count of the latch, releasing all waiting threads if the count reaches zero
    - `long getCount()`
+   - underlying implementation -- `AbstractQueuedSynchronizer::compareAndSetState`
 
 1. `java.util.concurrent.CyclicBarrier` — Allows a set of threads to wait until a predefined count of them has reached a common barrier, and then optionally executes a barrier action, and the count is reset
-   ```java
-   public class CyclicBarrier extends Object
-   ```
    - all-or-none — If a thread leaves a barrier point prematurely and exceptionally, all other threads waiting at that barrier point will also leave abnormally via `BrokenBarrierException` (or `InterruptedException` if they too were interrupted at about the same time)
    - constructors
      - `CyclicBarrier(int parties)`
@@ -4250,11 +4343,9 @@
    - `int getParties()` — the number of parties required to trip this barrier
    - `boolean isBroken()` — Queries if this barrier is in a broken state
    - `void reset()`
+   - underlying implementation -- `ReentrantLock`
 
 1. `java.util.concurrent.Phaser` — Like a cyclic barrier, but with a mutable party count, and can have multiple phases with phase number cycling from 0 to `Integer.MAX_VALUE`
-   ```java
-   public class Phaser extends Object
-   ```
    - constructors
      - `Phaser()` — 0 parties, phase number 0
      - `Phaser(int parties)`
@@ -4286,8 +4377,9 @@
      ```java
      return registeredParties == 0; // default implementation
      ```
+   - underlying implementation -- `VarHandle::compareAndSetState`
 
-### Data Exchange
+### Data Exchange Synchronizers
 
 1. `java.util.concurrent.Exchanger` — Allows two threads to exchange objects when both are ready for the exchange, a bidirectional form of a `SynchronousQueue`
    ```java
@@ -4314,7 +4406,6 @@
 
 1. `String` — see [`String`](#String)
 
-<!-- TODO -->
 1. `Character` — see also [char](#primitive-types)
    ```java
    public final class Character extends Object
@@ -6484,7 +6575,7 @@
    - parse
      - `Object parseObject(String source)`
      - `abstract Object parseObject(String source, ParsePosition pos)`
-     - use a Scanner to read localized integers and floating-point numbers — `Scanner::useLocale` <!-- TODO -->
+     - use a Scanner to read localized integers and floating-point numbers — `Scanner::useLocale`
 
 1. `MessageFormat`
    - creation
@@ -6720,8 +6811,7 @@
    ```
 
 # JVM
-
-1. `java.lang.ref.WeakReference` — weak reference objects, which do not prevent their referents from being made finalizable, finalized, and then reclaimed
+<!-- TODO -->
 
 1. JVM in `System`
    - `static void exit(int status)`
@@ -6744,6 +6834,42 @@
    - Java Authentication and Authorization Service (JAAS) — `javax.security.auth.login.LoginContext`, tbd
      - login policies
    - tbd
+
+## Reference
+
+1. `java.lang.ref.Reference`
+   ```java
+   public abstract class Reference<T>
+   ```
+   - `T get()`
+   - `void clear()`
+   - `boolean enqueue()` -- Adds this reference object to the queue with which it is registered, if any, by the program or by the garbage collector
+   - `boolean isEnqueued()`
+   - notification of changes in an object's reachability -- by registering an appropriate reference object with a reference queue at the time the reference object is created
+   - package private constructor for override
+     - `Reference(T referent)`
+     - `Reference(T referent, ReferenceQueue<? super T> queue)` -- registered with the given queue
+   - subclasses
+     - `SoftReference`
+     - `WeakReference`
+     - `PhantomReference`
+
+1. strong reference
+
+1. `java.lang.ref.SoftReference<T>` -- cleared at the discretion of the garbage collector in response to memory demand, guaranteed to have been cleared before `OutOfMemoryError`
+   - use -- for implementing memory-sensitive caches
+
+1. `java.lang.ref.WeakReference<T>` — weak reference objects, which do not prevent their referents from being made finalizable, finalized, and then reclaimed; next GC
+   - use -- weak references are for implementing canonicalizing mappings that do not prevent their keys (or values) from being reclaimed
+
+1. `java.lang.ref.PhantomReference<T>` -- phantom references are not automatically cleared by GC as they are enqueued. An object that is reachable via phantom references will remain so until all such references are cleared or themselves become unreachable
+   - use -- for scheduling pre-mortem cleanup actions in a more flexible way than is possible with the Java finalization mechanism
+   - `get()` -- always return `null` to ensure that a reclaimable object remains so
+
+1. `java.lang.ref.ReferenceQueue<T>` -- to which registered reference objects are appended by GC, at the same time or at some later time after the appropriate reachability changes are detected
+   - `Reference<? extends T> poll()` -- non-block
+   - `Reference<? extends T> remove()` -- block
+   - `Reference<? extends T> remove(long timeout)`
 
 ## Class Loading
 
