@@ -5756,26 +5756,14 @@
 
 ## NIO Channels
 
-1. `java.nio.channels`
-   - hierarchy for `Channel`
-     - `ReadableByteChannel` — can read into a buffer
-       - `ScatteringByteChannel` — can read into a sequence of buffers
-     - `WritableByteChannel` — can write from a buffer
-       - `GatheringByteChannel` — can write from a sequence of buffers
-     - `ByteChannel` — can read/write to/from a buffer
-       - `SeekableByteChannel` — A ByteChannel connected to an entity that contains a variable-length sequence of bytes
-     - `AsynchronousChannel` — supports asynchronous I/O operations
-       - `AsynchronousByteChannel` — can read and write bytes asynchronously
-     - `NetworkChannel` — to a network socket
-       - `MulticastChannel` — can join IP multicast groups
-   - `Channels` — utility methods for channel/stream interoperation
-   - exceptions extends `IOException`
+1. exceptions in `java.nio.channels`
+   - `IOException`
      - `java.nio.channels.ClosedChannelException`
        - `java.nio.channels.AsynchronousCloseException`
          - `java.nio.channels.ClosedByInterruptException`
      - `java.nio.channels.FileLockInterruptionException`
      - `java.nio.channels.InterruptedByTimeoutException`
-   - exceptions extends `RuntimeException`
+   - `RuntimeException`
      - `IllegalArgumentException`
        - `java.nio.channels.IllegalChannelGroupException`
        - `java.nio.channels.IllegalSelectorException`
@@ -5799,21 +5787,163 @@
        - `java.nio.channels.ShutdownChannelGroupException`
        - `java.nio.channels.WritePendingException`
 
+1. conversion between stream and channel -- constructors of stream based classes and `java.nio.channels.Channels` methods
+   - channel to stream
+     - `Scanner(ReadableByteChannel source)`  
+       `Scanner(ReadableByteChannel source, String charsetName)`
+     - `Channels::newOutputStream`
+     - more
+   - stream to channel
+     - `Channels::newChannel`
+     - `getChannel` methods in stream based classes
+
+1. `java.nio.channels.Pipe` -- a pair of channels that implements a unidirectional pipe
+
+### Channel Interfaces
+
+1. `java.nio.channels`
+   - `Channel`
+     - read and write channels
+     - `AsynchronousChannel` — supports asynchronous I/O operations
+     - `NetworkChannel` — to a network socket
+   - `Channels` — utility methods for channel/stream interoperation
+
 1. `java.nio.channels.Channel` — a nexus for I/O operations
    ```java
-   public interface Channel
-   extends Closeable
+   public interface Channel extends Closeable
    ```
    - `void close()`
    - `boolean isOpen()` — avoid `ClosedChannelException`
 
-<!-- TODO -->
-1. miscellanea TBD
-   - `new Scanner(ReadableByteChannel source)`
-   - `new Scanner(ReadableByteChannel source, String charsetName)`
-   - `Channels::newOutputStream`
+1. read and write channels
+   - `java.nio.channels.ReadableByteChannel` -- only one read operation upon a readable channel may be in progress at any given time
+     - `int read(ByteBuffer dst)` -- read into given buffer
+     - `java.nio.channels.ScatteringByteChannel`
+       - `long read(ByteBuffer[] dsts)`
+       - `long read(ByteBuffer[] dsts, int offset, int length)`
+   - `java.nio.channels.WritableByteChannel` -- only one write operation upon a writable channel may be in progress at any given time
+     - `int write(ByteBuffer src)`
+     - `java.nio.channels.GatheringByteChannel` -- write version of `ScatteringByteChannel`
+   - `java.nio.channels.ByteChannel` -- read and write bytes
+     ```java
+     public interface ByteChannel
+     extends ReadableByteChannel, WritableByteChannel
+     ```
+     - `java.nio.channels.SeekableByteChannel` -- a byte channel that maintains a current position and allows the position to be changed
+   - `java.nio.channels.InterruptibleChannel` -- a channel that can be asynchronously closed and interrupted
 
-1. `java.nio.channels.SocketChannel` — a selectable channel for stream-oriented connecting sockets
+1. async and network channels
+   - `java.nio.channels.AsynchronousChannel`
+     - `java.nio.channels.AsynchronousByteChannel`
+       - `Future<Integer> read(ByteBuffer dst)`
+       - `<A> void read(ByteBuffer dst, A attachment, CompletionHandler<Integer,? super A> handler)`
+       - `Future<Integer> write(ByteBuffer src)`
+       - `<A> void write(ByteBuffer src, A attachment, CompletionHandler<Integer,? super A> handler)`
+   - `java.nio.channels.NetworkChannel` -- `NetworkChannel bind(SocketAddress local)`
+     - `java.nio.channels.MulticastChannel` -- a network channel that supports Internet Protocol (IP) multicasting
+
+### Selector
+
+1. `java.nio.channels.spi.AbstractInterruptibleChannel` -- base implementation class for interruptible channels
+   ```java
+   public abstract class AbstractInterruptibleChannel
+   implements Channel, InterruptibleChannel
+   ```
+
+1. `java.nio.channels.SelectableChannel` -- a channel that can be multiplexed via a `Selector`
+   ```java
+   public abstract class SelectableChannel
+   extends AbstractInterruptibleChannel
+   implements Channel
+   ```
+   - blocking mode or in non-blocking mode -- defaults to blocking mode, must be placed into non-blocking mode before being registered and when registered
+     - `abstract SelectableChannel configureBlocking(boolean block)`
+     - `abstract boolean isBlocking()`
+   - register -- one or more selectors, at most once for each
+     - `SelectionKey register(Selector sel, int ops)`
+     - `abstract SelectionKey register(Selector sel, int ops, Object att)`
+     - `abstract boolean isRegistered()`
+     - `abstract SelectionKey keyFor(Selector sel)`
+     - `abstract int validOps()`
+   - deregister -- `SelectionKey::cancel`, `close()` or interrupted
+
+1. `java.nio.channels.Selector` -- a multiplexer of `SelectableChannel` objects
+   ```java
+   public abstract class Selector implements Closeable
+   ```
+   - creation
+     - `static Selector open()` -- created by `SelectorProvider::openSelector`
+     - `abstract boolean isOpen()`
+     - `abstract SelectorProvider provider()`
+   - registration key sets
+     - `abstract Set<SelectionKey> keys()` -- channel registrations
+     - `abstract Set<SelectionKey> selectedKeys()` -- keys such that each key's channel was detected to be ready for at least one of the operations identified in the key's interest set during a prior selection operation; keys are removed by the `Set` removal methods
+     - cancelled-key set -- the set of keys that have been cancelled (`SelectableChannel::close` or `SelectionKey::cancel`) but whose channels have not yet been deregistered, not directly accessible; removed from the key set during selection operations
+   - selection -- during which keys may be added to and removed from a selector's selected-key set and may be removed from its key and cancelled-key sets
+     - step
+       1. empty cancelled-key set itself and from key set
+       1. OS queried for an update as to the readiness of each remaining channel, if ready, add to selected-key set and its ready-operation set overwritten if newly add otherwise merged
+       1. keys added to the cancelled-key set during the process are as step 1
+     - `abstract int select()` -- blocking
+     - `abstract int select(long timeout)`
+     - `abstract int selectNow()` -- non-blocking, clears `wakeup()`
+     - `abstract Selector wakeup()` -- blocked `select` will return immediately, or next `select` will return immediately if none currently; also invoked after `Thread::interrupt`
+   - concurrency -- thread-safe, but not the key sets
+
+1. `java.nio.channels.SelectionKey` -- a token representing the registration of a `SelectableChannel` with a `Selector`
+   ```java
+   public abstract class SelectionKey
+   ```
+   - operation bit vector, support depends on the underlying channel
+     - `static int OP_ACCEPT` -- operation-set bit for socket-accept operations
+     - `static int OP_CONNECT` -- operation-set bit for socket-connect operations
+     - `static int OP_READ`
+     - `static int OP_WRITE`
+   - cancel
+     - `abstract void cancel()`
+     - `abstract boolean isValid()`
+   - `abstract int interestOps()` -- the interest set, which operation categories will be tested for readiness
+     - `abstract SelectionKey interestOps(int ops)` -- set to given value
+   - `abstract int readyOps()` -- the ready set, the operation categories for which the key's channel has been detected to be ready by the key's selector
+     - `boolean isAcceptable()`
+     - `boolean isConnectable()`
+     - `boolean isReadable()`
+     - `boolean isWritable()`
+   - binding
+     - `abstract SelectableChannel channel()`
+     - `abstract Selector selector()`
+   - concurrency -- thread-safe
+
+1. Reactor 模型 -- 一个线程 Thread 使用一个选择器 Selector 通过轮询的方式去监听多个通道 Channel 上的事件，从而让一个线程就可以处理多个事件
+   ```java
+   while (true) {
+       selector.select();
+       Set<SelectionKey> keys = selector.selectedKeys();
+       Iterator<SelectionKey> keyIterator = keys.iterator();
+       while (keyIterator.hasNext()) {
+           SelectionKey key = keyIterator.next();
+           if (key.isAcceptable()) {
+               ServerSocketChannel ssChannel1 = (ServerSocketChannel) key.channel();
+               // 服务器会为每个新连接创建一个 SocketChannel
+               SocketChannel sChannel = ssChannel1.accept();
+               sChannel.configureBlocking(false);
+               // 这个新连接主要用于从客户端读取数据
+               sChannel.register(selector, SelectionKey.OP_READ);
+           } else if (key.isReadable()) {
+               SocketChannel sChannel = (SocketChannel) key.channel();
+               System.out.println(readDataFromSocketChannel(sChannel));
+               sChannel.close();
+           }
+           keyIterator.remove();
+       }
+   }
+   ```
+
+### Channel Implementations
+
+1. `FileChannel` -- see [File Classes](#File-Classes), extends `AbstractInterruptibleChannel` but not `AbstractSelectableChannel`
+
+1. `java.nio.channels.SocketChannel` — like `Socket`, but a selectable channel
    ```java
    public abstract class SocketChannel
    extends AbstractSelectableChannel
@@ -5822,6 +5952,22 @@
    - creation
      - `static SocketChannel open()`
      - `static SocketChannel open(SocketAddress remote)`
+
+1. `java.nio.channels.DatagramChannel` -- like `DatagramSocket`, but a selectable channel
+   ```java
+   public abstract class DatagramChannel
+   extends AbstractSelectableChannel
+   implements ByteChannel, ScatteringByteChannel, GatheringByteChannel, MulticastChannel
+   ```
+
+1. `java.nio.channels.ServerSocketChannel` -- like `ServerSocket`, but a selectable channel
+   ```java
+   public abstract class ServerSocketChannel
+   extends AbstractSelectableChannel
+   implements NetworkChannel
+   ```
+
+1. more
 
 # Network
 
