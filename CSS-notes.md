@@ -428,7 +428,7 @@
    - must precede all other types of rules, except `@charset` rules
    - cannot be used inside conditional group at-rules
 
-1. `@media` — apply part of a style sheet based on the result of one or more media queries
+1. `@media` — apply part of a style sheet based on the result of one or more media queries, see [Media Queries](#Media-Queries)
    ```
    @media <media-query-list> {
      <group-rule-body>
@@ -457,6 +457,13 @@
              (-o-transform-style: preserve) or (-webkit-transform-style: preserve) {}
    @supports (transform-style: preserve-3d) or ((-moz-transform-style: preserve-3d) or
              ((-o-transform-style: preserve-3d) or (-webkit-transform-style: preserve-3d))) {}
+   ```
+
+1. `@page` -- modify some CSS properties when printing a document; can only change the margins, orphans, widows, and page breaks
+   ```
+   @page <page-selector-list> {
+     <page-body>
+   }
    ```
 
 # Selectors
@@ -550,8 +557,7 @@
        - `:out-of-range`
    - language — `:lang()`
    - custom element — `:defined` — any element that has been defined, standard and custom with `CustomElementRegistry.define()`
-   - shadow DOM
-     - tbd
+   - shadow DOM -- tbd
    - `@page`
      - `:first`
      - `:left`
