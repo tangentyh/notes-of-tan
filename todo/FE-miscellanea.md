@@ -328,7 +328,7 @@
 
 1. Prototypal Inheritance and Parasitic Inheritance
    ```JavaScript
-   Object.create(instance, propertiesObject)
+   Object.create(proto)
    // or
    function object(o){
      function F(){}

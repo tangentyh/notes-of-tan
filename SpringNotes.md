@@ -1131,6 +1131,9 @@
    - model and view
      - model -- `Map<String, Object>`, `ModelMap`, `Model`
      - `View`, `String`
+       - `UrlBasedViewResolver` for `String` return type special view names
+         - `redirect:` -- `RedirectView`
+         - `forward:` -- `InternalResourceView`
      - `ModelAndView`
    - `HttpEntity<T>`, `ResponseEntity<T>`
    - POJO
@@ -1182,6 +1185,16 @@
    - `boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)` -- return `true` so the handler execution chain continues
    - `postHandle` -- less useful with `@ResponseBody` and `ResponseEntity` methods for which the response is written and committed within the `HandlerAdapter` and before `postHandle`
    - `afterCompletion`
+
+## Web Client
+
+1. `org.springframework.web.client.RestTemplate` -- synchronous client to perform HTTP requests, exposing a simple, template method API over underlying HTTP client libraries such as the JDK `HttpURLConnection`, Apache HttpComponents, and others
+   - `exchange` method
+   - `execute` method
+   - more
+   - can `@LoadBalance`
+
+1. `org.springframework.web.reactive.function.client.WebClient` -- non-blocking, reactive client to perform HTTP requests, exposing a fluent, reactive API over underlying HTTP client libraries such as Reactor Netty
 
 # Data
 
@@ -1283,6 +1296,22 @@
          }
      }
      ```
+
+## Jackson
+
+1. `com.fasterxml.jackson.annotation`
+
+1. ignore
+   - `@JsonIgnoreProperties`
+   - `@JsonIgnore`
+
+1. `@JsonFormat`
+   ```java
+   @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone="GMT")
+   private Date date;
+   ```
+
+1. `@JsonUnwrapped` -- flatten
 
 # Integration
 

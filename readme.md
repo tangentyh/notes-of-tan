@@ -2,7 +2,7 @@
 
 The repo is intended for personal notes keeping :yum:.
 
-So much knowledge :books:, so little time :hourglass_flowing_sand:.
+So much knowledge :books: , so little time :hourglass_flowing_sand:.
 
 # Index
 
@@ -18,7 +18,7 @@ So much knowledge :books:, so little time :hourglass_flowing_sand:.
    - [React](todo/react_notes.md), to be overhauled
 
 1. Back end
-   - [Java](javaNotes.md)
+   - [Java](javaNotes.md), :warning::heavy_exclamation_mark:: very long
    - [Spring](SpringNotes.md)
    - [SQL](SQL_notes.md)
 
@@ -26,6 +26,19 @@ So much knowledge :books:, so little time :hourglass_flowing_sand:.
    - [Algorithm](argo_notes.md)
    - [Git](git_ntoes.md)
    - [MacOS](mac-notes.md)
+
+# Other Repositories
+
+For reference:
+
+- official docs
+- [OI Wiki](https://oi-wiki.org/)
+- [doocs/advanced-java: 😮 互联网 Java 工程师进阶知识完全扫盲：涵盖高并发、分布式、高可用、微服务、海量数据处理等领域知识，后端同学必看，前端同学也可学习](https://github.com/doocs/advanced-java)
+- [CyC2018/CS-Notes: 技术面试必备基础知识、Leetcode、计算机操作系统、计算机网络、系统设计、Java、Python、C++](https://github.com/CyC2018/CS-Notes)
+- [wx-chevalier (王下邀月熊)](https://github.com/wx-chevalier), for various topics
+- [kamranahmedse/developer-roadmap: Roadmap to becoming a web developer in 2020](https://github.com/kamranahmedse/developer-roadmap)
+- [dypsilon/frontend-dev-bookmarks: Manually curated collection of resources for frontend web developers.](https://github.com/dypsilon/frontend-dev-bookmarks), unmaintained now
+- more...
 
 # License
 
