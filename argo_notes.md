@@ -376,7 +376,7 @@
 
 # Probabilistic data structures
 
-1. Bloom Filter
+1. [Bloom filter - Wikipedia](https://en.wikipedia.org/wiki/Bloom_filter)
 
 # Graph
 

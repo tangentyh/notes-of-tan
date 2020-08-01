@@ -508,7 +508,7 @@
      - `Math.floorDiv()`
      - `Math.floorMod(x, y)` — `x - Math.floorDiv(x, y) * y`
        - compared to `x % y` — `x - x / y * y`
-   - `Exact` suffixed methods — `ArithmeticException` if overflow
+   - `-Exact` suffixed methods — `ArithmeticException` if overflow
      - `static int addExact(int x, int y)`  
        `static long addExact(long x, long y)`
      - `addExact`, `subtractExact`, `multiplyExact`, `decrementExact`, `incrementExact`, `negateExact`
@@ -774,8 +774,7 @@
 
 1. `Number`
    ```java
-   public abstract class Number extends Object
-   implements Serializable
+   public abstract class Number implements Serializable
    ```
    - `byte byteValue()`
    - `abstract double doubleValue()`
@@ -1260,7 +1259,7 @@
      ```
      - implement an interface — `SuperType` can be an interface, the inner class implements that interface
      - extend a class — `SuperType` can also be a class, the inner class extends that class
-       - a different subclass — take care that `equals()` with `SuperType` will fail
+       - a different subclass — take care that `equals()` with `SuperType` may fail
      - anonymity cannot have constructors — the name of a constructor must be the same as the name of a class
      - use case
        - double brace initialization for `ArrayList`
@@ -1456,7 +1455,7 @@
            for (int i = elems.length - 1; i >= 0; —i) {
                elems[i] = Proxy.newProxyInstance(null, new Class[]{ Comparable.class }, new TraceHandler(Integer.valueOf(i)));
            }
-           Arrays.binarySearch(elems, Integer.valueOf(new Random().nextInt(elements.length) + 1));
+           Arrays.binarySearch(elems, Integer.valueOf(ThreadLocalRandom.current().nextInt(elements.length) + 1));
        }
    }
    class TraceHandler implements InvocationHandler {
@@ -2345,7 +2344,6 @@
      - `<U> U reduce(U identity, BiFunction<U,? super T,U> accumulator, BinaryOperator<U> combiner)`
      - `Collectors::reducing`
    - result (terminal operation)
-     - `BaseStream` methods
      - `Stream<T> peek(Consumer<? super T> action)`
      - `void forEach(Consumer<? super T> action)`
      - `void forEachOrdered(Consumer<? super T> action)` — when in parallel mode and order matters
@@ -3489,6 +3487,7 @@
    }
    ```
    - see [Callable and Future](#Callable-and-Future) for more
+   - conversion to `Callable` -- `Executors::callable`
 
 1. `Thread`
    ```java
@@ -3503,8 +3502,8 @@
      - `void run()` — called by `start()`, generally should not be called explicitly
      - `void interrupt()` — set the interrupted status, if the thread is blocked, throw `InterruptedException` inside the thread
        - used by blocking methods — typically blocking methods (those related to `Thread.State.WAITING` and `Thread.State.TIMED_WAITING`) threaten to throw `InterruptedException`
-     - `static void yield()` — rarely appropriate to use, see javadoc
    - wait
+     - `static void yield()` — rarely appropriate to use, see javadoc
      - `static void sleep(long millis)` — for current thread  
        `static void sleep(long millis, int nanos)`
      - `void join()` — waits for this thread to die  
@@ -3709,7 +3708,7 @@
      - overhead — the read-write lock implementation (which is inherently more complex than a mutual exclusion lock) can dominate the execution cost if the read operations are too short
    - underlying implementation -- `AbstractQueuedSynchronizer::compareAndSetState`
 
-1. `java.util.concurrent.locks.StampedLock` — a capability-based lock, lock acquisition methods return a stamp that represents and controls access with respect to a lock state; lock release and conversion methods require stamps as arguments
+1. `java.util.concurrent.locks.StampedLock` — a capability-based lock, not reentrant, lock acquisition methods return a stamp that represents and controls access with respect to a lock state; lock release and conversion methods require stamps as arguments
    ```java
    public class StampedLock implements Serializable
    ```
@@ -3960,11 +3959,6 @@
    public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
    implements ConcurrentNavigableMap<K,V>, Cloneable, Serializable
    ```
-   - `java.util.concurrent.ConcurrentNavigableMap`
-     ```java
-     public interface ConcurrentNavigableMap<K,V>
-     extends ConcurrentMap<K,V>, NavigableMap<K,V>
-     ```
 
 1. `java.util.concurrent.ConcurrentHashMap`
    ```java
@@ -3978,7 +3972,7 @@
      - value non-null -- `null` is for absent; if also for value, incompatible with the operation that use `synchronized` on the old value
      - put -- `synchronized` on the old value, CAS if `null`
      - replace -- `synchronized` on the old value
-     - lambda -- CAS a dummy value and `synchronized` on the dummy value, compute lambda, set computed value, exit lock block
+     - lambda -- `synchronized` on the old value, if `null`, CAS a dummy value and `synchronized` on the dummy value, compute lambda, set computed value, exit lock block
      - use `ConcurrentHashMap<String, LongAdder>` with `putIfAbsent`
        ```java
        map.putIfAbsent(word, new LongAdder()).increment();
@@ -4200,6 +4194,7 @@
            Thread newThread(Runnable r);
        }
        ```
+   - methods for conversion to `Callable` -- from `Runnable`, `PrivilegedAction`, `PrivilegedExceptionAction`
    - more
 
 ### Fork-Join
