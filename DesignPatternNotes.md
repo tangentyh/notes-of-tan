@@ -10,14 +10,13 @@
      - object
 
 1. index
-   - structural
-     - class
-       - Factory Method
+   - [creational](#Creational)
+     - class -- Factory Method
      - object -- Abstract Factory, Builder, Prototype, Singleton
-   - structural
+   - [structural](#Structural)
      - class and object -- Adapter
      - object -- Bridge, Composite, Decorator, Facade, Flyweight, Proxy
-   - behavioral
+   - [behavioral](#Behavioral)
      - class -- Interpreter, Template Method
      - object -- Chain of Responsibility, Command, Iterator, Mediator, Memento, Observer, State, Strategy, Visitor
 
@@ -168,6 +167,8 @@ Structural patterns are concerned with how classes and objects are composed to f
 
 # Behavioral
 
+ Behavioral patterns are concerned with algorithms and the assignment of responsibilities between objects. Behavioral patterns describe not just patterns of objects or classes but also the patterns of communication between them. These patterns characterize complex control flow that's difficult to follow at run-time. They shift your focus away from flow of control to let you concentrate just on the way objects are interconnected.
+
 1. Chain of Responsibility -- Avoid coupling the sender of a request to its receiver by giving more than one object a chance to handle the request. Chain the receiving objects and pass the request along the chain until an object handles it.
    - examples -- `javax.servlet.Filter::doFilter`, `java.util.logging.Logger::log`
 
@@ -261,10 +262,10 @@ Structural patterns are concerned with how classes and objects are composed to f
 
 1. Visitor -- Represent an operation to be performed on the elements of an object structure. Visitor lets you define a new operation without changing the classes of the elements on which it operates.
    - examples
-     - `javax.lang.model.element.AnnotationValue` and `AnnotationValueVisitor`
-     - `javax.lang.model.element.Element` and `ElementVisitor`
+     - `javax.lang.model.element.AnnotationValue` and `javax.lang.model.element.AnnotationValueVisitor`
+     - `javax.lang.model.element.Element` and `javax.lang.model.element.ElementVisitor`
      - `javax.lang.model.type.TypeMirror` and `javax.lang.model.type.TypeVisitor`
-     - `java.nio.file.FileVisitor` and `java.nio.file.FileVisitor`
+     - `java.nio.file.Files::walkFileTree` and `java.nio.file.FileVisitor`
      - `org.springframework.asm.ClassVisitor`, `org.springframework.asm.FieldVisitor`, `org.springframework.asm.MethodVisitor`, `org.springframework.asm.ModuleVisitor`, `org.springframework.asm.AnnotationVisitor`
 
 1. 空对象 -- 使用什么都不做的空对象来代替 `null`。
