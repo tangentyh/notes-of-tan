@@ -367,6 +367,8 @@
 
 1. search — [Narrow your search results on Mac - Apple Support](https://support.apple.com/guide/mac-help/narrow-search-results-mh15155/10.15/mac/10.15)
 
+1. paste image from clipboard -- open preview.app, in menu File -> New from Clipboard
+
 # pkg and brew
 
 1. SHA

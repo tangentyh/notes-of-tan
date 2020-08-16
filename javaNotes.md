@@ -4271,7 +4271,7 @@
        ```java
        public abstract class CountedCompleter<T> extends ForkJoinTask<T>
        ```
-       - tbd <!-- TODO -->
+       - tbd
 
 1. `java.util.concurrent.ForkJoinPool` — provides the entry point for submissions from non-`ForkJoinTask` clients, as well as management and monitoring operations
    ```java
@@ -4292,6 +4292,13 @@
 1. Memory consistency effects — happen-before, see [volatile](#volatile-and-Atomics)
 
 1. `AbstractQueuedSynchronizer::compareAndSetState` -- uses `VarHandle::compareAndSet`
+   <!-- TODO -->
+   - CLH lock queue -- the thread appends itself to the waiting queue and spins on the variable that can be updated only by the thread preceding it in the queue
+     - Java uses CLH locks for blocking synchronizers, but with the same tactic, see javadoc for `AbstractQueuedSynchronizer.Node`
+   - `java.util.concurrent.locks.LockSupport` -- basic thread blocking primitives for creating locks and other synchronization classes
+     - underlying -- `jdk.internal.misc.Unsafe::park`, `Unsafe::unpark`
+     - `static void park(Object blocker)` -- park current thread, wrapped by set and unset `Thread.parkBlocker`
+     - `static void unpark(Thread thread)`
 
 ### Count Synchronizers
 

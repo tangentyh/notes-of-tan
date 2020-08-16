@@ -319,6 +319,7 @@
    - `--amend` -- Replace the tip of the current branch by creating a new commit
      - has the same parents and author as the current one -- the `--reset-author` option can countermand this
      - --no-edit -- keep commit message
+   - [Angular Team Git Commit Guidelines](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#commit)
 
 ### Deletion
 

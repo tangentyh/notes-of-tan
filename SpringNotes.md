@@ -1365,6 +1365,18 @@
      - `org.springframework.context.ApplicationEventPublisherAware`
    - `org.springframework.context.event.ApplicationEventMulticaster`
 
+1. method cache
+   - enable and config -- `@org.springframework.cache.annotation.EnableCaching`, `org.springframework.cache.annotation.CachingConfigurer`
+   - interface `org.springframework.cache.Cache` -- common cache operations
+   - interface `org.springframework.cache.CacheManager` -- cache manager SPI, allow for retrieving named Cache regions
+   - implementations -- JDK `java.util.concurrent.ConcurrentMap` based caches, Ehcache 2.x, Gemfire cache, Caffeine, and JSR-107 compliant caches (such as Ehcache 3.x)
+   - `org.springframework.cache.annotation`
+     - `@Cacheable` -- Triggers cache population.
+     - `@CacheEvict` -- Triggers cache eviction.
+     - `@CachePut` -- Updates the cache without interfering with the method execution.
+     - `@Caching` -- Regroups multiple cache operations to be applied on a method.
+     - `@CacheConfig` -- Shares some common cache-related settings at class-level.
+
 # Security
 
 1. security concepts
