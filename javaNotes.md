@@ -6102,6 +6102,7 @@
    ```
    - similar methods in `Socket`
    - `Socket accept()` — wait indefinitely until a client connects to that port and then return the connection as `Socket`
+   - `void setSoTimeout(int timeout)`
    - bind to local port
      - constructors
      - `void bind(SocketAddress endpoint)`

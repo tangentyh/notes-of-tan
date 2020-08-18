@@ -24,7 +24,7 @@ So much knowledge :books: , so little time :hourglass_flowing_sand:.
 
 1. Miscellanea
    - [Algorithm](argo_notes.md)
-   - [Git](git_ntoes.md)
+   - [Git](git_notes.md)
    - [Design Pattern](DesignPatternNotes.md)
    - [MacOS](mac-notes.md)
 
