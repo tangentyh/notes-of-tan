@@ -1609,6 +1609,7 @@
 
 1. other group functions
    - `COUNT(expr) [over_clause]` — non-`NULL` values, also `NULL` if `COUNT(*)`
+     - secondary index traversing -- InnoDB processes `SELECT COUNT(*)` statements by traversing the smallest available secondary index unless an index or optimizer hint directs the optimizer to use a different index. If a secondary index is not present, InnoDB processes `SELECT COUNT(*)` statements by scanning the clustered index.
    - `COUNT(DISTINCT expr,[expr...])`
    - `GROUP_CONCAT(expr)`
      ```
@@ -2119,6 +2120,8 @@
    - related isolation level — `READ COMMITTED` and `REPEATABLE READ` isolation levels
    - lock-free — because a consistent read does not set any locks on the tables it accesses, other sessions are free to modify those tables while a consistent read is being performed on the table
    - undo log to mitigate lock congestion — If queried data has been changed by another transaction, the original data is reconstructed based on the contents of the undo log. This technique avoids some of the locking issues that can reduce concurrency by forcing transactions to wait for other transactions to finish.
+
+1. isolation levels -- see before
 
 1. MVCC — multiversion concurrency control, technique used in consistent read
    - read view — 当前系统未提交的事务列表 `DB_TRX_ID`s and their minimum and maximum, for each consistent read

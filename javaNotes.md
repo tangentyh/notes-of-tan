@@ -3560,7 +3560,7 @@
      }
      ```
    - `static <S> ThreadLocal<S> withInitial(Supplier<? extends S> supplier)`
-   - `ThreadLocal.ThreadLocalMap`, referenced by `Thread` field -- open addressing hash table
+   - `ThreadLocal.ThreadLocalMap`, referenced by `Thread.threadLocals` field -- open addressing hash table
      - entry -- `WeakReference<ThreadLocal<?>>` as key, whose hash value managed by a static `AtomicInteger`, `getAndAdd` for every `ThreadLocal` instance
      - memory leak -- referent of `WeakReference<ThreadLocal<?>>` keys can be reclaimed by GC, but no `ReferenceQueue` like in `WeakHashMap`, `expungeStaleEntries()` called only when rehash, and single entry expunge method called only when a stale entry encountered, possibly leaving stale entries not expunged
 
@@ -5498,6 +5498,7 @@
        `abstract FileLock lock(long position, long size, boolean shared)`
      - `FileLock tryLock()` — `null` if not available, equivalent to `tryLock(0L, Long.MAX_VALUE, false)`  
        `abstract FileLock tryLock(long position, long size, boolean shared)`
+   - AIO -- `java.nio.channels.AsynchronousFileChannel`
 
 1. `java.nio.channels.FileLock` — a lock on a region of a file, on behalf of the JVM
    ```java
@@ -5834,15 +5835,30 @@
      - `java.nio.channels.SeekableByteChannel` -- a byte channel that maintains a current position and allows the position to be changed
    - `java.nio.channels.InterruptibleChannel` -- a channel that can be asynchronously closed and interrupted
 
-1. async and network channels
-   - `java.nio.channels.AsynchronousChannel`
-     - `java.nio.channels.AsynchronousByteChannel`
-       - `Future<Integer> read(ByteBuffer dst)`
-       - `<A> void read(ByteBuffer dst, A attachment, CompletionHandler<Integer,? super A> handler)`
-       - `Future<Integer> write(ByteBuffer src)`
-       - `<A> void write(ByteBuffer src, A attachment, CompletionHandler<Integer,? super A> handler)`
+1. network channels
    - `java.nio.channels.NetworkChannel` -- `NetworkChannel bind(SocketAddress local)`
      - `java.nio.channels.MulticastChannel` -- a network channel that supports Internet Protocol (IP) multicasting
+
+1. async channels -- `java.nio.channels.AsynchronousChannel`
+   - `java.nio.channels.AsynchronousByteChannel`
+     - read
+       - `Future<Integer> read(ByteBuffer dst)`
+       - `<A> void read(ByteBuffer dst, A attachment, CompletionHandler<Integer,? super A> handler)`
+     - write
+       - `Future<Integer> write(ByteBuffer src)`
+       - `<A> void write(ByteBuffer src, A attachment, CompletionHandler<Integer,? super A> handler)`
+     - `java.nio.channels.CompletionHandler` -- callback when `completed` or `failed`
+     - `java.nio.channels.AsynchronousSocketChannel`
+       ```java
+       public abstract class AsynchronousSocketChannel
+       implements AsynchronousByteChannel, NetworkChannel
+       ```
+   - `java.nio.channels.AsynchronousServerSocketChannel`
+     ```java
+     public abstract class AsynchronousServerSocketChannel
+     implements AsynchronousChannel, NetworkChannel
+     ```
+   - `AsynchronousFileChannel`
 
 ### Selector
 
