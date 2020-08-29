@@ -158,6 +158,13 @@
 1. block device abstraction -- most operating systems have a block device abstraction, which hides an internal disk structure and buffers I/O operations internally; the smallest unit of disk operation
    - strategy -- writing only full blocks, and combining subsequent writes to the same block
 
+1. redundant arrays of independent disks, RAID
+   - RAID 0 -- horizontal scaling of disks, no redundancy but high performance, can be used for logs
+   - RAID 1 -- an exact copy (or mirror) of a set of data on two or more disks; any read request can be serviced and handled by any drive in the array, overall write performance is equal to the speed of the slowest disk
+   - RAID 10 and RAID 01 -- multiple RAID 1 forming RAID 0, or multiple RAID 0 forming RAID 1
+   - RAID 5 -- parity check based, parity information is distributed among the drives, requires that all drives but one be present to operate. Upon failure of a single drive, subsequent reads can be calculated from the distributed parity such that no data is lost
+   - more
+
 # Compiling
 
 1. 目标文件

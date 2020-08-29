@@ -7039,7 +7039,7 @@
 ## Class Loading
 
 1. class loading
-   - class loading process — only classes needed for the execution loaded
+   - class loading process — only classes needed for execution loaded, using the class loader of the method caller
      - load main program from disk or web
      - resolving — load fields or superclasses of another class type of the main program class
      - load classes required as the `main` method executes
@@ -7049,11 +7049,16 @@
      - The extension class loader — loads “standard extensions” from the `jre/lib/ext` directory, the loader does not use the class path
        - no more `jre/lib/ext` from JDK 9 — The javac compiler and java launcher will exit if the `java.ext.dirs` system property is set, or if the `lib/ext` directory exists
        - the platform class loader — the extension class loader is retained from JDK 9 and is specified as the platform class loader, see `ClassLoader::getPlatformClassLoader`
-     - The system class loader — loads the application classes
+     - The system class loader (jdk internal `AppClassLoader`) — loads the application classes
    - class loader hierarchy
      - cosmic root — the bootstrap class loader
      - parents first — load only if the parent has failed
      - default parent when constructing `ClassLoader` — system class loader
+   - break parents first
+     - use customized `ClassLoader` -- overloading `ClassLoader::loadClass`
+     - use SPI -- `Thread::getContextClassLoader` under the hood, so built-in classes can use user classes
+     - OSGi hot deployment
+     - module from JDK 9 -- defaults to using the class loader of the module if in a module
    - context class loader — each thread has a reference to a class loader
      - `Thread::getContextClassLoader`, `Thread::setContextClassLoader`
      - class loader inversion — the phenomenon when loading classes programmatically, classes to load are not visible to default class loaders, can be solved by using context class loader
