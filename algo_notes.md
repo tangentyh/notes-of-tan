@@ -425,3 +425,29 @@
    - Dijkstra
    - Floyd–Warshall algorithm
    - [Bellman–Ford algorithm - Wikipedia](https://en.wikipedia.org/wiki/Bellman%E2%80%93Ford_algorithm)
+
+1. minimal spanning tree -- [最小生成树 - OI Wiki](https://oi-wiki.org/graph/mst/)
+   - [Prim O(n^2)](https://leetcode-cn.com/problems/min-cost-to-connect-all-points/solution/on2-primsuan-fa-by-lucifer1004/)
+
+1. Tarjan -- [强连通分量 - OI Wiki](https://oi-wiki.org/graph/scc/)
+   ```java
+   class Tarjan {
+       /**
+        * <pre>
+        * TARJAN_SEARCH(int u)
+        *     vis[u]=true
+        *     low[u]=dfn[u]=++dfncnt
+        *     push u to the stack
+        *     for each (u,v) then do
+        *         if v hasn't been searched then
+        *             TARJAN_SEARCH(v) // 搜索
+        *             low[u]=min(low[u],low[v]) // 回溯
+        *         else if v has been in the stack then
+        *             low[u]=min(low[u],dfn[v])
+        * </pre>
+        * cut vertex: if u is a cut point, there exists a child v of u s.t. low[v] >= num[u]
+        * bridge: if edge (u, v) is a bridge, where v is a child of u, low[v] > num[u] holds
+        */
+       public void search() {}
+   }
+   ```
