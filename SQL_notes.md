@@ -95,26 +95,6 @@
 
 1. index — start from 1
 
-1. performance benchmark profiling
-   - system variable `profiling`
-     ```SQL
-     SET profiling=1;
-     SELECT SQL_NO_CACHE * FROM my_table;
-     --- ...
-     SHOW PROFILE;
-     SET profiling=0;
-     ```
-   - `STATUS` starting with `Select`
-     ```SQL
-     FLUSH STATUS;
-     SELECT SQL_NO_CACHE * FROM my_table;
-     SHOW SESSION STATUS LIKE 'Select%';
-     ```
-   - `STATUS` `last_query_cost`
-     ```SQL
-     SHOW STATUS LIKE 'last_query_cost';
-     ```
-
 # Data Types
 
 1. numeric
@@ -356,6 +336,35 @@
      {EXPLAIN | DESCRIBE | DESC} ANALYZE select_statement
      ```
      - `select_statement` — besides `SELECT`, also multi-table `UPDATE` and `DELETE` statements; also `TABLE` from MySQL 8.0.19
+
+1. performance benchmark profiling
+   - system variable `profiling`
+     ```SQL
+     SET profiling=1;
+     SELECT SQL_NO_CACHE * FROM my_table;
+     --- ...
+     SHOW PROFILE;
+     SET profiling=0;
+     ```
+   - `STATUS` starting with `Select`
+     ```SQL
+     FLUSH STATUS;
+     SELECT SQL_NO_CACHE * FROM my_table;
+     SHOW SESSION STATUS LIKE 'Select%';
+     ```
+   - `STATUS` `last_query_cost`
+     ```SQL
+     SHOW STATUS LIKE 'last_query_cost';
+     ```
+
+1. select optimization -- tbd
+   - big query refactor
+     - 切分大查询 -- 一个大查询如果一次性执行的话，可能一次锁住很多数据、占满整个事务日志、耗尽系统资源、阻塞很多小的但重要的查询。
+     - 分解大连接查询 -- 将一个大连接查询分解成对每一个表进行一次单表查询，然后在应用程序中进行关联，这样做的好处有：
+       - 让缓存更高效。对于连接查询，如果其中一个表发生变化，那么整个查询缓存就无法使用。而分解后的多个查询，即使其中一个表发生变化，对其它表的查询缓存依然可以使用。
+       - 分解成多个单表查询，这些单表查询的缓存结果更可能被其它查询使用到，从而减少冗余记录的查询。
+       - 减少锁竞争；
+       - 在应用层进行连接，可以更容易对数据库进行拆分，从而更容易做到高性能和可伸缩。
 
 ## DDL
 
@@ -1776,34 +1785,22 @@
      - `DAY_MICROSECOND`, `DAY_SECOND`, `DAY_MINUTE`, `DAY_HOUR` — like above but with days spaced: `'DAYS HOURS:MINUTES:SECONDS.MICROSECONDS'`
      - `YEAR_MONTH` — `'YEARS-MONTHS'`
 
-# Big Data
-
-1. 3 V
-   - Volume
-   - Velocity
-   - Variety — unstructured data, like documents, pictures, audios and videos
+# Distributed MySQL
 
 ## Partition
 
-1. partition — distribute portions of individual tables across a file system, even in different tablespaces according to a user-defined partition function
-   - table partitioning — horizontal partitioning, partitioning rows; vertically partitioning, partitioning columns
-   - index partitioning — global index on whole table, local index on a single partition
-   - partitioning types in MySQL, horizontal, error when cannot decide partition
+1. partition in MySQL
+   - partitioning types -- horizontal, error when cannot decide partition
      - `RANGE` partitioning — partitions based on column values falling within a given range
        - `RANGE COLUMNS` partitioning — enables the use of multiple columns in partitioning keys
      - `LIST` partitioning — partitions based on column values matching one of a set of discrete values
        - `LIST COLUMNS` partitioning — enables the use of multiple columns in partitioning keys
-     - `HASH` partitioning — partitions based on server provided hash function on column values
-     - `KEY` partitioning — only for NDB, see docs
+     - `HASH` partitioning — partitions based on user provided hash function on column values
+       - `LINEAR HASH` -- data is less likely to be evenly distributed, but adding, dropping, merging, and splitting of partitions is made much faster
+       - `KEY` partitioning — similar to `HASH`, except that MySQL supplies the hashing function
    - composite partitioning — with `SUBPARTITION`
    - limitation — all columns used in the table's partitioning expression must be part of every unique key that the table may have, including any primary key, see docs for more
    - corresponding table in `INFORMATION_SCHEMA` — `INFORMATION_SCHEMA.PARTITIONS`
-
-1. partition benefits
-   - overcome physical partition limit — makes it possible to store more data in one table than can be held on a single disk or file system partition
-   - convenience for data manipulation — operate on partitions, e.g. easily delete old data if partitioned by date
-   - partition pruning, partition-wise joins — optimizer: do not scan partitions where there can be no matching values
-   - concurrency — perform updates on multiple partitions simultaneously
 
 1. `partition_options` in `CREATE TABLE`
    ```
@@ -1872,7 +1869,7 @@
 
 1. `PARTITION` clause in DML — see corresponding DML
 
-## Other Big Data Tech
+## Clustering and Sharing
 
 1. clustering — multiple servers to act as a single database, see docs for InnoDB cluster
 
@@ -1921,13 +1918,20 @@
 
 # InnoDB
 
+1. MyISAM
+   - 事务：InnoDB 是事务型的，可以使用 Commit 和 Rollback 语句。
+   - 并发：MyISAM 只支持表级锁，而 InnoDB 还支持行级锁。
+   - 外键：InnoDB 支持外键。
+   - 备份：InnoDB 支持在线热备份。
+   - 崩溃恢复：MyISAM 崩溃后发生损坏的概率比 InnoDB 高很多，而且恢复的速度也更慢。
+   - 其它特性：MyISAM 支持压缩表和空间数据索引。
+
 1. correspondents
    - databases — directories within `/data`
    - tables — files
    - triggers — files
 
 1. page
-   - paging — the size of the pages stay identical and exact, make data accessing fast
    - default page size — 16 KB
    - stored off-page — not stored in page, does not effect main index, but a 20 B pointer is stored
 
@@ -1951,13 +1955,25 @@
 
 ## Index
 
+1. MySQL index types
+   - B+ tree index
+   - hash index -- for `MEMORY` tables
+     - adaptive hash index -- an optimization for InnoDB tables that can speed up lookups using `=` and `IN` operators, by constructing a hash index in memory. MySQL monitors index searches for InnoDB tables, and if queries could benefit from a hash index, it builds one automatically for index **pages** that are frequently accessed, depending on the search pattern against the B-tree index. A hash index can be partial; the whole B-tree index does not need to be cached in the buffer pool.
+   - `FULLTEXT` index, inverted lists, in tandem with Full-Text Search Functions
+   - `SPATIAL` index, R-trees
+
 1. keys
    - primary key
      - compound key — primary key consisting of two or more columns
      - natural key or surrogate key
    - foreign key — help keep spread-out data consistent
+
+1. index optimization
    - large data update — bootstrap with delete indexes before and re-create after
    - covering index — An index that includes all the columns retrieved by a query. Instead of using the index values as pointers to find the full table rows, the query returns values from the index structure. Any column index or composite index could act as a covering index
+   - standalone column -- `id + 1` does not utilize the index
+   - composite index, aka. multiple-column index -- prefixed index search capability; composite indexes outperform separated single column indexes; order matters, selective first or the most frequently used first
+   - prefix indexing -- `KEY_BLOCK_SIZE` like `max_sort_length`, for `BLOB`, `TEXT`, `VARCHAR`
 
 1. index structure, delete and purge
    - indexes
@@ -2034,8 +2050,9 @@
    - some drawbacks
      - write amplification
      - space amplification -- extra space reserved to make updates possible
-   - more tbd from binary search on P67
+   - tbd
    <!-- TODO -->
+   <!-- - more tbd from binary search on P67 -->
 
 1. B-tree variants -- tbd
    <!-- TODO -->
@@ -2116,15 +2133,26 @@
    - dirty write -- write values that are dirty read
    - write skew -- each individual transaction respects the required invariants, but their combination does not satisfy these invariants; for example, two transaction withdraw $100 from an account with $150, making the balance negative while nonnegative for each transaction
 
+1. isolation levels
+   - see before
+   - snapshot isolation (SI) -- [zhihu](https://zhuanlan.zhihu.com/p/54979396), read from the snapshot with values committed before the transaction’s start timestamp (no phantom read), first committer wins when write-write conflict
+     - example -- Google Percolator
+
 1. consistent read — isolation: A read operation that uses snapshot information to present query results based on a point in time, regardless of changes performed by other transactions running at the same time
    - related isolation level — `READ COMMITTED` and `REPEATABLE READ` isolation levels
    - lock-free — because a consistent read does not set any locks on the tables it accesses, other sessions are free to modify those tables while a consistent read is being performed on the table
    - undo log to mitigate lock congestion — If queried data has been changed by another transaction, the original data is reconstructed based on the contents of the undo log. This technique avoids some of the locking issues that can reduce concurrency by forcing transactions to wait for other transactions to finish.
-
-1. isolation levels -- see before
+   - locking read -- use locks, locks on newest data, which means read view will be refreshed even in `REPEATABLE READ`
 
 1. MVCC — multiversion concurrency control, technique used in consistent read
-   - read view — 当前系统未提交的事务列表 `DB_TRX_ID`s and their minimum and maximum, for each consistent read
+   - read view — the trx ids of those transactions for which a consistent read should not see the modifications to the database, unchanged for `REPEATABLE READ` while refreshed for every read for `READ COMMITTED`
+     - related methods in class `MVCC` -- `view_open` (allocate and create a view), `view_close`, `view_release` see [dev.mysql](https://dev.mysql.com/doc/dev/mysql-server/latest/classMVCC.html)
+     - some transaction ID attributes, see [dev.mysql](https://dev.mysql.com/doc/dev/mysql-server/latest/classReadView.html)
+       - `ids_t m_ids` -- set of RW transactions that was active when this snapshot was taken
+       - `trx_id_t m_low_limit_id` -- the read should not see any transaction with trx id >= this value
+       - `trx_id_t m_up_limit_id` -- the read should see all trx ids < this value
+       - `trx_id_t m_creator_trx_id` -- trx id of creating transaction, set to TRX_ID_MAX for free views
+       <!-- - `trx_id_t m_view_low_limit_no` -- the read views don't need to access undo log records for MVCC for trx ids <= this value -->
    - rollback segment — the storage area containing the undo logs
    - undo log — the information necessary to rebuild the content of the row before it was updated
      - insert undo log — only needed when rollback
@@ -2133,13 +2161,14 @@
      - `DB_TRX_ID` — 6 byte, transaction identifier, the last transaction that inserted or updated the row
      - `DB_ROLL_PTR` — 7 byte, roll pointer, points to an undo log record written to the rollback segment
      - `DB_ROW_ID` — 6 byte, a row ID that increases monotonically as new rows are inserted
-   - constructing a row with `DB_TRX_ID` and `TRX_ID_MIN` and `TRX_ID_MAX` in read view when `SELECT`
-     - TRX_ID < TRX_ID_MIN，表示该数据行快照时在当前所有未提交事务之前进行更改的，因此可以使用。
-     - TRX_ID > TRX_ID_MAX，表示该数据行快照是在事务启动之后被更改的，因此不可使用。???
-     - TRX_ID_MIN <= TRX_ID <= TRX_ID_MAX，需要根据隔离级别再进行判断：
-       - 提交读：如果 TRX_ID 在 TRX_IDs 列表中，表示该数据行快照对应的事务还未提交，则该快照不可使用。否则表示已经提交，可以使用。
+   - constructing a row with `DB_TRX_ID` and a read view when `SELECT`
+     - `DB_TRX_ID` < `m_up_limit_id`，表示该数据行快照时在当前所有未提交事务之前进行更改的，因此可以使用。
+     - `DB_TRX_ID` >= `m_low_limit_id`，表示该数据行快照是在事务启动之后被更改的，因此不可使用。
+     - `m_up_limit_id` <= `DB_TRX_ID` < `m_low_limit_id`, 需要根据隔离级别再进行判断：
+       - 提交读：如果 `DB_TRX_ID` 在 `m_ids` 列表中，表示该数据行快照对应的事务还未提交，则该快照不可使用。否则表示已经提交，可以使用。
        - 可重复读：都不可以使用。因为如果可以使用的话，那么其它事务也可以读到这个数据行快照并进行修改，那么当前事务再去读这个数据行得到的值就会发生改变，也就是出现了不可重复读问题。
-     - 在数据行快照不可使用的情况下，需要沿着 Undo Log 的回滚指针 ROLL_PTR 找到下一个快照，再进行上面的判断。
+     - 在数据行快照不可使用的情况下，需要沿着 Undo Log 的回滚指针 `DB_ROLL_PTR` 找到下一个快照，再进行上面的判断。
+     - deduction -- no phantom read if no locking reads following consistent reads in `REPEATABLE READ`
 
 1. locks
    - locking mechanism
@@ -2157,8 +2186,30 @@
      - IS lock — before a transaction can acquire a shared lock on a row in a table, it must first acquire an IS lock or stronger on the table
    - row locks
      - record locks — a lock on an index record; if a table is defined with no indexes, InnoDB creates a hidden clustered index and uses this index for record locking
-     - gap locks — a lock on a gap between index records
-     - next-key lock — a combination of a record lock on the index record and a gap lock on the gap before the index record; used in `REPEATABLE READ` to prevent phantom rows
+     - gap locks — a lock on a gap between index records, or a lock on the gap before the first or after the last index record, not needed for statements that lock rows using a unique index to search for a unique row. (This does not include the case that the search condition includes only some columns of a multiple-column unique index; in that case, gap locking does occur.)
+     - next-key lock — a combination of a record lock on the index record and a gap lock on the gap before the index record; in `REPEATABLE READ`, InnoDB uses next-key locks for searches and index scans (if locking reads), which prevents phantom rows; for the range towards infinity, next-key is the “supremum” pseudo-record having a value higher than any value actually in the index
+       - example
+         ```SQL
+         -- definition
+         CREATE TABLE `test` (
+           `id` int(11) primary key auto_increment,
+           `xid` int, KEY `xid` (`xid`)
+         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+         insert into test(xid) values (1), (3), (5), (8), (11);
+         ```
+         ```SQL
+         -- session A
+         START TRANSACTION;
+         SELECT * from test where xid = 8 FOR UPDATE;
+         -- (5, 8], (8, 11] in theory but actually [5, 8), [8, 11)
+         -- session B
+         START TRANSACTION;
+         INSERT INTO test (xid) VALUES (4);  -- not blocked
+         INSERT INTO test (xid) VALUES (11); -- not blocked
+         INSERT INTO test (xid) VALUES (5);  -- will block
+         INSERT INTO test (xid) VALUES (8);  -- will block
+         INSERT INTO test (xid) VALUES (10); -- will block
+         ```
    - locks and latches
      - locks -- acquired on the key
      - latches -- guard the physical tree representation (page contents and the tree structure) during node splits and merges, and page content insert, update, and delete; can be implemented by read write lock on page
@@ -2179,3 +2230,56 @@
        - wait-die strategy -- a transaction can be blocked only by a transaction with a higher timestamp, aborted and restarted otherwise
        - wound-wait strategy -- a transaction can be blocked only by a transaction with a lower timestamp, abort and restart if higher
      - conservative 2PL to address deadlock -- requires transactions to acquire all the locks before they can execute any of their operations and abort if they cannot
+
+## Distributed
+
+1. 3V
+   - Volume
+   - Velocity
+   - Variety — unstructured data, like documents, pictures, audios and videos
+
+1. partition / sharding
+   - table partitioning
+     - horizontal partitioning -- partitioning rows
+     - vertically partitioning -- partitioning columns, tables, or schemas
+   - partitioning types in MySQL, horizontal, error when cannot decide partition
+     - `RANGE` partitioning — partitions based on column values falling within a given range
+     - `LIST` (mapping table) partitioning — partitions based on column values matching one of a set of discrete values
+     - `HASH` partitioning — partitions based on user provided hash function on column values
+       - `LINEAR HASH` -- data is less likely to be evenly distributed, but adding, dropping, merging, and splitting of partitions is made much faster
+       - `KEY` partitioning — similar to `HASH`, except that MySQL supplies the hashing function
+     - composite partitioning — with `SUBPARTITION`
+   - other partitioning strategy
+     - consistent hashing -- [zhihu](https://zhuanlan.zhihu.com/p/34985026)
+
+1. problems and possible solutions
+   - foreign key constraint
+   - triggers and stored procedures
+   - transaction -- use distributed transaction
+   - join
+     - use redundant data to avoid joining, use with caution
+     - use external tools, e.g. search engine
+     - join on client, but sorted paging is costly after joining client
+   - index uniqueness problem
+     - use GUID -- global index on whole table, local index on a single partition
+     - ID range for each partition
+     - ID generator -- snowflake, tbd
+
+1. partition benefits
+   - overcome physical partition limit — makes it possible to store more data in one table than can be held on a single disk or file system partition
+   - convenience for data manipulation — operate on partitions, e.g. easily delete old data if partitioned by date
+   - partition pruning, partition-wise joins — optimizer: do not scan partitions where there can be no matching values
+   - concurrency — perform updates on multiple partitions simultaneously
+
+1. Replication
+   - Primary-Secondary Replication
+     - master failover -- promoting a replica to become a new master
+     - asynchronous or semisynchronous  
+       ![](images/sql4.png)  
+       ![](images/sql5.png)
+     - binlog 线程 ：负责将主服务器上的数据更改写入二进制日志（Binary log）中。
+     - I/O 线程 ：负责从主服务器上读取二进制日志，并写入从服务器的中继日志（Relay log）。
+     - SQL 线程 ：负责读取中继日志，解析出主服务器已经执行的数据更改并在从服务器中重放（Replay）。
+   - 读写分离 -- 主服务器处理写操作以及实时性要求比较高的读操作，而从服务器处理读操作。
+     - 主从服务器负责各自的读和写，极大程度缓解了锁的争用；
+     - 增加冗余，提高可用性。
