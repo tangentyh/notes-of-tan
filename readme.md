@@ -18,7 +18,13 @@ So much knowledge :books: , so little time :hourglass_flowing_sand:.
    - [React](todo/react_notes.md), to be overhauled
 
 1. Back end
-   - [Java](javaNotes.md), :warning::heavy_exclamation_mark:: very long
+   - Java
+     - [Java Basics](backend/java/javaBasics.md)
+     - [Java Concurrency](backend/java/javaConcurrency.md)
+     - [Java IO](backend/java/javaIO.md)
+     - [Java Miscellanea](backend/java/javaMisc.md)
+     - [Java Utilities](backend/java/javaUtils.md)
+     - [Java Virtual Machine](backend/java/JVM.md)
    - [Spring](SpringNotes.md)
    - [SQL](SQL_notes.md)
 
