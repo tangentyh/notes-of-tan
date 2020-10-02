@@ -1,3 +1,71 @@
+# OS I/O
+
+1. 输入操作通常包括两个阶段
+   - 等待数据 -- 等待数据从网络中到达。当所等待数据到达时，它被复制到内核中的某个缓冲区
+   - 从内核向进程复制数据 -- 把数据从内核缓冲区复制到应用进程缓冲区
+
+1. IO
+   - synchronous IO
+     - blocking IO -- block for both phases
+     - non-blocking IO -- polling for the first phase, block for the second phase
+     - IO multiplexing, aka event driven IO -- `select` or `poll`, like `java.nio.channels.Selector`, block for both phases, but one thread for multiple sockets
+     - signal driven IO -- `sigaction`, return immediately for the first phase。内核在数据到达时向应用进程发送 `SIGIO` 信号, blocking for second phase
+   - asynchronous IO
+     - asynchronous IO -- `aio_read`, 内核会在所有操作完成之后向应用进程发送信号, non-blocking for both phases
+
+1. `select` -- like `java.nio.channels.Selector`, 监视一组文件描述符，等待一个或者多个描述符成为就绪状态
+   ```c
+   int select(int nfds, fd_set *readfds, fd_set *writefds,
+           fd_set *exceptfds, struct timeval *timeout);
+   ```
+   - `nfds` -- the highest-numbered file descriptor in any of the three sets, plus 1
+   - `fd_set` -- array based, of size `FD_SETSIZE` which defaults to 1024
+   - `readset`、`writeset`、`exceptset` -- 分别对应读、写、异常条件的描述符集合, three classes of events on the specified set of file descriptors, can be `NULL`; upon return, each of the file descriptor sets will be cleared of all file descriptors except for those that are ready / exceptional
+
+1. `poll` -- similar to `select`, but with more event types and no size constraint for array `*fds`
+   ```c
+   int poll(struct pollfd *fds, unsigned int nfds, int timeout);
+   struct pollfd {
+       int   fd;         /* file descriptor */
+       short events;     /* requested events */
+       short revents;    /* returned events */
+   };
+   ```
+   - structure reuse
+     ```c
+     // If we detect the event, zero it out so we can reuse the structure
+         if ( fds[0].revents & POLLIN )
+             fds[0].revents = 0;
+     ```
+
+1. `epoll` -- event poll
+   ```c
+   int epoll_create(int size);
+   int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)；
+   int epoll_wait(int epfd, struct epoll_event *events,
+                  int maxevents, int timeout);
+   ```
+   - `epoll_create()` -- creates a new `epoll` instance, the `size` argument is ignored, but must be greater than zero
+   - `epoll_ctl` -- add, modify, or remove entries in the interest list of the `epoll` instance referred to by the file descriptor `epfd`. 已注册的描述符在内核中会被维护在一棵红黑树上
+     - `op`, `fd` -- it requests that the operation `op` be performed for the target file descriptor, `fd`
+   - `epoll_wait` -- waits for events on the `epoll` instance referred to by the file descriptor `epfd`. The buffer pointed to by `events` is used to return information from the ready list about file descriptors in the interest list that have some events available
+   - mode
+     - LT, level trigger -- default, blocking and non-blocking, after `epoll_wait`, 进程可以不立即处理该事件，下次调用 `epoll_wait()` 会再次通知进程
+     - ET, edge trigger -- non-blocking, after `epoll_wait`, 下次再调用 `epoll_wait()` 时不会再得到事件到达的通知
+
+1. `epoll` vs `poll` vs `select`
+   - `epoll` 进程不需要通过轮询来获得事件完成的描述符
+   - `epoll` 只需要将描述符从进程缓冲区向内核缓冲区拷贝一次
+     - `select` and `poll`, 每次调用都需要将全部描述符从应用进程缓冲区复制到内核缓冲区
+   - 对多线程编程更友好，一个线程调用了 `epoll_wait()` 另一个线程关闭了同一个描述符也不会产生像 `select` 和 `poll` 的不确定情况
+     - 如果一个线程对某个描述符调用了 `select` 或者 `poll`，另一个线程关闭了该描述符，会导致调用结果不确定
+   - `select` `timeout` 参数精度为微秒, 更加适用于实时性要求比较高的场景，而 `poll` 和 `epoll` 为毫秒
+
+1. Netty 粘包拆包 -- distinguish data boundary
+   - `DelimiterBasedFrameDecoder`
+   - `LineBasedFrameDecoder`
+   - `FixedLengthFrameDecoder`
+
 # IO
 
 1. `java.io` exceptions
