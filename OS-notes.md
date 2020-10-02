@@ -165,6 +165,9 @@
    - RAID 5 -- parity check based, parity information is distributed among the drives, requires that all drives but one be present to operate. Upon failure of a single drive, subsequent reads can be calculated from the distributed parity such that no data is lost
    - more
 
+1. file systems
+   - HDFS, GFS -- tbd
+
 # Compiling
 
 1. 目标文件

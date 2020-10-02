@@ -5418,6 +5418,12 @@
    - `File toFile()`
    - `URI toUri()`
    - inherited methods
+   - example: three ways to `pwd`
+     ```java
+     new java.io.File(".").getCanonicalPath();
+     System.getProperty("user.dir");
+     Paths.get(".").toAbsolutePath().normalize().toString();
+     ```
 
 1. `java.nio.file.Files` — static methods take `Path` as arguments, operate its underlying files, usually atomically
    ```java
