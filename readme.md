@@ -26,7 +26,8 @@ So much knowledge :books: , so little time :hourglass_flowing_sand:.
      - [Java Utilities](backend/java/javaUtils.md)
      - [Java Virtual Machine](backend/java/JVM.md)
    - [Spring](SpringNotes.md)
-   - [SQL](SQL_notes.md)
+   - [Database, MySQL based](backend/database.md)
+   - [SQL, MySQL based](backend/SQL_notes.md)
    - [Distributed System](backend/distributed.md)
 
 1. Miscellanea
