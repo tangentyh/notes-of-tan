@@ -27,6 +27,7 @@ So much knowledge :books: , so little time :hourglass_flowing_sand:.
      - [Java Virtual Machine](backend/java/JVM.md)
    - [Spring](SpringNotes.md)
    - [SQL](SQL_notes.md)
+   - [Distributed System](backend/distributed.md)
 
 1. Miscellanea
    - [Algorithm](algo_notes.md)
