@@ -319,11 +319,11 @@ Gossip -- the reach of a broadcast and the reliability of anti-entropy
      - leader -- handle client requests and interacts with a replicated state machine, for a certain period called term, aka. epoch, which a logical clock
      - follower -- persist log entries and respond to requests from the leader and candidates, also forward requests to the leader
    - components
-     - leader election -- if no heartbeat from leader for some time (election timeout), a follow becomes a candidate and requests votes from other nodes, the request includes the term; each node can vote at most one candidate and the candidate becomes leader if a quorum elected; restart if not enough vote till timeout
-       - stale candidates not qualified -- if the follower’s log information is more up-to-date, its vote is denied
+     - leader election -- if no heartbeat from leader for some time (election timeout), a follow becomes a candidate, term increments and requests votes from other nodes, the request includes the new term and the newest log entry; each node can vote at most one candidate and the candidate becomes leader if a quorum (majority) collected, or the candidate becomes a follower if heartbeat with a term not smaller than current term from a new leader received; restart if not enough vote till timeout, term also incremented for when next election started
+       - stale candidates not qualified -- if the follower’s log information is more up-to-date, the follow will deny to vote for this candidate
      - periodic heartbeat -- the leader periodically sends heartbeats to all followers to maintain its term
      - log replication / broadcast -- the leader can repeatedly append new values to the replicated log and broadcast them; an entry is considered committed if a quorum of ACK and commit decision also replicated
-       - order keeping -- a follower rejects a higher-numbered entry if the ID and term of the entry that immediately precedes it, sent by the leader, do not match the highest entry according to its own records
+       - order keeping -- a follower (require reconciliation or) rejects a higher-numbered entry if the ID and term of the entry that immediately precedes it, sent by the leader, do not match the highest entry according to its own records
    - failure scenarios
      - competing candidates -- jittered timeout
      - follower failure -- retry of the leader, can be batched
