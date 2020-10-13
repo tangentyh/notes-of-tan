@@ -1203,6 +1203,19 @@
      - `String getString(String key)`
      - `String[] getStringArray(String key)`
 
+# Security
+
+1. security manager — `SecurityManager`
+   - usage — no security manager installed by default, use with `System::setSecurityManager`, or CLI option `-Djava.security.manager`
+   - permission checking — `SecurityException`
+   - security policy, `java.security.Policy` — code sources to permission sets, `java.security.Permission`
+     - protection domain — tbd
+     - policy files — tbd
+       - system property — `java.security.policy`, double equals sign (`==`) to exclude other standard policy files
+   - Java Authentication and Authorization Service (JAAS) — `javax.security.auth.login.LoginContext`, tbd
+     - login policies
+   - tbd
+
 # Other Java APIs
 
 1. agents — bytecode engineering at load time

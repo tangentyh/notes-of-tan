@@ -60,6 +60,9 @@
      - `-Xprof` — profiling, support was removed in 10.0
      - `-XshowSettings:properties`, `-XshowSettings:locale`
      - `-Xverify:none`, or `-noverify` — turn off verification when loading classes
+     - memory related -- see JVM
+       - `-Xss`
+       - `-Xms`, `-Xmx`
    - enable and disable assertion — see [Assertion](#Assertion)
    - system properties — `-D`, `System::getProperty`, `System::getProperties`
      - log related — see [Logging](#Logging)
