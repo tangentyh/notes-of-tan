@@ -30,6 +30,7 @@ So much knowledge :books: , so little time :hourglass_flowing_sand:.
    - [Database, MySQL based](backend/database.md)
    - [SQL, MySQL based](backend/SQL_notes.md)
    - [Distributed System](backend/distributed.md)
+   - [Redis](backend/redis-notes.md)
 
 1. Miscellanea
    - [Algorithm](algo_notes.md)
