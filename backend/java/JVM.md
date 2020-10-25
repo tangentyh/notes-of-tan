@@ -1,5 +1,4 @@
 # JVM
-<!-- TODO -->
 
 1. JVM in `System`
    - `static void exit(int status)`
@@ -65,17 +64,30 @@
      - CLI -- `-XX:ReservedCodeCacheSize=128m`, `-XX:InitialCodeCacheSize`
    - `sun.nio.ch.DirectBuffer` -- use native methods to manipulate non-heap memory, read and write directly to a memory address, used in NIO
 
+## GC
+
 1. GC
    - GC target detection
      - reference count -- not used by JVM due to circular reference
      - reachability detection -- DFS from GC roots
        - 自救 -- make the object reachable in `Object::finalize`, 自救只能进行一次，`Object::finalize` will not be called twice
        - necessity when unload a class in permanent generation or metaspace -- instances and class loader of this class garbage collected, no `Class` instance reference
+   - GC type
+     - minor GC -- GC in young generation, where lifespan is short, move alive objects from Eden to survivor, executed frequently and relatively fast, triggered when not enough space in Eden
+     - full GC -- typically pause the application threads, GC in both generations and also permanent generation
+     - major GC -- GC in tenure generation, only in CMS
+     - mixed GC -- GC in young and part of tenure generation, only in G1??
+   - full GC trigger
+     - `System::gc`
+     - not enough space in old or permanent generation
+     - promotion guarantee failed, see below
+     - concurrent mode failure in CMS
    - memory management strategies
-     - `new` objects -- created in young generation
-     - minor GC -- GC in young generation, move alive objects from Eden to survivor
-     - major GC -- typically pause the application threads, GC in both generations and also permanent generation
-       - trigger -- old or permanent generation is full; and more
+     - `new` objects -- created in Eden, minor GC if not enough space
+     - pretenure -- large `new` objects directly created in tenure generation, specified as `-XX:PretenureSizeThreshold`
+     - promotion by age -- every move to Survivor increments the age by 1, move to tenure generation when age `-XX:MaxTenuringThreshold`
+     - dynamic promotion -- 如果在 Survivor 中相同年龄所有对象大小的总和大于 Survivor 空间的一半，则年龄大于或等于该年龄的对象可以直接进入老年代，无需等到 `MaxTenuringThreshold`
+     - promotion guarantee -- 在发生 Minor GC 之前，虚拟机先检查老年代最大可用的连续空间是否大于新生代所有对象总空间，如果条件成立的话，那么 Minor GC 可以确认是安全的; after JDK 6, `-XX:-HandlePromotionFailure` removed，只要老年代的连续空间大于新生代对象的总大小或者历次晋升到老年代的对象的平均大小就进行 minor GC，否则 full GC
    - GC algorithm
      - mark sweep
        - steps
@@ -99,33 +111,65 @@
        - serial -- serial old, CMS
        - ParNew -- serial old, CMS
        - parallel scavenge -- serial old, parallel old
-   - CLI
+   - API
+     - use
      - `-XX:+UseSerialGC` -- 在新生代和老年代使用串行收集器
      - `-XX:+UseParNewGC` -- 在新生代使用并行收集器
      - `-XX:+UseParallelGC` -- 新生代使用并行回收收集器，更加关注吞吐量
      - `-XX:+UseParallelOldGC` -- 老年代使用并行回收收集器
-     - `-XX:ParallelGCThreads` -- 设置用于垃圾回收的线程数
      - `-XX:+UseConcMarkSweepGC` -- 新生代使用并行收集器，老年代使用CMS+串行收集器
-     - `-XX:ParallelCMSThreads` -- 设定CMS的线程数量
-     - `-XX:ConcGCThreads` -- 并发回收垃圾的线程。默认是总核数的12.5%，8核CPU默认是1。调大后GC变快，但会占用程序运行时的CPU资源，吞吐会受到影响。
+       - `-XX:ParallelCMSThreads` -- 设定CMS的线程数量
      - `-XX:+UseG1GC` -- 启用G1垃圾回收器
+       - `-XX:G1HeapRegionSize`, `-XX:G1NewSizePercent`, `-XX:G1MaxNewSizePercent`
      - `-XX:+UnlockExperimentalVMOptions` `-XX:+UseZGC` -- 启用ZGC
        - `-XX:ZCollectionInterval` -- ZGC发生的最小时间间隔，单位秒
        - `-XX:ZAllocationSpikeTolerance` -- ZGC触发自适应算法的修正系数，默认2，数值越大，越早的触发ZGC
        - `-XX:+UnlockDiagnosticVMOptions` `-XX:-ZProactive` -- 是否启用主动回收，默认开启，这里的配置表示关闭。
+     - `-XX:+UseShenandoahGC`
+     - `-XX:ParallelGCThreads` -- 设置用于垃圾回收的线程数
+     - `-XX:ConcGCThreads` -- 并发回收垃圾的线程。默认是总核数的12.5%，8核CPU默认是1。调大后GC变快，但会占用程序运行时的CPU资源，吞吐会受到影响。
+     - `-XX:MaxGCPauseMillis`
+     - `-XX:PretenureSizeThreshold`
+     - `-XX:InitiatingHeapOccupancyPercent`
      - `-Xlog` -- 设置GC日志中的内容、格式、位置以及每个日志的大小
        ```
        -Xlog:safepoint,classhisto*=trace,age*,gc*=info:file=/opt/logs/logs/gc-%t.log:time,tid,tags:filecount=5,filesize=50m
        -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xloggc:/home/logs/gc.log
        ```
+     - `-XX:+PrintCommandLineFlags` -- print flags, can check used GC configurations
    - serial -- mark-copy, default GC for young generation in client scenario, single thread, about 100ms for 100 to 200M garbage
      - serial old -- serial GC for tenure generation, mark-compact, can serve as backup for CMS
    - ParNew -- serial GC but multithread, default GC for young generation in server scenario
-   - parallel scavenge -- similar to ParNew, but throughput first in contrast to minimizing pause time, better UX being more responsive with small pause time although smaller young generation and more frequent GC
+   - parallel scavenge -- similar to ParNew, but throughput (user CPU time versus total CPU time) first in contrast to minimizing pause time, better UX being more responsive with small pause time although smaller young generation and more frequent GC
      - parallel old -- parallel scavenge for tenure generation
      - GC ergonomics -- with `-XX:+UseAdaptiveSizePolicy`, 不需要手工指定新生代的大小（-Xmn）、Eden 和 Survivor 区的比例、晋升老年代对象年龄等细节参数了。JVM 会根据当前系统的运行情况收集性能监控信息，动态调整这些参数以提供最合适的停顿时间或者最大的吞吐量, `-XX:AdaptiveSizePolicyOutputInterval=1` for logging
-   - ZGC
-   - shenandoah
+   - CMS, concurrent mark sweep -- [blog](https://plumbr.io/handbook/garbage-collection-algorithms-implementations/concurrent-mark-and-sweep)
+     - disadvantages
+       - low throughput
+       - concurrent mode failure -- the CMS collector is unable to finish reclaiming the unreachable objects before the tenured generation fills up, or if an allocation cannot be satisfied with the available free space blocks in the tenured generation; serial old as backup
+         - float garbage -- objects that are traced by the garbage collector thread may subsequently become unreachable by the time collection process ends
+       - segmentation from mark sweep
+     - phases
+       1. initial mark -- stop-the-world but fast, mark objects directly connected to GC roots
+       1. concurrent mark -- most time-consuming phase
+          - card marking -- marks the area of the heap (called “card”) that contains the mutated object since last phase as “dirty”
+       1. concurrent preclean -- accounting for references being changed during previous marking phase, making dirty cards clean
+       1. concurrent-abortable-preclean -- like the previous phase, tbd
+       1. final remark -- stop-the-world, finalize marking all live objects in the old generation
+       1. concurrent sweep
+       1. concurrent reset -- resetting inner data structures of the CMS algorithm and preparing them for the next cycle
+   - G1, garbage first
+     - region -- G1 divides heap into different regions and the young and tenure generation is not physically separated. 通过记录每个 Region 垃圾回收时间以及回收所获得的空间，并维护一个优先列表，每次根据允许的收集时间，优先回收价值最大的 Region
+     - remembered set -- keep track of regionA -> regionB connection; when scanning regionB refer to remembered set to find out if need to scan regionA
+     - phases except remembered set maintainence -- like CMS, initial mark, concurrent mark, final remark, cleanup (partially concurrent)
+       - cleanup -- sort regions by GC cost and value, use a pause prediction model to meet a user-defined pause time target and select the number of regions to collect based on the specified pause time target
+       - [Introduction on Oracle](https://www.oracle.com/technetwork/tutorials/tutorials-1876574.html)
+     - advantages
+       - concurrent like CMS
+       - space compact, mark compact as a whole while being copy between regions
+       - predictable GC pause durations
+   - ZGC -- shorter pause than Shenandoah, tbd
+   - Shenandoah -- higher throughput than ZGC, tbd
 
 ## Reference
 
@@ -234,9 +278,22 @@
    - context class loader — each thread has a reference to a class loader
      - `Thread::getContextClassLoader`, `Thread::setContextClassLoader`
      - class loader inversion — the phenomenon when loading classes programmatically, classes to load are not visible to default class loaders, can be solved by using context class loader
-   - class loaders as namespaces — in JVM, a class is determined by its full name **and** the class loader
-     - useful for loading code from multiple sources, hot deployment etc.
+   - class loaders as namespaces — class equality is determined by its full name **and** the class loader
+     - equality -- `Class::equals`, `Class::isAssignableFrom`, `Class::isInstance`, `instanceof`
+     - use -- useful for loading code from multiple sources, hot deployment etc.
    - Class Data Sharing (CDS) -- share common classes across different JVM instances and improve JVM start speed
+
+1. class loading trigger
+   - 主动引用 -- must load the class for those references
+     - when bytecode `new`, `getstatc`, `putstataic`, `invokestatic`
+     - `java.lang.reflect`
+     - parent classes must be loaded before loading subclasses
+     - `main` method class when starting
+     - `java.lang.invoke.MethodHandle`
+   - 被动引用 -- will not trigger class loading
+     - the subclass when referring to a static field of superclass from a subclass
+     - the class as the type of elements of an array
+     - the class when referring to constants, as constants held in constant pool of the invoking class
 
 1. `ClassLoader`
    ```java
