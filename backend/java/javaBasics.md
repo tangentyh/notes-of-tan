@@ -311,6 +311,12 @@
      - hexadecimal, octal and binary — `0x`, `0`, `0b` or `0B`
      - friendly underscores — `1_000_000`, `0b1111_0100_0010_0100_0000`
    - no `unsigned`
+   - shift overflow bits -- mod
+     ```java
+     1l << 65 // 1l << (65 % 64)
+     ```
+
+1. loop shift
 
 1. float point types
    - types
