@@ -431,6 +431,20 @@ Gossip -- the reach of a broadcast and the reliability of anti-entropy
    - other features
      - message priority
 
+1. delayed queue
+   - use cases -- timed events, like notification push, auto canceling
+   - Redis ZSet polling
+     - add -- `ZADD key timestamp task`, also using consistent hashing to distribute on different keys for performance and scalability
+     - polling -- `ZRANGEBYSCORE key -inf +inf limit 0 1 WITHSCORES`, one or more processes for one or more keys
+     - async execution -- for example, send to normal message queue
+   - RabbitMQ -- TTL as delay, or directly use the [community delayed message exchange plugin](https://www.rabbitmq.com/community-plugins.html)
+     - dead lettering -- message posted to dead letter exchange to be redirected to dead letter queue when: message rejected using `basic.reject` or `basic.nack` with `requeue` `false`; message TTL timed out; message queue length exceeded
+     - TTL -- TTL of a queue, expired timely; TTL of a message, expiration examined when at queue head, use the community plugin above to support delay for each message
+   - time wheel -- circular list, each node as message queues
+     - add -- O(1), e.g. if the pointer points to 2 at the moment, add the task with 3s delay at 5
+     - hierarchical -- like second hands, minute hands, hour hands on watches
+     - empty bucket optimization in Kafka -- use `java.util.concurrent.DelayQueue` to spin the time wheel
+
 # Distributed Locks
 
 1. unique index of a database -- insert a record as lock acquiring, delete the record as lock releasing
