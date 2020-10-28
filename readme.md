@@ -1,50 +1,52 @@
-# Welcome
+# Notes of Tan
 
 The repo is intended for personal notes keeping :yum:.
 
 So much knowledge :books: , so little time :hourglass_flowing_sand:.
 
-# Index
+<!-- TODO: actions, links, TOC, hashes to lower case, mathjax -->
 
-1. To be overhauled
-   - those in [todo](./todo) folder
-   - [BOM, DOM and Web APIs](./BOM_DOM_notes.md)
-
-1. Front end
-   - [CSS](./CSS-notes.md)
-   - [HTML](./html-notes.md)
-   - [JavaScript, TypeScript](./todo/jsNotes.md), to be overhauled
-   - [BOM, DOM and Web APIs](./BOM_DOM_notes.md), to be overhauled
-   - [React](./todo/react_notes.md), to be overhauled
+## Index
 
 1. Back end
    - Java
-     - [Java Basics](./backend/java/javaBasics.md)
-     - [Java Concurrency](./backend/java/javaConcurrency.md)
-     - [Java IO](./backend/java/javaIO.md)
-     - [Java Miscellanea](./backend/java/javaMisc.md)
-     - [Java Utilities](./backend/java/javaUtils.md)
-     - [Java Virtual Machine](./backend/java/JVM.md)
-   - [Spring](./backend/SpringNotes.md)
-   - [Operating System Basics](./backend/OS-notes.md)
-   - [Database, MySQL based](./backend/database.md)
-   - [SQL, MySQL based](./backend/SQL_notes.md)
-   - [Distributed System](./backend/distributed.md)
-   - [Redis](./backend/redis-notes.md)
+     - [Java Basics](./docs/docs/backend/java/javaBasics.md)
+     - [Java Concurrency](./docs/backend/java/javaConcurrency.md)
+     - [Java IO](./docs/backend/java/javaIO.md)
+     - [Java Miscellanea](./docs/backend/java/javaMisc.md)
+     - [Java Utilities](./docs/backend/java/javaUtils.md)
+     - [Java Virtual Machine](./docs/backend/java/JVM.md)
+   - [Spring](./docs/backend/SpringNotes.md)
+   - [Operating System Basics](./docs/backend/OS-notes.md)
+   - [Database, MySQL based](./docs/backend/database.md)
+   - [SQL, MySQL based](./docs/backend/SQL_notes.md)
+   - [Distributed System](./docs/backend/distributed.md)
+   - [Redis](./docs/backend/redis-notes.md)
+
+1. Front end
+   - [CSS](./docs/CSS-notes.md)
+   - [HTML](./docs/html-notes.md)
+   - [JavaScript, TypeScript](./docs/todo/jsNotes.md), to be overhauled
+   - [BOM, DOM and Web APIs](./docs/BOM_DOM_notes.md), to be overhauled
+   - [React](./docs/todo/react_notes.md), to be overhauled
 
 1. Miscellanea
-   - [Algorithm](./algo_notes.md)
-   - [Git](./git_notes.md)
-   - [Design Pattern](./DesignPatternNotes.md)
-   - [MacOS](./mac-notes.md)
+   - [Algorithm](./docs/algo_notes.md)
+   - [Git](./docs/git_notes.md)
+   - [Design Pattern](./docs/DesignPatternNotes.md)
+   - [MacOS](./docs/mac-notes.md)
 
-# Docs for Docs
+1. To be overhauled
+   - those in [todo](./docs/todo) folder
+   - [BOM, DOM and Web APIs](./docs/BOM_DOM_notes.md)
+
+## Docs for Docs
 
 1. [`cheat.sh`](https://github.com/chubin/cheat.sh)
 
 1. [Dash](https://kapeli.com/dash)
 
-# Other Repositories
+## Other Repositories
 
 For reference:
 
@@ -60,6 +62,6 @@ For reference:
 - [dypsilon/frontend-dev-bookmarks: Manually curated collection of resources for frontend web developers.](https://github.com/dypsilon/frontend-dev-bookmarks), unmaintained now
 - more...
 
-# License
+## License
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)

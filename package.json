@@ -1,0 +1,22 @@
+{
+  "name": "notes",
+  "version": "0.0.1",
+  "description": "Tan's notes.",
+  "main": "index.js",
+  "authors": {
+    "name": "tangentyh",
+    "email": ""
+  },
+  "repository": "https://github.com/tangentyh/notes-of-tan/notes",
+  "scripts": {
+    "dev": "vuepress dev docs",
+    "build": "vuepress build docs"
+  },
+  "license": "CC-BY-SA-4.0",
+  "devDependencies": {
+    "@vuepress/plugin-back-to-top": "^1.7.1",
+    "@vuepress/plugin-medium-zoom": "^1.7.1",
+    "vuepress": "^1.5.3",
+    "vuepress-plugin-mathjax": "^1.2.8"
+  }
+}
