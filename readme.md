@@ -7,36 +7,36 @@ So much knowledge :books: , so little time :hourglass_flowing_sand:.
 # Index
 
 1. To be overhauled
-   - those in [todo](/todo) folder
-   - [BOM, DOM and Web APIs](BOM_DOM_notes.md)
+   - those in [todo](./todo) folder
+   - [BOM, DOM and Web APIs](./BOM_DOM_notes.md)
 
 1. Front end
-   - [CSS](CSS-notes.md)
-   - [HTML](html-notes.md)
-   - [JavaScript, TypeScript](todo/jsNotes.md), to be overhauled
-   - [BOM, DOM and Web APIs](BOM_DOM_notes.md), to be overhauled
-   - [React](todo/react_notes.md), to be overhauled
+   - [CSS](./CSS-notes.md)
+   - [HTML](./html-notes.md)
+   - [JavaScript, TypeScript](./todo/jsNotes.md), to be overhauled
+   - [BOM, DOM and Web APIs](./BOM_DOM_notes.md), to be overhauled
+   - [React](./todo/react_notes.md), to be overhauled
 
 1. Back end
    - Java
-     - [Java Basics](backend/java/javaBasics.md)
-     - [Java Concurrency](backend/java/javaConcurrency.md)
-     - [Java IO](backend/java/javaIO.md)
-     - [Java Miscellanea](backend/java/javaMisc.md)
-     - [Java Utilities](backend/java/javaUtils.md)
-     - [Java Virtual Machine](backend/java/JVM.md)
-   - [Spring](backend/SpringNotes.md)
-   - [Operating System Basics](backend/OS-notes.md)
-   - [Database, MySQL based](backend/database.md)
-   - [SQL, MySQL based](backend/SQL_notes.md)
-   - [Distributed System](backend/distributed.md)
-   - [Redis](backend/redis-notes.md)
+     - [Java Basics](./backend/java/javaBasics.md)
+     - [Java Concurrency](./backend/java/javaConcurrency.md)
+     - [Java IO](./backend/java/javaIO.md)
+     - [Java Miscellanea](./backend/java/javaMisc.md)
+     - [Java Utilities](./backend/java/javaUtils.md)
+     - [Java Virtual Machine](./backend/java/JVM.md)
+   - [Spring](./backend/SpringNotes.md)
+   - [Operating System Basics](./backend/OS-notes.md)
+   - [Database, MySQL based](./backend/database.md)
+   - [SQL, MySQL based](./backend/SQL_notes.md)
+   - [Distributed System](./backend/distributed.md)
+   - [Redis](./backend/redis-notes.md)
 
 1. Miscellanea
-   - [Algorithm](algo_notes.md)
-   - [Git](git_notes.md)
-   - [Design Pattern](DesignPatternNotes.md)
-   - [MacOS](mac-notes.md)
+   - [Algorithm](./algo_notes.md)
+   - [Git](./git_notes.md)
+   - [Design Pattern](./DesignPatternNotes.md)
+   - [MacOS](./mac-notes.md)
 
 # Docs for Docs
 
