@@ -80,11 +80,11 @@
    ```
 
 1. Catalan number
+
    $$
    C_n = \binom{2n}{n} - \binom{2n}{n-1} = \frac{1}{n+1}\binom{2n}{n} \\
    C_0 = 1 \qquad C_{n+1} = \sum^n_{i=0} C_i C_{n-i} \quad n \ge 0
    $$
-
    - the number of Dyck words of length 2n
    - the number of expressions containing n pairs of parentheses which are correctly matched
    - the number of different ways n + 1 factors can be completely parenthesized (or the number of ways of associating n applications of a binary operator)
@@ -151,6 +151,7 @@
    - [wikipedia](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes)
 
 1. Bézout's identity
+
    $$
    \forall a, b \in \mathbb{Z}, \quad \exists k_1, k_2 \in \mathbb{Z} \\
    \text{s.t.} \quad k_1 a + k_2 b = \operatorname{GCD}(a, b)
@@ -160,6 +161,7 @@
 1. modulo related
    - [Euler's theorem - Wikipedia](https://en.wikipedia.org/wiki/Euler%27s_theorem)
      - [Fermat's little theorem - Wikipedia](https://en.wikipedia.org/wiki/Fermat%27s_little_theorem)
+
        $$
        a^p \equiv a \pmod{p}
        $$

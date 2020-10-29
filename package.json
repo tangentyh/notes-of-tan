@@ -14,9 +14,9 @@
   },
   "license": "CC-BY-SA-4.0",
   "devDependencies": {
+    "@maginapp/vuepress-plugin-katex": "^1.0.7",
     "@vuepress/plugin-back-to-top": "^1.7.1",
     "@vuepress/plugin-medium-zoom": "^1.7.1",
-    "vuepress": "^1.5.3",
-    "vuepress-plugin-mathjax": "^1.2.8"
+    "vuepress": "^1.5.3"
   }
 }

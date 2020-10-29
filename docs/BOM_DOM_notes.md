@@ -2979,6 +2979,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - `CanvasRenderingContext2D.translate(x, y)` -- Adds a translation transformation by moving the canvas and its origin x horizontally and y vertically on the grid
      - not affected by previous translate
    - `CanvasRenderingContext2D.transform(m11, m12, m21, m22, dx, dy)` -- Multiplies the current transformation matrix with the matrix described by its arguments
+
      $$
      {\displaystyle {\begin{bmatrix}x'\\y'\\1\end{bmatrix}}={\begin{bmatrix}m_{11}&m_{21}&d_{x}\\m_{12}&m_{22}&d_{y}\\0&0&1\end{bmatrix}}{\begin{bmatrix}x\\y\\1\end{bmatrix}}}
      $$
