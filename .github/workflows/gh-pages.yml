@@ -34,9 +34,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - run: npm ci && npm build
+      - run: npm ci && npm run build
 
-      - name: Deploy
+      - name: Deploy to pages
         # You may pin to the exact commit or the version.
         # uses: peaceiris/actions-gh-pages@bbdfb200618d235585ad98e965f4aafc39b4c501
         uses: peaceiris/actions-gh-pages@v3
