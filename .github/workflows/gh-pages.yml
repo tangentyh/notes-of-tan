@@ -34,6 +34,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
+      - name: Convert dashes
+        run: sed -i -- 's/ -- / — /g' ./docs/**/*.md
       - run: npm ci && npm run build
 
       - name: Deploy to pages
