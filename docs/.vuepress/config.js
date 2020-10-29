@@ -1,6 +1,7 @@
-const { description } = require('../../package')
+const { description, repository } = require('../../package')
 
 module.exports = {
+  base: repository.slice(repository.lastIndexOf('/')),
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#title
    */
@@ -27,7 +28,7 @@ module.exports = {
    * ref：https://v1.vuepress.vuejs.org/theme/default-theme-config.html
    */
   themeConfig: {
-    repo: 'tangentyh/notes-of-tan',
+    repo: repository,
     editLinks: false,
     docsDir: 'docs',
     editLinks: true,

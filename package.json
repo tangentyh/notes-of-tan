@@ -7,7 +7,7 @@
     "name": "tangentyh",
     "email": ""
   },
-  "repository": "https://github.com/tangentyh/notes-of-tan/notes",
+  "repository": "https://github.com/tangentyh/notes-of-tan",
   "scripts": {
     "dev": "vuepress dev docs",
     "build": "vuepress build docs"
