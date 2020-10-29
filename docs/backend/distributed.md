@@ -384,7 +384,9 @@ Gossip -- the reach of a broadcast and the reliability of anti-entropy
 
 1. generalized solution -- tbd, [A Generalised Solution to Distributed Consensus](https://arxiv.org/abs/1902.06776)
 
-# Message Queues
+## Other
+
+### Message Queues
 
 1. message queue
    - model
@@ -445,7 +447,7 @@ Gossip -- the reach of a broadcast and the reliability of anti-entropy
      - hierarchical -- like second hands, minute hands, hour hands on watches
      - empty bucket optimization in Kafka -- use `java.util.concurrent.DelayQueue` to spin the time wheel
 
-# Distributed Locks
+### Distributed Locks
 
 1. unique index of a database -- insert a record as lock acquiring, delete the record as lock releasing
    - plain unique index in traditional relational database
@@ -494,7 +496,7 @@ Gossip -- the reach of a broadcast and the reliability of anti-entropy
      - no polling or timeouts -- ephemeral nodes deleted when session is not active, session expiration is managed by the ZooKeeper cluster
      - monitor friendly -- it is easy to see the amount of lock contention, break locks, debug locking problems, etc.
 
-# Clustering
+### Clustering
 
 1. Load Balance
    - round robin

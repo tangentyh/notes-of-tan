@@ -1,4 +1,6 @@
-# OS I/O
+# IO
+
+## OS I/O
 
 1. 输入操作通常包括两个阶段
    - 等待数据 -- 等待数据从网络中到达。当所等待数据到达时，它被复制到内核中的某个缓冲区
@@ -66,7 +68,7 @@
    - `LineBasedFrameDecoder`
    - `FixedLengthFrameDecoder`
 
-# IO
+## Java IO
 
 1. `java.io` exceptions
    - `java.io.IOException` extends `Exception`
@@ -87,7 +89,7 @@
      - `java.io.UTFDataFormatException`
    - `java.io.UncheckedIOException` extends `RuntimeException`
 
-## Console
+### Console
 
 1. `java.io.Console` — synchronized
    ```java
@@ -187,7 +189,7 @@
    - see [`System`](./javaBasics.md#System)
    - see `InputStream` (`BufferedInputStream`) and `PrintStream`
 
-## Basic IO Stream
+### Basic IO Stream
 
 1. IO streams
    - byte streams, byte oriented — `InputStream`, `OutputStream`
@@ -337,7 +339,7 @@
        - `OutputStreamWriter(OutputStream out, String charsetName)`
      - `String getEncoding()`
 
-## Filter Stream
+### Filter Stream
 
 1. filter stream — contains some other stream, which it uses as its basic source or sink of data, possibly transforming the data along the way or providing additional functionality
    - `java.io.FilterInputStream`
@@ -450,7 +452,7 @@
      extends FilterReader
      ```
 
-### ZIP Streams
+#### ZIP Streams
 
 1. inflate and deflate
    - `java.util.zip.InflaterInputStream`
@@ -478,7 +480,7 @@
 
 1. ZIP file system — `FileSystems.newFileSystem(Paths.get(zipname), null)`
 
-## Print Stream
+### Print Stream
 
 1. print streams — add the ability to print representations of various data values conveniently
    - never throws an `IOException` — only `checkError()`
@@ -524,7 +526,7 @@
    - methods — see `PrintStream`
      - difference — `PrintStream::write` methods allow `int` and `byte[]`
 
-## Other Streams
+### Other Streams
 
 1. externally buffered streams — save the data in an internal buffer (byte array, etc.), no effect for `close()` and no `IOException` afterwards
    - `java.io.ByteArrayInputStream`
@@ -548,7 +550,7 @@
      extends Writer
      ```
 
-## Serialization
+### Serialization
 
 1. `transient` — mark fields not part of the persistent state, which is skipped in serialization
 
@@ -640,9 +642,9 @@
    - constructor — `ObjectOutputStream(OutputStream out)`
    - `void defaultWriteObject()`
 
-## Files
+### Files
 
-### File Classes
+#### File Classes
 
 1. `java.io.File` — an abstract representation of file and directory pathnames, the old school way
    ```java
@@ -854,7 +856,7 @@
    - `abstract void release()`  
      `void close()`
 
-### File Options and Attributes
+#### File Options and Attributes
 
 1. options
    - `interface java.nio.file.OpenOption` — mark interface
@@ -905,7 +907,7 @@
      implements Comparable<FileTime>
      ```
 
-### File Stream
+#### File Stream
 
 1. file streams
    - `java.io.FileInputStream`
@@ -983,11 +985,11 @@
        - `FileWriter(String fileName, boolean append)`
    - print streams
 
-# NIO
+## NIO
 
 1. file related — see [File Classes](#File-Classes)
 
-## NIO Buffers
+### NIO Buffers
 
 1. `java.nio`
    - `ByteOrder`
@@ -1090,7 +1092,7 @@
    implements Comparable<DoubleBuffer>
    ```
 
-## NIO Channels
+### NIO Channels
 
 1. exceptions in `java.nio.channels`
    - `IOException`
@@ -1135,7 +1137,7 @@
 
 1. `java.nio.channels.Pipe` -- a pair of channels that implements a unidirectional pipe
 
-### Channel Interfaces
+#### Channel Interfaces
 
 1. `java.nio.channels`
    - `Channel`
@@ -1193,7 +1195,7 @@
      ```
    - `AsynchronousFileChannel`
 
-### Selector
+#### Selector
 
 1. `java.nio.channels.spi.AbstractInterruptibleChannel` -- base implementation class for interruptible channels
    ```java
@@ -1290,7 +1292,7 @@
    }
    ```
 
-### Channel Implementations
+#### Channel Implementations
 
 1. `FileChannel` -- see [File Classes](#File-Classes), extends `AbstractInterruptibleChannel` but not `AbstractSelectableChannel`
 
@@ -1320,7 +1322,7 @@
 
 1. more
 
-# Network
+## Network
 
 1. `java.net` — networking like working with files
    - low level API
@@ -1353,7 +1355,7 @@
      - `java.net.UnknownServiceException`
    - `java.net.URISyntaxException`
 
-## Address
+### Address
 
 1. `java.net.InetAddress`
    ```java
@@ -1401,7 +1403,7 @@
      implements Serializable
      ```
 
-## Sockets
+### Sockets
 
 1. `java.net.SocketImplFactory`
    ```java
@@ -1457,7 +1459,7 @@
      - `void bind(SocketAddress endpoint)`
      - `void bind(SocketAddress endpoint, int backlog)`
 
-## URI and URL
+### URI and URL
 
 1. `java.net.URI` — uniform resource identifiers, to parsing, stringify, componentize, and process
    ```java
@@ -1531,7 +1533,7 @@
      - `InputStream getErrorStream()` — 404 will throw `FileNotFoundException`, but response data can be also useful
      - cookies — see [HTTP Cookie](#HTTP-Cookie)
 
-### HTTP Cookie
+#### HTTP Cookie
 
 1. hierarchy of HTTP cookie classes
    ```

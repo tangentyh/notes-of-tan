@@ -1,4 +1,6 @@
-# Docs
+# Java Basics
+
+## Docs
 
 1. docs
    - [oracle JDK 1.8](https://docs.oracle.com/javase/8/docs/api/index.html)
@@ -11,7 +13,7 @@
 1. [specification](http://docs.oracle.com/javase/specs)
    - [The Java® Virtual Machine Specification](https://docs.oracle.com/javase/specs/jvms/se8/html/)
 
-# CLI
+## CLI
 
 1. `javac` — compile
    - timestamps aware — auto compile dependencies and recompile when source file updated according to timestamps
@@ -123,7 +125,7 @@
 
 1. `javah` — produces a C header file from class files for `native` methods
 
-## JAR
+### JAR
 
 1. `jar` — creates an archive for classes and resources, and can manipulate or restore individual classes or resources from an archive
    ```shell
@@ -175,7 +177,7 @@
      ```
      - global default defined in main section
 
-# Philosophy
+## Philosophy
 
 1. class based
    - everything inside class
@@ -190,7 +192,7 @@
 
 1. does not have operator overloading
 
-## Control Flow
+### Control Flow
 
 1. no block variable shadowing — may not declare identically named variables in two nested blocks
    - in JS and C++ inner one shadows outer one
@@ -220,7 +222,7 @@
 1. vararg parameter — `...`
    - if only an array passed, then that array is used, without nesting
 
-## Package
+### Package
 
 1. package
    - package name — reversely ordered domain
@@ -294,11 +296,11 @@
        ```
      - the `CLASSPATH` environment variable
 
-# Fundamentals
+## Fundamentals
 
-## Data Types
+### Data Types
 
-### primitive types
+#### primitive types
 
 1. integer types
    - types
@@ -355,7 +357,7 @@
    - `if (x = 0)` does not compile
    - stored as `int`
 
-#### primitive type conversion
+##### primitive type conversion
 
 1. conversion
    - legal conversion — types with less information to types with more information, but not vice versa
@@ -372,7 +374,7 @@
    - truncate when out of range — `(byte) 300` is 44
    - not between `boolean` and number — cannot cast between `boolean` values and any numeric type
 
-### other types
+#### other types
 
 1. `enum`
    ```java
@@ -439,7 +441,7 @@
          odds[n] = new int[n + 1];
      ```
 
-## Classes and Modifiers
+### Classes and Modifiers
 
 1. `public class`
    - filename and class name — the name of the file must match the name of the `public` class
@@ -501,7 +503,7 @@
        ```
    - `strictfp` — methods tagged with the `strictfp` keyword must use strict rules for floating-point computations that yield reproducible results
 
-## Math
+### Math
 
 1. `Math` — elementary exponential, logarithm, square root, and trigonometric functions
    - `Math.E`, `Math.PI`
@@ -567,11 +569,11 @@
 
 1. `java.math.BigDecimal` — Immutable, arbitrary-precision signed decimal numbers, decimal version of `BigInteger`
 
-## Built-In Classes
+### Built-In Classes
 
 1. inside `java.lang` package
 
-### System
+#### System
 
 1. `System`
    ```java
@@ -616,7 +618,7 @@
 
 1. `SecurityManager` — check permissions, like read / write on certain files
 
-### String
+#### String
 
 1. `CharSequence` — provides uniform, read-only access to many different kinds of char sequences
    ```java
@@ -760,7 +762,7 @@
      - `StringJoiner setEmptyValue(CharSequence emptyValue)`
      - `String toString()`
 
-### Object Wrappers
+#### Object Wrappers
 
 1. wrappers
    - `Integer` , `Long` , `Float` , `Double` , `Short` , `Byte` , `Character` , and `Boolean`
@@ -871,7 +873,7 @@
    implements Serializable, Comparable<Boolean>
    ```
 
-# Inheritance
+## Inheritance
 
 1. inheritance
    - `extends`
@@ -947,9 +949,9 @@
    - concurrency related — see after
    - methods in `Objects` and object wrappers
 
-# Interfaces, Lambdas and Inner Classes
+## Interfaces, Lambdas and Inner Classes
 
-## Interfaces
+### Interfaces
 
 1. interface
    - methods in interfaces
@@ -997,7 +999,7 @@
    - callback — pass an object of a class implementing a callback interface, methods in the interface will be called when the event fires
    - tagging interface — `Cloneable`
 
-### Common Interfaces
+#### Common Interfaces
 
 1. `Interface Comparable<T>` — `int compareTo(T o)`
    - overflow when implementing with subtraction — make sure absolute values of operands are at most `(Integer.MAX_VALUE - 1) / 2`
@@ -1047,7 +1049,7 @@
    - return `Object` by convention — Up to Java SE 1.4, the clone method always had return type `Object`, but now the correct return type can be specified
      - inconsistency — `HashMap::clone` and `ArrayList::clone` etc. return `Object`, whereas `int[]::clone` and `ArrayDeque::clone` etc. return specific type
 
-## Lambdas
+### Lambdas
 
 1. closure
    - effectively final — any captured variable in a lambda expression must be effectively final: no difference if declared `final`
@@ -1135,7 +1137,7 @@
      Person[] people = stream.toArray(Person[]::new);
      ```
 
-### Common Functional Interfaces
+#### Common Functional Interfaces
 
 1. `java.util.function` package, all `@FunctionalInterface`
 
@@ -1218,7 +1220,7 @@
      - `java.util.function.LongPredicate`
      - `java.util.function.BiPredicate<T,U>`
 
-## Inner Class
+### Inner Class
 
 1. inner class
    - explicit reference to the outer class — outer class can be explicitly referred to as `OuterClass.this`
@@ -1291,7 +1293,7 @@
      - inner interfaces are implicitly `static`
      - inner classes inside interfaces are automatically `static public`
 
-# Reflection
+## Reflection
 
 1. runtime type identification — used by VM for method resolution
    - `Class getClass()` in `Object`
@@ -1429,7 +1431,7 @@
    implements AnnotatedElement
    ```
 
-## Proxy
+### Proxy
 
 1. proxies
    - usage — at runtime, create new classes that implement given interfaces, with a method invocation handler
@@ -1493,9 +1495,9 @@
    }
    ```
 
-# Error Handling
+## Error Handling
 
-## Debugging
+### Debugging
 
 1. general
    - use debugger
@@ -1540,7 +1542,7 @@
    - `jstack`
    - `syslog`
 
-## Exceptions
+### Exceptions
 
 1. unchecked exceptions and checked exceptions
    - unchecked — any exception that derives from the class `Error` or the class `RuntimeException` an unchecked exception
@@ -1630,7 +1632,7 @@
      - `int getLineNumber()`
      - `String getMethodName()`
 
-## Exception Handling
+### Exception Handling
 
 1. exception specification — declare checked exceptions
    ```java
@@ -1745,7 +1747,7 @@
    - when both `try` block and `AutoCloseable::close` throw exception — any exceptions thrown by `close` methods are suppressed
    - can have `catch` and `finally` blocks, but not recommended
 
-## Assertion
+### Assertion
 
 1. assert
    ```java
@@ -1799,11 +1801,11 @@
    public class AssertionError extends Error
    ```
 
-## Logging
+### Logging
 
 see [Logging](./javaMisc.md#Logging).
 
-# Generics
+## Generics
 
 1. Generics
    - [further reading](http://angelikalanger.com/GenericsFAQ/JavaGenericsFAQ.html)
@@ -1955,7 +1957,7 @@ see [Logging](./javaMisc.md#Logging).
        - not work when assigning to actual type — `ArrayList::toArray` either return `Object[]` or take a `T[]` parameter to return `T[]`
      - workaround — provide constructor or use reflection, see above
 
-# Annotations
+## Annotations
 
 1. annotations
    - syntax — each annotation is preceded by an `@` symbol, used like a modifier and is placed before the annotated item without a semicolon
@@ -2033,7 +2035,7 @@ see [Logging](./javaMisc.md#Logging).
      import java.lang.@NonNull String; // ERROR: Cannot annotate import
      ```
 
-## Standard Annotations
+### Standard Annotations
 
 1. for compilation
    - `@Deprecated`
@@ -2137,7 +2139,7 @@ see [Logging](./javaMisc.md#Logging).
        ```
    - `@javax.annotation.Resources` — multiple resources
 
-## Source-Level Annotation Processing
+### Source-Level Annotation Processing
 
 1. CLI
    ```

@@ -1,4 +1,6 @@
-# Philosophy
+# HTML
+
+## Philosophy
 
 1. [Content categories - Developer guides | MDN](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories)
 
@@ -7,7 +9,7 @@
 
 1. user agent stylesheet — see CSS notes
 
-# Character Entities
+## Character Entities
 
 1. common special characters
 
@@ -34,7 +36,7 @@
    - `&#8212`, `&#x2014`, `&mdash;`
    - emoji extension in VSCode
 
-# Global Attributes
+## Global Attributes
 
 1. [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes)
 
@@ -95,7 +97,7 @@
    - `"no"`, which indicates that the element must not be translated.
    - not supported yet
 
-# Document Information
+## Document Information
 
 1. `doctype` — `<!DOCTYPE html>` — case-insensitive
    - HTML5 is not based on SGML (Standard Generalized Markup Language), and therefore does not require a reference to a DTD (Document Type Definition)
@@ -166,7 +168,7 @@
        <meta itemprop="image" content="https://example.com/image.jpg">
        ```
 
-# Uncategorized Tags
+## Uncategorized Tags
 
 1. comment
    - Commenting out whitespace between inline elements
@@ -177,7 +179,7 @@
 
 1. grouping and encapsulating other elements — `<div></div>` block, `<span></span>` inline
 
-# Text Content
+## Text Content
 
 1. paragraphs and breaks
    - `<p></p>`, `<br>`
@@ -340,7 +342,7 @@
    - `<thead></thead>`, `<tbody></tbody>`, `<tfoot></tfoot>` — a set of rows, semantic information
      - foot is optional
 
-# Linking Resources
+## Linking Resources
 
 1. `crossorigin=`
    - `anonymous` — CORS requests for this element will not have the credentials flag set.
@@ -354,7 +356,7 @@
    - `href=` — The base URL to be used throughout the document for relative URL addresses, absolute or relative
    - `target=` — assign default target
 
-## `<script></script>`
+### `<script></script>`
 
 1. attributes
    - global attributes on [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes)
@@ -380,7 +382,7 @@
 
 1. `<noscript></noscript>`
 
-## `<link>`
+### `<link>`
 
 1. [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/link)
 
@@ -434,7 +436,7 @@
    - RSS [MDN](https://developer.mozilla.org/en-US/docs/MDN/Contribute/Tools/Feeds)
    - Atomic RSS [MDN](https://developer.mozilla.org/en-US/docs/Web/RSS/Module/Atom)
 
-## images
+### images
 
 1. `<img/>`
    - `src=`
@@ -516,7 +518,7 @@
    - `usemap=#` of `<img>` — associate image with map with `name`
      - cannot use this attribute if the `<img>` element is a descendant of an `<a>` or `<button>` element
 
-## Audio and Video
+### Audio and Video
 
 1. `<video></video>` and `<audio></audio>`
    ```html
@@ -562,7 +564,7 @@
    - `srclang=`
    - more
 
-## External Application
+### External Application
 
 1. `<embed>` — external content that is provided by an external application or other source of interactive content such as a browser plug-in
    ```html
@@ -614,7 +616,7 @@
      - `allowpaymentrequest` — Payment Request API allowed
        - redefined as `allow="payment"`
 
-# User Input
+## User Input
 
 1. `<input>` — used within a `<form>` element to declare input controls that allow users to input data
    - Attributes common to all input types
@@ -787,7 +789,7 @@
 1. `<datalist></datalist>` — contains a set of `<option>` elements that represent the values available for other controls
    - like autocomplete in editors
 
-# Sectioning Elements
+## Sectioning Elements
 
 1. headings — `<h1>` to `<h6>`
 
@@ -823,7 +825,7 @@
 
 1. `<aside></aside>` — a portion of a document whose content is only indirectly related to the document's main content. Asides are frequently presented as sidebars or call-out boxes
 
-# Progress and Meter
+## Progress and Meter
 
 1. `<progress></progress>` — displays an indicator showing the completion progress of a task, typically displayed as a progress bar
    - `max=` — defaults to 1
@@ -845,7 +847,7 @@
      - yellow if one range away
      - red if two range away
 
-# Interactive elements
+## Interactive elements
 
 1. `<menu></menu>` experimental — a group of commands that a user can perform or activate
 
@@ -860,7 +862,7 @@
      - if absent, the user agent will use a default string (typically "Details")
      - includes `display: list-item` style
 
-# SVG and Canvas
+## SVG and Canvas
 
 1. `<svg></svg>` — Scalable Vector Graphics
    ```html
@@ -886,7 +888,7 @@
    - `width=`, `height=`
    - see JavaScript notes
 
-# Web Components, Custom Elements
+## Web Components, Custom Elements
 
 1. `<slot></slot>` — a placeholder inside a web component that you can fill with your own markup, which lets you create separate DOM trees and present them together
    - `name=`

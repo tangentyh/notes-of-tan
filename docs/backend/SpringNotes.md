@@ -1,4 +1,6 @@
-# Introduction
+# Spring Framework
+
+## Introduction
 
 1. docs
    - Spring Framework
@@ -26,7 +28,7 @@
      - `Optional` -- equivalent to `required` set `false`
    - AOP -- JDK proxy or CGLIB subclassing; CGLIB proxy instance is created through Objenesis, so constructor is not called twice
 
-## Miscellaneous
+### Miscellaneous
 
 1. `org.springframework.beans.BeanUtils`
    - `static void copyProperties(Object source, Object target)`
@@ -49,7 +51,7 @@
 
 1. [lombok](https://projectlombok.org/features/all)
 
-# Servlet
+## Servlet
 
 1. Maven artifact
    ```xml
@@ -79,7 +81,7 @@
    </web-app>
    ```
 
-## Servlet Container Initializer
+### Servlet Container Initializer
 
 1. `interface javax.servlet.ServletContainerInitializer`
    - `void onStartup(Set<Class<?>> c, ServletContext ctx)` -- on the startup of the application
@@ -91,7 +93,7 @@
        - `Class<?>[] value`
    - SPI -- implementations as service provider in `META-INF/services` inside JAR files
 
-## HTTP Servlet, ServletConfig and ServletContext
+### HTTP Servlet, ServletConfig and ServletContext
 
 1. `javax.servlet.http.HttpServlet` -- an abstract class to be subclassed to create an HTTP servlet
    ```java
@@ -187,7 +189,7 @@
    - `void start(Runnable run)`
    - `boolean hasOriginalRequestAndResponse()`
 
-## HTTP Servlet Request and Response
+### HTTP Servlet Request and Response
 
 1. `javax.servlet.http.HttpServletRequest`
    ```java
@@ -280,7 +282,7 @@
      implements ServletResponse
      ```
 
-## Servlet Listeners
+### Servlet Listeners
 
 1. config listeners
    - in `web.xml` -- `<listener>`
@@ -298,7 +300,7 @@
    - `javax.servlet.http.HttpSessionBindingListener` -- no config required, event triggered when set or removed from a `HttpSession` or session expiring
    - more
 
-## Servlet Filters
+### Servlet Filters
 
 1. `javax.servlet.Filter` -- acts on a request like a servlet, but can allow the handling of the request to continue with other filters or servlets
    - use case -- Authentication Filters, Logging and Auditing Filters, Data compression Filters, Encryption Filters, Tokenizing Filters, Mime-type chain Filter, error handling filters
@@ -354,9 +356,9 @@
      </filter-mapping>
      ```
 
-# Application Context
+## Application Context
 
-## Spring Container
+### Spring Container
 
 1. spring container
    - `interface org.springframework.beans.factory.BeanFactory` - root interface for accessing a Spring bean container
@@ -396,7 +398,7 @@
      - `org.springframework.context.support.FileSystemXmlApplicationContext`
      - `org.springframework.context.support.XmlWebApplicationContext`
 
-## Configure Contexts
+### Configure Contexts
 
 1. bootstrap application context
    ```java
@@ -454,11 +456,11 @@
        - URL patterns are relative to the `DispatcherServlet`’s URL pattern
      - `<context:annotation-config/>` or `<context:component-scan/>` -- see `@Configuration`
 
-# Beans
+## Beans
 
-## Bean Attributes
+### Bean Attributes
 
-### Bean Resolve Attributes
+#### Bean Resolve Attributes
 
 1. bean name -- defaults to the defining class or method in camelCase
 
@@ -498,7 +500,7 @@
      - `org.springframework.core.PriorityOrdered` -- always applied before plain `Ordered` objects
      - compared by `org.springframework.core.OrderComparator`
 
-### Bean On-Off Attributes
+#### Bean On-Off Attributes
 
 1. `@org.springframework.context.annotation.Profile` -- a bean is eligible for registration when one or more specified profiles are active
    ```java
@@ -532,7 +534,7 @@
      @ConditionalOnProperty(name="spring.mail.host", havingValue="foo", matchIfMissing=true)
      ```
 
-### Bean Loading Attributes
+#### Bean Loading Attributes
 
 1. `@org.springframework.context.annotation.DependsOn` -- initialization-time dependency, and, in the case of singleton beans only, a corresponding destruction-time dependency
    ```java
@@ -581,7 +583,7 @@
        - `INTERFACES` -- preferred, create a JDK dynamic proxy implementing all interfaces exposed by the class of the target object, no proxy created if the target does not implement any interface
        - `TARGET_CLASS` -- create a class-based proxy (uses CGLIB)
 
-## Bean Definitions
+### Bean Definitions
 
 1. `@org.springframework.context.annotation.Bean` -- indicates that a method produces a bean
    ```java
@@ -652,7 +654,7 @@
      - `@org.springframework.stereotype.Service` -- "an operation offered as an interface that stands alone in the model, with no encapsulated state."
      - `@org.springframework.stereotype.Repository` -- "a mechanism for encapsulating storage, retrieval, and search behavior which emulates a collection of objects", also for DAO
 
-## Bean Lifecycle
+### Bean Lifecycle
 
 1. `org.springframework.context.Lifecycle` -- tbd
    - `SmartLifecycle`
@@ -689,7 +691,7 @@
      - `MessageSourceAware`
      - `ServletContextAware`, `ServletConfigAware`
 
-# Dependency Injection
+## Dependency Injection
 
 1. DI
    - inject beans into application context
@@ -714,7 +716,7 @@
    - order when injecting -- Matches by Type - Restricts by Qualifiers - Matches by Name
    - in Java EE -- `@javax.inject.Inject`, but without required-vs-optional semantics; `@javax.annotation.Resource`, but with subtle differences
 
-## Externalized Configuration
+### Externalized Configuration
 
 1. externalized values
    - syntax -- see SpEL
@@ -812,7 +814,7 @@
      - `spring.profiles` -- `List<String>` that at least one should match for the document to be included
      - `spring.profiles.include` -- `List<String>` to unconditionally activate
 
-# SpEL
+## SpEL
 
 <!-- TODO -->
 
@@ -849,7 +851,7 @@
      String message = (String) exp.getValue();
      ```
 
-# Aspects
+## Aspects
 
 1. AOP -- addresses cross-cutting concerns
    - aspect `@Aspect` -- the merger of advice and pointcuts
@@ -954,9 +956,9 @@
      }
      ```
 
-# SpringMVC
+## SpringMVC
 
-## Enable MVC
+### Enable MVC
 
 1. `@org.springframework.web.servlet.config.annotation.EnableWebMvc` -- imports the Spring MVC configuration from `WebMvcConfigurationSupport`
 
@@ -980,7 +982,7 @@
    - `default MessageCodesResolver getMessageCodesResolver()`
    - `default Validator getValidator()`
 
-## DispatcherServlet
+### DispatcherServlet
 
 1. `org.springframework.web.servlet.DispatcherServlet`
    ```java
@@ -1041,7 +1043,7 @@
        - `void setOrder(int order)`
      - `@org.springframework.boot.web.servlet.ServletComponentScan` -- Enables scanning for Servlet components (filters, servlets, and listeners annotations in `javax.servlet.annotation`). Scanning is only performed when using an embedded web server.
 
-## Controller
+### Controller
 
 1. `@Controller`, `@RestController` -- controller, work in coordination with `@RequestMapping`
    - `org.springframework.stereotype.Controller`
@@ -1160,7 +1162,7 @@
 
 1. `org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice` -- customizing the response after the execution of an `@ResponseBody` or a `ResponseEntity` controller method but before the body is written with an `HttpMessageConverter`
 
-## Validation
+### Validation
 
 1. validation
    - [Bean Validation](https://docs.spring.io/spring/docs/5.2.7.RELEASE/spring-framework-reference/core.html#validation-beanvalidation) -- `javax.validation` package and sub-packages
@@ -1174,7 +1176,7 @@
    - configuration -- `WebMvcConfigurer::WebMvcConfigurer` for `Validator`, which defaults to `LocalValidatorFactoryBean`
    - `org.springframework.validation.Validator`
 
-## Interceptor
+### Interceptor
 
 1. `HandlerMapping` -- define a mapping between requests and handler objects, along with a list of interceptors for pre- and post-processing
    - `RequestMappingHandlerMapping` -- for `@RequestMapping`
@@ -1186,7 +1188,7 @@
    - `postHandle` -- less useful with `@ResponseBody` and `ResponseEntity` methods for which the response is written and committed within the `HandlerAdapter` and before `postHandle`
    - `afterCompletion`
 
-## Web Client
+### Web Client
 
 1. `org.springframework.web.client.RestTemplate` -- synchronous client to perform HTTP requests, exposing a simple, template method API over underlying HTTP client libraries such as the JDK `HttpURLConnection`, Apache HttpComponents, and others
    - `exchange` method
@@ -1196,7 +1198,7 @@
 
 1. `org.springframework.web.reactive.function.client.WebClient` -- non-blocking, reactive client to perform HTTP requests, exposing a fluent, reactive API over underlying HTTP client libraries such as Reactor Netty
 
-# Data
+## Data
 
 1. transaction
    - `org.springframework.transaction.PlatformTransactionManager` -- bean to configure for implementation of this interface as transaction infrastructure
@@ -1297,7 +1299,7 @@
      }
      ```
 
-## Jackson
+### Jackson
 
 1. `com.fasterxml.jackson.annotation`
 
@@ -1313,7 +1315,7 @@
 
 1. `@JsonUnwrapped` -- flatten
 
-# Integration
+## Integration
 
 1. `org.springframework.core.task.TaskExecutor`
    ```java
@@ -1377,7 +1379,7 @@
      - `@Caching` -- Regroups multiple cache operations to be applied on a method.
      - `@CacheConfig` -- Shares some common cache-related settings at class-level.
 
-# Security
+## Security
 
 1. security concepts
    - authentication
@@ -1546,7 +1548,7 @@
    - resource server filter -- `OAuth2AuthenticationProcessingFilter`
 
 <!-- TODO -->
-# Spring Boot
+## Spring Boot
 
 1. `@org.springframework.boot.autoconfigure.SpringBootApplication` -- singleton with a `run` method which executes the application
    ```java
@@ -1640,7 +1642,7 @@
    }
    ```
 
-# JUnit 5
+## JUnit 5
 
 1. docs
    - [Overview (JUnit 5.0.1 API)](https://junit.org/junit5/docs/5.0.1/api/index.html)

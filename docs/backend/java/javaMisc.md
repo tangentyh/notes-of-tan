@@ -1,4 +1,6 @@
-# Text
+# Java Miscellanea
+
+## Text
 
 1. `String` — see [`String`](./javaBasics.md#String)
 
@@ -54,11 +56,11 @@
 
 1. `java.text.StringCharacterIterator`
 
-## Regex
+### Regex
 
-### Regex Syntax
+#### Regex Syntax
 
-#### Characters and Character Classes
+##### Characters and Character Classes
 
 1. characters
    - `\0n`, `\0nn`, `\0mnn` — ASCII (0~255 or 0~0o377) in octal
@@ -132,7 +134,7 @@
         - `Noncharacter_Code_Point`
         - `Assigned`
 
-#### Matchers, Quantifiers and Others
+##### Matchers, Quantifiers and Others
 
 1. line break matcher `\R` — any Unicode line break sequence, is equivalent to `\r\n|[\n\u000B\f\r\u0085\u2028\u2029]`
    - `\u000B` — a vertical tab
@@ -213,7 +215,7 @@
    - `(?<=X)` — X, via zero-width positive lookbehind
    - `(?<!X)` — X, via zero-width negative lookbehind
 
-### Regex Classes
+#### Regex Classes
 
 1. `java.util.regex.Pattern`
    ```java
@@ -317,7 +319,7 @@
      - `String toString()`
      - `boolean hitEnd()`
 
-## Format
+### Format
 
 1. `java.util.Formatter`
    - `String::format`
@@ -333,7 +335,7 @@
    - `public final String format(Object obj)`
    - choice formatting — `{1,choice,0#no houses|1#one house|2#{1} houses}`, see javadoc for more
 
-# Logging
+## Logging
 
 1. log4j2 with slf4j
    ```xml
@@ -361,7 +363,7 @@
    ```
    - `org.apache.logging.log4j.ThreadContext` -- stores properties in the current thread
 
-## Logger
+### Logger
 
 1. use logger
    - prevent gc — A logger that is not referenced by any variable can be garbage collected
@@ -437,7 +439,7 @@
 
 1. `java.util.logging.LogManager` — singleton to maintain a set of shared state about loggers and log services
 
-## Log Levels and Records
+### Log Levels and Records
 
 1. `java.util.logging.Level`
    ```java
@@ -466,7 +468,7 @@
    - `Throwable getThrown()`
    - more
 
-## Handlers
+### Handlers
 
 1. handler — all handlers extends `Handler`, used by `Logger::log`
    - also has level — `INFO` by default, configurable via configuration file
@@ -497,7 +499,7 @@
      - `void setLevel(Level newLevel)`
    - more
 
-### Filters
+#### Filters
 
 1. filters — implements `Filter`, used by handlers
    - in addition to level filtering, logger and handler can have an optional filter
@@ -511,7 +513,7 @@
    ```
    - `boolean isLoggable(LogRecord record)`
 
-### Formatters
+#### Formatters
 
 1. formatters — extends `Formatter`, used by handlers
    - `Handler::setFormatter`
@@ -523,7 +525,7 @@
    - `abstract String format(LogRecord record)`
    - more
 
-# JDBC
+## JDBC
 
 1. `java.sql.SQLException`
    ```java
@@ -548,7 +550,7 @@
    - `java.sql.SQLWarning`
      - `java.sql.DataTruncation`
 
-## JDBC Properties
+### JDBC Properties
 
 1. JDBC system properties
    ```properties
@@ -599,7 +601,7 @@
    - outer joins -- `oj`
    - the escape character in `LIKE` clauses
 
-## JDBC Classes
+### JDBC Classes
 
 1. example: establish a connection and execute statements
    ```java
@@ -776,7 +778,7 @@
      - `ARRAY`, `BIGINT`, `BINARY`, `BIT`, `BLOB`, `BOOLEAN`, `TINYINT`, `VARBINARY`, `VARCHAR`
      - more
 
-### Row Sets
+#### Row Sets
 
 1. `javax.sql.RowSet` -- a connected rowset or more commonly, a disconnected rowset
    ```java
@@ -798,7 +800,7 @@
    - `static RowSetFactory newFactory()`
    - `static RowSetFactory newFactory(String factoryClassName, ClassLoader cl)`
 
-# Time
+## Time
 
 1. current timestamps
    - `System`
@@ -953,7 +955,7 @@
      - `NARROW` / `NARROW_STANDALONE`
      - `Month::getDisplayName` — `String getDisplayName(TextStyle style, Locale locale)`
 
-# i18n
+## i18n
 
 1. locale — language code and optionally other codes; language tag like `en-US`
    ```
@@ -1025,7 +1027,7 @@
      - `MessageFormat(String pattern, Locale locale)`
    - public final String format(Object obj)
 
-## Number Format
+### Number Format
 
 1. `java.text.NumberFormat`
    ```java
@@ -1068,7 +1070,7 @@
 
 1. `java.time.format.DateTimeFormatter` — see [Time](#Time)
 
-## Collator and Normalizer
+### Collator and Normalizer
 
 1. `java.text.Collator` — locale-sensitive String comparison
    ```java
@@ -1135,7 +1137,7 @@
      - `NFKC`
      - `NFKD`
 
-## Resource Bundles
+### Resource Bundles
 
 1. resource bundles — locale-specific items
    - naming convention
@@ -1203,7 +1205,7 @@
      - `String getString(String key)`
      - `String[] getStringArray(String key)`
 
-# Security
+## Security
 
 1. security manager — `SecurityManager`
    - usage — no security manager installed by default, use with `System::setSecurityManager`, or CLI option `-Djava.security.manager`
@@ -1216,7 +1218,7 @@
      - login policies
    - tbd
 
-# Other Java APIs
+## Other Java APIs
 
 1. agents — bytecode engineering at load time
    - bytecode engineering compiled classes — [ASM](https://asm.ow2.io/)

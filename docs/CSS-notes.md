@@ -1,4 +1,6 @@
-# Miscellanea
+# CSS
+
+## Miscellanea
 
 1. tools
    - [CSS Generator](https://cssgenerator.org/)
@@ -10,9 +12,9 @@
 1. to learn
    - [you-dont-need/You-Dont-Need-JavaScript: CSS is powerful, you can do a lot of things without JS.](https://github.com/you-dont-need/You-Dont-Need-JavaScript)
 
-# Use CSS
+## Use CSS
 
-## In JS, user agent stylesheets
+### In JS, user agent stylesheets
 
 1. see HTML notes, BOM DOM notes, JavaScript notes
    - `document.styleSheets`
@@ -44,7 +46,7 @@
    - [Google Chrome](https://chromium.googlesource.com/chromium/blink/+/master/Source/core/css/html.css)
    - [Safari (WebKit)](https://trac.webkit.org/browser/trunk/Source/WebCore/css/html.css)
 
-## Syntax
+### Syntax
 
 1. value definition syntax — the set of valid values for a CSS property or function
    ```
@@ -82,7 +84,7 @@
    - comments — `/**/`
    - index start from 1 — `:nth-child()`, etc.
 
-## Concepts
+### Concepts
 
 1. Layout and the containing block
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block)
@@ -127,12 +129,12 @@
 
 1. margin collapse and negative margin — see after
 
-# CSS data type
+## CSS data type
 
 1. data types — typical values (including keywords and units) accepted by CSS properties and functions
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Types)
 
-## String and URL
+### String and URL
 
 1. `<string>`
    - single or double quote
@@ -149,7 +151,7 @@
    ```
    - Relative URLs — relative to the URL of the stylesheet
 
-## Number related
+### Number related
 
 1. `calc()` — be used anywhere a `<length>`, `<frequency>`, `<angle>`, `<time>`, `<percentage>`, `<number>`, or `<integer>` is allowed
    - Math expressions involving percentages for widths and heights on table columns, table column groups, table rows, table row groups, and table cells in both auto and fixed layout tables may be treated as if `auto` had been specified.
@@ -227,7 +229,7 @@
    - `s`
    - `ms`
 
-## Color
+### Color
 
 1. `<color>`
    ```
@@ -263,7 +265,7 @@
    ```
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/blend-mode)
 
-## Image
+### Image
 
 1. `<image>`
    ```
@@ -347,7 +349,7 @@
    - `radial-gradient()` — circle or ellipse
    - `repeating-radial-gradient()` — similar to `radial-gradient()` and takes the same arguments, but it repeats the color stops infinitely in all directions so as to cover its entire container
 
-## Variables
+### Variables
 
 1. `<custom-property-name>`
    - starts with two dashes
@@ -360,7 +362,7 @@
      - `CSSStyleDeclaration.getPropertyValue(property: string): string`
      - `CSSStyleDeclaration.setProperty()`
 
-## Media Queries
+### Media Queries
 
 1. `<media-query-list>`
    ```
@@ -408,7 +410,7 @@
    - `height`
    - more
 
-# At Rule
+## At Rule
 
 1. At-rule — a CSS statement that instructs CSS how to behave, begin with `@`
    ```CSS
@@ -466,7 +468,7 @@
    }
    ```
 
-# Selectors
+## Selectors
 
 1. selector — identify specific HTML elements as targets for CSS styles
    - similar to XPATH
@@ -599,7 +601,7 @@
      - `::cue` — WebVTT cues within a selected element
        - applicable rules are limited
 
-# Examples
+## Examples
 
 1. vertical centering
    - [Generator](http://howtocenterincss.com/)
@@ -630,7 +632,7 @@
      }
      ```
 
-## Common UI Components
+### Common UI Components
 
 1. Typography
    - `font-weight` — theme controlled light 300, regular 400, medium 500
@@ -682,7 +684,7 @@
      ```
      - some more `keyframes`
 
-### App bar
+#### App bar
 
 1. App bar
    ```jsx
@@ -729,7 +731,7 @@
      }
      ```
 
-### Avatars
+#### Avatars
 
 1. avatar
    - container in props, defaults to `<div>`
@@ -738,7 +740,7 @@
    - letter avatars — `background-color`, `user-select: none`, `font-family`, and `font-size` set to half of height
    - image — width and height set to 100% and `object-fit: cover`
 
-### Badge
+#### Badge
 
 1. badge
    ```jsx
@@ -782,7 +784,7 @@
      }
      ```
 
-### Button
+#### Button
 
 1. ButtonBase
    ```jsx
@@ -830,9 +832,9 @@
      }
      ```
 
-# Rules
+## Rules
 
-## special keywords
+### special keywords
 
 1. special keywords
    - `inherit`
@@ -867,7 +869,7 @@
    <type-or-unit> = string | color | url | integer | number | length | angle | time | frequency | cap | ch | em | ex | ic | lh | rlh | rem | vb | vi | vw | vh | vmin | vmax | mm | Q | cm | in | pt | pc | px | deg | grad | rad | turn | ms | s | Hz | kHz | %
    ```
 
-## Background
+### Background
 
 1. `background`
    ```
@@ -943,7 +945,7 @@
    <blend-mode>#
    ```
 
-## Box Styling
+### Box Styling
 
 1. choose box for width and height properties
    - `box-sizing` — width and height properties apply to
@@ -984,7 +986,7 @@
    margin: 2px 1em 0 auto;
    ```
 
-### Margins
+#### Margins
 
 1. margins
    - `margin-top`
@@ -1025,7 +1027,7 @@
      - can render some elements unclickable if they’re moved beneath other elements
    - auto horizontal margin — Auto left and right margins will grow to fill the available space, centering the element within the outer container.
 
-### padding, border, outline and box shadows
+#### padding, border, outline and box shadows
 
 1. padding
    - `padding-top`
@@ -1156,7 +1158,7 @@
      - or drawn inside the border (even transparent ones), above the background, but below content, where the shadow box does not cover is drawn
    - `<length>{2, 4}` — `offset-x | offset-y | blur-radius | spread-radius`
 
-## font
+### font
 
 1. font concepts
    - [wikipedia](https://en.wikipedia.org/wiki/Typeface#Font_metrics)
@@ -1255,7 +1257,7 @@
    <family-name> = <string> | <custom-ident>+
    ```
 
-### more about font
+#### more about font
 
 1. `font-smooth` — non-standard
    ```CSS
@@ -1268,7 +1270,7 @@
 
 1. more
 
-## writing mode
+### writing mode
 
 1. `writing-mode` — sets whether lines of text are laid out horizontally or vertically, as well as the direction in which blocks progress
    ```
@@ -1286,9 +1288,9 @@
    - This property is intended for Document Type Definition (DTD) designers. Web designers and similar authors should not override it.
    - The `direction` and `unicode-bidi` properties are the two only properties which are not affected by the `all` shorthand property
 
-## text
+### text
 
-### text style
+#### text style
 
 1. `color` — sets the foreground color value of an element's text and text decorations, and sets the `currentColor` value.
    ```
@@ -1356,7 +1358,7 @@
    <blur-radius> = <length>
    ```
 
-### text align
+#### text align
 
 1. horizontal align
    - `text-align` — horizontal alignment of an inline or table-cell box
@@ -1379,7 +1381,7 @@
    ```
    - negative allowed
 
-### text spacing and overflow
+#### text spacing and overflow
 
 1. spacing
    - `letter-spacing` — the spacing behavior between text characters
@@ -1437,7 +1439,7 @@
      }
      ```
 
-### more about text
+#### more about text
 
 1. punctuation
    - `hanging-punctuation` experimental — whether a punctuation mark should hang at the start or end of a line of text
@@ -1461,7 +1463,7 @@
 1. more
    - `text-size-adjust` experimental — controls the text inflation algorithm used on some smartphones and tablets
 
-## user action — caret, cursor, resize, select
+### user action — caret, cursor, resize, select
 
 1. `caret-color` — the color of the insertion caret
    ```
@@ -1491,7 +1493,7 @@
    ```
    - for non-SVG, `auto` and `none`
 
-## overflow
+### overflow
 
 1. `overflow` — what to do when an element's content is too big to fit in its block formatting context
    ```
@@ -1509,7 +1511,7 @@
    - Specifying a value other than `visible` (the default) creates a new block formatting context
      - `overflow: hidden | auto` forces the parent element to expand to contain its floated children
 
-## replaced element
+### replaced element
 
 1. replaced element
    - concept
@@ -1576,7 +1578,7 @@
 
 1. more experimental
 
-## stacking context forming transform
+### stacking context forming transform
 
 1. `opacity` — sets the transparency of an element, applies to the element as a whole
    ```
@@ -1615,7 +1617,7 @@
 
 1. `will-change`
 
-## Basic UI
+### Basic UI
 
 1. `appearance` — display an element using platform-native styling based on the operating system's theme
    ```
@@ -1632,9 +1634,9 @@
      }
      ```
 
-# Layouts
+## Layouts
 
-## BFC, IFC
+### BFC, IFC
 
 1. BFC 即 Block Formatting Contexts (块级格式化上下文) — contains everything inside of the element creating it
    - The rules for positioning and clearing of floats apply only to things within the same block formatting context
@@ -1664,7 +1666,7 @@
      - 水平居中：当一个块要在环境中水平居中时，设置其为 inline-block 则会在外层产生 IFC，通过设置父容器 text-align:center 则可以使其水平居中。
      - 垂直居中：创建一个IFC，用其中一个元素撑开父元素的高度，然后设置其 vertical-align:middle，其他行内元素则可以在此父元素下垂直居中。
 
-## `display`
+### `display`
 
 1. `display`
    - the outer display type defining how the box participates in flow layout
@@ -1726,7 +1728,7 @@
    - `inline-grid` — It is equivalent to `inline grid`
       - The element behaves like an inline element and lays out its content according to the grid model.
 
-## lists
+### lists
 
 1. `display: <display-listitem>` — The element generates a block box for the content and a separate list-item inline box.
    - `list-item` — causes the element to generate a `::marker` pseudo-element with the content specified by its `list-style` properties (for example a bullet point) together with a principal box of the specified type for its own contents
@@ -1780,7 +1782,7 @@
    - `outside`
      - The `::marker` is outside the principal block box.
 
-### counters
+#### counters
 
 1. `counter()` — display value of counter
    ```
@@ -1835,7 +1837,7 @@
      }
      ```
 
-## Table
+### Table
 
 1. `display: table`
    - With CSS tables, the inclusion of a row element isn’t as strict a requirement as it is with HTML tables
@@ -1909,7 +1911,7 @@
    }
    ```
 
-## Float
+### Float
 
 1. about float
    - A floated element is removed from the normal document flow and pulled to the edge of the container, still remaining a part of the flow (in contrast to absolute positioning)
@@ -1981,7 +1983,7 @@
    - only works when applied to block-level elements
    - applies to both floating and non-floating elements
 
-## Flex
+### Flex
 
 1. flex
    - container — `display: flex` or `inline-flex`
@@ -2084,9 +2086,9 @@
    auto | <'align-items'>
    ```
 
-## grid
+### grid
 
-### use grid
+#### use grid
 
 1. grid
    - `display: grid`, `display: inline-grid`
@@ -2155,7 +2157,7 @@
        - Otherwise, as its minimum track sizing function, and taking grid-gap into account
      - `auto-fit` — `auto-fill` but any empty repeated tracks are collapsed
 
-### Set Grid: Size and Spacing
+#### Set Grid: Size and Spacing
 
 1. `grid` — a shorthand property that sets all of the explicit grid properties, and all the implicit grid properties
    ```
@@ -2246,7 +2248,7 @@
      - if `<custom-ident>` given, only lines with that name are counted
        - If not enough lines with that name exist, all implicit grid lines on the side of the explicit grid corresponding to the search direction are assumed to have that name
 
-### alignment of grid items
+#### alignment of grid items
 
 1. `auto` — auto track sizes (and only auto track sizes) can be stretched by the `align-content` and `justify-content` properties.
 
@@ -2296,7 +2298,7 @@
      <'align-item'>
      ```
 
-## Positioning and stacking
+### Positioning and stacking
 
 1. containing block
    - `static`, `relative` — formed by the edge of the content box of the nearest ancestor element that is a block container or establishes a formatting context
@@ -2351,13 +2353,13 @@
    ```
    - helpful when using `mix-blend-mode`
 
-# Animation
+## Animation
 
 1. docs and resources
    - [Animatable CSS properties - CSS: Cascading Style Sheets | MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_animated_properties)
    - [daneden/animate.css: 🍿 A cross-browser library of CSS animations. As easy to use as an easy thing.](https://github.com/daneden/animate.css)
 
-## transition
+### transition
 
 1. about transition
    - Transitions enable you to define the transition between two states of an element
@@ -2402,13 +2404,13 @@
    ```
    - each will be applied to the corresponding property as specified by the `transition-property` property
 
-## animation
+### animation
 
 1. `animation`
 
 1. `@keyframes`
 
-# Browser Quirks
+## Browser Quirks
 
 1. utilities
    - [necolas/normalize.css: A modern alternative to CSS resets](https://github.com/necolas/normalize.css)

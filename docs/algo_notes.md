@@ -1,4 +1,6 @@
-# Miscellaneous
+# Algorithm
+
+## Miscellaneous
 
 1. index virtual map
    ```javascript
@@ -24,7 +26,7 @@
      - for `a0` to `a3`: `a1 - a0`, `a3 - a2` combined to -- `a1 - a2` and `a3 - a0`
      - for `a0` to `a5` -- combined to `a5 - a0`, `a3 - a4` and `a1 - a2`
 
-# Math
+## Math
 
 1. even or odd
    ```cpp
@@ -188,7 +190,7 @@
 1. geometry
    - [Convex hull algorithms - Wikipedia](https://en.wikipedia.org/wiki/Convex_hull_algorithms)
 
-# Strings
+## Strings
 
 1. references
    - [string.pdf](http://www-igm.univ-mlv.fr/~lecroq/string/string.pdf)
@@ -257,7 +259,7 @@
 1. suffix tree -- tbd
    - [Suffix tree - Wikipedia](https://en.wikipedia.org/wiki/Suffix_tree)
 
-# Search and sort
+## Search and sort
 
 1. two implementation of binary search -- difference in while condition and `hi`
    ```python
@@ -316,7 +318,7 @@
 
 1. Tim sort -- a type of merge sort
 
-# Trees
+## Trees
 
 1. build tree from level transverse array
    ```javascript
@@ -374,11 +376,11 @@
    - example
      - [Locked Doors - Kick Start](https://codingcompetitions.withgoogle.com/kickstart/round/000000000019ff08/0000000000386d5c), segment tree also applicable
 
-# Probabilistic data structures
+## Probabilistic data structures
 
 1. [Bloom filter - Wikipedia](https://en.wikipedia.org/wiki/Bloom_filter)
 
-# Graph
+## Graph
 
 1. Cycle detection
    - [Cycle detection - Wikipedia](https://en.wikipedia.org/wiki/Cycle_detection#Floyd%27s_Tortoise_and_Hare)

@@ -1,4 +1,6 @@
-# Miscellanea
+# BOM and DOM
+
+## Miscellanea
 
 1. [Web APIs | MDN](https://developer.mozilla.org/en-US/docs/Web/API)
 
@@ -24,7 +26,7 @@
    - typically with bracket notation, `item()` method
    - some with `namedItem()` method, with bracket notation
 
-## Common Internet Explorer Errors
+### Common Internet Explorer Errors
 
 1. standard mode and quirks mode
    - In computing, quirks mode refers to a technique used by some web browsers for the sake of maintaining backward compatibility with web pages designed for Internet Explorer 5 and earlier,
@@ -48,7 +50,7 @@
 1. The System Cannot Locate the Resource Specified
    - occurs when JavaScript is used to request a resource by URL and the URL is longer than Internet Explorer’s maximum URL length of 2083 characters
 
-# `<script>`
+## `<script>`
 
 1. attributes
    - global attributes on [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes)
@@ -72,9 +74,9 @@
 1. inline scripts for XHTML
    - warp with `//<![CDATA[`, `//]]>`
 
-# BOM
+## BOM
 
-## Core: the window object
+### Core: the window object
 
 1. concepts of the `window` object
    - represents an instance of the browser
@@ -258,7 +260,7 @@
    - schedules the `MessageEvent` to be dispatched only after all pending execution contexts have finished
      - For example, if `postMessage()` is invoked in an event handler, that event handler will run to completion, as will any remaining handlers for that same event, before the `MessageEvent` is dispatched
 
-## The Location Object
+### The Location Object
 
 1. access
    - `window.location` or `document.location` or `location`
@@ -298,7 +300,7 @@
    - navigate without history: `location.replace(url)`
      - won’t be able to navigate back
 
-## The Navigator Object
+### The Navigator Object
 
 1. `Navigator`
    - represents the state and the identity of the user agent
@@ -377,7 +379,7 @@
    - availability
      - providers other than Google on [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API#Availability)
 
-## The Screen and the History Object
+### The Screen and the History Object
 
 1. `screen` or `window.screen`
    ```javascript
@@ -409,9 +411,9 @@
      - `History.replaceState(data: any, title: string, url?: string): void` -- Updates the most recent entry on the history stack to have the specified data, title, and, if provided, URL
        - see `History.pushState()`, the difference is that this modifies the current history entry instead of creating a new one
 
-# Client Detection
+## Client Detection
 
-## Capability Detection and Quirks Detection
+### Capability Detection and Quirks Detection
 
 1. Capability detection (also called feature detection)
    ```javascript
@@ -481,7 +483,7 @@
      }();
      ```
 
-## User-Agent Detection
+### User-Agent Detection
 
 1. `navigator.userAgent`
    - IE
@@ -541,15 +543,15 @@
    - Identifying Mobile Devices
    - Identifying Game Systems
 
-# DOM
+## DOM
 
 1. miscellanea
    - all DOM objects are represented by COM objects in Internet Explorer 8 and earlier
    - The document element is the outermost element in the document
 
-## DOM Level 1
+### DOM Level 1
 
-### The Node Type
+#### The Node Type
 
 1. `Node`
    - All node types inherit from `Node`
@@ -670,7 +672,7 @@
      - If an empty text node is found, it is removed
      - if text nodes are immediate siblings, they are joined into a single text node
 
-### The Document Type {#doc-type}
+#### The Document Type {#doc-type}
 
 1. `document` or `window.document`
    - an instance of `HTMLDocument`, which inherits from `Document`
@@ -816,7 +818,7 @@
        var parentWindow = document.defaultView || document.parentWindow;
        ```
 
-### The Element Type
+#### The Element Type
 
 1. An Element node
    - `nodeType` is 1
@@ -905,7 +907,7 @@
    - To get child nodes and other descendants with a particular tag name, elements also support the `getElementsByTagName()` method
    - the search is rooted on the element
 
-### The Text Type
+#### The Text Type
 
 1. `Text` node type
    - plain text that is interpreted literally and may contain escaped HTML characters but no HTML code
@@ -945,9 +947,9 @@
    - When the browser parses a document, it will never create sibling text node
    - `Node.normalize(): void`: call on parent nodes to merge text nodes
 
-### Type of Minimal Use
+#### Type of Minimal Use
 
-#### The Comment Type
+##### The Comment Type
 
 1. Comments are represented in the DOM by the `Comment` type
    - similar to `Text` node type
@@ -964,7 +966,7 @@
 1. create comment nodes
    - `document.createComment(data): Comment` method
 
-#### The CDATASection Type
+##### The CDATASection Type
 
 1. CDATA: character data
    - CDATA sections are specific to XML-based documents and are represented by the `CDATASection` type
@@ -979,7 +981,7 @@
 1. manipulating methods
    - all of the same string manipulation methods as `Text` except for `splitText()`
 
-#### The DocumentType Type
+##### The DocumentType Type
 
 1. The `DocumentType` type
    - `nodeType` is 10
@@ -1001,7 +1003,7 @@
    - `DocumentType.systemId: string`: `"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"`
    - `DocumentType.internalSubset: string`: `"<!ELEMENT name (#PCDATA)>"`
 
-### The DocumentFragment Type
+#### The DocumentFragment Type
 
 1. The `DocumentFragment` Type
    - the only one that has no representation in markup
@@ -1021,7 +1023,7 @@
      - all of the document fragment’s child nodes are added in that spot
      - the document fragment itself is never added to the document tree
 
-### The Attr Type
+#### The Attr Type
 
 1. The `Attr` Type
    - Element attributes are represented by the `Attr` type in the DOM
@@ -1047,7 +1049,7 @@
    ```
    not preferred, not a good reason to access attribute nodes directly
 
-### Working With The DOM
+#### Working With The DOM
 
 1. Dynamic Scripts
    - The `<script>` element: `src` or inline
@@ -1132,9 +1134,9 @@
      - `deleteCell(pos)` — Deletes the cell in the given position
      - `insertCell(pos)` — Inserts a cell in the given position in the `cells` collection and returns a reference to the new cell
 
-## DOM Extensions
+### DOM Extensions
 
-### Selectors API
+#### Selectors API
 
 1. the library [jQuery](www.jquery.com)
    - built completely around the CSS selector queries of a DOM document
@@ -1156,7 +1158,7 @@
    - `Element.matches(selectors): boolean`
      - returns `true` if the given element matches the selector or `false` if not
 
-### Element Traversal
+#### Element Traversal
 
 1. [Element Traversal](www.w3.org/TR/ElementTraversal/)
    - effort to equalize the differences while still remaining true to the DOM specification
@@ -1171,7 +1173,7 @@
 1. `ParentNode.children: HTMLCollection`
    - a read-only property that returns a live `HTMLCollection` which contains all of the child elements of the node
 
-### HTML5
+#### HTML5
 
 The HTML5 specification, on the other hand, contains a large amount of JavaScript APIs designed for use with the markup additions.
 
@@ -1292,7 +1294,7 @@ The HTML5 specification, on the other hand, contains a large amount of JavaScrip
      - `inline`
        - One of `"start",` `"center",` `"end",` or `"nearest".` Defaults to `"nearest"`
 
-### Proprietary Extensions
+#### Proprietary Extensions
 
 1. Document Mode: IE only
    - `document.documentMode`
@@ -1316,11 +1318,11 @@ The HTML5 specification, on the other hand, contains a large amount of JavaScrip
    - [`Window.scrollByLines()`](https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollByLines)
    - [`Window.scrollByPages()`](https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollByPages)
 
-## DOM Levels 2 and 3
+### DOM Levels 2 and 3
 
 1. Conformance Check: see before `document.implementation.hasFeature()`
 
-### XML Namespaces (rarely used)
+#### XML Namespaces (rarely used)
 
 1. XML Namespaces
    - allow elements from different XML-based languages to be mixed together
@@ -1380,13 +1382,13 @@ The HTML5 specification, on the other hand, contains a large amount of JavaScrip
    - `removeNamedItemNS(namespaceURI, localName)` — Removes the item from the namespace represented by namespaceURI and with a name of localName
    - `setNamedItemNS(node)` — Adds node, which should have namespace information already applied.
 
-### Other Changes
+#### Other Changes
 
 See before DOM Level 1.
 
-### Styles
+#### Styles
 
-#### style Global Attribute
+##### style Global Attribute
 
 1. other Global Attributes
    - `id`, `lang`, `className` etc., see before
@@ -1423,7 +1425,7 @@ See before DOM Level 1.
    - pseudoElt: A string specifying the pseudo-element to match. Must be omitted (or `null`) for regular elements
    - not necessarily, but sometimes used after `document.defaultView` for some reason
 
-#### Style Sheets
+##### Style Sheets
 
 1. get stylesheets
    - `Document.styleSheets: StyleSheetList`: read only
@@ -1466,7 +1468,7 @@ See before DOM Level 1.
        - IE8 and earlier do not support this method but have a similar method called `addRule()`
        - IE9 supports both `insertRule()` and `addRule()`
 
-#### CSS Rules
+##### CSS Rules
 
 1. CSS Rules
    - [`CSSRule`](https://developer.mozilla.org/en-US/docs/Web/API/CSSRule)
@@ -1496,7 +1498,7 @@ See before DOM Level 1.
 
 1. Deleting Rules: see before `CSSStyleSheet.deleteRule()`
 
-### Element Dimensions (not DOM 2 but CSSOM)
+#### Element Dimensions (not DOM 2 but CSSOM)
 
 CSS Object Model (CSSOM) View Module: WD Working Draft
 
@@ -1559,7 +1561,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - can be modified in modern browsers, older versions which effectively returned `DOMRectReadOnly`
      - Due to compatibility problems (see below), it is safest to rely on only properties `left`, `top`, `right`, and `bottom`
 
-### Traversal
+#### Traversal
 
 1. conformance
    ```javascript
@@ -1623,7 +1625,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `TreeWalker.currentNode: Node`
      - can also be set to change where the traversal continues from when it resumes
 
-### Ranges
+#### Ranges
 
 1. conformance
    ```javascript
@@ -1727,7 +1729,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 
 1. Ranges in IE8 and earlier: P424
 
-## New BOM and DOM Related
+### New BOM and DOM Related
 
 1. `window.getSelection(): Selection`
    - represents the range of text selected by the user or the current position of the caret
@@ -1743,7 +1745,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand#Commands)
      - `Document.queryCommandEnabled(commandId: string): boolean`
 
-# Events
+## Events
 
 1. Event Flow
    - Event Bubbling
@@ -1762,7 +1764,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - `Element`, `document`, and `window` are the most common event targets
    - other objects can be event targets too, for example `XMLHttpRequest`, `AudioNode`, `AudioContext`
 
-## Event Handlers
+### Event Handlers
 
 1. Event Handlers for HTML and DOM Level 0
    - an event handler (or an event listener): with `on`- prefix compared to events
@@ -1845,7 +1847,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - [IE8 polyfill](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Syntax#Compatibility)
    - in the book: P449
 
-## The Event Object
+### The Event Object
 
 1. `Event`
    - not IE8 and earlier
@@ -1896,13 +1898,13 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    ```
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Creating_and_triggering_events)
 
-## Event Types
+### Event Types
 
 1. list on [MDN](https://developer.mozilla.org/en-US/docs/Web/Events)
 
 1. all inherit `Event`
 
-### UI Events
+#### UI Events
 
 1. `UIEvent`
    - constructor: `UIEvent(typeArg: DOMString, eventInitDict?: UIEventInit)`
@@ -1945,7 +1947,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - can fire at a high rate: IE fire the `resize` event as soon as the browser is resized by one pixel and then repeatedly as the user resizes the browser window
    - `scroll`
 
-### Focus Events
+#### Focus Events
 
 1. `FocusEvent`
    - constructor: `FocusEvent(typeArg: DOMString, eventInitDict?: FocusEventInit)`
@@ -1966,7 +1968,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      1. `blur` fires on the element losing focus
      1. `focus` fires on the element receiving focus
 
-### Mouse and Wheel Events
+#### Mouse and Wheel Events
 
 1. `MouseEvent`
    - constructor: `MouseEvent(typeArg: DOMString, eventInitDict?: MouseEventInit)`
@@ -2065,7 +2067,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Touch_events)
    - to be continued
 
-### Keyboard and Text Events
+#### Keyboard and Text Events
 
 1. `KeyboardEvent`
    - constructor: `KeyboardEvent(typeArg: DOMString, eventInitDict?: KeyboardEventInit)`
@@ -2128,7 +2130,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - `change` fires less often than input – it only fires when the changes are committed by the user
    - `input`
 
-### Composition Events
+#### Composition Events
 
 1. `CompositionEvent`
    - events that occur due to the user indirectly entering text
@@ -2148,7 +2150,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - `compositionupdate` -- A character is added to a passage of text being composed
    - `compositionend` -- The composition of a passage of text has been completed or canceled
 
-### Session History Events
+#### Session History Events
 
 1. `PageTransitionEvent`
    - fired when a document is being loaded or unloaded
@@ -2173,7 +2175,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
        - `HashChangeEvent.newURL` Read only -- The new URL to which the window is navigating
        - `HashChangeEvent.oldURL` Read only -- The previous URL from which the window was navigated
 
-### Sensor Events
+#### Sensor Events
 
 1. `deviceorientation` event: experimental WD
    - fired when fresh data is available from an orientation sensor about the current orientation of the device as compared to the Earth coordinate frame
@@ -2196,7 +2198,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `DeviceMotionEvent.rotationRate` Read only -- An object with properties `alpha`, `beta` and `gamma` giving the rate of change of the device's orientation on the three orientation axis alpha, beta and gamma. Rotation rate is expressed in degrees per seconds
      - `DeviceMotionEvent.interval` Read only -- A number representing the interval of time, in milliseconds, at which data is obtained from the device
 
-### Touch Events
+#### Touch Events
 
 [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Touch_events)
 
@@ -2247,7 +2249,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `Touch.rotationAngle` Read only -- Returns the angle (in degrees) that the ellipse described by radiusX and radiusY must be rotated, clockwise, to most accurately cover the area of contact between the user and the surface
      - `Touch.force` Read only -- Returns the amount of pressure being applied to the surface by the user, as a float between 0.0 (no pressure) and 1.0 (maximum pressure)
 
-### Clipboard Events
+#### Clipboard Events
 
 1. `ClipboardEvent`
    - constructor: `ClipboardEvent(typeArg: DOMString, eventInitDict?: ClipboardEventInit)`
@@ -2276,7 +2278,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - `copy` -- The selection has been copied to the clipboard
    - `paste` -- The item from the clipboard has been pasted
 
-### Message Events
+#### Message Events
 
 1. availability
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent)
@@ -2303,7 +2305,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `message` -- fired when message received
        - important to verify `origin` and `source`
 
-### Drag & Drop Events
+#### Drag & Drop Events
 
 1. `DragEvent`
    - HTML5 specification, not IE9 and before
@@ -2398,7 +2400,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `DataTransferItem.getAsFile(): File` -- Returns the File object associated with the drag data item (or null if the drag item is not a file)
      - `DataTransferItem.getAsString(callback: (data: string) => void): void` -- Invokes the specified callback with the drag data item string as its argument
 
-## Memory and Performance
+### Memory and Performance
 
 1. the number of event handlers on the page directly relates to the overall performance of the page
    - not like languages that create GUIs, such as C\#
@@ -2419,7 +2421,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - removing the element in the event handler prevents bubbling of the event. An event will bubble only if its target is still present in the document
    - IE8 and earlier: remove all event handlers `onunload`
 
-## Simulate Events
+### Simulate Events
 
 1. how-to: new way, no IE support
    1. create event using event constructor
@@ -2487,9 +2489,9 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    btn.fireEvent("onclick", event);
    ```
 
-# Scripting Forms
+## Scripting Forms
 
-## Form Basics
+### Form Basics
 
 1. `<form>`, `HTMLFormElement`
    - `document.forms[index]`, `document.forms[id]`, `document.forms[name]`
@@ -2591,7 +2593,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - interface: `Event`
    - order of `blur` and `change`: not strictly defined???
 
-## Scripting Text Boxes
+### Scripting Text Boxes
 
 1. text boxes
    - `<input>`
@@ -2648,7 +2650,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - automatically move the focus to the next field when the current field is complete
      - especially when entering data whose appropriate length is already known
 
-## HTML5 Constraint Validation API
+### HTML5 Constraint Validation API
 
 1. introduction
    - the ability for browsers to validate data in forms before submitting to the server
@@ -2722,7 +2724,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      </form>
      ```
 
-## Scripting Select Boxes
+### Scripting Select Boxes
 
 1. Select Boxes
    - `<select>` and `<option>`
@@ -2753,7 +2755,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `text` DOMString -- Contains the text content of the element
    - constructor: `Option(text?: string, value?: string, defaultSelected?: boolean, selected?: boolean)`
 
-## Rich Text Editing
+### Rich Text Editing
 
 1. using `designMode`
    - `Document.designMode`
@@ -2777,9 +2779,9 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - extract the HTML manually and submit
      - typically done by having a hidden form field that is updated with the HTML from the `iframe` or the `contenteditable` element
 
-# Graphics with Canvas
+## Graphics with Canvas
 
-## Interface
+### Interface
 
 1. `<canvas>`
    ```html
@@ -2825,9 +2827,9 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - WebGL context attributes:
        - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext#Parameters)
 
-## The 2D Context
+### The 2D Context
 
-### Basics and Shape
+#### Basics and Shape
 
 1. Resources
    - [Drawing DOM objects into a canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API#Guides_and_tutorials)
@@ -2888,7 +2890,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    ctx.fillRect(0, 0, canvas.width, canvas.height);
    ```
 
-### Path Drawing
+#### Path Drawing
 
 1. Paths
    - individual path: `Path2D`
@@ -2945,7 +2947,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - stroke has width
      - no IE support
 
-### Text Drawing
+#### Text Drawing
 
 1. Text styles
    - `CanvasRenderingContext2D.font` -- Font setting. CSS `font` value. Default value `10px sans-serif`
@@ -2969,7 +2971,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - properties of `TextMetrics` on [MDN](https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics#Properties)
      - `TextMetrics.width` Read only -- Is a double giving the calculated width of a segment of inline text in CSS pixels. It takes into account the current font of the context
 
-### Transformation and State
+#### Transformation and State
 
 1. Transformations
    - `CanvasRenderingContext2D.rotate(angle)` -- Adds a rotation to the transformation matrix. The angle argument represents a clockwise rotation angle and is expressed in radians
@@ -2996,7 +2998,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - `CanvasRenderingContext2D.restore(): void` -- Restores the drawing style state to the last element on the 'state stack' saved by `save()`
    - `CanvasRenderingContext2D.canvas` -- A read-only back-reference to the `HTMLCanvasElement`. Might be `null` if it is not associated with a `<canvas>` element
 
-### Image Drawing
+#### Image Drawing
 
 1. `CanvasRenderingContext2D.drawImage(): void`
    - `drawImage(image, dx, dy)`  
@@ -3038,7 +3040,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - `ImageBitmap`
      - represents a bitmap image which can be drawn to a `<canvas>` without undue latency
 
-### Shadows, Gradients and Patterns
+#### Shadows, Gradients and Patterns
 
 1. shadows
    - `CanvasRenderingContext2D.shadowBlur` -- Specifies the level blurring effect. Default 0
@@ -3066,7 +3068,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - method: `CanvasPattern.setTransform(matrix): void`
        - matrix: `SVGMatrix`???
 
-### Composition and Optimization
+#### Composition and Optimization
 
 1. Compositing
    - `CanvasRenderingContext2D.globalAlpha` -- Alpha value that is applied to shapes and images before they are composited onto the canvas. Default 1.0 (opaque)
@@ -3087,7 +3089,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 1. Optimization
    - on [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas)
 
-## WebGL
+### WebGL
 
 1. [three.js](https://github.com/mrdoob/three.js)
 
@@ -3114,7 +3116,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial)
    - `WebGLRenderingContext.getError()`: errors are generally not thrown from WebGL operations
 
-# Media Elements
+## Media Elements
 
 1. `<video>` and `<audio>`
    ```html
@@ -3223,7 +3225,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - [Video and audio content](https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Video_and_audio_content)
    - [Creating a cross-browser video player](https://developer.mozilla.org/en-US/docs/Web/Apps/Fundamentals/Audio_and_video_delivery/cross_browser_video_player)
 
-# XML
+## XML
 
 1. `Document.implementation.createDocument()`: see [before](#doc-type)
 
@@ -3260,9 +3262,9 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 1. E4X
    - standard with no implementation
 
-# Ajax and Comet
+## Ajax and Comet
 
-## XMLHttpRequest, FormData
+### XMLHttpRequest, FormData
 
 1. Ajax, short for Asynchronous JavaScript+XML
    - Prior to the introduction of XHR, Ajax-style communication had to be accomplished through a number of hacks, mostly using hidden frames or iframes
@@ -3378,7 +3380,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `FormData.set(name, value, filename?: string): void` -- Sets a new value for an existing key inside a FormData object, or adds the key/value if it does not already exist
      - `FormData.values(): IterableIterator<FormDataEntryValue>` -- Returns an `iterator` allowing to go through all values of the key/value pairs contained in this object
 
-## Progress Events
+### Progress Events
 
 1. `ProgressEvent`
    - represents events measuring progress of an underlying process, like an HTTP request (for an XMLHttpRequest, or the loading of the underlying resource of an `<img>`, `<audio>`, `<video>`, `<style>` or `<link>`)
@@ -3406,7 +3408,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - The download events are fired on the `XMLHttpRequest` object itself, the upload events are fired on the `XMLHttpRequest.upload` object
    - Progress events are not available for the `file:` protocol
 
-## Cross-Origin Resource Sharing (CORS)
+### Cross-Origin Resource Sharing (CORS)
 
 1. Cross-Origin Resource Sharing (CORS)
    - a mechanism that uses additional HTTP headers to tell a browser to let a web application running at one origin (domain) have permission to access selected resources from a server at a different origin
@@ -3461,7 +3463,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - When responding to a credentialed request, the server must specify an origin in the value of the Access-Control-Allow-Origin header, instead of specifying the "*" wildcard
      - cookies set in CORS responses are subject to normal third-party cookie policies, cookies set with Set-Cookie header would thus not be saved if the user has configured their browser to reject all third-party cookies
 
-## Alternate Cross-Domain Techniques
+### Alternate Cross-Domain Techniques
 
 1. Image Pings
    ```javascript
@@ -3519,7 +3521,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - client side: listening for the `readystatechange` event and focusing on `readyState` 3, keep track of the progress and slice the response
    - `WebSocket` and server-sent events
 
-### Server-Sent Events (SSE)
+#### Server-Sent Events (SSE)
 
 1. `EventSource`
    - no IE and Edge support
@@ -3567,7 +3569,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - All other field names are ignored
      - If a line doesn't contain a colon, the entire line is treated as the field name with an empty value string
 
-### Web Sockets
+#### Web Sockets
 
 1. `WebSocket`
    - provide full-duplex, bidirectional communication with the server over a single, long-lasting connection
@@ -3619,7 +3621,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 1. tools for web sockets
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API#Tools)
 
-## Fetch API
+### Fetch API
 
 1. Concepts and usage
    - At the heart of Fetch
@@ -3674,7 +3676,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - properties and methods
      - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Body)
 
-## Security
+### Security
 
 1. prevent cross-site request forgery (CSRF) attack
    - Requiring SSL to access resources that can be requested via XHR
@@ -3686,9 +3688,9 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - Validating based on cookie information — Also easily spoofed
    - use `XMLHttpRequest.open()` with username and password
 
-# Offline Applications and Client-Side Storage
+## Offline Applications and Client-Side Storage
 
-## Offline App
+### Offline App
 
 1. Offline detection
    - `Navigator.onLine: boolean`
@@ -3723,14 +3725,14 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `window.applicationCache.status`
      - methods
 
-### Service Worker
+#### Service Worker
 
 1. Service Worker API
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
 
-## Data Storage
+### Data Storage
 
-### Cookies
+#### Cookies
 
 1. `Navigator.cookieEnabled` Read only
 
@@ -3827,9 +3829,9 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - persistent cookie: [evercookie](https://github.com/samyk/evercookie)
    - space and number restrictions on cookies???
 
-### Internet Explorer User Data
+#### Internet Explorer User Data
 
-### Web Storage
+#### Web Storage
 
 1. Web Storage concepts and usage
    - provides mechanisms by which browsers can store key/value pairs
@@ -3872,7 +3874,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `StorageEvent.url` -- The address of the document whose key changed
      - `StorageEvent.storageArea` -- The Storage object that was affected
 
-### IndexedDB
+#### IndexedDB
 
 1. Key concepts and usage
    - for client-side storage of significant amounts of structured data, including files/blobs
@@ -3893,9 +3895,9 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - [Browser storage limits and eviction criteria](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Browser_storage_limits_and_eviction_criteria)
    - P786
 
-# APIs
+## APIs
 
-## File API
+### File API
 
 1. `Blob`
    - represents a file-like object of immutable, raw data
@@ -3946,7 +3948,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
        - `URL.revokeObjectURL(objectURL: string): void` -- let the browser know not to keep the reference to the file any longer
      - `FileReader.readAsText(blob, encoding?): void` -- Starts reading, once finished, the `result` attribute contains the contents of the file as a text string
 
-## Fullscreen API
+### Fullscreen API
 
 1. `Element.requestFullscreen(): Promise<void>` -- issues an asynchronous request to make the element be displayed full-screen
    - This method must be invoked from a user interaction or a device orientation change, else it will fail
@@ -3970,7 +3972,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - Target -- Document
    - Default Action -- None
 
-## Performance
+### Performance
 
 1. `WindowOrWorkerGlobalScope.performance: Performance`
    - provides access to performance-related information for the current page
@@ -3978,7 +3980,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Performance#Methods)
      - `Performance.now()` -- more precise than `Date.now()`
 
-## Web Worker
+### Web Worker
 
 1. `Worker`
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Worker)
@@ -3986,7 +3988,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 1. Worker API
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
 
-## URL
+### URL
 
 1. `URL`
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/URL)
@@ -3996,7 +3998,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 
 1. see node notes
 
-## Payment Request API
+### Payment Request API
 
 1. Payment Request API
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Payment_Request_API)

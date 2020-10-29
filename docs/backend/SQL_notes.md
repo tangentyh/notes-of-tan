@@ -1,4 +1,8 @@
-# Docs
+# SQL
+
+Based on MySQL
+
+## Docs
 
 1. docs
    - [MySQL :: MySQL 8.0 Reference Manual](https://dev.mysql.com/doc/refman/8.0/en/)
@@ -39,7 +43,7 @@
      mysql.server start
      ```
 
-# CLI
+## CLI
 
 1. mycli — A Terminal Client for MySQL with AutoCompletion and Syntax Highlighting
    - [mycli at GitHub](https://github.com/dbcli/mycli)
@@ -86,7 +90,7 @@
      - The X DevAPI — work with both relational and document data
      - The AdminAPI — work with InnoDB cluster
 
-# Miscellanea
+## Miscellanea
 
 1. case sensitivity
    - SQL statements — case insensitive
@@ -95,7 +99,7 @@
 
 1. index — start from 1
 
-# Data Types
+## Data Types
 
 1. numeric
    - attributes
@@ -224,7 +228,7 @@
 
 1. JSON
 
-# Statements
+## Statements
 
 1. statements
    - SQL schema statements
@@ -238,9 +242,9 @@
 1. `USE db_name` — use the named database as the default (current) database for subsequent statements
    - currently using — `DATABASE()`
 
-## Inspection
+### Inspection
 
-### SHOW
+#### SHOW
 
 1. `SHOW` — provide information about databases, tables, columns, or status information about the server
    - correspond to tables in `INFORMATION_SCHEMA` — `SELECT` corresponding tables yields the same result
@@ -315,7 +319,7 @@
 
 1. `SHOW VARIABLES` — see [System Variables](#System-Variables)
 
-### EXPLAIN
+#### EXPLAIN
 
 1. `EXPLAIN`, `DESCRIBE`, `DESC`
    - see `SHOW COLUMNS`
@@ -366,9 +370,9 @@
        - 减少锁竞争；
        - 在应用层进行连接，可以更容易对数据库进行拆分，从而更容易做到高性能和可伸缩。
 
-## DDL
+### DDL
 
-### CREATE TABLE
+#### CREATE TABLE
 
 1. `CREATE TABLE`
    ```
@@ -464,7 +468,7 @@
      - corresponding tables in `INFORMATION_SCHEMA` — `INFORMATION_SCHEMA.KEY_COLUMN_USAGE`, `INFORMATION_SCHEMA.INNODB_FOREIGN`, `INFORMATION_SCHEMA.INNODB_FOREIGN_COLS`
    - `FULLTEXT`, `SPATIAL` keys — tbd
 
-### ALTER TABLE, DROP TABLE
+#### ALTER TABLE, DROP TABLE
 
 1. `ALTER TABLE`
    ```
@@ -498,7 +502,7 @@
 
 1. `DROP TABLE`
 
-### CREATE VIEW, PROCEDURE, FUNCTION, TRIGGER
+#### CREATE VIEW, PROCEDURE, FUNCTION, TRIGGER
 
 1. `CREATE VIEW`
    ```
@@ -536,9 +540,9 @@
 
 1. `CREATE TRIGGER`
 
-## DML
+### DML
 
-### SELECT
+#### SELECT
 
 1. `SELECT`
    ```
@@ -609,7 +613,7 @@
    ```
    - execution order defined in ANSI SQL — `FROM`, `WHERE`, `GROUP BY`, `HAVING`, `SELECT`, `ORDER BY`
 
-#### FROM, JOIN
+##### FROM, JOIN
 
 1. `FROM` — the table or tables from which to retrieve rows
    ```
@@ -695,7 +699,7 @@
          a.c1, a.c2, a.c3, b.c1, b.c2, b.c3
          ```
 
-#### UNION
+##### UNION
 
 1. `UNION`
    ```
@@ -717,7 +721,7 @@
 
 1. `EXCEPT` — ANSI SQL but not in MySQL
 
-### Filtering, Ordering, Grouping, Limiting
+#### Filtering, Ordering, Grouping, Limiting
 
 1. `WHERE` `where_condition` — an expression that evaluates to true for each row to be selected
    - no aggregate functions — can use any of the functions and operators, except for aggregate (summary) functions
@@ -769,7 +773,7 @@
    - `offset` — use 0 to include first row
    - up to end — use a large number `row_count`
 
-#### WINDOW
+##### WINDOW
 
 1. `WINDOW` — windows for window functions, tbd
    - `WINDOW` clause in `SELECT`
@@ -849,7 +853,7 @@
    WINDOW w AS (ORDER BY val);
    ```
 
-### Subqueries
+#### Subqueries
 
 1. subqueries
    - return type — scalar, column, row, and table
@@ -930,7 +934,7 @@
          AS max_sale_customer;
        ```
 
-### WITH (Common Table Expressions, CTE)
+#### WITH (Common Table Expressions, CTE)
 
 1. CTE — a named temporary result set that exists within the scope of a single statement, from MySQL 8.0
    - use
@@ -973,7 +977,7 @@
      WHERE cte1.a = cte2.c;
      ```
 
-### DELETE
+#### DELETE
 
 1. `DELETE` syntax
    - single table delete
@@ -1025,7 +1029,7 @@
      DROP TABLE t_old;
      ```
 
-### UPDATE
+#### UPDATE
 
 1. `UPDATE`
    ```
@@ -1051,7 +1055,7 @@
          [WHERE where_condition]
      ```
 
-### INSERT
+#### INSERT
 
 1. `INSERT` syntax
    ```
@@ -1107,9 +1111,9 @@
      INSERT INTO tbl_name (col1,col2) VALUES(15,col1*2);
      ```
 
-## TCL
+### TCL
 
-### Transactions
+#### Transactions
 
 1. `START TRANSACTION` or `BEGIN` — start a new transaction
    ```
@@ -1156,7 +1160,7 @@
    - `RELEASE SAVEPOINT` — delete a save point
    - deconstruction — all deleted after single `COMMIT` or `ROLLBACK`
 
-### SET TRANSACTION
+#### SET TRANSACTION
 
 1. `SET TRANSACTION`
    ```
@@ -1182,7 +1186,7 @@
      - for locking reads (`SELECT` with `FOR UPDATE` or `FOR SHARE`), `UPDATE`, and `DELETE` statements — locks only index records; Gap locking is only used for foreign-key constraint checking and duplicate-key checking, see docs
    - `READ UNCOMMITTED` — nonblocking `SELECT`, no consistent read; otherwise like `READ COMMITTED`
 
-### Locks
+#### Locks
 
 1. instance lock — prevents files from being created, renamed, or removed
    ```
@@ -1203,7 +1207,7 @@
    ```
    - more
 
-## Dynamic SQL
+### Dynamic SQL
 
 1. prepared statements
    - merits
@@ -1230,9 +1234,9 @@
    {DEALLOCATE | DROP} PREPARE stmt_name
    ```
 
-# Language Structure
+## Language Structure
 
-## Identifiers, User Variables and Comments
+### Identifiers, User Variables and Comments
 
 1. comment
    - inline comment — `--`, `#` (less commonly supported)
@@ -1276,7 +1280,7 @@
      where (@cnt := IF(@prev = (@prev := Num), @cnt + 1, 1)) = 3;
      ```
 
-## Literals
+### Literals
 
 1. `NULL`
 
@@ -1338,7 +1342,7 @@
      TIMESTAMP 'str'
      ```
 
-## Operators and Functions
+### Operators and Functions
 
 1. implicit type conversion — use `CAST()` for explict conversion
    - between strings and numbers — `1+'1'`, `CONCAT(1)`
@@ -1431,7 +1435,7 @@
      - `||` — deprecated as `OR`, when in `sql_mode` `PIPES_AS_CONCAT`, `||` is SQL-standard string concatenation
    - `XOR` — `NULL` if any `NULL`
 
-## Cast, Math, Date, Time and String Functions
+### Cast, Math, Date, Time and String Functions
 
 1. cast
    - use extract functions for date times
@@ -1594,7 +1598,7 @@
      - `CHARSET(str)`
      - `COLLATION(str)`
 
-## Aggregate and Window Functions
+### Aggregate and Window Functions
 
 1. group functions
    - ignore `NULL` values
@@ -1639,7 +1643,7 @@
    - `RANK() over_clause` — not consecutive when duplicate
    - `ROW_NUMBER() over_clause`
 
-## Other Functions
+### Other Functions
 
 1. full-text search functions — for `FULLTEXT` index types, tbd
    ```
@@ -1686,7 +1690,7 @@
      - `GROUPING(expr [, expr] ...)` — see `GROUP BY`
      - `ANY_VALUE(arg)` — see `GROUP BY`
 
-## Expressions
+### Expressions
 
 1. expression
    ```
@@ -1785,9 +1789,9 @@
      - `DAY_MICROSECOND`, `DAY_SECOND`, `DAY_MINUTE`, `DAY_HOUR` — like above but with days spaced: `'DAYS HOURS:MINUTES:SECONDS.MICROSECONDS'`
      - `YEAR_MONTH` — `'YEARS-MONTHS'`
 
-# Distributed MySQL
+## Distributed MySQL
 
-## Partition
+### Partition
 
 1. partition in MySQL
    - partitioning types -- horizontal, error when cannot decide partition
@@ -1869,7 +1873,7 @@
 
 1. `PARTITION` clause in DML — see corresponding DML
 
-# System Variables
+## System Variables
 
 1. `SHOW VARIABLES`
    ```

@@ -1,4 +1,6 @@
-# Miscellanea
+# MacOS
+
+## Miscellanea
 
 1. docs
    - [Mac keyboard shortcuts - Apple Support](https://support.apple.com/en-us/HT201236)
@@ -12,7 +14,7 @@
 1. customize
    - [pqrs-org/Karabiner-Elements: Karabiner-Elements is a powerful utility for keyboard customization on macOS Sierra (10.12) or later.](https://github.com/pqrs-org/Karabiner-Elements)
 
-# Commons
+## Commons
 
 1. right click — `⌃` `click`
 
@@ -48,7 +50,7 @@
    - `⌘` `+`, `⌘` `-`, `⌘` `0` — zoom
    - `⇧` `⌘` `?` — help
 
-## Edit
+### Edit
 
 1. edit
    - backspace (`^?`) and delete
@@ -180,7 +182,7 @@
      - `⌃` `-`, `^x` `u`, `^x` `⌃` `u` — undo
      - `⌃` `r` in vim — redo
 
-# System
+## System
 
 1. navigation — snap aware, in System Preferences > Keyboard > Shortcuts > Keyboard
    - switch navigation on / off — `⌃` `F1`
@@ -270,12 +272,12 @@
    - `⇧` `⌘` `5` — general
    - `⇧` `⌘` `6` — touch bar
 
-## Accessibility
+### Accessibility
 
 1. tts
    - `⌥` `esc`
 
-# Terminal
+## Terminal
 
 1. meta key
 
@@ -328,7 +330,7 @@
    - `-n` — Show network addresses as numbers
    - `-p` — protocol
 
-# Finder
+## Finder
 
 1. show hidden files — `command + shift + .`
 
@@ -369,7 +371,7 @@
 
 1. paste image from clipboard -- open preview.app, in menu File -> New from Clipboard
 
-# pkg and brew
+## pkg and brew
 
 1. SHA
    ```shell
@@ -405,6 +407,6 @@
 
 1. appleID association to app -- `/path_to_app/Contents/_MASReceipt`
 
-# Chrome
+## Chrome
 
 1. drag text — hold for a while

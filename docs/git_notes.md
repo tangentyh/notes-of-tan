@@ -1,4 +1,6 @@
-# Introduction
+# Git
+
+## Introduction
 
 1. help
    ```shell
@@ -104,7 +106,7 @@
        git clone https://<user>@gist.github.com/<gist-id>.git
        ```
 
-# Quick Reference
+## Quick Reference
 
 1. initialization
    ```shell
@@ -130,7 +132,7 @@
    git add -a
    ```
 
-# Philosophy
+## Philosophy
 
 1. philosophy -- [Git - gitglossary Documentation](https://git-scm.com/docs/gitglossary)
    - snapshots -- stream of snapshots instead of delta-based version control
@@ -278,9 +280,9 @@
 
 1. `<pathspec>` -- see [Git gitglossary](https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec)
 
-# Git Basics
+## Git Basics
 
-## Getting and Creating Projects
+### Getting and Creating Projects
 
 1. `git init`
    ```shell
@@ -295,9 +297,9 @@
    ```
    - `-o <name>`, `--origin <name>`
 
-## Basic Snapshotting
+### Basic Snapshotting
 
-### Add
+#### Add
 
 1. `git add`
    ```
@@ -321,7 +323,7 @@
      - --no-edit -- keep commit message
    - [Angular Team Git Commit Guidelines](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#commit)
 
-### Deletion
+#### Deletion
 
 1. `git rm` -- Remove files from the working tree and from the index
    ```
@@ -342,7 +344,7 @@
    - with file path -- `git restore`
    - `git revert` -- Revert some existing commits
 
-### Get Info
+#### Get Info
 
 1. `git status` -- Show the working tree status
    ```shell
@@ -397,7 +399,7 @@
    - `git difftool` -- `git diff` in an external tool
      - `git difftool --tool-help` to see available tools
 
-# Branching
+## Branching
 
 1. `git checkout` -- Switch branches or restore working tree files
    ```
@@ -515,7 +517,7 @@
      git tag -d <tagname>…​
      ```
 
-## Patching
+### Patching
 
 1. `git rebase` -- Reapply commits on top of another base tip
    ```
@@ -596,7 +598,7 @@
          fi' HEAD
      ```
 
-# Remote
+## Remote
 
 1. `git remote` -- Manage set of tracked repositories
    ```shell
@@ -680,7 +682,7 @@
    - `-d`, `--delete` -- All listed refs are deleted from the remote repository. This is the same as prefixing all refs with a colon.
    - `-u`, `--set-upstream`
 
-# Inspection and Comparison
+## Inspection and Comparison
 
 1. `git status`
 
@@ -729,7 +731,7 @@
 1. `git describe` -- Give an object a human readable name based on an available ref, require annotated tags
    - `--tags` -- also lightweight tags
 
-# Utility
+## Utility
 
 1. `git check-ref-format` -- ensures that a reference name `<refname>` is well formed
    ```shell
@@ -765,7 +767,7 @@
      ca82a6dff817ec66f44342007202690a93763949
      ```
 
-## Content Search
+### Content Search
 
 1. `git grep`
 
@@ -779,7 +781,7 @@
    - `-L <start>,<end>:<file>`
    - `-L :<funcname>:<file>`
 
-## Administration
+### Administration
 
 1. `git archive` -- Create an archive of files from a named tree
    - example
@@ -800,7 +802,7 @@
 1. `git clean` -- Remove untracked files from the working tree
    - backup before clean -- `git stash -a`
 
-## Submodules
+### Submodules
 
 1. `git submodule`
    - clone a project with submodules

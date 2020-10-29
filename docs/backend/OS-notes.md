@@ -1,4 +1,6 @@
-# Miscellanea
+# Operating System
+
+## Miscellanea
 
 1. [Numbers Every Programmer Should Know By Year](https://colin-scott.github.io/personal_website/research/interactive_latency.html)
    ```shell
@@ -25,7 +27,7 @@
    - [original link to berkeley](http://www.eecs.berkeley.edu/~rcs/research/interactive_latency.html)
    - [widespread 2012 version](https://gist.github.com/jboner/2841832)
 
-# Introduction
+## Introduction
 
 1. 基本特征
    - 并发
@@ -62,7 +64,7 @@
    - 异常 -- 由 CPU 执行指令的内部事件引起，如非法操作码、地址越界、算术溢出等。
    - 陷入 -- 在用户程序中使用系统调用。
 
-# Process
+## Process
 
 1. process and thread
    - 进程 -- 进程是资源分配的基本单位。
@@ -124,7 +126,7 @@
    - 共享存储 -- 允许多个进程共享一个给定的存储区。因为数据不需要在进程之间复制，所以这是最快的一种 IPC。需要使用信号量用来同步对共享存储的访问。多个进程可以将同一个文件映射到它们的地址空间从而实现共享内存。另外 XSI 共享内存不是使用文件，而是使用内存的匿名段。
    - socket
 
-# Disk
+## Disk
 
 1. 磁盘结构
    - 盘面（Platter）：一个磁盘有多个盘面；
@@ -168,7 +170,7 @@
 1. file systems
    - HDFS, GFS -- tbd
 
-# Compiling
+## Compiling
 
 1. 目标文件
    - 可执行目标文件：可以直接在内存中执行；
@@ -191,7 +193,7 @@
        - 在给定的文件系统中一个库只有一个文件，所有引用该库的可执行目标文件都共享这个文件，它不会被复制到引用它的可执行文件中；
        - 在内存中，一个共享库的 .text 节（已编译程序的机器代码）的一个副本可以被不同的正在运行的进程共享。
 
-# Memory
+## Memory
 
 1. 虚拟内存
    - 内存 -> 地址空间 -> 页
@@ -217,7 +219,7 @@
    - 分段 -- 把每个表分成段，一个段构成一个独立的地址空间。每个段的长度可以不同，并且可以动态增长。
    - 段页式 -- 程序的地址空间划分成多个拥有独立地址空间的段，每个段上的地址空间划分成大小相同的页。这样既拥有分段系统的共享和保护，又拥有分页系统的虚拟内存功能。
 
-# Dead Lock
+## Dead Lock
 
 1. necessary condition
    - 互斥：每个资源要么已经分配给了一个进程，要么就是可用的。

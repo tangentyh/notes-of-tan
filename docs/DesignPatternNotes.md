@@ -29,7 +29,7 @@
    - aggregation -- one object owns or is responsible for another object
    - acquaintance -- an object merely knows of another object
 
-# Creational
+## Creational
 
 Creational design patterns abstract the instantiation process, They help make a system independent of how its objects are created, composed, and represented.
 
@@ -107,7 +107,7 @@ Creational design patterns abstract the instantiation process, They help make a 
 1. Prototype -- specify the kinds of objects to create using a prototypical instance, and create new objects by copying this prototype
    - examples -- `Object::clone`, JavaScript prototype
 
-# Structural
+## Structural
 
 Structural patterns are concerned with how classes and objects are composed to form larger structures.
 
@@ -165,7 +165,7 @@ Structural patterns are concerned with how classes and objects are composed to f
      - smart reference -- a replacement for a bare pointer that performs additional actions when an object is accessed; for example, counting the number of references to the real object so that it can be freed automatically when there are no more references (also called smart pointers)
    - examples -- `java.lang.reflect.Proxy`, Spring AOP, `java.rmi.*`
 
-# Behavioral
+## Behavioral
 
  Behavioral patterns are concerned with algorithms and the assignment of responsibilities between objects. Behavioral patterns describe not just patterns of objects or classes but also the patterns of communication between them. These patterns characterize complex control flow that's difficult to follow at run-time. They shift your focus away from flow of control to let you concentrate just on the way objects are interconnected.
 

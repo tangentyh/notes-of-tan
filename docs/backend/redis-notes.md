@@ -1,4 +1,6 @@
-# Introduction
+# Redis
+
+## Introduction
 
 1. docs
    - [Redis official](https://redis.io/documentation)
@@ -12,9 +14,9 @@
      - [Redis使用手册](http://redisguide.com/)
      - [《Redis入门与实战》 — LearnRedis.com 1.0 文档](http://learnredis.com/)
 
-# Data Types And Data Structures
+## Data Types And Data Structures
 
-## Data Structures
+### Data Structures
 
 1. string
    - `c_str` -- used in string literal, like when `redisLog`
@@ -186,7 +188,7 @@
      - operations like push an entry -- O(N), the possibility of long cascade update is low, which needs consecutive entries of length between 250 to 253b
        - cascade update -- `previous_entry_length` of an entry updates from 1b to 5b, triggering the `previous_entry_length` update of the next entry, O(N^2) in the worst case
 
-## Data Types
+### Data Types
 
 1. object -- wrapper for data structures, with timestamp, with reference count for object sharing and GC
    ```cpp
@@ -298,7 +300,7 @@
      - `ZRANK`, `ZREVRANK`
      - `ZREM`
 
-## Sort
+### Sort
 
 1. sort
    ```cpp
@@ -334,7 +336,7 @@
        - `GET` -- get pattern
        - `STORE`
 
-# Server
+## Server
 
 1. server
    ```cpp
@@ -495,7 +497,7 @@
      - `m` -- 这个命令可能会占用大量内存，执行之前需要先检查服务器的内存使用情况，如果内存紧缺的话就禁止执行这个命令。 like `SET`, `APPEND`, `RPUSH`, `LPUSH`, `SADD`, `SINTERSTORE`
      - more
 
-# Events
+## Events
 
 1. event loop
    - file events -- sockets
@@ -522,7 +524,7 @@
      - update stats
    - more tasks
 
-# Publish and Subscribe
+## Publish and Subscribe
 
 1. publish and subscribe
    - channels
@@ -580,7 +582,7 @@
        #define NOTIFY_ALL (NOTIFY_GENERIC | NOTIFY_STRING | NOTIFY_LIST | NOTIFY_SET | NOTIFY_HASH | NOTIFY_ZSET | NOTIFY_EXPIRED | NOTIFY_EVICTED | NOTIFY_STREAM) /* A flag */
        ```
 
-# Persistence
+## Persistence
 
 1. RDB -- persistence of current snapshot in memory as a compressed binary file
    - expired key handling -- see `redisDb`
@@ -608,7 +610,7 @@
    - related commands
      - `BGREWRITEAOF` -- non-blocking, but reject `BGSAVE` when executing
 
-# Clustering
+## Clustering
 
 1. replication
    - set slave -- `SLAVEOF` command, or `slaveof` in configurations
@@ -751,7 +753,7 @@
      - `GETKEYSINSLOT`
      - `REPLICATE`
 
-# Transaction
+## Transaction
 
 1. transaction -- queue commands and execute them atomically
    - command queue -- all commands except transaction related commands will be validated and queued
@@ -787,7 +789,7 @@
    - `WATCH`, `UNWATCH`
    - `DISCARD`
 
-# Other
+## Other
 
 1. config
    - config file -- `/etc/redis/redis.conf`
