@@ -317,7 +317,7 @@ Based on MySQL
    - corresponding table in `INFORMATION_SCHEMA` — `INFORMATION_SCHEMA.CHARACTER_SETS`
    - hidden character set — `filename`, internal use only
 
-1. `SHOW VARIABLES` — see [System Variables](#System-Variables)
+1. `SHOW VARIABLES` — see [System Variables](#system-variables)
 
 #### EXPLAIN
 
@@ -725,7 +725,7 @@ Based on MySQL
 
 1. `WHERE` `where_condition` — an expression that evaluates to true for each row to be selected
    - no aggregate functions — can use any of the functions and operators, except for aggregate (summary) functions
-   - see [Operators and Functions](#Operators-and-Functions)
+   - see [Operators and Functions](#operators-and-functions)
 
 1. `GROUP BY`, `ORDER BY`
    - `ORDER BY` — defaults to `ACS`, outermost one take precedence if used in nested multiple subqueries

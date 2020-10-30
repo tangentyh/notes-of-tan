@@ -432,7 +432,7 @@
      git switch [<options>] (-c|-C) <new-branch> [<start-point>]
      git switch [<options>] --orphan <new-branch>
      ```
-   - `git restore` — reset files to certain revisions, specialized `git checkout`, see [Basic Snapshotting](#Basic-Snapshotting)
+   - `git restore` — reset files to certain revisions, specialized `git checkout`, see [Basic Snapshotting](#basic-snapshotting)
 
 1. `git branch` — List, create, or delete branches
    - create branch and checkout — `git checkout -b`, see `git checkout`
@@ -447,7 +447,7 @@
      git branch -vv
      ```
      - `[(--merged | --no-merged) [<commit>]]`
-   - remote related — see [Remote](#Remote)
+   - remote related — see [Remote](#remote)
 
 1. `git merge`
    ```
@@ -659,7 +659,7 @@
      git pull <url> <branch>
      ```
 
-1. `git branch` — see also [Branching](#Branching)
+1. `git branch` — see also [Branching](#branching)
    - track — `-t`, `--track`, set up `branch.<name>.remote` and `branch.<name>.merge` configuration entries
      ```
      git branch [--track | --no-track] [-f] <branchname> [<start-point>]

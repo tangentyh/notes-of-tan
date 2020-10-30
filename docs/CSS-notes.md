@@ -430,7 +430,7 @@
    - must precede all other types of rules, except `@charset` rules
    - cannot be used inside conditional group at-rules
 
-1. `@media` — apply part of a style sheet based on the result of one or more media queries, see [Media Queries](#Media-Queries)
+1. `@media` — apply part of a style sheet based on the result of one or more media queries, see [Media Queries](#media-queries)
    ```
    @media <media-query-list> {
      <group-rule-body>
@@ -2414,7 +2414,7 @@
 
 1. utilities
    - [necolas/normalize.css: A modern alternative to CSS resets](https://github.com/necolas/normalize.css)
-   - see [Flex](#Flex)
+   - see [Flex](#flex)
 
 1. fix `<main>` inline by default
    ```CSS
