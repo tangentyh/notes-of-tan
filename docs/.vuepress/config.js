@@ -85,12 +85,12 @@ module.exports = {
     ],
     // displayAllHeaders: true, // Default: false
     // activeHeaderLinks: false, // Default: true
+    sidebarDepth: 5,    // optional, defaults to 1
     sidebar: {
       '/backend/java/': [
         {
           title: 'Java',
           collapsable: false, // optional, defaults to true
-          sidebarDepth: 6,    // optional, defaults to 1
           children: [
             // '',
             'javaBasics',
@@ -137,5 +137,9 @@ module.exports = {
     '@vuepress/plugin-back-to-top',
     '@vuepress/plugin-medium-zoom',
     '@maginapp/vuepress-plugin-katex',
-  ]
+  ],
+  markdown: {
+    extractHeaders: [ 'h2', 'h3', 'h4', 'h5', 'h6' ],
+  },
+  evergreen: true,
 }
