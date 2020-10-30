@@ -4,7 +4,7 @@
 
 1. [Web APIs | MDN](https://developer.mozilla.org/en-US/docs/Web/API)
 
-1. [Chrome DevTools  |  Tools for Web Developers  |  Google Developers](https://developers.google.com/web/tools/chrome-devtools/)
+1. [Chrome DevTools  |  Tools for Web Developers  |  Google Developers](https://developers.google.com/web/tools/chrome-devtools/)
 
 1. [`MutationObserver`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
 

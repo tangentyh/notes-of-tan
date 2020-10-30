@@ -133,32 +133,32 @@
      - `Scanner(ReadableByteChannel source, String charsetName)`
    - settings — delimiter, locale, regex
      - `Scanner reset()`
-     - `Scanner useDelimiter(Pattern pattern)`
-     - `Scanner useDelimiter(String pattern)`
+     - `Scanner useDelimiter(Pattern pattern)`
+     - `Scanner useDelimiter(String pattern)`
      - `Pattern delimiter()`
-     - `Scanner useLocale(Locale locale)`
+     - `Scanner useLocale(Locale locale)`
      - `Locale locale()`
-     - `Scanner useRadix(int radix)`
+     - `Scanner useRadix(int radix)`
      - `int radix()`
    - read
      - `String next()`
-     - `String next(Pattern pattern)`
-     - `String next(String pattern)`
+     - `String next(Pattern pattern)`
+     - `String next(String pattern)`
      - `String nextLine()`
      - `BigDecimal nextBigDecimal()`
      - `BigInteger nextBigInteger()`
-     - `BigInteger nextBigInteger(int radix)`
+     - `BigInteger nextBigInteger(int radix)`
      - `boolean nextBoolean()`
      - `byte nextByte()`
-     - `byte nextByte(int radix)`
+     - `byte nextByte(int radix)`
      - `double nextDouble()`
      - `float nextFloat()`
      - `int nextInt()`
-     - `int nextInt(int radix)`
+     - `int nextInt(int radix)`
      - `long nextLong()`
-     - `long nextLong(int radix)`
+     - `long nextLong(int radix)`
      - `short nextShort()`
-     - `short nextShort(int radix)`
+     - `short nextShort(int radix)`
      - `MatchResult match()` — the match result of the last scanning operation
        - peek
          ```java
@@ -167,13 +167,13 @@
          ```
    - test — `has-` prefixed version of read methods, `hasNext`
    - find — ignoring delimiters, the scanner returns and advances past the match if found, else returns `null` with position unchanged
-     - `String findInLine(Pattern pattern)`
-     - `String findInLine(String pattern)`
-     - `String findWithinHorizon(Pattern pattern, int horizon)` — will never search more than `horizon` code points beyond its current position, `horizon` ignored if it is 0
-     - `String findWithinHorizon(String pattern, int horizon)`
+     - `String findInLine(Pattern pattern)`
+     - `String findInLine(String pattern)`
+     - `String findWithinHorizon(Pattern pattern, int horizon)` — will never search more than `horizon` code points beyond its current position, `horizon` ignored if it is 0
+     - `String findWithinHorizon(String pattern, int horizon)`
    - skip — ignoring delimiters
-     - `Scanner skip(Pattern pattern)`
-     - `Scanner skip(String pattern)`
+     - `Scanner skip(Pattern pattern)`
+     - `Scanner skip(String pattern)`
    - `IOException ioException()` — Returns the `IOException` last thrown by this Scanner's underlying `Readable`.
 
 1. `java.io.BufferedReader` — synchronized
@@ -333,10 +333,10 @@
      extends Writer
      ```
      - constructors
-       - `OutputStreamWriter(OutputStream out)`
-       - `OutputStreamWriter(OutputStream out, Charset cs)`
-       - `OutputStreamWriter(OutputStream out, CharsetEncoder enc)`
-       - `OutputStreamWriter(OutputStream out, String charsetName)`
+       - `OutputStreamWriter(OutputStream out)`
+       - `OutputStreamWriter(OutputStream out, Charset cs)`
+       - `OutputStreamWriter(OutputStream out, CharsetEncoder enc)`
+       - `OutputStreamWriter(OutputStream out, String charsetName)`
      - `String getEncoding()`
 
 ### Filter Stream
@@ -515,14 +515,14 @@
    extends Writer
    ```
    - constructors
-     - `PrintWriter(File file)`
-     - `PrintWriter(File file, String csn)`
-     - `PrintWriter(OutputStream out)`
-     - `PrintWriter(OutputStream out, boolean autoFlush)`
-     - `PrintWriter(String fileName)`
-     - `PrintWriter(String fileName, String csn)`
-     - `PrintWriter(Writer out)`
-     - `PrintWriter(Writer out, boolean autoFlush)`
+     - `PrintWriter(File file)`
+     - `PrintWriter(File file, String csn)`
+     - `PrintWriter(OutputStream out)`
+     - `PrintWriter(OutputStream out, boolean autoFlush)`
+     - `PrintWriter(String fileName)`
+     - `PrintWriter(String fileName, String csn)`
+     - `PrintWriter(Writer out)`
+     - `PrintWriter(Writer out, boolean autoFlush)`
    - methods — see `PrintStream`
      - difference — `PrintStream::write` methods allow `int` and `byte[]`
 
@@ -610,7 +610,7 @@
      ```
      - inherited methods
      - `void flush()`
-     - `void writeObject(Object obj)`
+     - `void writeObject(Object obj)`
    - `java.io.ObjectInput`
      ```java
      public interface ObjectInput
@@ -630,7 +630,7 @@
    extends InputStream
    implements ObjectInput, ObjectStreamConstants
    ```
-   - constructor — `ObjectInputStream(InputStream in)`
+   - constructor — `ObjectInputStream(InputStream in)`
    - `void defaultReadObject()`
 
 1. `java.io.ObjectOutputStream`
@@ -944,8 +944,8 @@
      ```
      - mode — `"r"`, `"rw"`, `"rws"` (file content or metadata synchronized with storage), or `"rwd"` (only file content synchronized)
      - constructors
-       - `RandomAccessFile(File file, String mode)`
-       - `RandomAccessFile(String name, String mode)`
+       - `RandomAccessFile(File file, String mode)`
+       - `RandomAccessFile(String name, String mode)`
      - file info
        - `FileChannel getChannel()`
        - `FileDescriptor getFD()`
@@ -957,8 +957,8 @@
        - `int skipBytes(int n)`
      - read
        - `int read()`
-       - `int read(byte[] b)`
-       - `int read(byte[] b, int off, int len)`
+       - `int read(byte[] b)`
+       - `int read(byte[] b, int off, int len)`
        - `DataInput` methods
      - write — `DataOutput` methods
 

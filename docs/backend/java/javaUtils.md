@@ -83,7 +83,7 @@
    ```java
    public interface Iterable<T>
    ```
-   - `default void forEach(Consumer<? super T> action)`
+   - `default void forEach(Consumer<? super T> action)`
    - `Iterator<T> iterator()`
    - `default Spliterator<T> spliterator()`
    - foreach loop — needs to implement `Iterable`
@@ -116,15 +116,15 @@
      - `boolean addAll(Collection<? extends E> c)`
    - test
      - `boolean equals(Object o)`
-     - `boolean contains(Object o)`
-     - `boolean containsAll(Collection<?> c)`
+     - `boolean contains(Object o)`
+     - `boolean containsAll(Collection<?> c)`
      - `boolean isEmpty()`
    - modify
      - `void clear()`
      - `boolean removeIf(Predicate<? super E> filter)`
-     - `boolean removeAll(Collection<?> c)`
-     - `boolean remove(Object o)`
-     - `boolean retainAll(Collection<?> c)`
+     - `boolean removeAll(Collection<?> c)`
+     - `boolean remove(Object o)`
+     - `boolean retainAll(Collection<?> c)`
    - conversion
      - `<T> T[] toArray(T[] a)` — no new array created if `a` is of the correct size
      - `default Stream<E> stream()`
@@ -181,7 +181,7 @@
      - `int lastIndexOf(Object o)`
    - list information
      - `ListIterator<E> listIterator()`
-     - `ListIterator<E> listIterator(int index)`
+     - `ListIterator<E> listIterator(int index)`
      - `default Spliterator<E> spliterator()`
      - `List<E> subList(int fromIndex, int toIndex)` — a view
    - modify and converse
@@ -193,12 +193,12 @@
    ```java
    public interface ListIterator<E> extends Iterator<E>
    ```
-   - `void add(E e)`
+   - `void add(E e)`
    - `boolean hasPrevious()`
    - `int nextIndex()`
    - `E previous()`
    - `int previousIndex()`
-   - `void set(E e)`
+   - `void set(E e)`
    - `Collections::emptyListIterator`
 
 1. `List` related methods in `Collections`
@@ -206,8 +206,8 @@
      - `static <T> int binarySearch(List<? extends Comparable<? super T>> list, T key)` — return `(-(insertion point) - 1)` if no matching  
        `static <T> int binarySearch(List<? extends T> list, T key, Comparator<? super T> c)`
        - whether `indexedBinarySearch` or `iteratorBinarySearch` — checks `RandomAccess` or `BINARYSEARCH_THRESHOLD` to determine
-     - `static int indexOfSubList(List<?> source, List<?> target)`
-     - `static int lastIndexOfSubList(List<?> source, List<?> target)`
+     - `static int indexOfSubList(List<?> source, List<?> target)`
+     - `static int lastIndexOfSubList(List<?> source, List<?> target)`
    - modify
      - `static <T> void copy(List<? super T> dest, List<? extends T> src)`
      - `static <T> void fill(List<? super T> list, T obj)`
@@ -558,7 +558,7 @@
    - one for n wrapper — `static <T> List<T> nCopies(int n, T o)`
      - returns an immutable list consisting of n copies of the specified object, `o` is stored only once
    - stack view — `static <T> Queue<T> asLifoQueue(Deque<T> deque)`
-   - set view from map, see [Set](#set) — `static <E> Set<E> newSetFromMap(Map<E,Boolean> map)`
+   - set view from map, see [Set](#set) — `static <E> Set<E> newSetFromMap(Map<E,Boolean> map)`
    - wrappers containing only one element — immutable, instance of inner class in `Collections`, containing only one element
      - `static <T> Set<T> singleton(T o)`
      - `static <T> List<T> singletonList(T o)`
@@ -574,38 +574,38 @@
      - `static <K,V> SortedMap<K,V> emptySortedMap()`
      - `static <E> SortedSet<E> emptySortedSet()`
    - unmodifiable view — `UnsupportedOperationException` when try modifying, instance of inner class in `Collections`
-     - `static <T> Collection<T> unmodifiableCollection(Collection<? extends T> c)`
-     - `static <T> List<T> unmodifiableList(List<? extends T> list)`
-     - `static <K,V> Map<K,V> unmodifiableMap(Map<? extends K,? extends V> m)`
-     - `static <K,V> NavigableMap<K,V> unmodifiableNavigableMap(NavigableMap<K,? extends V> m)`
-     - `static <T> NavigableSet<T> unmodifiableNavigableSet(NavigableSet<T> s)`
-     - `static <T> Set<T> unmodifiableSet(Set<? extends T> s)`
-     - `static <K,V> SortedMap<K,V> unmodifiableSortedMap(SortedMap<K,? extends V> m)`
-     - `static <T> SortedSet<T> unmodifiableSortedSet(SortedSet<T> s)`
+     - `static <T> Collection<T> unmodifiableCollection(Collection<? extends T> c)`
+     - `static <T> List<T> unmodifiableList(List<? extends T> list)`
+     - `static <K,V> Map<K,V> unmodifiableMap(Map<? extends K,? extends V> m)`
+     - `static <K,V> NavigableMap<K,V> unmodifiableNavigableMap(NavigableMap<K,? extends V> m)`
+     - `static <T> NavigableSet<T> unmodifiableNavigableSet(NavigableSet<T> s)`
+     - `static <T> Set<T> unmodifiableSet(Set<? extends T> s)`
+     - `static <K,V> SortedMap<K,V> unmodifiableSortedMap(SortedMap<K,? extends V> m)`
+     - `static <T> SortedSet<T> unmodifiableSortedSet(SortedSet<T> s)`
    - synchronized view — synchronized with mutex, instance of inner class in `Collections`
-     - `static <T> Collection<T> synchronizedCollection(Collection<T> c)`
-     - `static <T> List<T> synchronizedList(List<T> list)`
-     - `static <K,V> Map<K,V> synchronizedMap(Map<K,V> m)`
-     - `static <K,V> NavigableMap<K,V> synchronizedNavigableMap(NavigableMap<K,V> m)`
-     - `static <T> NavigableSet<T> synchronizedNavigableSet(NavigableSet<T> s)`
-     - `static <T> Set<T> synchronizedSet(Set<T> s)`
-     - `static <K,V> SortedMap<K,V> synchronizedSortedMap(SortedMap<K,V> m)`
-     - `static <T> SortedSet<T> synchronizedSortedSet(SortedSet<T> s)`
+     - `static <T> Collection<T> synchronizedCollection(Collection<T> c)`
+     - `static <T> List<T> synchronizedList(List<T> list)`
+     - `static <K,V> Map<K,V> synchronizedMap(Map<K,V> m)`
+     - `static <K,V> NavigableMap<K,V> synchronizedNavigableMap(NavigableMap<K,V> m)`
+     - `static <T> NavigableSet<T> synchronizedNavigableSet(NavigableSet<T> s)`
+     - `static <T> Set<T> synchronizedSet(Set<T> s)`
+     - `static <K,V> SortedMap<K,V> synchronizedSortedMap(SortedMap<K,V> m)`
+     - `static <T> SortedSet<T> synchronizedSortedSet(SortedSet<T> s)`
    - checked view — throw `ClassCastException` immediately when heap pollution (detects with `Class::isInstance`), instance of inner class in `Collections`, intended as debugging support
      ```java
      ArrayList<String> strings = new ArrayList<>();
      ArrayList rawList = strings; // warning only, not an error, for compatibility with legacy code
      rawList.add(new Date()); // now strings contains a Date object!
      ```
-     - `static <E> Collection<E> checkedCollection(Collection<E> c, Class<E> type)`
-     - `static <E> List<E> checkedList(List<E> list, Class<E> type)`
-     - `static <K,V> Map<K,V> checkedMap(Map<K,V> m, Class<K> keyType, Class<V> valueType)`
-     - `static <K,V> NavigableMap<K,V> checkedNavigableMap(NavigableMap<K,V> m, Class<K> keyType, Class<V> valueType)`
-     - `static <E> NavigableSet<E> checkedNavigableSet(NavigableSet<E> s, Class<E> type)`
-     - `static <E> Queue<E> checkedQueue(Queue<E> queue, Class<E> type)`
-     - `static <E> Set<E> checkedSet(Set<E> s, Class<E> type)`
-     - `static <K,V> SortedMap<K,V> checkedSortedMap(SortedMap<K,V> m, Class<K> keyType, Class<V> valueType)`
-     - `static <E> SortedSet<E> checkedSortedSet(SortedSet<E> s, Class<E> type)`
+     - `static <E> Collection<E> checkedCollection(Collection<E> c, Class<E> type)`
+     - `static <E> List<E> checkedList(List<E> list, Class<E> type)`
+     - `static <K,V> Map<K,V> checkedMap(Map<K,V> m, Class<K> keyType, Class<V> valueType)`
+     - `static <K,V> NavigableMap<K,V> checkedNavigableMap(NavigableMap<K,V> m, Class<K> keyType, Class<V> valueType)`
+     - `static <E> NavigableSet<E> checkedNavigableSet(NavigableSet<E> s, Class<E> type)`
+     - `static <E> Queue<E> checkedQueue(Queue<E> queue, Class<E> type)`
+     - `static <E> Set<E> checkedSet(Set<E> s, Class<E> type)`
+     - `static <K,V> SortedMap<K,V> checkedSortedMap(SortedMap<K,V> m, Class<K> keyType, Class<V> valueType)`
+     - `static <E> SortedSet<E> checkedSortedSet(SortedSet<E> s, Class<E> type)`
    - `equals` and `hashCode`
      - unmodifiable, synchronized and checked views — returns a collection whose equals method does not invoke the `equals` method of the underlying collection but `Object::equals`, same for `hashCode`
      - exception — `unmodifiableSet` and `unmodifiableList` methods use the `equals` and `hashCode` methods of the underlying collections
@@ -815,9 +815,9 @@
    - creation
      - `static <T> Stream<T> of(T... values)`  
        `static <T> Stream<T> of(T t)`
-     - `static <T> Stream<T> empty()`
-     - `static <T> Stream<T> generate(Supplier<T> s)` — Returns an infinite sequential unordered stream where each element is generated by the provided Supplier.
-     - `static <T> Stream<T> iterate(T seed, UnaryOperator<T> f)` — Returns an infinite sequential ordered Stream produced by iterative application of a function `f` to an initial element seed, producing a Stream consisting of seed, `f(seed)`, `f(f(seed))`, etc.
+     - `static <T> Stream<T> empty()`
+     - `static <T> Stream<T> generate(Supplier<T> s)` — Returns an infinite sequential unordered stream where each element is generated by the provided Supplier.
+     - `static <T> Stream<T> iterate(T seed, UnaryOperator<T> f)` — Returns an infinite sequential ordered Stream produced by iterative application of a function `f` to an initial element seed, producing a Stream consisting of seed, `f(seed)`, `f(f(seed))`, etc.
      - `static <T> Stream<T> concat(Stream<? extends T> a, Stream<? extends T> b)`
      - `static <T> Stream.Builder<T> builder()`
        ```java
@@ -1011,15 +1011,15 @@
    - transformation
      - `void ifPresent(Consumer<? super T> consumer)`
      - `<U> Optional<U> map(Function<? super T,? extends U> mapper)`
-     - `<U> Optional<U> flatMap(Function<? super T,Optional<U>> mapper)`
-     - `Optional<T> filter(Predicate<? super T> predicate)`
-     - `T orElse(T other)`
-     - `T orElseGet(Supplier<? extends T> other)`
-     - `<X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier)`
+     - `<U> Optional<U> flatMap(Function<? super T,Optional<U>> mapper)`
+     - `Optional<T> filter(Predicate<? super T> predicate)`
+     - `T orElse(T other)`
+     - `T orElseGet(Supplier<? extends T> other)`
+     - `<X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier)`
    - creation
-     - `static <T> Optional<T> empty()`
-     - `static <T> Optional<T> of(T value)`
-     - `static <T> Optional<T> ofNullable(T value)`
+     - `static <T> Optional<T> empty()`
+     - `static <T> Optional<T> of(T value)`
+     - `static <T> Optional<T> ofNullable(T value)`
    - variants
      - `java.util.OptionalInt`
      - `java.util.OptionalDouble`

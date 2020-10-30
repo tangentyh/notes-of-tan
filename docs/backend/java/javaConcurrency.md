@@ -819,8 +819,8 @@
      - `boolean isCompletedNormally()`
      - `boolean isDone()` — normally, abnormally or cancelled
    - manage circular dependency
-     - `void complete(V value)`  
-       `void completeExceptionally(Throwable ex)`
+     - `void complete(V value)`  
+       `void completeExceptionally(Throwable ex)`
      - `static void helpQuiesce()` — Possibly executes tasks until the pool hosting the current task is quiescent.
    - extending — extend one of the abstract classes that support a particular style of fork/join processing, defines a `compute` method that somehow uses the control methods supplied by this base class
      - tags — for use of specialized subclasses

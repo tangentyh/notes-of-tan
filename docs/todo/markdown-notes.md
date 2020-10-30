@@ -221,20 +221,20 @@ Prefaced with the exclamation point  `!` , other things is the same as inline li
 ### tables
 
 ```markdown
-| First Header  | Second Header |
+| First Header  | Second Header |
 | ------------- | ------------- |
-| Content Cell  | Content Cell  |
-| Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  |
 ```
 
 by including colons `:` within the header row, you can define text to be left-aligned, right-aligned, or center-aligned:
 
 ```markdown
-| Left-Aligned  | Center Aligned  | Right Aligned |
+| Left-Aligned  | Center Aligned  | Right Aligned |
 | :------------ |:---------------:| -----:|
-| col 3 is      | some wordy text | $1600 |
-| col 2 is      | centered        |   $12 |
-| zebra stripes | are neat        |    $1 |
+| col 3 is      | some wordy text | $1600 |
+| col 2 is      | centered        |   $12 |
+| zebra stripes | are neat        |    $1 |
 ```
 
 ### TOC: table of contents (limited support)
@@ -352,26 +352,26 @@ This feature needs MathJax support.
 
 ### math blocks
 
-You can render *LaTeX* mathematical expressions using **MathJax**.
+You can render *LaTeX* mathematical expressions using **MathJax**.
 In markdown source file,math block is $\mathrm \LaTeX$ expression wrapped by `$$` mark.
 
 In pandoc, anything between two `$` characters will be treated as TeX math. The opening `$` must have a non-space character immediately to its right, while the closing `$` must have a non-space character immediately to its left, and must not be followed immediately by a digit. Thus, `$20,000` and `$30,000` won’t parse as math. If for some reason you need to enclose text in literal `$` characters, backslash-escape them and they won’t be treated as math delimiters.
 
 ```latex
 $$
-\mathbf{V}_1 \times \mathbf{V}_2 =  \begin{vmatrix}
+\mathbf{V}_1 \times \mathbf{V}_2 =  \begin{vmatrix}
 \mathbf{i} & \mathbf{j} & \mathbf{k} \\
-\frac{\partial X}{\partial u} &  \frac{\partial Y}{\partial u} & 0 \\
-\frac{\partial X}{\partial v} &  \frac{\partial Y}{\partial v} & 0 \\
+\frac{\partial X}{\partial u} &  \frac{\partial Y}{\partial u} & 0 \\
+\frac{\partial X}{\partial v} &  \frac{\partial Y}{\partial v} & 0 \\
 \end{vmatrix}
 $$
 ```
 
 $$
-\mathbf{V}_1 \times \mathbf{V}_2 =  \begin{vmatrix}
+\mathbf{V}_1 \times \mathbf{V}_2 =  \begin{vmatrix}
 \mathbf{i} & \mathbf{j} & \mathbf{k} \\
-\frac{\partial X}{\partial u} &  \frac{\partial Y}{\partial u} & 0 \\
-\frac{\partial X}{\partial v} &  \frac{\partial Y}{\partial v} & 0 \\
+\frac{\partial X}{\partial u} &  \frac{\partial Y}{\partial u} & 0 \\
+\frac{\partial X}{\partial v} &  \frac{\partial Y}{\partial v} & 0 \\
 \end{vmatrix}
 $$
 

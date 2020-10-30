@@ -1179,7 +1179,7 @@
      - `java.util.function.BinaryOperator<T>`
        - `static <T> BinaryOperator<T> maxBy(Comparator<? super T> comparator)`
        - `static <T> BinaryOperator<T> minBy(Comparator<? super T> comparator)`
-     - `java.util.function.DoubleBinaryOperator` — `double applyAsDouble(double left, double right)`
+     - `java.util.function.DoubleBinaryOperator` — `double applyAsDouble(double left, double right)`
      - `java.util.function.IntBinaryOperator`
      - `java.util.function.LongBinaryOperator`
 
@@ -1330,17 +1330,17 @@
      - `T cast(Object obj) throws ClassCastException`
    - method reflection — from this class and superclasses, `declared-` only for this class
      - `Field[] getFields()`
-     - `Field getField(String name)`
+     - `Field getField(String name)`
      - `Field[] getDeclaredFields()`
-     - `Field getDeclaredField(String name)`
+     - `Field getDeclaredField(String name)`
      - `Method[] getMethods()`
      - `Method getMethod(String name, Class<?>... parameterTypes)`
      - `Method[] getDeclaredMethods()`
-     - `Method getDeclaredMethod(String name, Class<?>... parameterTypes)`
+     - `Method getDeclaredMethod(String name, Class<?>... parameterTypes)`
      - `Constructor[] getConstructors()`
-     - `Constructor<T> getConstructor(Class<?>... parameterTypes)`
+     - `Constructor<T> getConstructor(Class<?>... parameterTypes)`
      - `Constructor[] getDeclaredConstructors()`
-     - `Constructor<T> getDeclaredConstructor(Class<?>... parameterTypes)`
+     - `Constructor<T> getDeclaredConstructor(Class<?>... parameterTypes)`
    - inner class and outer class
      - `Class<?>[] getClasses()`
      - `Class<?> getEnclosingClass()`
