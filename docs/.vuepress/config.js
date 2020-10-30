@@ -47,7 +47,7 @@ module.exports = {
       // }
     ],
     displayAllHeaders: true, // Default: false
-    activeHeaderLinks: false, // Default: true
+    // activeHeaderLinks: false, // Default: true
     sidebar: {
       '/backend/java/': [
         {

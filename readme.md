@@ -4,7 +4,7 @@ The repo is intended for personal notes keeping :yum:.
 
 So much knowledge :books: , so little time :hourglass_flowing_sand:.
 
-<!-- TODO: actions, links, TOC, hashes to lower case, mathjax -->
+[Read Online](tangentyh.github.io/notes-of-tan)
 
 ## Index
 
