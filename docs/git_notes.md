@@ -575,6 +575,14 @@
      ```
      git cherry-pick (--continue | --skip | --abort | --quit)
      ```
+   - `--no-commit` — to working tree
+   - example — apply commits to the working tree
+     ```shell
+     # 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> [8=master]
+     git cherry-pick --no-commit 4..8
+     # or
+     git diff 4..8 | git apply
+     ```
 
 1. `git filter-branch` — Rewrite branches, the nuclear option, run test if possible
    - example — remove a file from entire history
@@ -686,7 +694,7 @@
 
 1. `git status`
 
-1. `git diff`
+1. `git diff` -- see [Get Info](#Get-Info)
 
 1. `git log` — Show commit logs
    ```shell
@@ -709,6 +717,10 @@
      ```
      - `--pretty[=<format>]`, `--format=<format>`
        - `<format>` — [git docs](https://git-scm.com/docs/git-log#_pretty_formats)
+       - example -- log commit message
+         ```shell
+         git log --format=%B -n 1 <commit>
+         ```
      - `--graph` — text-based graphical representation of the commit history
      - `--decorate[=short|full|auto|no]` — Print out the ref names of any commits that are shown
      - `--oneline` — `--pretty=oneline --abbrev-commit`
