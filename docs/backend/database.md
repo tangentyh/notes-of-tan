@@ -8,14 +8,14 @@
 1. DBMS taxonomy
    - Online transaction processing (OLTP) databases
    - Online analytical processing (OLAP) databases
-   - Hybrid transactional and analytical processing (HTAP) -- combine properties of both OLTP and OLAP stores
+   - Hybrid transactional and analytical processing (HTAP) — combine properties of both OLTP and OLAP stores
 
 ## Index
 
 1. MySQL index types
    - B+ tree index
-   - hash index -- for `MEMORY` tables
-     - adaptive hash index -- an optimization for InnoDB tables that can speed up lookups using `=` and `IN` operators, by constructing a hash index in memory. MySQL monitors index searches for InnoDB tables, and if queries could benefit from a hash index, it builds one automatically for index **pages** that are frequently accessed, depending on the search pattern against the B-tree index. A hash index can be partial; the whole B-tree index does not need to be cached in the buffer pool.
+   - hash index — for `MEMORY` tables
+     - adaptive hash index — an optimization for InnoDB tables that can speed up lookups using `=` and `IN` operators, by constructing a hash index in memory. MySQL monitors index searches for InnoDB tables, and if queries could benefit from a hash index, it builds one automatically for index **pages** that are frequently accessed, depending on the search pattern against the B-tree index. A hash index can be partial; the whole B-tree index does not need to be cached in the buffer pool.
    - `FULLTEXT` index, inverted lists, in tandem with Full-Text Search Functions
    - `SPATIAL` index, R-trees
 
@@ -28,9 +28,9 @@
 1. index optimization
    - large data update — bootstrap with delete indexes before and re-create after
    - covering index — An index that includes all the columns retrieved by a query. Instead of using the index values as pointers to find the full table rows, the query returns values from the index structure. Any column index or composite index could act as a covering index
-   - standalone column -- `id + 1` does not utilize the index
-   - composite index, aka. multiple-column index -- prefixed index search capability; composite indexes outperform separated single column indexes; order matters, selective first or the most frequently used first
-   - prefix indexing -- `KEY_BLOCK_SIZE` like `max_sort_length`, for `BLOB`, `TEXT`, `VARCHAR`
+   - standalone column — `id + 1` does not utilize the index
+   - composite index, aka. multiple-column index — prefixed index search capability; composite indexes outperform separated single column indexes; order matters, selective first or the most frequently used first
+   - prefix indexing — `KEY_BLOCK_SIZE` like `max_sort_length`, for `BLOB`, `TEXT`, `VARCHAR`
 
 1. index structure, delete and purge
    - indexes
@@ -62,12 +62,12 @@
 1. DBMS architecture  
    ![](./images/sql3.png)
    - memory based, disk based
-     - durability of memory based stores -- logs and checkpointing: backup copy updated by asynchronous batches
-   - column oriented or row oriented -- how the data is stored on disk: row- or column-wise
-     - column oriented stores -- values for the same column are stored contiguously on disk, a good fit for analytical workloads that compute aggre‐ gates
-       - two pioneer column-oriented stores -- MonetDB and C-Store
-       - ID and virtual ID -- row identifier for each value or use offset as implicit ID
-   - storage structure variables -- Buffering, Immutability, and Ordering
+     - durability of memory based stores — logs and checkpointing: backup copy updated by asynchronous batches
+   - column oriented or row oriented — how the data is stored on disk: row- or column-wise
+     - column oriented stores — values for the same column are stored contiguously on disk, a good fit for analytical workloads that compute aggre‐ gates
+       - two pioneer column-oriented stores — MonetDB and C-Store
+       - ID and virtual ID — row identifier for each value or use offset as implicit ID
+   - storage structure variables — Buffering, Immutability, and Ordering
 
 1. files
    - data files
@@ -76,52 +76,52 @@
      - hash-organized tables (hashed files)
    - index files
      - primary index, secondary index
-     - clustered index, non-clustered index -- data records in the clustered case are usually stored in the same file or in a clustered file, where the key order is preserved
+     - clustered index, non-clustered index — data records in the clustered case are usually stored in the same file or in a clustered file, where the key order is preserved
 
-1. slotted page -- organize the page into a collection of slots or cells and split out pointers and cells in two independent memory regions residing on different sides of the page  
+1. slotted page — organize the page into a collection of slots or cells and split out pointers and cells in two independent memory regions residing on different sides of the page  
    ![](./images/sql1.png)
-   - overhead -- a pointer array
-   - gc -- space can be reclaimed by defragmenting and rewriting the page
-   - dynamic layout -- from outside the page, slots are referenced only by their IDs, so the exact location is internal to the page
-   - order -- only need to reorganize pointers addressing the cells to preserve the order
-   - grow -- size grow towards free space in the center
-   - fragmented page and availability list -- deletion adds deletion mark and updates an in-memory availability list; when inserting a new cell, we first check the availability list to find if there’s a segment where it may fit  
+   - overhead — a pointer array
+   - gc — space can be reclaimed by defragmenting and rewriting the page
+   - dynamic layout — from outside the page, slots are referenced only by their IDs, so the exact location is internal to the page
+   - order — only need to reorganize pointers addressing the cells to preserve the order
+   - grow — size grow towards free space in the center
+   - fragmented page and availability list — deletion adds deletion mark and updates an in-memory availability list; when inserting a new cell, we first check the availability list to find if there’s a segment where it may fit  
      ![](./images/sql2.png)
-     - example: SQLite freeblocks -- SQLite calls unoccupied segments freeblocks and stores a pointer to the first freeblock in the page header, along with the total number of free space to determine if new data can fit after defragmenting
+     - example: SQLite freeblocks — SQLite calls unoccupied segments freeblocks and stores a pointer to the first freeblock in the page header, along with the total number of free space to determine if new data can fit after defragmenting
      - segment fit
        - first fit
-       - best fit -- try to find a segment for which insertion leaves the smallest remainder
+       - best fit — try to find a segment for which insertion leaves the smallest remainder
    - possible page header content
-     - magic number -- validation and sanity checks
+     - magic number — validation and sanity checks
      - B-tree sibling links
      - rightmost pointers or high key
      - overflow page link
 
-1. paged binary trees -- improve locality by grouping nodes into pages, making next nodes on the same page for some nodes; operations are nontrivial
+1. paged binary trees — improve locality by grouping nodes into pages, making next nodes on the same page for some nodes; operations are nontrivial
 
-1. B-tree -- increase node fanout, and reduce tree height, the number of node pointers, and the frequency of balancing operations
-   - leaf level sibling node pointers -- simplify range scans, double-linked in some implementations
-   - from bottom to top -- the number of leaf nodes grows, which increases the number of internal nodes and tree height
-   - B* tree -- instead of splitting a single node into two half-empty ones, the algorithm splits two nodes into three nodes, each of which is two-thirds full
-     - B link tree -- on top of B* tree, add high keys and sibling link pointers
+1. B-tree — increase node fanout, and reduce tree height, the number of node pointers, and the frequency of balancing operations
+   - leaf level sibling node pointers — simplify range scans, double-linked in some implementations
+   - from bottom to top — the number of leaf nodes grows, which increases the number of internal nodes and tree height
+   - B* tree — instead of splitting a single node into two half-empty ones, the algorithm splits two nodes into three nodes, each of which is two-thirds full
+     - B link tree — on top of B* tree, add high keys and sibling link pointers
    - some drawbacks
      - write amplification
-     - space amplification -- extra space reserved to make updates possible
+     - space amplification — extra space reserved to make updates possible
    - tbd
    <!-- TODO -->
    <!-- - more tbd from binary search on P67 -->
 
-1. B-tree variants -- tbd
+1. B-tree variants — tbd
    <!-- TODO -->
-   - Copy-on-write B-Tree -- immutable nodes
-   - Lazy B-Tree -- reduce the number of I/O requests from subsequent same-node writes by buffering updates to nodes
-     - example -- WiredTiger
-   - Flash Disk Tree (FD-Tree) -- buffer updates in a small B-Tree; fractional cascading
-   - Buzzword-Tree (Bw-Tree) -- separate B-Tree nodes into several smaller parts that are written in an append-only manner
-   - Cache-oblivious B-Tree -- allow treating on-disk data structures in a way that is very similar to how we build in-memory ones
+   - Copy-on-write B-Tree — immutable nodes
+   - Lazy B-Tree — reduce the number of I/O requests from subsequent same-node writes by buffering updates to nodes
+     - example — WiredTiger
+   - Flash Disk Tree (FD-Tree) — buffer updates in a small B-Tree; fractional cascading
+   - Buzzword-Tree (Bw-Tree) — separate B-Tree nodes into several smaller parts that are written in an append-only manner
+   - Cache-oblivious B-Tree — allow treating on-disk data structures in a way that is very similar to how we build in-memory ones
 
-1. Log-Structured Storage -- immutable storage, append-only modification, records have to be reconstructed from multiple files
-   - Log-Structured Merge Trees (LSM Trees) -- append-only storage and merge reconciliation
+1. Log-Structured Storage — immutable storage, append-only modification, records have to be reconstructed from multiple files
+   - Log-Structured Merge Trees (LSM Trees) — append-only storage and merge reconciliation
    - tbd
    <!-- TODO -->
 
@@ -129,47 +129,47 @@
 
 1. transaction processing and recovery
    - page cache
-     - flush -- flush when dirty page evicted; or a separate background process that cycles through the dirty pages that are likely to be evicted for quick eviction
-     - durability -- coordinated by the checkpoint process: ensure the write-ahead log (WAL) and page cache work in lockstep
+     - flush — flush when dirty page evicted; or a separate background process that cycles through the dirty pages that are likely to be evicted for quick eviction
+     - durability — coordinated by the checkpoint process: ensure the write-ahead log (WAL) and page cache work in lockstep
      - optimization
-       - pinning -- pinned pages are kept in memory for a longer time, like nodes near a B-tree root
-       - eviction strategy -- like page replacement algorithms in operating systems
+       - pinning — pinned pages are kept in memory for a longer time, like nodes near a B-tree root
+       - eviction strategy — like page replacement algorithms in operating systems
    - recovery
-     - write-ahead log (WAL, aka commit log) -- append-only, persisted before page modified and until page flushed
-       - order -- log sequence number (LSN), an internal counter or a timestamp
-       - checkpoint and trim -- when a checkpoint reached, WAL trimmed since log records up to a certain mark are fully persisted and not required anymore
-         - sync checkpoint -- forces all dirty pages to be flushed on disk
-         - fuzzy checkpoint -- pages flushed asynchronously from `begin_checkpoint` log record to `end_checkpoint` log record; the `last_checkpoint` pointer stored in the log header contains the information about the last successful checkpoint, from which the recovery process will start
+     - write-ahead log (WAL, aka commit log) — append-only, persisted before page modified and until page flushed
+       - order — log sequence number (LSN), an internal counter or a timestamp
+       - checkpoint and trim — when a checkpoint reached, WAL trimmed since log records up to a certain mark are fully persisted and not required anymore
+         - sync checkpoint — forces all dirty pages to be flushed on disk
+         - fuzzy checkpoint — pages flushed asynchronously from `begin_checkpoint` log record to `end_checkpoint` log record; the `last_checkpoint` pointer stored in the log header contains the information about the last successful checkpoint, from which the recovery process will start
      - operation (logical) log and physical log
-       - operation log, or logical log -- stores operations that have to be performed against the current state
-       - physical log -- stores complete page state or byte-wise changes to it
+       - operation log, or logical log — stores operations that have to be performed against the current state
+       - physical log — stores complete page state or byte-wise changes to it
      - steal and force
-       - steal policy -- a recovery method that allows flushing a page modified by the transaction even before the transaction has committed
-       - no-steal policy -- does not allow flushing any uncommitted transaction contents on disk; only redo log required for recovery
-       - force policy -- all pages modified by the transactions to be flushed on disk before the transaction commits; no additional work required for recovery with overhead when committing
-       - no-force policy -- allows a transaction to commit even if some pages modified during this transaction were not yet flushed on disk
-     - ARIES (Algorithm for Recovery and Isolation Exploiting Semantics) -- a steal/no-force recovery algorithm
-       - physical redo -- changes can be installed quicker when recovery
-       - logical undo -- improve concurrency during normal operation
+       - steal policy — a recovery method that allows flushing a page modified by the transaction even before the transaction has committed
+       - no-steal policy — does not allow flushing any uncommitted transaction contents on disk; only redo log required for recovery
+       - force policy — all pages modified by the transactions to be flushed on disk before the transaction commits; no additional work required for recovery with overhead when committing
+       - no-force policy — allows a transaction to commit even if some pages modified during this transaction were not yet flushed on disk
+     - ARIES (Algorithm for Recovery and Isolation Exploiting Semantics) — a steal/no-force recovery algorithm
+       - physical redo — changes can be installed quicker when recovery
+       - logical undo — improve concurrency during normal operation
        - three phase
-         1. analysis phase -- identifies dirty pages in the page cache and transactions that were in progress at the time of a crash
-         1. redo phase -- repeats the history up to the point of a crash and restores the database to the previous state, and WAL used for repeating history
-         1. undo phase -- rolls back all incomplete transactions and restores the database to the last consistent state
-            - compensation log records (CLR) -- the undo process is logged as well to avoid repeating them
+         1. analysis phase — identifies dirty pages in the page cache and transactions that were in progress at the time of a crash
+         1. redo phase — repeats the history up to the point of a crash and restores the database to the previous state, and WAL used for repeating history
+         1. undo phase — rolls back all incomplete transactions and restores the database to the last consistent state
+            - compensation log records (CLR) — the undo process is logged as well to avoid repeating them
 
 1. concurrency control
    - optimistic concurrency control (OCC)
      - three phases
-       - read phase -- get transaction dependencies (read set), and the side effects (write set), in its own private context, without making any of the changes visible to other transactions
-       - validation phase -- read and write set checked for conflicts, restart read phase if necessary
-         - backward-oriented and forward-oriented -- checking for conflicts with the transactions that have already been committed (backward-oriented), or with the transactions that are currently in the validation phase (forward-oriented)
-       - write phase -- if validation passed, commit write set from the private context to the database state
-     - atomicity -- validation and write should be done automatically; critical section
-   - multiversion concurrency control (MVCC) -- by allowing multiple record versions and using monotonically incremented transaction IDs or timestamps
+       - read phase — get transaction dependencies (read set), and the side effects (write set), in its own private context, without making any of the changes visible to other transactions
+       - validation phase — read and write set checked for conflicts, restart read phase if necessary
+         - backward-oriented and forward-oriented — checking for conflicts with the transactions that have already been committed (backward-oriented), or with the transactions that are currently in the validation phase (forward-oriented)
+       - write phase — if validation passed, commit write set from the private context to the database state
+     - atomicity — validation and write should be done automatically; critical section
+   - multiversion concurrency control (MVCC) — by allowing multiple record versions and using monotonically incremented transaction IDs or timestamps
      - often used for implementing snapshot isolation
-   - pessimistic (aka conservative) concurrency control (PCC) -- block or abort when conflicts
+   - pessimistic (aka conservative) concurrency control (PCC) — block or abort when conflicts
      - implementations
-       - timestamp ordering implementation -- lock free, whether or not transaction operations are allowed to be executed is determined by whether or not any transaction with an earlier timestamp has already been committed
+       - timestamp ordering implementation — lock free, whether or not transaction operations are allowed to be executed is determined by whether or not any transaction with an earlier timestamp has already been committed
        - lock-based implementations, like two-phase locking (2PL)
 
 1. ACID — transaction properties
@@ -186,30 +186,30 @@
      - gap lock needed, see next-key locks below — locking all the rows from the first query result set does not prevent the changes that cause the phantom to appear
 
 1. write anomalies
-   - lost update -- transactions read the same value and update it respectively, but only the update that last committed take effect, other updates lost
-   - dirty write -- write values that are dirty read
-   - write skew -- each individual transaction respects the required invariants, but their combination does not satisfy these invariants; for example, two transaction withdraw $100 from an account with $150, making the balance negative while nonnegative for each transaction
+   - lost update — transactions read the same value and update it respectively, but only the update that last committed take effect, other updates lost
+   - dirty write — write values that are dirty read
+   - write skew — each individual transaction respects the required invariants, but their combination does not satisfy these invariants; for example, two transaction withdraw $100 from an account with $150, making the balance negative while nonnegative for each transaction
 
 1. isolation levels
    - see before
-   - snapshot isolation (SI) -- [zhihu](https://zhuanlan.zhihu.com/p/54979396), read from the snapshot with values committed before the transaction’s start timestamp (no phantom read), first committer wins when write-write conflict
-     - example -- Google Percolator
+   - snapshot isolation (SI) — [zhihu](https://zhuanlan.zhihu.com/p/54979396), read from the snapshot with values committed before the transaction’s start timestamp (no phantom read), first committer wins when write-write conflict
+     - example — Google Percolator
 
 1. consistent read — isolation: A read operation that uses snapshot information to present query results based on a point in time, regardless of changes performed by other transactions running at the same time
    - related isolation level — `READ COMMITTED` and `REPEATABLE READ` isolation levels
    - lock-free — because a consistent read does not set any locks on the tables it accesses, other sessions are free to modify those tables while a consistent read is being performed on the table
    - undo log to mitigate lock congestion — If queried data has been changed by another transaction, the original data is reconstructed based on the contents of the undo log. This technique avoids some of the locking issues that can reduce concurrency by forcing transactions to wait for other transactions to finish.
-   - locking read -- use locks, locks on newest data, which means read view will be refreshed even in `REPEATABLE READ`
+   - locking read — use locks, locks on newest data, which means read view will be refreshed even in `REPEATABLE READ`
 
 1. MVCC — multiversion concurrency control, technique used in consistent read
    - read view — the trx ids of those transactions for which a consistent read should not see the modifications to the database, unchanged for `REPEATABLE READ` while refreshed for every read for `READ COMMITTED`
-     - related methods in class `MVCC` -- `view_open` (allocate and create a view), `view_close`, `view_release` see [dev.mysql](https://dev.mysql.com/doc/dev/mysql-server/latest/classMVCC.html)
+     - related methods in class `MVCC` — `view_open` (allocate and create a view), `view_close`, `view_release` see [dev.mysql](https://dev.mysql.com/doc/dev/mysql-server/latest/classMVCC.html)
      - some transaction ID attributes, see [dev.mysql](https://dev.mysql.com/doc/dev/mysql-server/latest/classReadView.html)
-       - `ids_t m_ids` -- set of RW transactions that was active when this snapshot was taken
-       - `trx_id_t m_low_limit_id` -- the read should not see any transaction with trx id >= this value
-       - `trx_id_t m_up_limit_id` -- the read should see all trx ids < this value
-       - `trx_id_t m_creator_trx_id` -- trx id of creating transaction, set to TRX_ID_MAX for free views
-       <!-- - `trx_id_t m_view_low_limit_no` -- the read views don't need to access undo log records for MVCC for trx ids <= this value -->
+       - `ids_t m_ids` — set of RW transactions that was active when this snapshot was taken
+       - `trx_id_t m_low_limit_id` — the read should not see any transaction with trx id >= this value
+       - `trx_id_t m_up_limit_id` — the read should see all trx ids < this value
+       - `trx_id_t m_creator_trx_id` — trx id of creating transaction, set to TRX_ID_MAX for free views
+       <!-- - `trx_id_t m_view_low_limit_no` — the read views don't need to access undo log records for MVCC for trx ids <= this value -->
    - rollback segment — the storage area containing the undo logs
    - undo log — the information necessary to rebuild the content of the row before it was updated
      - insert undo log — only needed when rollback
@@ -225,7 +225,7 @@
        - 提交读：如果 `DB_TRX_ID` 在 `m_ids` 列表中，表示该数据行快照对应的事务还未提交，则该快照不可使用。否则表示已经提交，可以使用。
        - 可重复读：都不可以使用。因为如果可以使用的话，那么其它事务也可以读到这个数据行快照并进行修改，那么当前事务再去读这个数据行得到的值就会发生改变，也就是出现了不可重复读问题。
      - 在数据行快照不可使用的情况下，需要沿着 Undo Log 的回滚指针 `DB_ROLL_PTR` 找到下一个快照，再进行上面的判断。
-     - deduction -- no phantom read if no locking reads following consistent reads in `REPEATABLE READ`
+     - deduction — no phantom read if no locking reads following consistent reads in `REPEATABLE READ`
 
 1. locks
    - locking mechanism
@@ -247,7 +247,7 @@
      - next-key lock — a combination of a record lock on the index record and a gap lock on the gap before the index record; in `REPEATABLE READ`, InnoDB uses next-key locks for searches and index scans (if locking reads), which prevents phantom rows; for the range towards infinity, next-key is the “supremum” pseudo-record having a value higher than any value actually in the index
        - example
          ```SQL
-         -- definition
+         --- definition
          CREATE TABLE `test` (
            `id` int(11) primary key auto_increment,
            `xid` int, KEY `xid` (`xid`)
@@ -255,23 +255,23 @@
          insert into test(xid) values (1), (3), (5), (8), (11);
          ```
          ```SQL
-         -- session A
+         --- session A
          START TRANSACTION;
          SELECT * from test where xid = 8 FOR UPDATE;
-         -- (5, 8], (8, 11] in theory but actually [5, 8), [8, 11)
-         -- session B
+         --- (5, 8], (8, 11] in theory but actually [5, 8), [8, 11)
+         --- session B
          START TRANSACTION;
-         INSERT INTO test (xid) VALUES (4);  -- not blocked
-         INSERT INTO test (xid) VALUES (11); -- not blocked
-         INSERT INTO test (xid) VALUES (5);  -- will block
-         INSERT INTO test (xid) VALUES (8);  -- will block
-         INSERT INTO test (xid) VALUES (10); -- will block
+         INSERT INTO test (xid) VALUES (4);  --- not blocked
+         INSERT INTO test (xid) VALUES (11); --- not blocked
+         INSERT INTO test (xid) VALUES (5);  --- will block
+         INSERT INTO test (xid) VALUES (8);  --- will block
+         INSERT INTO test (xid) VALUES (10); --- will block
          ```
    - locks and latches
-     - locks -- acquired on the key
-     - latches -- guard the physical tree representation (page contents and the tree structure) during node splits and merges, and page content insert, update, and delete; can be implemented by read write lock on page
-       - latch crabbing, aka latch coupling -- release latch when child node located or no merge or split expected, in contrast to grabbing all the latches on the way from the root to the target leaf
-       - latch upgrading -- write operations first acquire exclusive locks only at the leaf level. If the leaf has to be split or merged, the algorithm walks up the tree and attempts to upgrade a shared lock to an exclusive one for necessary nodes
+     - locks — acquired on the key
+     - latches — guard the physical tree representation (page contents and the tree structure) during node splits and merges, and page content insert, update, and delete; can be implemented by read write lock on page
+       - latch crabbing, aka latch coupling — release latch when child node located or no merge or split expected, in contrast to grabbing all the latches on the way from the root to the target leaf
+       - latch upgrading — write operations first acquire exclusive locks only at the leaf level. If the leaf has to be split or merged, the algorithm walks up the tree and attempts to upgrade a shared lock to an exclusive one for necessary nodes
    - more locks, see MySQL docs
 
 1. locking protocols
@@ -282,11 +282,11 @@
    - two phase locking protocol — sufficient condition for being serializable
      - expanding phase, aka growing phase — locks are acquired and no locks are released
      - shrinking phase — locks are released and no locks are acquired
-     - implication -- a transaction cannot acquire any locks as soon as it has released at least one of them
-     - avoid deadlock -- break the cycle
-       - wait-die strategy -- a transaction can be blocked only by a transaction with a higher timestamp, aborted and restarted otherwise
-       - wound-wait strategy -- a transaction can be blocked only by a transaction with a lower timestamp, abort and restart if higher
-     - conservative 2PL to address deadlock -- requires transactions to acquire all the locks before they can execute any of their operations and abort if they cannot
+     - implication — a transaction cannot acquire any locks as soon as it has released at least one of them
+     - avoid deadlock — break the cycle
+       - wait-die strategy — a transaction can be blocked only by a transaction with a higher timestamp, aborted and restarted otherwise
+       - wound-wait strategy — a transaction can be blocked only by a transaction with a lower timestamp, abort and restart if higher
+     - conservative 2PL to address deadlock — requires transactions to acquire all the locks before they can execute any of their operations and abort if they cannot
 
 ## Distributed
 
@@ -297,30 +297,30 @@
 
 1. partition / sharding
    - table partitioning
-     - horizontal partitioning -- partitioning rows
-     - vertically partitioning -- partitioning columns, tables, or schemas
+     - horizontal partitioning — partitioning rows
+     - vertically partitioning — partitioning columns, tables, or schemas
    - partitioning types in MySQL, horizontal, error when cannot decide partition
      - `RANGE` partitioning — partitions based on column values falling within a given range
      - `LIST` (mapping table) partitioning — partitions based on column values matching one of a set of discrete values
      - `HASH` partitioning — partitions based on user provided hash function on column values
-       - `LINEAR HASH` -- data is less likely to be evenly distributed, but adding, dropping, merging, and splitting of partitions is made much faster
+       - `LINEAR HASH` — data is less likely to be evenly distributed, but adding, dropping, merging, and splitting of partitions is made much faster
        - `KEY` partitioning — similar to `HASH`, except that MySQL supplies the hashing function
      - composite partitioning — with `SUBPARTITION`
    - other partitioning strategy
-     - consistent hashing -- [zhihu](https://zhuanlan.zhihu.com/p/34985026)
+     - consistent hashing — [zhihu](https://zhuanlan.zhihu.com/p/34985026)
 
 1. problems and possible solutions
    - foreign key constraint
    - triggers and stored procedures
-   - transaction -- use distributed transaction
+   - transaction — use distributed transaction
    - join
      - use redundant data to avoid joining, use with caution
      - use external tools, e.g. search engine
      - join on client, but sorted paging is costly after joining client
    - index uniqueness problem
-     - use GUID -- global index on whole table, local index on a single partition
+     - use GUID — global index on whole table, local index on a single partition
      - ID range for each partition
-     - ID generator -- snowflake, tbd
+     - ID generator — snowflake, tbd
 
 1. partition benefits
    - overcome physical partition limit — makes it possible to store more data in one table than can be held on a single disk or file system partition
@@ -330,14 +330,14 @@
 
 1. Replication
    - Primary-Secondary Replication
-     - master failover -- promoting a replica to become a new master
+     - master failover — promoting a replica to become a new master
      - asynchronous or semisynchronous  
        ![](./images/sql4.png)  
        ![](./images/sql5.png)
      - binlog 线程 ：负责将主服务器上的数据更改写入二进制日志（Binary log）中。
      - I/O 线程 ：负责从主服务器上读取二进制日志，并写入从服务器的中继日志（Relay log）。
      - SQL 线程 ：负责读取中继日志，解析出主服务器已经执行的数据更改并在从服务器中重放（Replay）。
-   - 读写分离 -- 主服务器处理写操作以及实时性要求比较高的读操作，而从服务器处理读操作。
+   - 读写分离 — 主服务器处理写操作以及实时性要求比较高的读操作，而从服务器处理读操作。
      - 主从服务器负责各自的读和写，极大程度缓解了锁的争用；
      - 增加冗余，提高可用性。
 

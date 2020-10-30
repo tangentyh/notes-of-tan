@@ -3,28 +3,28 @@
 ## OS I/O
 
 1. 输入操作通常包括两个阶段
-   - 等待数据 -- 等待数据从网络中到达。当所等待数据到达时，它被复制到内核中的某个缓冲区
-   - 从内核向进程复制数据 -- 把数据从内核缓冲区复制到应用进程缓冲区
+   - 等待数据 — 等待数据从网络中到达。当所等待数据到达时，它被复制到内核中的某个缓冲区
+   - 从内核向进程复制数据 — 把数据从内核缓冲区复制到应用进程缓冲区
 
 1. IO
    - synchronous IO
-     - blocking IO -- block for both phases
-     - non-blocking IO -- polling for the first phase, block for the second phase
-     - IO multiplexing, aka event driven IO -- `select` or `poll`, like `java.nio.channels.Selector`, block for both phases, but one thread for multiple sockets
-     - signal driven IO -- `sigaction`, return immediately for the first phase。内核在数据到达时向应用进程发送 `SIGIO` 信号, blocking for second phase
+     - blocking IO — block for both phases
+     - non-blocking IO — polling for the first phase, block for the second phase
+     - IO multiplexing, aka event driven IO — `select` or `poll`, like `java.nio.channels.Selector`, block for both phases, but one thread for multiple sockets
+     - signal driven IO — `sigaction`, return immediately for the first phase。内核在数据到达时向应用进程发送 `SIGIO` 信号, blocking for second phase
    - asynchronous IO
-     - asynchronous IO -- `aio_read`, 内核会在所有操作完成之后向应用进程发送信号, non-blocking for both phases
+     - asynchronous IO — `aio_read`, 内核会在所有操作完成之后向应用进程发送信号, non-blocking for both phases
 
-1. `select` -- like `java.nio.channels.Selector`, 监视一组文件描述符，等待一个或者多个描述符成为就绪状态
+1. `select` — like `java.nio.channels.Selector`, 监视一组文件描述符，等待一个或者多个描述符成为就绪状态
    ```c
    int select(int nfds, fd_set *readfds, fd_set *writefds,
            fd_set *exceptfds, struct timeval *timeout);
    ```
-   - `nfds` -- the highest-numbered file descriptor in any of the three sets, plus 1
-   - `fd_set` -- array based, of size `FD_SETSIZE` which defaults to 1024
-   - `readset`、`writeset`、`exceptset` -- 分别对应读、写、异常条件的描述符集合, three classes of events on the specified set of file descriptors, can be `NULL`; upon return, each of the file descriptor sets will be cleared of all file descriptors except for those that are ready / exceptional
+   - `nfds` — the highest-numbered file descriptor in any of the three sets, plus 1
+   - `fd_set` — array based, of size `FD_SETSIZE` which defaults to 1024
+   - `readset`、`writeset`、`exceptset` — 分别对应读、写、异常条件的描述符集合, three classes of events on the specified set of file descriptors, can be `NULL`; upon return, each of the file descriptor sets will be cleared of all file descriptors except for those that are ready / exceptional
 
-1. `poll` -- similar to `select`, but with more event types and no size constraint for array `*fds`
+1. `poll` — similar to `select`, but with more event types and no size constraint for array `*fds`
    ```c
    int poll(struct pollfd *fds, unsigned int nfds, int timeout);
    struct pollfd {
@@ -40,20 +40,20 @@
              fds[0].revents = 0;
      ```
 
-1. `epoll` -- event poll
+1. `epoll` — event poll
    ```c
    int epoll_create(int size);
    int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)；
    int epoll_wait(int epfd, struct epoll_event *events,
                   int maxevents, int timeout);
    ```
-   - `epoll_create()` -- creates a new `epoll` instance, the `size` argument is ignored, but must be greater than zero
-   - `epoll_ctl` -- add, modify, or remove entries in the interest list of the `epoll` instance referred to by the file descriptor `epfd`. 已注册的描述符在内核中会被维护在一棵红黑树上
-     - `op`, `fd` -- it requests that the operation `op` be performed for the target file descriptor, `fd`
-   - `epoll_wait` -- waits for events on the `epoll` instance referred to by the file descriptor `epfd`. The buffer pointed to by `events` is used to return information from the ready list about file descriptors in the interest list that have some events available
+   - `epoll_create()` — creates a new `epoll` instance, the `size` argument is ignored, but must be greater than zero
+   - `epoll_ctl` — add, modify, or remove entries in the interest list of the `epoll` instance referred to by the file descriptor `epfd`. 已注册的描述符在内核中会被维护在一棵红黑树上
+     - `op`, `fd` — it requests that the operation `op` be performed for the target file descriptor, `fd`
+   - `epoll_wait` — waits for events on the `epoll` instance referred to by the file descriptor `epfd`. The buffer pointed to by `events` is used to return information from the ready list about file descriptors in the interest list that have some events available
    - mode
-     - LT, level trigger -- default, blocking and non-blocking, after `epoll_wait`, 进程可以不立即处理该事件，下次调用 `epoll_wait()` 会再次通知进程
-     - ET, edge trigger -- non-blocking, after `epoll_wait`, 下次再调用 `epoll_wait()` 时不会再得到事件到达的通知
+     - LT, level trigger — default, blocking and non-blocking, after `epoll_wait`, 进程可以不立即处理该事件，下次调用 `epoll_wait()` 会再次通知进程
+     - ET, edge trigger — non-blocking, after `epoll_wait`, 下次再调用 `epoll_wait()` 时不会再得到事件到达的通知
 
 1. `epoll` vs `poll` vs `select`
    - `epoll` 进程不需要通过轮询来获得事件完成的描述符
@@ -63,7 +63,7 @@
      - 如果一个线程对某个描述符调用了 `select` 或者 `poll`，另一个线程关闭了该描述符，会导致调用结果不确定
    - `select` `timeout` 参数精度为微秒, 更加适用于实时性要求比较高的场景，而 `poll` 和 `epoll` 为毫秒
 
-1. Netty 粘包拆包 -- distinguish data boundary
+1. Netty 粘包拆包 — distinguish data boundary
    - `DelimiterBasedFrameDecoder`
    - `LineBasedFrameDecoder`
    - `FixedLengthFrameDecoder`
@@ -833,7 +833,7 @@
        `abstract FileLock lock(long position, long size, boolean shared)`
      - `FileLock tryLock()` — `null` if not available, equivalent to `tryLock(0L, Long.MAX_VALUE, false)`  
        `abstract FileLock tryLock(long position, long size, boolean shared)`
-   - AIO -- `java.nio.channels.AsynchronousFileChannel`
+   - AIO — `java.nio.channels.AsynchronousFileChannel`
 
 1. `java.nio.channels.FileLock` — a lock on a region of a file, on behalf of the JVM
    ```java
@@ -1125,7 +1125,7 @@
        - `java.nio.channels.ShutdownChannelGroupException`
        - `java.nio.channels.WritePendingException`
 
-1. conversion between stream and channel -- constructors of stream based classes and `java.nio.channels.Channels` methods
+1. conversion between stream and channel — constructors of stream based classes and `java.nio.channels.Channels` methods
    - channel to stream
      - `Scanner(ReadableByteChannel source)`  
        `Scanner(ReadableByteChannel source, String charsetName)`
@@ -1135,7 +1135,7 @@
      - `Channels::newChannel`
      - `getChannel` methods in stream based classes
 
-1. `java.nio.channels.Pipe` -- a pair of channels that implements a unidirectional pipe
+1. `java.nio.channels.Pipe` — a pair of channels that implements a unidirectional pipe
 
 #### Channel Interfaces
 
@@ -1154,27 +1154,27 @@
    - `boolean isOpen()` — avoid `ClosedChannelException`
 
 1. read and write channels
-   - `java.nio.channels.ReadableByteChannel` -- only one read operation upon a readable channel may be in progress at any given time
-     - `int read(ByteBuffer dst)` -- read into given buffer
+   - `java.nio.channels.ReadableByteChannel` — only one read operation upon a readable channel may be in progress at any given time
+     - `int read(ByteBuffer dst)` — read into given buffer
      - `java.nio.channels.ScatteringByteChannel`
        - `long read(ByteBuffer[] dsts)`
        - `long read(ByteBuffer[] dsts, int offset, int length)`
-   - `java.nio.channels.WritableByteChannel` -- only one write operation upon a writable channel may be in progress at any given time
+   - `java.nio.channels.WritableByteChannel` — only one write operation upon a writable channel may be in progress at any given time
      - `int write(ByteBuffer src)`
-     - `java.nio.channels.GatheringByteChannel` -- write version of `ScatteringByteChannel`
-   - `java.nio.channels.ByteChannel` -- read and write bytes
+     - `java.nio.channels.GatheringByteChannel` — write version of `ScatteringByteChannel`
+   - `java.nio.channels.ByteChannel` — read and write bytes
      ```java
      public interface ByteChannel
      extends ReadableByteChannel, WritableByteChannel
      ```
-     - `java.nio.channels.SeekableByteChannel` -- a byte channel that maintains a current position and allows the position to be changed
-   - `java.nio.channels.InterruptibleChannel` -- a channel that can be asynchronously closed and interrupted
+     - `java.nio.channels.SeekableByteChannel` — a byte channel that maintains a current position and allows the position to be changed
+   - `java.nio.channels.InterruptibleChannel` — a channel that can be asynchronously closed and interrupted
 
 1. network channels
-   - `java.nio.channels.NetworkChannel` -- `NetworkChannel bind(SocketAddress local)`
-     - `java.nio.channels.MulticastChannel` -- a network channel that supports Internet Protocol (IP) multicasting
+   - `java.nio.channels.NetworkChannel` — `NetworkChannel bind(SocketAddress local)`
+     - `java.nio.channels.MulticastChannel` — a network channel that supports Internet Protocol (IP) multicasting
 
-1. async channels -- `java.nio.channels.AsynchronousChannel`
+1. async channels — `java.nio.channels.AsynchronousChannel`
    - `java.nio.channels.AsynchronousByteChannel`
      - read
        - `Future<Integer> read(ByteBuffer dst)`
@@ -1182,7 +1182,7 @@
      - write
        - `Future<Integer> write(ByteBuffer src)`
        - `<A> void write(ByteBuffer src, A attachment, CompletionHandler<Integer,? super A> handler)`
-     - `java.nio.channels.CompletionHandler` -- callback when `completed` or `failed`
+     - `java.nio.channels.CompletionHandler` — callback when `completed` or `failed`
      - `java.nio.channels.AsynchronousSocketChannel`
        ```java
        public abstract class AsynchronousSocketChannel
@@ -1197,67 +1197,67 @@
 
 #### Selector
 
-1. `java.nio.channels.spi.AbstractInterruptibleChannel` -- base implementation class for interruptible channels
+1. `java.nio.channels.spi.AbstractInterruptibleChannel` — base implementation class for interruptible channels
    ```java
    public abstract class AbstractInterruptibleChannel
    implements Channel, InterruptibleChannel
    ```
 
-1. `java.nio.channels.SelectableChannel` -- a channel that can be multiplexed via a `Selector`
+1. `java.nio.channels.SelectableChannel` — a channel that can be multiplexed via a `Selector`
    ```java
    public abstract class SelectableChannel
    extends AbstractInterruptibleChannel
    implements Channel
    ```
-   - blocking mode or in non-blocking mode -- defaults to blocking mode, must be placed into non-blocking mode before being registered and when registered
+   - blocking mode or in non-blocking mode — defaults to blocking mode, must be placed into non-blocking mode before being registered and when registered
      - `abstract SelectableChannel configureBlocking(boolean block)`
      - `abstract boolean isBlocking()`
-   - register -- one or more selectors, at most once for each
+   - register — one or more selectors, at most once for each
      - `SelectionKey register(Selector sel, int ops)`
      - `abstract SelectionKey register(Selector sel, int ops, Object att)`
      - `abstract boolean isRegistered()`
      - `abstract SelectionKey keyFor(Selector sel)`
      - `abstract int validOps()`
-   - deregister -- `SelectionKey::cancel`, `close()` or interrupted
+   - deregister — `SelectionKey::cancel`, `close()` or interrupted
 
-1. `java.nio.channels.Selector` -- a multiplexer of `SelectableChannel` objects
+1. `java.nio.channels.Selector` — a multiplexer of `SelectableChannel` objects
    ```java
    public abstract class Selector implements Closeable
    ```
    - creation
-     - `static Selector open()` -- created by `SelectorProvider::openSelector`
+     - `static Selector open()` — created by `SelectorProvider::openSelector`
      - `abstract boolean isOpen()`
      - `abstract SelectorProvider provider()`
    - registration key sets
-     - `abstract Set<SelectionKey> keys()` -- channel registrations
-     - `abstract Set<SelectionKey> selectedKeys()` -- keys such that each key's channel was detected to be ready for at least one of the operations identified in the key's interest set during a prior selection operation; keys are removed by the `Set` removal methods
-     - cancelled-key set -- the set of keys that have been cancelled (`SelectableChannel::close` or `SelectionKey::cancel`) but whose channels have not yet been deregistered, not directly accessible; removed from the key set during selection operations
-   - selection -- during which keys may be added to and removed from a selector's selected-key set and may be removed from its key and cancelled-key sets
+     - `abstract Set<SelectionKey> keys()` — channel registrations
+     - `abstract Set<SelectionKey> selectedKeys()` — keys such that each key's channel was detected to be ready for at least one of the operations identified in the key's interest set during a prior selection operation; keys are removed by the `Set` removal methods
+     - cancelled-key set — the set of keys that have been cancelled (`SelectableChannel::close` or `SelectionKey::cancel`) but whose channels have not yet been deregistered, not directly accessible; removed from the key set during selection operations
+   - selection — during which keys may be added to and removed from a selector's selected-key set and may be removed from its key and cancelled-key sets
      - step
        1. empty cancelled-key set itself and from key set
        1. OS queried for an update as to the readiness of each remaining channel, if ready, add to selected-key set and its ready-operation set overwritten if newly add otherwise merged
        1. keys added to the cancelled-key set during the process are as step 1
-     - `abstract int select()` -- blocking
+     - `abstract int select()` — blocking
      - `abstract int select(long timeout)`
-     - `abstract int selectNow()` -- non-blocking, clears `wakeup()`
-     - `abstract Selector wakeup()` -- blocked `select` will return immediately, or next `select` will return immediately if none currently; also invoked after `Thread::interrupt`
-   - concurrency -- thread-safe, but not the key sets
+     - `abstract int selectNow()` — non-blocking, clears `wakeup()`
+     - `abstract Selector wakeup()` — blocked `select` will return immediately, or next `select` will return immediately if none currently; also invoked after `Thread::interrupt`
+   - concurrency — thread-safe, but not the key sets
 
-1. `java.nio.channels.SelectionKey` -- a token representing the registration of a `SelectableChannel` with a `Selector`
+1. `java.nio.channels.SelectionKey` — a token representing the registration of a `SelectableChannel` with a `Selector`
    ```java
    public abstract class SelectionKey
    ```
    - operation bit vector, support depends on the underlying channel
-     - `static int OP_ACCEPT` -- operation-set bit for socket-accept operations
-     - `static int OP_CONNECT` -- operation-set bit for socket-connect operations
+     - `static int OP_ACCEPT` — operation-set bit for socket-accept operations
+     - `static int OP_CONNECT` — operation-set bit for socket-connect operations
      - `static int OP_READ`
      - `static int OP_WRITE`
    - cancel
      - `abstract void cancel()`
      - `abstract boolean isValid()`
-   - `abstract int interestOps()` -- the interest set, which operation categories will be tested for readiness
-     - `abstract SelectionKey interestOps(int ops)` -- set to given value
-   - `abstract int readyOps()` -- the ready set, the operation categories for which the key's channel has been detected to be ready by the key's selector
+   - `abstract int interestOps()` — the interest set, which operation categories will be tested for readiness
+     - `abstract SelectionKey interestOps(int ops)` — set to given value
+   - `abstract int readyOps()` — the ready set, the operation categories for which the key's channel has been detected to be ready by the key's selector
      - `boolean isAcceptable()`
      - `boolean isConnectable()`
      - `boolean isReadable()`
@@ -1265,9 +1265,9 @@
    - binding
      - `abstract SelectableChannel channel()`
      - `abstract Selector selector()`
-   - concurrency -- thread-safe
+   - concurrency — thread-safe
 
-1. Reactor 模型 -- 一个线程 Thread 使用一个选择器 Selector 通过轮询的方式去监听多个通道 Channel 上的事件，从而让一个线程就可以处理多个事件
+1. Reactor 模型 — 一个线程 Thread 使用一个选择器 Selector 通过轮询的方式去监听多个通道 Channel 上的事件，从而让一个线程就可以处理多个事件
    ```java
    while (true) {
        selector.select();
@@ -1294,7 +1294,7 @@
 
 #### Channel Implementations
 
-1. `FileChannel` -- see [File Classes](#File-Classes), extends `AbstractInterruptibleChannel` but not `AbstractSelectableChannel`
+1. `FileChannel` — see [File Classes](#File-Classes), extends `AbstractInterruptibleChannel` but not `AbstractSelectableChannel`
 
 1. `java.nio.channels.SocketChannel` — like `Socket`, but a selectable channel
    ```java
@@ -1306,14 +1306,14 @@
      - `static SocketChannel open()`
      - `static SocketChannel open(SocketAddress remote)`
 
-1. `java.nio.channels.DatagramChannel` -- like `DatagramSocket`, but a selectable channel
+1. `java.nio.channels.DatagramChannel` — like `DatagramSocket`, but a selectable channel
    ```java
    public abstract class DatagramChannel
    extends AbstractSelectableChannel
    implements ByteChannel, ScatteringByteChannel, GatheringByteChannel, MulticastChannel
    ```
 
-1. `java.nio.channels.ServerSocketChannel` -- like `ServerSocket`, but a selectable channel
+1. `java.nio.channels.ServerSocketChannel` — like `ServerSocket`, but a selectable channel
    ```java
    public abstract class ServerSocketChannel
    extends AbstractSelectableChannel

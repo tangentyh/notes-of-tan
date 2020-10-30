@@ -190,10 +190,10 @@
    - dock navigation — `⌃` `F3`
      - hide dock — `⌥` `⌘` `d`
    - move focus to active or next window — `^` `F4`
-   - move focus to window toolbar -- `^` `F5`
-   - move focus to the floating window -- `^` `F6`
-   - change the way Tab moves focus -- `^` `F7`
-   - move focus to status bar -- `^` `F8`
+   - move focus to window toolbar — `^` `F5`
+   - move focus to the floating window — `^` `F6`
+   - change the way Tab moves focus — `^` `F7`
+   - move focus to status bar — `^` `F8`
 
 1. windows
    - `⌘` `h` — Hide the windows of the front app. Press `Command-Option-H` to view the front app but hide all other apps.
@@ -225,8 +225,8 @@
    - [rectangle](https://github.com/rxhanson/Rectangle) app
    - virtual desktops
    - show launchpad and show desktop
-     - show launchpad -- `⌃` `F10`, in System Preferences > Keyboard > Shortcuts > Launchpad & Dock
-     - show desktop -- in System Preferences > Mission Control
+     - show launchpad — `⌃` `F10`, in System Preferences > Keyboard > Shortcuts > Launchpad & Dock
+     - show desktop — in System Preferences > Mission Control
 
 1. force quit app — `⌥` `⌘` `esc`
 
@@ -369,7 +369,7 @@
 
 1. search — [Narrow your search results on Mac - Apple Support](https://support.apple.com/guide/mac-help/narrow-search-results-mh15155/10.15/mac/10.15)
 
-1. paste image from clipboard -- open preview.app, in menu File -> New from Clipboard
+1. paste image from clipboard — open preview.app, in menu File -> New from Clipboard
 
 ## pkg and brew
 
@@ -405,7 +405,7 @@
      1. `brew cask reinstall visual-studio-code`
      1. `git switch master`
 
-1. appleID association to app -- `/path_to_app/Contents/_MASReceipt`
+1. appleID association to app — `/path_to_app/Contents/_MASReceipt`
 
 ## Chrome
 

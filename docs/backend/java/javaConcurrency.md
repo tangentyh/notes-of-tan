@@ -53,7 +53,7 @@
    }
    ```
    - see [Callable and Future](#Callable-and-Future) for more
-   - conversion to `Callable` -- `Executors::callable`
+   - conversion to `Callable` — `Executors::callable`
 
 1. `Thread`
    ```java
@@ -112,7 +112,7 @@
    public class ThreadLocal<T>
    ```
    - `T get()`
-   - `void remove()` -- can prevent possible memory leak
+   - `void remove()` — can prevent possible memory leak
    - `void set(T value)`
      ```java
      public void set(T value) {
@@ -126,9 +126,9 @@
      }
      ```
    - `static <S> ThreadLocal<S> withInitial(Supplier<? extends S> supplier)`
-   - `ThreadLocal.ThreadLocalMap`, referenced by `Thread.threadLocals` field -- open addressing hash table
-     - entry -- `WeakReference<ThreadLocal<?>>` as key, whose hash value managed by a static `AtomicInteger`, `getAndAdd` for every `ThreadLocal` instance
-     - memory leak -- referent of `WeakReference<ThreadLocal<?>>` keys can be reclaimed by GC, but no `ReferenceQueue` like in `WeakHashMap`, `expungeStaleEntries()` called only when rehash, and single entry expunge method called only when a stale entry encountered, possibly leaving stale entries not expunged
+   - `ThreadLocal.ThreadLocalMap`, referenced by `Thread.threadLocals` field — open addressing hash table
+     - entry — `WeakReference<ThreadLocal<?>>` as key, whose hash value managed by a static `AtomicInteger`, `getAndAdd` for every `ThreadLocal` instance
+     - memory leak — referent of `WeakReference<ThreadLocal<?>>` keys can be reclaimed by GC, but no `ReferenceQueue` like in `WeakHashMap`, `expungeStaleEntries()` called only when rehash, and single entry expunge method called only when a stale entry encountered, possibly leaving stale entries not expunged
 
 1. `java.util.concurrent.ThreadLocalRandom`
    ```java
@@ -226,7 +226,7 @@
      - `void wait(long timeout, int nanos)`
    - monitor — intrinsic lock is the loose adaption of the monitor concept
      - [Monitor (synchronization) - Wikipedia](https://en.wikipedia.org/wiki/Monitor_(synchronization))
-   - JVM optimization -- see [zhihu](https://zhuanlan.zhihu.com/p/75880892), [CS-Notes/Java 并发.md at master · CyC2018/CS-Notes](https://github.com/CyC2018/CS-Notes/blob/master/notes/Java%20%E5%B9%B6%E5%8F%91.md#%E5%8D%81%E4%BA%8C%E9%94%81%E4%BC%98%E5%8C%96)
+   - JVM optimization — see [zhihu](https://zhuanlan.zhihu.com/p/75880892), [CS-Notes/Java 并发.md at master · CyC2018/CS-Notes](https://github.com/CyC2018/CS-Notes/blob/master/notes/Java%20%E5%B9%B6%E5%8F%91.md#%E5%8D%81%E4%BA%8C%E9%94%81%E4%BC%98%E5%8C%96)
 
 1. `interface java.util.concurrent.locks.Lock`
    - `void lock()` — other threads are blocked if the lock cannot be acquired, cannot be interrupted
@@ -255,7 +255,7 @@
    - fair — a lot slower, a fair lock can still be unfair if the thread scheduler is unfair
      - `ReentrantLock()`
      - `ReentrantLock(boolean fair)`
-   - underlying implementation -- `AbstractQueuedSynchronizer::compareAndSetState`
+   - underlying implementation — `AbstractQueuedSynchronizer::compareAndSetState`
 
 1. `java.util.concurrent.locks.ReentrantReadWriteLock` — read lock for accessors, write lock for mutators
    ```java
@@ -272,31 +272,31 @@
      - `writeLock` happen-before — must guarantee that the memory synchronization effects of `writeLock` operations: a thread successfully acquiring the read lock will see all updates made upon previous release of the write lock
      - simultaneous read and write lock — a writer can acquire the read lock, but not vice-versa
      - overhead — the read-write lock implementation (which is inherently more complex than a mutual exclusion lock) can dominate the execution cost if the read operations are too short
-   - underlying implementation -- `AbstractQueuedSynchronizer::compareAndSetState`
+   - underlying implementation — `AbstractQueuedSynchronizer::compareAndSetState`
 
 1. `java.util.concurrent.locks.StampedLock` — a capability-based lock, not reentrant, lock acquisition methods return a stamp that represents and controls access with respect to a lock state; lock release and conversion methods require stamps as arguments
    ```java
    public class StampedLock implements Serializable
    ```
-   - stamp -- zero value for failure, the state of a `StampedLock` consists of a version and mode
+   - stamp — zero value for failure, the state of a `StampedLock` consists of a version and mode
    - three modes
-     - write -- blocks waiting for exclusive access
+     - write — blocks waiting for exclusive access
        - `long writeLock()`
        - `void unlockWrite(long stamp)`
-     - read -- blocks waiting for non-exclusive access
+     - read — blocks waiting for non-exclusive access
        - `long readLock()`
        - `void unlockRead(long stamp)`
        - `int getReadLockCount()`
-     - optimistic read -- an extremely weak version of a read-lock, that can be broken by a writer at any time, for short read-only code segments
-       - `long tryOptimisticRead()` -- returns a non-zero stamp only if the lock is not currently held in write mode
-       - `boolean validate(long stamp)` -- returns true if the lock has not been acquired in write mode since obtaining a given stamp
+     - optimistic read — an extremely weak version of a read-lock, that can be broken by a writer at any time, for short read-only code segments
+       - `long tryOptimisticRead()` — returns a non-zero stamp only if the lock is not currently held in write mode
+       - `boolean validate(long stamp)` — returns true if the lock has not been acquired in write mode since obtaining a given stamp
      - `void unlock(long stamp)`
    - mode conversion methods
    - `Lock` conversion
      - `Lock asReadLock()`
      - `Lock asWriteLock()`
      - `ReadWriteLock asReadWriteLock()`
-   - underlying implementation -- memory fence methods in `VarHandle`, and `VarHandle::compareAndSet`
+   - underlying implementation — memory fence methods in `VarHandle`, and `VarHandle::compareAndSet`
    - example
      ```java
      class Point {
@@ -355,14 +355,14 @@
    - problems of concurrent write and read to instance fields
      - cache coherence — threads running in different processors may see different values for the same memory location
      - reorder — a memory value can be changed by another thread, but compilers assume memory values are only changed with explicit instructions, and compilers reorder instructions to maximize throughput
-     - memory barrier, membar, memory fence or fence instruction -- a type of barrier instruction that causes a CPU or compiler to enforce an ordering constraint on memory operations issued before and after the barrier instruction. This typically means that operations issued prior to the barrier are guaranteed to be performed before operations issued after the barrier
-     - barrier -- a barrier for a group of threads or processes in the source code means any thread/process must stop at this point and cannot proceed until all other threads/processes reach this barrier
+     - memory barrier, membar, memory fence or fence instruction — a type of barrier instruction that causes a CPU or compiler to enforce an ordering constraint on memory operations issued before and after the barrier instruction. This typically means that operations issued prior to the barrier are guaranteed to be performed before operations issued after the barrier
+     - barrier — a barrier for a group of threads or processes in the source code means any thread/process must stop at this point and cannot proceed until all other threads/processes reach this barrier
    - ensure changes visible — compiler will insert the appropriate code to ensure that a change to the a variable in one thread is visible from any other thread that reads the variable
      - [happen-before order](https://docs.oracle.com/javase/specs/jls/se11/html/jls-17.html#jls-17.4.5) — a write to a volatile field is visible to and ordered before every subsequent read of that field
    - atomicity — volatile variables do not provide any atomicity, but makes read and write to `long` and `double` atomic
      - [JLS 17.7. Non-Atomic Treatment of double and long](https://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.7)  
        > For the purposes of the Java programming language memory model, a single write to a non-volatile `long` or `double` value is treated as two separate writes: one to each 32-bit half. This can result in a situation where a thread sees the first 32 bits of a 64-bit value from one write, and the second 32 bits from another write.
-   - also `synchronized` -- changes visible before a variable is unlocked
+   - also `synchronized` — changes visible before a variable is unlocked
 
 1. `java.util.concurrent.atomic` — use efficient machine-level instructions to guarantee atomicity without using locks
    - optimistic update — `compareAndSet` method, or use lambda like `accumulateAndGet` method
@@ -376,7 +376,7 @@
      } while (!largest.compareAndSet(oldValue, newValue));
      ```
      - CAS, [Compare-and-swap - Wikipedia](https://en.wikipedia.org/wiki/Compare-and-swap)
-       - ABA problem -- use `AtomicStampedReference`, or traditional synchronization
+       - ABA problem — use `AtomicStampedReference`, or traditional synchronization
    - delayed computation — `LongAdder`, `LongAccumulator`, `DoubleAdder`, `DoubleAccumulator`
      - under high contention, performance suffers because the optimistic updates require too many retries
      - the computation must be associative and commutative
@@ -535,10 +535,10 @@
    - `concurrencyLevel` — the estimated number of concurrently updating threads, defaults to 16, other write threads will be blocked if the number exceeded
    - `long mappingCount()` — used in lieu of `size()` for `long`; an estimate, the actual count may differ if there are concurrent insertions or removals
    - atomicity
-     - value non-null -- `null` is for absent; if also for value, incompatible with the operation that use `synchronized` on the old value
-     - put -- `synchronized` on the old value, CAS if `null`
-     - replace -- `synchronized` on the old value
-     - lambda -- `synchronized` on the old value, if `null`, CAS a dummy value and `synchronized` on the dummy value, compute lambda, set computed value, exit lock block
+     - value non-null — `null` is for absent; if also for value, incompatible with the operation that use `synchronized` on the old value
+     - put — `synchronized` on the old value, CAS if `null`
+     - replace — `synchronized` on the old value
+     - lambda — `synchronized` on the old value, if `null`, CAS a dummy value and `synchronized` on the dummy value, compute lambda, set computed value, exit lock block
      - use `ConcurrentHashMap<String, LongAdder>` with `putIfAbsent`
        ```java
        map.putIfAbsent(word, new LongAdder()).increment();
@@ -725,7 +725,7 @@
    ```
    - creation — returned by `Executors.newCachedThreadPool()`, `Executors.newFixedThreadPool(int)`, `Executors.newSingleThreadExecutor()`
    - reject policies when task queue overflow, as static inner classes
-     - `ThreadPoolExecutor.AbortPolicy` -- `RejectedExecutionException`
+     - `ThreadPoolExecutor.AbortPolicy` — `RejectedExecutionException`
      - `ThreadPoolExecutor.CallerRunsPolicy`
      - `ThreadPoolExecutor.DiscardOldestPolicy`
      - `ThreadPoolExecutor.DiscardPolicy`
@@ -760,7 +760,7 @@
            Thread newThread(Runnable r);
        }
        ```
-   - methods for conversion to `Callable` -- from `Runnable`, `PrivilegedAction`, `PrivilegedExceptionAction`
+   - methods for conversion to `Callable` — from `Runnable`, `PrivilegedAction`, `PrivilegedExceptionAction`
    - more
 
 ### Fork-Join
@@ -769,8 +769,8 @@
    - work stealing
      - task queue — each thread has a deque for tasks, and pushes subtasks onto the head, LIFO
      - work stealing — when a worker thread is idle, it “steals” a task from the tail of another deque
-       - stealing is rare -- since large subtasks are at the tail, such stealing is rare
-       - stealing is expensive -- context switch between threads, even between CPUs if not the same core
+       - stealing is rare — since large subtasks are at the tail, such stealing is rare
+       - stealing is expensive — context switch between threads, even between CPUs if not the same core
        - only steal from adjacent thread to mitigate contention
      - `ForkJoinPool` employing work stealing — efficient for recursive tasks, and event-style tasks (especially `asyncMode` for the latter)
    - use and limitations
@@ -785,9 +785,9 @@
      - like a call (fork) and return (join) from a parallel recursive function — `a.fork(); b.fork(); b.join(); a.join();` is likely to be substantially more efficient than `a.join(); b.join()`
      - task size rule of thumb — a task should perform more than 100 and less than 10000 basic computational steps
    - dependency
-     - who fork who join -- parent thread must join all its forks
-     - unordered join -- forks from the same parent thread can be joined in arbitrary order
-     - join all before being joined -- a thread can be joined only when all its forks joined
+     - who fork who join — parent thread must join all its forks
+     - unordered join — forks from the same parent thread can be joined in arbitrary order
+     - join all before being joined — a thread can be joined only when all its forks joined
 
 1. `java.util.concurrent.ForkJoinTask` — tasks that run within a `ForkJoinPool`, a thread-like entity but much lighter, lightweight form of `Future`
    ```java
@@ -857,13 +857,13 @@
 
 1. Memory consistency effects — happen-before, see [volatile](#volatile-and-Atomics)
 
-1. `AbstractQueuedSynchronizer::compareAndSetState` -- uses `VarHandle::compareAndSet`
+1. `AbstractQueuedSynchronizer::compareAndSetState` — uses `VarHandle::compareAndSet`
    <!-- TODO -->
-   - CLH lock queue -- the thread appends itself to the waiting queue and spins on the variable that can be updated only by the thread preceding it in the queue
+   - CLH lock queue — the thread appends itself to the waiting queue and spins on the variable that can be updated only by the thread preceding it in the queue
      - Java uses CLH locks for blocking synchronizers, but with the same tactic, see javadoc for `AbstractQueuedSynchronizer.Node`
-   - `java.util.concurrent.locks.LockSupport` -- basic thread blocking primitives for creating locks and other synchronization classes
-     - underlying -- `jdk.internal.misc.Unsafe::park`, `Unsafe::unpark`
-     - `static void park(Object blocker)` -- park current thread, wrapped by set and unset `Thread.parkBlocker`
+   - `java.util.concurrent.locks.LockSupport` — basic thread blocking primitives for creating locks and other synchronization classes
+     - underlying — `jdk.internal.misc.Unsafe::park`, `Unsafe::unpark`
+     - `static void park(Object blocker)` — park current thread, wrapped by set and unset `Thread.parkBlocker`
      - `static void unpark(Thread thread)`
 
 ### Count Synchronizers
@@ -890,7 +890,7 @@
      - `boolean tryAcquire(int permits)`
      - `boolean tryAcquire(int permits, long timeout, TimeUnit unit)`
      - `boolean tryAcquire(long timeout, TimeUnit unit)`
-   - underlying implementation -- `AbstractQueuedSynchronizer::compareAndSetState`
+   - underlying implementation — `AbstractQueuedSynchronizer::compareAndSetState`
 
 1. `java.util.concurrent.CountDownLatch` — Allows a set of threads to wait until a count has been decremented to 0, and the count cannot be increased
    - constructor — `CountDownLatch(int count)`
@@ -898,7 +898,7 @@
      `boolean await(long timeout, TimeUnit unit)`
    - `void countDown()` — decrements the count of the latch, releasing all waiting threads if the count reaches zero
    - `long getCount()`
-   - underlying implementation -- `AbstractQueuedSynchronizer::compareAndSetState`
+   - underlying implementation — `AbstractQueuedSynchronizer::compareAndSetState`
 
 1. `java.util.concurrent.CyclicBarrier` — Allows a set of threads to wait until a predefined count of them has reached a common barrier, and then optionally executes a barrier action, and the count is reset
    - all-or-none — If a thread leaves a barrier point prematurely and exceptionally, all other threads waiting at that barrier point will also leave abnormally via `BrokenBarrierException` (or `InterruptedException` if they too were interrupted at about the same time)
@@ -911,7 +911,7 @@
    - `int getParties()` — the number of parties required to trip this barrier
    - `boolean isBroken()` — Queries if this barrier is in a broken state
    - `void reset()`
-   - underlying implementation -- `ReentrantLock`
+   - underlying implementation — `ReentrantLock`
 
 1. `java.util.concurrent.Phaser` — Like a cyclic barrier, but with a mutable party count, and can have multiple phases with phase number cycling from 0 to `Integer.MAX_VALUE`
    - constructors
@@ -945,7 +945,7 @@
      ```java
      return registeredParties == 0; // default implementation
      ```
-   - underlying implementation -- `VarHandle::compareAndSetState`
+   - underlying implementation — `VarHandle::compareAndSetState`
 
 ### Data Exchange Synchronizers
 

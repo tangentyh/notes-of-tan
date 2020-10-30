@@ -20,11 +20,11 @@
    /   a2
    a0
    ```
-   - example -- `a5 - a0` for one transaction, `a1 - a0` and `a5 - a2` for two transactions, `a1 - a0`, `a3 - a2`, `a5 - a4` for three transactions
-   - algorithm -- get peak-valley pairs, combine adjacent peak-valley pairs if possible, then reverse order sort the profit for each peak-valley pairs and get *k* prefix sum
-   - peak-valley combining examples -- can get max profit after sort and prefix sum
-     - for `a0` to `a3`: `a1 - a0`, `a3 - a2` combined to -- `a1 - a2` and `a3 - a0`
-     - for `a0` to `a5` -- combined to `a5 - a0`, `a3 - a4` and `a1 - a2`
+   - example — `a5 - a0` for one transaction, `a1 - a0` and `a5 - a2` for two transactions, `a1 - a0`, `a3 - a2`, `a5 - a4` for three transactions
+   - algorithm — get peak-valley pairs, combine adjacent peak-valley pairs if possible, then reverse order sort the profit for each peak-valley pairs and get *k* prefix sum
+   - peak-valley combining examples — can get max profit after sort and prefix sum
+     - for `a0` to `a3`: `a1 - a0`, `a3 - a2` combined to — `a1 - a2` and `a3 - a0`
+     - for `a0` to `a5` — combined to `a5 - a0`, `a3 - a4` and `a1 - a2`
 
 ## Math
 
@@ -94,13 +94,13 @@
 1. root-finding algorithm: combining the bisection method, the secant method and inverse quadratic interpolation
    - [Brent's method](https://en.wikipedia.org/wiki/Brent%27s_method)
 
-1. multiplication of two numbers -- Karatsuba algorithm
+1. multiplication of two numbers — Karatsuba algorithm
    - [wikipedia](https://en.wikipedia.org/wiki/Karatsuba_algorithm)
 
 1. [Exponentiation by squaring - Wikipedia](https://en.wikipedia.org/wiki/Exponentiation_by_squaring)
    - [example](https://leetcode.com/problems/student-attendance-record-ii/discuss/101633/Improving-the-runtime-from-O(n)-to-O(log-n))
 
-1. Sieve of Eratosthenes -- bit vector masking
+1. Sieve of Eratosthenes — bit vector masking
    ```java
    // Euler's sieve?
    int n = 2000000;
@@ -183,8 +183,8 @@
      ```
    - [Modular multiplicative inverse - Wikipedia](https://en.wikipedia.org/wiki/Modular_multiplicative_inverse)
    - [Rolling hash - Wikipedia](https://en.wikipedia.org/wiki/Rolling_hash)
-     - choice of base and modulus -- tbd
-     - order reverse to the one in wiki -- use mod inverse to compute `(hash(S) - S[0]) / p`
+     - choice of base and modulus — tbd
+     - order reverse to the one in wiki — use mod inverse to compute `(hash(S) - S[0]) / p`
        ```
        h = (h - A[i - (len - 1)]) * P_inv % MOD
        ```
@@ -215,9 +215,9 @@
          return prefTable;
      }
      ```
-     - alternative -- see `__substring_find.py`
+     - alternative — see `__substring_find.py`
 
-1. Longest palindromic substring -- [Manacher's algorithm](https://en.wikipedia.org/wiki/Longest_palindromic_substring)
+1. Longest palindromic substring — [Manacher's algorithm](https://en.wikipedia.org/wiki/Longest_palindromic_substring)
    ```java
    class Solution {
        public String shortestPalindrome(String s) {
@@ -258,12 +258,12 @@
    ```
    - [explanation with figures](https://web.archive.org/web/20190420104610/http://articles.leetcode.com/longest-palindromic-substring-part-ii/)
 
-1. suffix tree -- tbd
+1. suffix tree — tbd
    - [Suffix tree - Wikipedia](https://en.wikipedia.org/wiki/Suffix_tree)
 
 ## Search and sort
 
-1. two implementation of binary search -- difference in while condition and `hi`
+1. two implementation of binary search — difference in while condition and `hi`
    ```python
    def bisect_left(a, x, lo=0, hi=None):
        if lo < 0:
@@ -295,7 +295,7 @@
    }
    ```
 
-1. Fractional cascading -- bisect an item in several lists in O(log *n+k*) time and O(*n*) space
+1. Fractional cascading — bisect an item in several lists in O(log *n+k*) time and O(*n*) space
    - [wikipedia](https://en.wikipedia.org/wiki/Fractional_cascading)
    - build search list $M_i$ from original searched list $L_1, L_2, L_3, \ldots$
      1. $M_k$ is equal to $L_k$
@@ -318,7 +318,7 @@
      ```
      search *q* = 50, from 64[1, 5] in M1, to 62[3, 3], to 62[2, 3], to 79[3, 0], result is [1, 3, 2, 3]
 
-1. Tim sort -- a type of merge sort
+1. Tim sort — a type of merge sort
 
 ## Trees
 
@@ -341,11 +341,11 @@
    };
    ```
 
-1. `__Trie.py` -- trie and Finwick tree
+1. `__Trie.py` — trie and Finwick tree
 
-1. segment tree for range sum -- [Efficient and easy segment trees - Codeforces](http://codeforces.com/blog/entry/18051)
-   - for interval query -- discretization possible values
-   - implementation -- see `Sol699.java` and `_SegTree.java`
+1. segment tree for range sum — [Efficient and easy segment trees - Codeforces](http://codeforces.com/blog/entry/18051)
+   - for interval query — discretization possible values
+   - implementation — see `Sol699.java` and `_SegTree.java`
    - top-down segment trees, lc 732
      ```python
      class MyCalendarThree:
@@ -366,7 +366,7 @@
              update(start, end)
              return self.seg[1] + self.lazy[1]
      ```
-     - alternative -- start or end of the first sub-interval as the mid value, O(*n*) when worst case
+     - alternative — start or end of the first sub-interval as the mid value, O(*n*) when worst case
 
 1. interval tree
    - [Interval tree - Wikipedia](https://en.wikipedia.org/wiki/Interval_tree)
@@ -386,7 +386,7 @@
 
 1. Cycle detection
    - [Cycle detection - Wikipedia](https://en.wikipedia.org/wiki/Cycle_detection#Floyd%27s_Tortoise_and_Hare)
-   - directed graph representation -- array: `i -> a[i]` for vertex i to vertex `a[i]`
+   - directed graph representation — array: `i -> a[i]` for vertex i to vertex `a[i]`
 
 1. Eulerian path
    - [Fleury's algorithm, Hierholzer's algorithm](https://en.wikipedia.org/wiki/Eulerian_path#Fleury.27s_algorithm)
@@ -405,8 +405,8 @@
 1. path find
    - [A* search algorithm - Wikipedia](https://en.wikipedia.org/wiki/A*_search_algorithm)
      - [leetcode 675](https://leetcode.com/problems/cut-off-trees-for-golf-event/solution/)
-   - [Lee algorithm - Wikipedia](https://en.wikipedia.org/wiki/Lee_algorithm) -- BFS, wave propagation
-     - Hadlock's Algorithm -- BFS, but put non-detours at the head of the searching queue while put detours at the tail of the searching queue
+   - [Lee algorithm - Wikipedia](https://en.wikipedia.org/wiki/Lee_algorithm) — BFS, wave propagation
+     - Hadlock's Algorithm — BFS, but put non-detours at the head of the searching queue while put detours at the tail of the searching queue
        ```
        [0, 0, 0, 0, 0, 1, 2]
        [0, 0, 0, 0, 1, s, 1]
@@ -423,17 +423,17 @@
        0: untouched area
        nonzero int: path length
        ```
-       - detour example -- in a grid, it is a detour if `abs(to_i - i) + abs(to_j - j)` will be larger when `i` or `j` changes
+       - detour example — in a grid, it is a detour if `abs(to_i - i) + abs(to_j - j)` will be larger when `i` or `j` changes
 
 1. shortest path
    - Dijkstra
    - Floyd–Warshall algorithm
    - [Bellman–Ford algorithm - Wikipedia](https://en.wikipedia.org/wiki/Bellman%E2%80%93Ford_algorithm)
 
-1. minimal spanning tree -- [最小生成树 - OI Wiki](https://oi-wiki.org/graph/mst/)
+1. minimal spanning tree — [最小生成树 - OI Wiki](https://oi-wiki.org/graph/mst/)
    - [Prim O(n^2)](https://leetcode-cn.com/problems/min-cost-to-connect-all-points/solution/on2-primsuan-fa-by-lucifer1004/)
 
-1. Tarjan -- [强连通分量 - OI Wiki](https://oi-wiki.org/graph/scc/)
+1. Tarjan — [强连通分量 - OI Wiki](https://oi-wiki.org/graph/scc/)
    ```java
    class Tarjan {
        /**

@@ -528,8 +528,8 @@
    ```
    - underlying implementation — `Entry` extends `WeakReference` and registered to a `ReferenceQueue` upon construction
    - not count for gc — the presence of a mapping for a given key will not prevent the key from being discarded by the garbage collector
-     - `private final ReferenceQueue<Object> queue` -- `WeakReference` keys are registered with a `queue` when created; when the referent of `WeakReference` is reclaimed by GC, `WeakReference::enqueue` is called at the same time or at some later time
-     - `expungeStaleEntries()` -- private method that scan `WeakReference` keys in `queue` and set corresponding values to `null`; called every time in access methods, `size()`, and internal resize method
+     - `private final ReferenceQueue<Object> queue` — `WeakReference` keys are registered with a `queue` when created; when the referent of `WeakReference` is reclaimed by GC, `WeakReference::enqueue` is called at the same time or at some later time
+     - `expungeStaleEntries()` — private method that scan `WeakReference` keys in `queue` and set corresponding values to `null`; called every time in access methods, `size()`, and internal resize method
    - `null` support — both keys and values
    - values with strong reference to the keys — prevent keys from gc, can be alleviated by wrapping values with `new WeakReference(value)`
 

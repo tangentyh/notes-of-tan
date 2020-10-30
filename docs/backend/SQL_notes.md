@@ -361,10 +361,10 @@ Based on MySQL
      SHOW STATUS LIKE 'last_query_cost';
      ```
 
-1. select optimization -- tbd
+1. select optimization — tbd
    - big query refactor
-     - 切分大查询 -- 一个大查询如果一次性执行的话，可能一次锁住很多数据、占满整个事务日志、耗尽系统资源、阻塞很多小的但重要的查询。
-     - 分解大连接查询 -- 将一个大连接查询分解成对每一个表进行一次单表查询，然后在应用程序中进行关联，这样做的好处有：
+     - 切分大查询 — 一个大查询如果一次性执行的话，可能一次锁住很多数据、占满整个事务日志、耗尽系统资源、阻塞很多小的但重要的查询。
+     - 分解大连接查询 — 将一个大连接查询分解成对每一个表进行一次单表查询，然后在应用程序中进行关联，这样做的好处有：
        - 让缓存更高效。对于连接查询，如果其中一个表发生变化，那么整个查询缓存就无法使用。而分解后的多个查询，即使其中一个表发生变化，对其它表的查询缓存依然可以使用。
        - 分解成多个单表查询，这些单表查询的缓存结果更可能被其它查询使用到，从而减少冗余记录的查询。
        - 减少锁竞争；
@@ -1622,7 +1622,7 @@ Based on MySQL
 
 1. other group functions
    - `COUNT(expr) [over_clause]` — non-`NULL` values, also `NULL` if `COUNT(*)`
-     - secondary index traversing -- InnoDB processes `SELECT COUNT(*)` statements by traversing the smallest available secondary index unless an index or optimizer hint directs the optimizer to use a different index. If a secondary index is not present, InnoDB processes `SELECT COUNT(*)` statements by scanning the clustered index.
+     - secondary index traversing — InnoDB processes `SELECT COUNT(*)` statements by traversing the smallest available secondary index unless an index or optimizer hint directs the optimizer to use a different index. If a secondary index is not present, InnoDB processes `SELECT COUNT(*)` statements by scanning the clustered index.
    - `COUNT(DISTINCT expr,[expr...])`
    - `GROUP_CONCAT(expr)`
      ```
@@ -1794,13 +1794,13 @@ Based on MySQL
 ### Partition
 
 1. partition in MySQL
-   - partitioning types -- horizontal, error when cannot decide partition
+   - partitioning types — horizontal, error when cannot decide partition
      - `RANGE` partitioning — partitions based on column values falling within a given range
        - `RANGE COLUMNS` partitioning — enables the use of multiple columns in partitioning keys
      - `LIST` partitioning — partitions based on column values matching one of a set of discrete values
        - `LIST COLUMNS` partitioning — enables the use of multiple columns in partitioning keys
      - `HASH` partitioning — partitions based on user provided hash function on column values
-       - `LINEAR HASH` -- data is less likely to be evenly distributed, but adding, dropping, merging, and splitting of partitions is made much faster
+       - `LINEAR HASH` — data is less likely to be evenly distributed, but adding, dropping, merging, and splitting of partitions is made much faster
        - `KEY` partitioning — similar to `HASH`, except that MySQL supplies the hashing function
    - composite partitioning — with `SUBPARTITION`
    - limitation — all columns used in the table's partitioning expression must be part of every unique key that the table may have, including any primary key, see docs for more

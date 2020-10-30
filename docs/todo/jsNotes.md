@@ -131,16 +131,16 @@
 
 ## Flow Control
 
-1. blocks -- used to group zero or more statements
+1. blocks — used to group zero or more statements
    - delimited by a pair of curly brackets
    - and may optionally be labelled
 
-1. empty -- An empty statement is used to provide no statement, although the JavaScript syntax would expect one
+1. empty — An empty statement is used to provide no statement, although the JavaScript syntax would expect one
    ```
    ;
    ```
 
-1. `break` -- terminates the current loop, switch, or label statement
+1. `break` — terminates the current loop, switch, or label statement
 
 1. `continue`
    - also label
@@ -166,8 +166,8 @@
          break;
      }
      ```
-     - result -- `Uncaught SyntaxError: Identifier 'message' has already been declared`
-     - fix -- add brackets
+     - result — `Uncaught SyntaxError: Identifier 'message' has already been declared`
+     - fix — add brackets
    - expression condition
      ```javascript
      switch (true) {
@@ -197,7 +197,7 @@
        }
      }
      ```
-   - optional catch binding -- stage 4
+   - optional catch binding — stage 4
      ```javascript
      try {
        // ...
@@ -222,7 +222,7 @@
 ## Declarations
 
 1. `var`
-   - scope -- current execution context (function)
+   - scope — current execution context (function)
    - variable hoisting
    - Undeclared variables are always global, Undeclared variables do not exist until the code assigning to them is executed, Undeclared variables are configurable (e.g. can be deleted)
      ```
@@ -258,17 +258,17 @@
 
 1. `function`
    - variable hoisting
-   - Conditionally created functions -- results are inconsistent across implementations
+   - Conditionally created functions — results are inconsistent across implementations
    - function expressions are not hoisted
 
-1. `function*` -- returns `Generator` object
+1. `function*` — returns `Generator` object
    - `GeneratorFunction` constructor
      ```javascript
      const GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor
      ```
      - generator function created with the `GeneratorFunction` constructor do not create closures to their creation contexts; they always are created in the global scope
 
-1. `async function` -- returns an `AsyncFunction` object
+1. `async function` — returns an `AsyncFunction` object
    - `AsyncFunction` constructor
      ```javascript
      const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
@@ -299,7 +299,7 @@
      ); /* semicolon, mandatory here */
      ```
 
-1. `for...in` -- iterates over all non-Symbol, enumerable properties of an object
+1. `for...in` — iterates over all non-Symbol, enumerable properties of an object
    - arbitrary order
    - Iterating over own properties only
      - `type PropertyKey = string | number | symbol`, number will be converted to string
@@ -308,9 +308,9 @@
      - `Object.getOwnPropertyNames(o: any): string[]`
      - `Object.keys(o: any): string[]`, `Object.entries()`, `Object.values()`
 
-1. `for...of` -- `Symbol.iterator` hook
+1. `for...of` — `Symbol.iterator` hook
 
-1. `for await...of` -- `Symbol.asyncIterator` hook, also sync iterables
+1. `for await...of` — `Symbol.asyncIterator` hook, also sync iterables
 
 ## Others
 
@@ -323,7 +323,7 @@
 1. `export`
    - strict mode
 
-1. `import.meta` -- a meta-property exposing context-specific meta data to a JavaScript module
+1. `import.meta` — a meta-property exposing context-specific meta data to a JavaScript module
 
 # Expressions and operators
 
@@ -341,33 +341,33 @@
      - cannot directly manipulate the contents
      - create one of the typed array objects or a `DataView` object which represents the buffer in a specific format, and use that to read and write the contents of the buffer
      - constructor: `ArrayBuffer(byteLength: number)`
-     - `ArrayBuffer.prototype.byteLength` Read only -- The size, in bytes, of the array
+     - `ArrayBuffer.prototype.byteLength` Read only — The size, in bytes, of the array
 
-1. Views -- `DataView`
+1. Views — `DataView`
    - An array buffer view is a particular way of using the bytes within an array buffer
    - constructor: `DataView(buffer: ArrayBuffer, byteOffset?: number, byteLength?)`
    - properties: from constructor
-     - `DataView.prototype.buffer` Read only -- The ArrayBuffer referenced by this view. Fixed at construction time and thus read only
-     - `DataView.prototype.byteLength` Read only -- The length (in bytes) of this view from the start of its ArrayBuffer. Fixed at construction time and thus read only
-     - `DataView.prototype.byteOffset` Read only -- The offset (in bytes) of this view from the start of its ArrayBuffer. Fixed at construction time and thus read only
+     - `DataView.prototype.buffer` Read only — The ArrayBuffer referenced by this view. Fixed at construction time and thus read only
+     - `DataView.prototype.byteLength` Read only — The length (in bytes) of this view from the start of its ArrayBuffer. Fixed at construction time and thus read only
+     - `DataView.prototype.byteOffset` Read only — The offset (in bytes) of this view from the start of its ArrayBuffer. Fixed at construction time and thus read only
    - read methods: return a number
-     - `DataView.prototype.getInt8(byteOffset)` -- Gets a signed 8-bit integer (byte) at the specified byte offset from the start of the view
-     - `DataView.prototype.getUint8(byteOffset)` -- Gets an unsigned 8-bit integer (unsigned byte) at the specified byte offset from the start of the view
-     - `DataView.prototype.getInt16(byteOffset, littleEndian?: boolean)` -- Gets a signed 16-bit integer (short) at the specified byte offset from the start of the view
-     - `DataView.prototype.getUint16(byteOffset, littleEndian?: boolean)` -- Gets an unsigned 16-bit integer (unsigned short) at the specified byte offset from the start of the view
-     - `DataView.prototype.getInt32(byteOffset, littleEndian?: boolean)` -- Gets a signed 32-bit integer (long) at the specified byte offset from the start of the view
-     - `DataView.prototype.getUint32(byteOffset, littleEndian?: boolean)` -- Gets an unsigned 32-bit integer (unsigned long) at the specified byte offset from the start of the view
-     - `DataView.prototype.getFloat32(byteOffset, littleEndian?: boolean)` -- Gets a signed 32-bit float (float) at the specified byte offset from the start of the view
-     - `DataView.prototype.getFloat64(byteOffset, littleEndian?: boolean)` -- Gets a signed 64-bit float (double) at the specified byte offset from the start of the view
+     - `DataView.prototype.getInt8(byteOffset)` — Gets a signed 8-bit integer (byte) at the specified byte offset from the start of the view
+     - `DataView.prototype.getUint8(byteOffset)` — Gets an unsigned 8-bit integer (unsigned byte) at the specified byte offset from the start of the view
+     - `DataView.prototype.getInt16(byteOffset, littleEndian?: boolean)` — Gets a signed 16-bit integer (short) at the specified byte offset from the start of the view
+     - `DataView.prototype.getUint16(byteOffset, littleEndian?: boolean)` — Gets an unsigned 16-bit integer (unsigned short) at the specified byte offset from the start of the view
+     - `DataView.prototype.getInt32(byteOffset, littleEndian?: boolean)` — Gets a signed 32-bit integer (long) at the specified byte offset from the start of the view
+     - `DataView.prototype.getUint32(byteOffset, littleEndian?: boolean)` — Gets an unsigned 32-bit integer (unsigned long) at the specified byte offset from the start of the view
+     - `DataView.prototype.getFloat32(byteOffset, littleEndian?: boolean)` — Gets a signed 32-bit float (float) at the specified byte offset from the start of the view
+     - `DataView.prototype.getFloat64(byteOffset, littleEndian?: boolean)` — Gets a signed 64-bit float (double) at the specified byte offset from the start of the view
    - write methods
-     - `DataView.prototype.setInt8(byteOffset, value)` -- Stores a signed 8-bit integer (byte) value at the specified byte offset from the start of the view
-     - `DataView.prototype.setUint8(byteOffset, value)` -- Stores an unsigned 8-bit integer (unsigned byte) value at the specified byte offset from the start of the view
-     - `DataView.prototype.setInt16(byteOffset, value, littleEndian?)` -- Stores a signed 16-bit integer (short) value at the specified byte offset from the start of the view
-     - `DataView.prototype.setUint16(byteOffset, value, littleEndian?)` -- Stores an unsigned 16-bit integer (unsigned short) value at the specified byte offset from the start of the view
-     - `DataView.prototype.setInt32(byteOffset, value, littleEndian?)` -- Stores a signed 32-bit integer (long) value at the specified byte offset from the start of the view
-     - `DataView.prototype.setUint32(byteOffset, value, littleEndian?)` -- Stores an unsigned 32-bit integer (unsigned long) value at the specified byte offset from the start of the view
-     - `DataView.prototype.setFloat32(byteOffset, value, littleEndian?)` -- Stores a signed 32-bit float (float) value at the specified byte offset from the start of the view
-     - `DataView.prototype.setFloat64(byteOffset, value, littleEndian?)` -- Stores a signed 64-bit float (double) value at the specified byte offset from the start of the view
+     - `DataView.prototype.setInt8(byteOffset, value)` — Stores a signed 8-bit integer (byte) value at the specified byte offset from the start of the view
+     - `DataView.prototype.setUint8(byteOffset, value)` — Stores an unsigned 8-bit integer (unsigned byte) value at the specified byte offset from the start of the view
+     - `DataView.prototype.setInt16(byteOffset, value, littleEndian?)` — Stores a signed 16-bit integer (short) value at the specified byte offset from the start of the view
+     - `DataView.prototype.setUint16(byteOffset, value, littleEndian?)` — Stores an unsigned 16-bit integer (unsigned short) value at the specified byte offset from the start of the view
+     - `DataView.prototype.setInt32(byteOffset, value, littleEndian?)` — Stores a signed 32-bit integer (long) value at the specified byte offset from the start of the view
+     - `DataView.prototype.setUint32(byteOffset, value, littleEndian?)` — Stores an unsigned 32-bit integer (unsigned long) value at the specified byte offset from the start of the view
+     - `DataView.prototype.setFloat32(byteOffset, value, littleEndian?)` — Stores a signed 32-bit float (float) value at the specified byte offset from the start of the view
+     - `DataView.prototype.setFloat64(byteOffset, value, littleEndian?)` — Stores a signed 64-bit float (double) value at the specified byte offset from the start of the view
 
 1. Typed Views  
    | Type | Value Range | Description | Web IDL type | Equivalent C type |
@@ -443,14 +443,14 @@
        ```
 
      - return a new anonymous function
-   - `Function.prototype.bind(thisArg: any, ...argArray: any[])` -- creates a new bound function (BF)
+   - `Function.prototype.bind(thisArg: any, ...argArray: any[])` — creates a new bound function (BF)
      - creates a new function that, when called, has its `this` keyword set to the provided value, with a given sequence of arguments preceding any provided when the new function is called
        - more overhead
      - thisArg
        - The value is ignored if the bound function is constructed using the `new` operator
        - When using bind to create a function(supplied as a callback) inside a `setTimeout()`, any primitive value passed as `thisArg` is converted to object
        - If no arguments are provided to bind, the `this` of the executing scope is treated as the `thisArg` for the new function
-     - internally when without `new` -- `Function.prototype.call([[BoundThis]], [[BoundArguments]], args)`
+     - internally when without `new` — `Function.prototype.call([[BoundThis]], [[BoundArguments]], args)`
      - example
        ```javascript
        var slice = Array.prototype.slice;
@@ -468,15 +468,15 @@
    - for individual properties: manually set each property’s `[[Configurable]]`, `[[Writable]]`, `[[Enumerable]]`, `[[Value]]`, `[[Get]]`, and `[[Set]]` attributes to alter how the property behaves
    - once an object has been made tamper-proof, the operation cannot be undone
    - corresponding modification fails silently or by throwing a `TypeError` (most commonly, but not exclusively, when in strict mode)
-   - `Object.preventExtensions(o: any): any` -- Prevents any extensions of an object
+   - `Object.preventExtensions(o: any): any` — Prevents any extensions of an object
      - `__proto__` also become immutable
-   - `Object.isExtensible(o: any): boolean` -- Determines if extending of an object is allowed
-   - `Object.seal(o: any): any` -- seals an object, preventing new properties from being added to it and marking all existing properties as non-configurable. Values of present properties can still be changed as long as they are writable
+   - `Object.isExtensible(o: any): boolean` — Determines if extending of an object is allowed
+   - `Object.seal(o: any): any` — seals an object, preventing new properties from being added to it and marking all existing properties as non-configurable. Values of present properties can still be changed as long as they are writable
      - non-extensible and `[[configurable]]` set to `false`
-   - `Object.isSealed(o: any): boolean` -- Determines if an object is sealed
-   - `Object.freeze(o: any): any` -- freezes an object: that is, prevents new properties from being added to it; prevents existing properties from being removed; and prevents existing properties, or their enumerability, configurability, or writability, from being changed, it also prevents the prototype from being changed
+   - `Object.isSealed(o: any): boolean` — Determines if an object is sealed
+   - `Object.freeze(o: any): any` — freezes an object: that is, prevents new properties from being added to it; prevents existing properties from being removed; and prevents existing properties, or their enumerability, configurability, or writability, from being changed, it also prevents the prototype from being changed
      - non-extensible, sealed and property value cannot be changed
-   - `Object.isFrozen(o: any): boolean` -- Determines if an object was frozen
+   - `Object.isFrozen(o: any): boolean` — Determines if an object was frozen
 
 ## Error Handling
 
@@ -502,11 +502,11 @@
    - constructor: `Error(message?: string)`
      - can be used as a function (without `new`)
    - properties and methods
-     - `Error.prototype.message` -- Error message
-     - `Error.prototype.name` -- Error name
-     - `Error.prototype.toString()` -- Returns a string (`Error: ${error.message}`) representing the specified object. Overrides the `Object.prototype.toString()` method
+     - `Error.prototype.message` — Error message
+     - `Error.prototype.name` — Error name
+     - `Error.prototype.toString()` — Returns a string (`Error: ${error.message}`) representing the specified object. Overrides the `Object.prototype.toString()` method
    - nonstandard but widely support properties
-     - `Error.prototype.stack` -- Stack trace
+     - `Error.prototype.stack` — Stack trace
 
 1. Error Types
    ```javascript
@@ -523,13 +523,13 @@
    ```
 
    - constructor name is the same as error type name, and similar to `Error()`
-   - `EvalError` -- Creates an instance representing an error that occurs regarding the global function `eval()`
+   - `EvalError` — Creates an instance representing an error that occurs regarding the global function `eval()`
      - This exception is not thrown by JavaScript anymore, however the `EvalError` object remains for compatibility
-   - `RangeError` -- Creates an instance representing an error that occurs when a numeric variable or parameter is outside of its valid range
-   - `ReferenceError` -- Creates an instance representing an error when a non-existent variable is referenced
-   - `SyntaxError` -- Creates an instance representing a syntax error when trying to interpret syntactically invalid code
-   - `TypeError` -- Creates an instance representing an error that occurs when a variable or parameter is not of a valid type
-   - `URIError` -- Creates an instance representing an error that occurs when `encodeURI()` or `decodeURI()` are passed invalid parameters
+   - `RangeError` — Creates an instance representing an error that occurs when a numeric variable or parameter is outside of its valid range
+   - `ReferenceError` — Creates an instance representing an error when a non-existent variable is referenced
+   - `SyntaxError` — Creates an instance representing a syntax error when trying to interpret syntactically invalid code
+   - `TypeError` — Creates an instance representing an error that occurs when a variable or parameter is not of a valid type
+   - `URIError` — Creates an instance representing an error that occurs when `encodeURI()` or `decodeURI()` are passed invalid parameters
 
 1. Custom Error Types
    - ES6
@@ -625,44 +625,44 @@
 1. `Console`
    - provides access to the browser's debugging console, `window.console`
    - print methods
-     - `Console.log(...)` -- For general output of logging information
+     - `Console.log(...)` — For general output of logging information
        - when logging objects in the latest versions of Chrome and Firefox what get logged on the console is a reference to the object
        - use `console.log(JSON.parse(JSON.stringify(obj)))` to see the value at the moment of being logged
        - prints the element in an HTML-like tree for `Node` objects
        - [string substitution](https://developer.mozilla.org/en-US/docs/Web/API/console#Using_string_substitutions) (%) and additional arguments
        - `Console.assert()` (no string substitution), `Console.debug()`, `Console.error()`, `Console.info()`, `Console.warn()`
-     - `Console.debug(...)` -- Outputs a message to the console (`Console.log()`) with the log level "debug"
+     - `Console.debug(...)` — Outputs a message to the console (`Console.log()`) with the log level "debug"
        - Note: Starting with Chromium 58 this method only appears in Chromium browser consoles when level "Verbose" is selected.
-     - `Console.error(...)` -- `Console.log()` with error level
-     - `Console.info(...)` -- `Console.log()`
-     - `Console.warn(...)` -- `Console.log()` with warning level
-     - `Console.assert(assertion?: boolean, ...): void` -- Log a error level message and stack trace to console if the first argument is `false`
+     - `Console.error(...)` — `Console.log()` with error level
+     - `Console.info(...)` — `Console.log()`
+     - `Console.warn(...)` — `Console.log()` with warning level
+     - `Console.assert(assertion?: boolean, ...): void` — Log a error level message and stack trace to console if the first argument is `false`
        - `Console.log()` with a condition and error level and without string substitution
-     - `Console.dir(obj): void` -- Displays an interactive list of the properties of the specified JavaScript object
+     - `Console.dir(obj): void` — Displays an interactive list of the properties of the specified JavaScript object
        - prints the `HTMLElement` in a JSON-like tree
-     - `Console.dirxml(obj)` -- `Console.dir()` which displays an interactive tree of the descendant elements of the specified XML/HTML element if possible
-     - `Console.table(data, columns?): void` -- logs data as a table. Each element in the array (or enumerable property if data is an object) will be a row in the table
+     - `Console.dirxml(obj)` — `Console.dir()` which displays an interactive tree of the descendant elements of the specified XML/HTML element if possible
+     - `Console.table(data, columns?): void` — logs data as a table. Each element in the array (or enumerable property if data is an object) will be a row in the table
        - columns parameter to select a subset of columns to display
-     - `Console.clear()` -- Clear the console
+     - `Console.clear()` — Clear the console
    - count methods
-     - `Console.count(label?: string)` -- Log the number of times this line or a particular call has been called with the given label
+     - `Console.count(label?: string)` — Log the number of times this line or a particular call has been called with the given label
        - without the parameter, the label is `"default"`
-     - `Console.countReset(label?: string)` -- Resets the value of the counter with the given label
+     - `Console.countReset(label?: string)` — Resets the value of the counter with the given label
    - methods with new indentation
-     - `Console.group(groupTitle?)` -- Creates a new inline group, indenting all following output by another level
-     - `Console.groupCollapsed(groupTitle?)` -- Creates a new inline group, indenting all following output by another level. However, unlike `group()` this starts with the inline group collapsed requiring the use of a disclosure button to expand it
-     - `Console.groupEnd()` -- Exits the current inline group
+     - `Console.group(groupTitle?)` — Creates a new inline group, indenting all following output by another level
+     - `Console.groupCollapsed(groupTitle?)` — Creates a new inline group, indenting all following output by another level. However, unlike `group()` this starts with the inline group collapsed requiring the use of a disclosure button to expand it
+     - `Console.groupEnd()` — Exits the current inline group
    - timing methods
-     - `Console.time(label?: string)` -- Starts a timer with a name specified as an input parameter
+     - `Console.time(label?: string)` — Starts a timer with a name specified as an input parameter
        - Up to 10,000 simultaneous timers can run on a given page
        - label defaults to `"default"`
-     - `Console.timeEnd(label?)` -- Stops the specified timer and logs the elapsed time in seconds since it started
-     - `Console.timeLog(label?)` -- Logs the value of the specified timer to the console
+     - `Console.timeEnd(label?)` — Stops the specified timer and logs the elapsed time in seconds since it started
+     - `Console.timeLog(label?)` — Logs the value of the specified timer to the console
        - not widely supported
-     - `Console.timeStamp(label?: string)` nonstandard -- Adds a marker to the browser's Timeline or Waterfall tool
+     - `Console.timeStamp(label?: string)` nonstandard — Adds a marker to the browser's Timeline or Waterfall tool
        - label will then be shown alongside the marker
-   - `Console.trace()` -- Outputs a stack trace
-   - Styling console output -- You can use the `%c` directive to apply a CSS style to console output:
+   - `Console.trace()` — Outputs a stack trace
+   - Styling console output — You can use the `%c` directive to apply a CSS style to console output:
      ```javascript
      console.log("This is %cMy stylish message",
      "color: yellow; font-style: italic; background-color: blue;padding: 2px");
@@ -696,17 +696,17 @@
    - Use Constants
 
 1. performance
-   - Be Scope-Aware -- avoid long scope-chain lookup ???
+   - Be Scope-Aware — avoid long scope-chain lookup ???
    - Avoid long property lookup
      - actually long chaining dict lookup
    - Avoid Double Interpretation
    - prefer native methods, switch statements and bitwise operations
-   - Optimize DOM Interactions -- DOM manipulations and interactions take a large amount of time because they often require rerendering all or part of the page ???
+   - Optimize DOM Interactions — DOM manipulations and interactions take a large amount of time because they often require rerendering all or part of the page ???
      - Minimize Live Updates
        - use `DocumentFragment`
        - use `HTMLElement.InnerHTML`
      - Use Event Delegation
-     - Beware of `HTMLCollections` (and `NodeList`) -- An `HTMLCollection` in the HTML DOM is live; it is automatically updated when the underlying document is changed
+     - Beware of `HTMLCollections` (and `NodeList`) — An `HTMLCollection` in the HTML DOM is live; it is automatically updated when the underlying document is changed
        - cache `length` and items in loops
        - In some cases, `NodeList` is static, where any changes in the DOM does not affect the content of the collection, as `Document.querySelectorAll()`
        - In other cases, the `NodeList` is live, which means that changes in the DOM automatically update the collection, such as `Node.childNodes`
@@ -715,14 +715,14 @@
    - webpack
    - build
    - validation
-   - compression -- file and HTTP
+   - compression — file and HTTP
 
 # JSON
 
 1. syntax
    - simple values — Strings, numbers, Booleans, and `null`, no `undefined`
      - strings must use double quotes to be valid
-   - objects -- key-value pairs
+   - objects — key-value pairs
      - key is enclosed by double quotes
      - no trailing semicolon
    - arrays
@@ -734,12 +734,12 @@
 1. `JSON`
    - `JSON.parse(text: string, receiver?: (key: any, value: any) => any): any`
      - text: The string to parse as JSON
-     - reviver -- If a function, this prescribes how the value originally produced by parsing is transformed, before being returned
+     - reviver — If a function, this prescribes how the value originally produced by parsing is transformed, before being returned
      - does not allow trailing commas: `SyntaxError`
    - `JSON.stringify(value: any, replacer?: (key: string, value: any) => any, space?: string | number): string`  
      `JSON.stringify(value: any, replacer?: (string | number)[], space?: string | number): string`
-     - value -- The value to convert to a JSON string
-     - replacer -- A function that alters the behavior of the stringification process, or an array of `String` and `Number` objects that serve as a whitelist for selecting/filtering the properties of the value object to be included in the JSON string
+     - value — The value to convert to a JSON string
+     - replacer — A function that alters the behavior of the stringification process, or an array of `String` and `Number` objects that serve as a whitelist for selecting/filtering the properties of the value object to be included in the JSON string
        - If you return any other object, the object is recursively stringified into the JSON string, calling the replacer function on each property, unless the object is a function, in which case nothing is added to the JSON string.
        - If you return `undefined`, the property is not included (i.e., filtered out) in the output JSON string.
        - cannot use the replacer function to remove values from an array. If you return `undefined` or a function then `null` is used instead
@@ -767,7 +767,7 @@
 
 1. variables
    - assigning a value to an undeclared variable throws a `ReferenceError`
-   - an attempt to `delete` a variable causes an `ReferenceError` -- Nonstrict mode allows this and may silently fail (returning `false`)
+   - an attempt to `delete` a variable causes an `ReferenceError` — Nonstrict mode allows this and may silently fail (returning `false`)
    - disallows variables named `implements`, `interface`, `let`, `package`, `private`, `protected`, `public`, `static`, and `yield`, causes `SyntaxError`
      - also function names
    - disallows using `eval` and `arguments` as identifiers and manipulating their values or `SyntaxError`
@@ -776,7 +776,7 @@
    - Assigning a value to a read-only property throws a `TypeError`
    - Using delete on a nonconfigurable property throws a `TypeError`
    - Attempting to add a property to a nonextensible object throws a `TypeError`
-   - When using an object literal, property names must be unique or throws `SyntaxError` -- not ES6
+   - When using an object literal, property names must be unique or throws `SyntaxError` — not ES6
 
 1. Functions
    - named function arguments be unique or `SyntaxError`
@@ -809,9 +809,9 @@
    - [webpack-dev-server](https://survivejs.com/webpack/developing/webpack-dev-server/)
    - [Concepts | webpack](https://webpack.js.org/concepts/)
 
-# TypeScript -- superset of JavaScript
+# TypeScript — superset of JavaScript
 
-1. docs -- [Basic Types · TypeScript](https://www.typescriptlang.org/docs/handbook/basic-types.html)
+1. docs — [Basic Types · TypeScript](https://www.typescriptlang.org/docs/handbook/basic-types.html)
 
 ## CLI
 
@@ -877,7 +877,7 @@
      }
      ```
 
-1. Project References -- tbc
+1. Project References — tbc
 
 1. [build tools](https://www.typescriptlang.org/docs/handbook/integrating-with-build-tools.html#webpack)
 
@@ -899,23 +899,23 @@
    - `string`
    - `Array<T>` or `T[]`
       - `ReadonlyArray<T>`
-   - tuple -- express an array where the type of a fixed number of elements is known
+   - tuple — express an array where the type of a fixed number of elements is known
      - When accessing an element outside the set of known indices, a union type is used instead: `T1 | T2`
      - `[T1, T2]`
-     - `?` -- `[number, string?, boolean?];`
-   - `any` -- opt-out of type-checking and let the values pass through compile-time checks
+     - `?` — `[number, string?, boolean?];`
+   - `any` — opt-out of type-checking and let the values pass through compile-time checks
    - `unknown`
      - Anything is assignable to `unknown`, but unknown isn’t assignable to anything but itself and `any` without a type assertion or a control flow based narrowing
      - Likewise, no operations are permitted on an unknown without first asserting or narrowing to a more specific type.
-   - `void` -- return type of functions, or `undefined` or `null`
-   - `null` and `undefined` -- subtypes of all other types when without `--strictNullChecks` flag
+   - `void` — return type of functions, or `undefined` or `null`
+   - `null` and `undefined` — subtypes of all other types when without `--strictNullChecks` flag
      - use union type: `string | null | undefined`
-   - `never` -- the return type for a function expression or an arrow function expression that always throws an exception or one that never returns
+   - `never` — the return type for a function expression or an arrow function expression that always throws an exception or one that never returns
      - Variables also acquire the type `never` when narrowed by any type guards that can never be true
      - a subtype of, and assignable to, every type
      - `any` is not assignable to `never`
    - `object`, `<T>{}` (`T` for `interface`), `{a: string, b?: number}`, `{a: string; b?: number}`
-   - C-like `enum` -- members as properties, enum name as type
+   - C-like `enum` — members as properties, enum name as type
      ```TypeScript
      enum Color {Red, Green, Blue}
      let c: Color = Color.Green;
@@ -933,7 +933,7 @@
        }
        ```
 
-     - String enums -- each member has to be constant-initialized with a string literal, or with another string enum member
+     - String enums — each member has to be constant-initialized with a string literal, or with another string enum member
        ```TypeScript
        enum Direction {
            Up = "UP",
@@ -943,7 +943,7 @@
        }
        ```
 
-     - Heterogeneous enums -- not recommended
+     - Heterogeneous enums — not recommended
      - When all members in an enum have literal enum values
        - enum members as types
          ```TypeScript
@@ -969,7 +969,7 @@
        - enum types themselves effectively become a union of each enum member
      - Enums at runtime
        - real objects that exist at runtime
-       - Reverse mappings -- numeric enums members also get a reverse mapping from enum values to enum names
+       - Reverse mappings — numeric enums members also get a reverse mapping from enum values to enum names
          ```TypeScript
          enum Enum {
              A
@@ -978,12 +978,12 @@
          let nameOfA = Enum[a]; // "A"
          ```
 
-     - `const` enums -- can only use constant enum expressions, completely removed during compilation, inlined at use sites
-     - Ambient enums `declare enum` -- describe the shape of already existing enum types
+     - `const` enums — can only use constant enum expressions, completely removed during compilation, inlined at use sites
+     - Ambient enums `declare enum` — describe the shape of already existing enum types
        - an ambient (and non-const) enum member that does not have initializer is always considered computed
 
 1. variable declaration
-   - `declare` -- declare variables that may not have originated from a TypeScript file, not for compilation and simply a hint to the compiler
+   - `declare` — declare variables that may not have originated from a TypeScript file, not for compilation and simply a hint to the compiler
      - `.d.ts`
    - `type`: like `typedef` in C
      ```TypeScript
@@ -1014,7 +1014,7 @@
      ```
 
      - default-initialized parameters don’t need to occur after required parameters, unlike ES6
-     - `this` parameters -- fake parameters that come first in the parameter list, make `this` a explicit type in lieu of `any`
+     - `this` parameters — fake parameters that come first in the parameter list, make `this` a explicit type in lieu of `any`
        - `this: void` means a function that does not require a `this` type
      - `this` parameters in callbacks
        ```TypeScript
@@ -1064,11 +1064,11 @@
    let strLength2: number = (someValue as string).length;
    ```
    - no runtime impact, and is used purely by the compiler
-   - `null` or `undefined` removing type assertion -- `!`: `str!.charAt(0)`
+   - `null` or `undefined` removing type assertion — `!`: `str!.charAt(0)`
 
 1. type inference
 
-1. type compatibility -- Structural typing is a way of relating types based solely on their members
+1. type compatibility — Structural typing is a way of relating types based solely on their members
    - x is compatible with y if y has at least the same members as x
 
 1. destructuring
@@ -1085,7 +1085,7 @@
 
 ## Interfaces
 
-1. `interface` -- `type` for objects, only the shape that matters
+1. `interface` — `type` for objects, only the shape that matters
    ```TypeScript
    interface LabelledValue {
        label: string;
@@ -1107,8 +1107,8 @@
      let s3: LabelledValue = {size: 10, label: '111'} // error: size does not exist in type LabelledValue
      ```
 
-     - get around -- type assertion
-     - Indexable type -- an index signature that describes the types we can use to index into the object: config the interface to be able to have some extra properties
+     - get around — type assertion
+     - Indexable type — an index signature that describes the types we can use to index into the object: config the interface to be able to have some extra properties
        ```TypeScript
        interface SquareConfig {
            color?: string;
@@ -1186,7 +1186,7 @@
 
    - interfaces can extend each other. This allows you to copy the members of one interface into another
 
-1. Interfaces Extending Classes -- inherits the members of the class but not their implementations
+1. Interfaces Extending Classes — inherits the members of the class but not their implementations
    - even inherits the private and protected members of a base class
      ```TypeScript
      class Control {
@@ -1241,13 +1241,13 @@
    ```
 
 1. `extends`
-   - `super()` -- the constructor of the base class
+   - `super()` — the constructor of the base class
      - before we ever access a property on this in a constructor body, we have to call `super()`. This is an important rule that TypeScript will enforce
-   - override method -- use the same identifier
+   - override method — use the same identifier
 
 1. Public, private, protected and more
    - Public by default
-   - `private` and `protected` -- the same declaration is required when comparing type
+   - `private` and `protected` — the same declaration is required when comparing type
      ```TypeScript
      class Animal {
          private name: string;
@@ -1267,16 +1267,16 @@
      animal = employee; // Error: 'Animal' and 'Employee' are not compatible
      ```
 
-   - `private` -- cannot be accessed from outside of its containing class
-   - `protected` -- like `private` but can also be accessed within deriving classes
+   - `private` — cannot be accessed from outside of its containing class
+   - `protected` — like `private` but can also be accessed within deriving classes
      - A constructor may also be marked `protected`
    - `readonly`
-   - Parameter properties -- constructor parameter with `readonly`, `public`, `private` or `protected`, will be initialized as properties of the class
-   - accessors -- `get`, `set` as in ES6 with type
+   - Parameter properties — constructor parameter with `readonly`, `public`, `private` or `protected`, will be initialized as properties of the class
+   - accessors — `get`, `set` as in ES6 with type
      - accessors with a `get` and no `set` are automatically inferred to be readonly
    - `static`: use the class name in lieu of `this` to access
 
-1. Abstract Classes -- `abstract`
+1. Abstract Classes — `abstract`
    ```TypeScript
    abstract class Animal {
        abstract makeSound(): void;
@@ -1298,8 +1298,8 @@
 
 ### Mixins
 
-1. concept -- another popular way of building up classes from reusable components is to build them by combining simpler partial classes
-   - wikipedia -- a Mixin is a class that contains methods for use by other classes without having to be the parent class of those other classes
+1. concept — another popular way of building up classes from reusable components is to build them by combining simpler partial classes
+   - wikipedia — a Mixin is a class that contains methods for use by other classes without having to be the parent class of those other classes
    - sometimes described as being "included" rather than "inherited", can also be viewed as an interface with implemented methods
    - Mixins encourage code reuse and can be used to avoid the inheritance ambiguity that multiple inheritance can cause (the "diamond problem")
 
@@ -1341,7 +1341,7 @@
        deactivate: () => void;
    }
 
-   // alternative -- Object.assign()
+   // alternative — Object.assign()
    function mixin(baseCtors: any[]) {
        return function applyMixins(derivedCtor: any) {
            baseCtors.forEach(baseCtor => {
@@ -1425,14 +1425,14 @@
 
 ## Advanced Types
 
-1. Intersection Types -- `T & U`
+1. Intersection Types — `T & U`
 
-1. Union Types -- `T | U`
+1. Union Types — `T | U`
    - `type Easing = "ease-in" | "ease-out" | "ease-in-out";`
    - `1 | 2`
 
-1. type guard -- some expression that performs a runtime check that guarantees the type in some scope
-   - type predicate type guards -- `is` return type
+1. type guard — some expression that performs a runtime check that guarantees the type in some scope
+   - type predicate type guards — `is` return type
      ```TypeScript
      function isFish(pet: Fish | Bird): pet is Fish {
          return (<Fish>pet).swim !== undefined;
@@ -1446,7 +1446,7 @@
      ```
 
      - called with some variable, TypeScript will narrow that variable to that specific type if the original type is compatible
-   - `typeof` type guards -- `if (typeof x === 'number')`
+   - `typeof` type guards — `if (typeof x === 'number')`
    - `instanceof` type guards
 
 1. mapped types
@@ -1464,9 +1464,9 @@
    - `Partial` and `Readonly` already in library
    - more in lib
 
-1. conditional types -- `T extends U ? X : Y`
+1. conditional types — `T extends U ? X : Y`
    - when T is assignable to U the type is X, otherwise the type is Y
-   - predefined in `lib.d.ts` -- access via `F12`
+   - predefined in `lib.d.ts` — access via `F12`
      - `Exclude<T, U>` – Exclude from T those types that are assignable to U
      - `Extract<T, U>` – Extract from T those types that are assignable to U
      - `NonNullable<T>` – Exclude null and undefined from T
@@ -1482,11 +1482,11 @@
    - a script whose contents are available in the global scope (and therefore to modules as well)
    - `tsc --module commonjs Test.ts` for node.js
 
-1. `export` -- ES6 like
+1. `export` — ES6 like
 
-1. `import` -- ES6 like
+1. `import` — ES6 like
    - If a module identifier is only ever used as part of a type annotations and never as an expression, then no `require` call is emitted for that module
-   - Import a module for side-effects only `import 'module'` -- module augmentation see below
+   - Import a module for side-effects only `import 'module'` — module augmentation see below
    - import types
      ```TypeScript
      // module.d.ts
@@ -1510,12 +1510,12 @@
      }
      ```
 
-1. `export =` and `import = require()` -- model the traditional CommonJS and AMD workflow, such as
+1. `export =` and `import = require()` — model the traditional CommonJS and AMD workflow, such as
    - The `export = syntax` specifies a single object that is exported from the module
    - When exporting a module using `export =`, TypeScript-specific `import module = require("module")` must be used to import the module
    - Depending on the module target specified during compilation, the compiler will generate appropriate code for different target
 
-1. Ambient Modules `.d.ts` -- Working with Other JavaScript Libraries
+1. Ambient Modules `.d.ts` — Working with Other JavaScript Libraries
    - We could define each module in its own .d.ts file with top-level export declarations
    - or write them as one larger `.d.ts` file. To do so, we use a construct similar to ambient namespaces, but we use the `module` keyword and the quoted name of the module which will be available to a later import
      ```TypeScript
@@ -1529,7 +1529,7 @@
      import x, {y} from "hot-new-module";
      ```
 
-   - Wildcard module declarations -- non-JavaScript content
+   - Wildcard module declarations — non-JavaScript content
 
 1. Module Resolution
 
@@ -1539,7 +1539,7 @@
    - the `--outFile` flag to compile all of the input files into a single JavaScript output file
    - namespaces can span multiple files, and can be concatenated using `--outFile`
    - Non-exported members are only visible in the original (un-merged) namespace
-   - aliases -- `import a =`
+   - aliases — `import a =`
      ```TypeScript
      namespace Shapes {
          export namespace Polygons {
@@ -1555,12 +1555,12 @@
 
 ## Declaration
 
-1. Declaration merge -- merges two separate declarations declared with the same name into a single definition
+1. Declaration merge — merges two separate declarations declared with the same name into a single definition
    - interfaces with same name will merge
    - namespaces with same name will merge, not the non-exported
-   - Merging Namespaces with Classes, functions, enums -- static field
+   - Merging Namespaces with Classes, functions, enums — static field
    - classes can not merge with other classes or with variables
-   - Module Augmentation -- `declare module`
+   - Module Augmentation — `declare module`
      ```TypeScript
      // observable.ts stays the same
      export class Observable<T> {
@@ -1584,7 +1584,7 @@
      ```
 
      can’t declare new top-level declarations in the augmentation – just patches to existing declarations
-   - Global augmentation `declare global` -- add declarations to the global scope from inside a module
+   - Global augmentation `declare global` — add declarations to the global scope from inside a module
      - have the same behavior and limits as module augmentations
 
 ## JSX
@@ -1609,7 +1609,7 @@
    - stage 2 proposal for JavaScript and are available as an experimental feature
    - enable the `experimentalDecorators` compiler option
 
-1. Decorator Factories -- customize how a decorator is applied to a declaration
+1. Decorator Factories — customize how a decorator is applied to a declaration
    ```TypeScript
    function color(value: string) { // this is the decorator factory
        return function (target) { // this is the decorator
@@ -1620,7 +1620,7 @@
    ```
 
 1. Decorator Evaluation
-   - Parameter Decorators, followed by Method, Accessor, or Property Decorators are applied for -- each instance member and each static member
+   - Parameter Decorators, followed by Method, Accessor, or Property Decorators are applied for — each instance member and each static member
    - Parameter Decorators are applied for the constructor
    - Class Decorators are applied for the class
 
@@ -1648,24 +1648,24 @@
    }
    ```
 
-1. `reflect-metadata` npm module -- tbc
+1. `reflect-metadata` npm module — tbc
 
 ## Triple-Slash Directives
 
 1. Triple-Slash Directives
    - single-line comments containing a single XML tag. The contents of the comment are used as compiler directives
    - only valid at the top of their containing file
-   - `/// <reference path="..." />` -- a declaration of dependency between files
+   - `/// <reference path="..." />` — a declaration of dependency between files
      - instruct the compiler to include additional files in the compilation process
      - also serve as a method to order the output when using `--out` or `--outFile`
      - resolved in a depth first manner
-     - `--noResolve` -- If the compiler flag `--noResolve` is specified, triple-slash references are ignored
+     - `--noResolve` — If the compiler flag `--noResolve` is specified, triple-slash references are ignored
        - neither result in adding new files, nor change the order of the files provided
-   - `/// <reference types="..." />` -- declares a dependency on a package
+   - `/// <reference types="..." />` — declares a dependency on a package
      - Use these directives only when you’re authoring a `d.ts` file by hand
      - an `import` for declaration packages
      - For example, including `/// <reference types="node" />` in a declaration file declares that this file uses names declared in `@types/node/index.d.ts`
-   - `/// <reference lib="..." />` -- explicitly include an existing built-in lib file
+   - `/// <reference lib="..." />` — explicitly include an existing built-in lib file
      - Built-in lib files are referenced in the same fashion as the `"lib"` compiler option in tsconfig.json (e.g. use `lib="es2015"` and not `lib="lib.es2015.d.ts"`, etc.)
      - For example, adding `/// <reference lib="es2017.string" />` to one of the files in a compilation is equivalent to compiling with `--lib es2017.string`
    - more

@@ -21,21 +21,21 @@
    }
    type ReactNode = ReactChild | ReactFragment | ReactPortal | boolean | null | undefined;
    ```
-   - JSX prevents XSS -- React DOM escapes any values embedded in JSX before rendering them
-   - string literals in JSX -- JSX removes whitespace at the beginning and ending of a line. It also removes blank lines. New lines adjacent to tags are removed; new lines that occur in the middle of string literals are condensed into a single space.
+   - JSX prevents XSS — React DOM escapes any values embedded in JSX before rendering them
+   - string literals in JSX — JSX removes whitespace at the beginning and ending of a line. It also removes blank lines. New lines adjacent to tags are removed; new lines that occur in the middle of string literals are condensed into a single space.
    - Booleans, Null, and Undefined Are Ignored
 
 1. DOM Attributes
    - all DOM properties and attributes (including event handlers) should be camelCased
    - `checked`, `defaultChecked` for controlled and uncontrolled components, respectively
    - `className`
-   - `dangerouslySetInnerHTML: {__html: string}` -- `innerHTML`, XSS exploitable
-   - `htmlFor` -- `for`
-   - `onChange` -- similar to `input` event, not `change` event
-   - vender prefix -- begin with capital letter except `ms`
+   - `dangerouslySetInnerHTML: {__html: string}` — `innerHTML`, XSS exploitable
+   - `htmlFor` — `for`
+   - `onChange` — similar to `input` event, not `change` event
+   - vender prefix — begin with capital letter except `ms`
    - React will automatically append a “px” suffix to certain numeric inline style properties
-   - `suppressContentEditableWarning` -- Normally, there is a warning when an element with children is also marked as `contentEditable`, because it won’t work
-   - `suppressHydrationWarning` -- mismatches when `hydrate`
+   - `suppressContentEditableWarning` — Normally, there is a warning when an element with children is also marked as `contentEditable`, because it won’t work
+   - `suppressHydrationWarning` — mismatches when `hydrate`
    - other HTML attributes
    - You may also use custom attributes as long as they’re fully lowercase
 
@@ -79,9 +79,9 @@
        return WrappedComponent.displayName || WrappedComponent.name || 'Component';
      }
      ```
-   - Don’t Use HOCs Inside the render Method -- negative impact on diff
-   - (non-react) Static Methods Must Be Copied Over -- or lost in the returned new component
-   - refs are not passed through -- `ref` is not really a prop — like `key`, it’s handled specially by React
+   - Don’t Use HOCs Inside the render Method — negative impact on diff
+   - (non-react) Static Methods Must Be Copied Over — or lost in the returned new component
+   - refs are not passed through — `ref` is not really a prop — like `key`, it’s handled specially by React
 
 1. SCU
    - not mutating data to avoid SCU not working correctly
@@ -118,9 +118,9 @@ tbd
        calculateChangedBits?: (prev: T, next: T) => number
    ): Context<T>;
    ```
-   - `defaultValue` -- only used when a component does not have a matching `Provider` above it in the tree
+   - `defaultValue` — only used when a component does not have a matching `Provider` above it in the tree
 
-1. `Context.Provider` -- allows consuming components to subscribe to context changes
+1. `Context.Provider` — allows consuming components to subscribe to context changes
    ```ts
    type Provider<T> = ProviderExoticComponent<ProviderProps<T>>;
    interface ProviderProps<T> {
@@ -132,7 +132,7 @@ tbd
    - Providers can be nested to override values deeper within the tree
    - consumers that are descendants of a Provider will re-render on `value` change
      - not subject to the `shouldComponentUpdate` method
-     - diff by `Object.is()` equivalent -- do not write an object literal in JSX
+     - diff by `Object.is()` equivalent — do not write an object literal in JSX
 
 1. `Component.contextType`
    ```ts
@@ -141,7 +141,7 @@ tbd
         static contextType?: Context<any>;
    }
    ```
-   - usage -- assign with a context lets you consume the nearest current value of that Context type using `this.context`
+   - usage — assign with a context lets you consume the nearest current value of that Context type using `this.context`
      ```ts
      class Foo extends React.Component<P, S> {
          static contextType = Ctx
@@ -149,7 +149,7 @@ tbd
      }
      ```
 
-1. `Context.Consumer` -- lets you subscribe to a context within a function component
+1. `Context.Consumer` — lets you subscribe to a context within a function component
    ```ts
    type Consumer<T> = ExoticComponent<ConsumerProps<T>>;
    interface ConsumerProps<T> {
@@ -208,7 +208,7 @@ tbd
    ```
    - not yet for SSR
 
-1. error boundary -- handler when other modules fails to load
+1. error boundary — handler when other modules fails to load
 
 1. usage
    - router based code splitting
@@ -228,7 +228,7 @@ tbd
        </Router>
      );
      ```
-   - named export -- intermediate module reexport
+   - named export — intermediate module reexport
 
 # Error Boundaries
 
@@ -241,8 +241,8 @@ tbd
      - Asynchronous code (e.g. `setTimeout` or `requestAnimationFrame` callbacks)
      - Server side rendering
      - Errors thrown in the error boundary itself (rather than its children)
-   - uncaught error -- result in unmounting of the whole React component tree
-   - filenames and line numbers in the component stack trace -- [Babel plugin](https://www.npmjs.com/package/babel-plugin-transform-react-jsx-source)
+   - uncaught error — result in unmounting of the whole React component tree
+   - filenames and line numbers in the component stack trace — [Babel plugin](https://www.npmjs.com/package/babel-plugin-transform-react-jsx-source)
      - depends on `Function.name`, may need polyfill, or use `React.Component.displayName`
 
 1. `getDerivedStateFromError` and `componentDidCatch`
@@ -281,7 +281,7 @@ tbd
 # Refs, Forwarding Refs
 
 1. Ref forwarding
-   - alternative -- explicitly pass a ref as a differently named prop
+   - alternative — explicitly pass a ref as a differently named prop
    - an opt-in feature that lets some components take a ref they receive, and pass it further down (in other words, “forward” it) to a child
    - useful in two scenarios:
      - Forwarding refs to DOM components
@@ -325,7 +325,7 @@ tbd
        readonly current: T | null;
    }
    ```
-   - `RefObject.current` -- DOM element or component instance
+   - `RefObject.current` — DOM element or component instance
    - may not use the `ref` attribute on function components
 
 1. `ReactDOM.findDOMNode()`
@@ -375,7 +375,7 @@ tbd
 
 # Portals
 
-1. Portals -- a first-class way to render children into a DOM node that exists outside the DOM hierarchy of the parent component
+1. Portals — a first-class way to render children into a DOM node that exists outside the DOM hierarchy of the parent component
    - An event fired from inside a portal will propagate to ancestors in the containing React tree, even if those elements are not ancestors in the DOM tree
 
 1. `ReactDOM.createPortal`
@@ -459,7 +459,7 @@ tbd
        displayName?: string;
    }
    ```
-   - not stateless (SFC) -- as of recent React versions, function components can no longer be considered 'stateless': [React Hooks](https://reactjs.org/docs/hooks-intro.html)
+   - not stateless (SFC) — as of recent React versions, function components can no longer be considered 'stateless': [React Hooks](https://reactjs.org/docs/hooks-intro.html)
 
 1. `React.Component`
    ```ts
@@ -486,7 +486,7 @@ tbd
        displayName?: string;
    }
    ```
-   - `ComponentClass` -- return type of HOCs or type of class expression
+   - `ComponentClass` — return type of HOCs or type of class expression
 
 1. `React.PureComponent`
    ```ts
@@ -516,13 +516,13 @@ tbd
        (error: any) => Partial<S> | null;
    ```
    - [the lifecycle diagram](http://projects.wojtekmaj.pl/react-lifecycle-methods-diagram/)
-   - `getDerivedStateFromProps` -- for rare use cases where the state depends on changes in props over time
+   - `getDerivedStateFromProps` — for rare use cases where the state depends on changes in props over time
      - If you need to perform a side effect (for example, data fetching or an animation) in response to a change in props, use `componentDidUpdate` lifecycle instead.
      - If you want to re-compute some data only when a prop changes, use a memoization helper instead.
      - If you want to “reset” some state when a prop changes, consider either making a component fully controlled or fully uncontrolled with a key instead.
-   - `getSnapshotBeforeUpdate` -- enables your component to capture some information from the DOM (e.g. scroll position) before it is potentially changed
+   - `getSnapshotBeforeUpdate` — enables your component to capture some information from the DOM (e.g. scroll position) before it is potentially changed
 
-1. `React.memo` -- HOC similar to `React.PureComponent` but for function components
+1. `React.memo` — HOC similar to `React.PureComponent` but for function components
    ```ts
    // will show `Memo(${Component.displayName || Component.name})` in devtools by default,
    // but can be given its own specific name
@@ -564,7 +564,7 @@ tbd
    type LegacyRef<T> = string | Ref<T>;
    ```
 
-1. `React.createFactory` -- legacy helper
+1. `React.createFactory` — legacy helper
 
 ## Transform Element
 
@@ -588,7 +588,7 @@ tbd
    function isValidElement<P>(object: {} | null | undefined): object is ReactElement<P>;
    ```
 
-1. `React.Children` -- utilities for dealing with the `this.props.children` opaque data structure
+1. `React.Children` — utilities for dealing with the `this.props.children` opaque data structure
    ```ts
    const Children: ReactChildren;
    interface ReactChildren {
@@ -600,7 +600,7 @@ tbd
    }
    ```
    - `React.Children.only` throws an error when `never`
-   - `React.Children.toArray` -- Returns the children opaque data structure as a flat array with keys assigned to each child.
+   - `React.Children.toArray` — Returns the children opaque data structure as a flat array with keys assigned to each child.
      - prefixes each key in the returned array so that each element’s key is scoped to the input array containing it
 
 # Hooks
@@ -614,12 +614,12 @@ tbd
    - Hooks let you split one component into smaller functions based on what pieces are related (such as setting up a subscription or fetching data)
    - [plain implementation](https://zhuanlan.zhihu.com/p/50358654)
      - relies on the order in which Hooks are called
-   - `use` prefix -- only created the first time called, return current ones afterwards
+   - `use` prefix — only created the first time called, return current ones afterwards
    - [eslint-plugin-react-hooks](https://www.npmjs.com/package/eslint-plugin-react-hooks)
    - no Hook equivalents to the uncommon `getSnapshotBeforeUpdate` and `componentDidCatch` lifecycles yet
 
 1. rules
-   - Only Call Hooks at the Top Level -- always use Hooks at the top level of your React function
+   - Only Call Hooks at the Top Level — always use Hooks at the top level of your React function
      - put condition inside hooks
    - only Call Hooks from React function components and custom hooks
 
@@ -647,9 +647,9 @@ tbd
    - unlike `this.setState` in a class, updating a state variable always replaces it instead of merging it
    - use multiple times for multiple states
    - If you update a State Hook to the same value as the current state, React will bail out without rendering the children or firing effects. (React uses the `Object.is` comparison algorithm.)
-   - `getDerivedStateFromProps` -- store previous props in state
+   - `getDerivedStateFromProps` — store previous props in state
 
-1. `React.useEffect()` -- perform side effects in function components
+1. `React.useEffect()` — perform side effects in function components
    ```ts
    // NOTE: callbacks are _only_ allowed to return either void, or a destructor.
    // The destructor is itself only allowed to return void.
@@ -668,8 +668,8 @@ tbd
    - Run on Each Update, performs the cleanup when the component unmounts
      - if a component renders multiple times (as they typically do), the previous effect is cleaned up before executing the next effect
    - will apply every effect used by the component, in the order they were specified.
-   - `DependencyList` -- perform effect only when any value of this list change (`===`) between renders
-     - mount and unmount only effects -- pass `[]` as `deps`
+   - `DependencyList` — perform effect only when any value of this list change (`===`) between renders
+     - mount and unmount only effects — pass `[]` as `deps`
      - `Dispatch` returned by `useEffect`, `useReducer` is guaranteed to be stable so it’s safe to omit
    - ways of use of function in `EffectCallback`
      - move the function inside `EffectCallback`, with `deps` updated to the function
@@ -686,7 +686,7 @@ tbd
 
 ## Additional Hooks
 
-1. `React.useReducer()` -- alternative to `useState`
+1. `React.useReducer()` — alternative to `useState`
    ```ts
    // Unlike redux, the actions _can_ be anything
    type Reducer<S, A> = (prevState: S, action: A) => S;
@@ -725,7 +725,7 @@ tbd
      }
      ```
 
-1. `React.useCallback()` -- memorize callback
+1. `React.useCallback()` — memorize callback
    ```ts
    // useCallback(X) is identical to just using X, useMemo(() => Y) is identical to just using Y.
    /**
@@ -740,7 +740,7 @@ tbd
    ```
    - useful when passing callbacks to optimized child components that rely on reference equality to prevent unnecessary renders
    - `useCallback(fn, deps)` is equivalent to `useMemo(() => fn, deps)`
-   - often-changing value -- use reference value when closure, `useReducer` and `dispatch` as context is more preferable
+   - often-changing value — use reference value when closure, `useReducer` and `dispatch` as context is more preferable
      ```jsx
      function Form() {
        const [text, updateText] = useState('');
@@ -818,7 +818,7 @@ tbd
        current: T;
    }
    ```
-   - creates a plain JavaScript object but persists -- The only difference between `useRef()` and creating a `{current: ...}` object yourself is that `useRef` will give you the same ref object on every render.
+   - creates a plain JavaScript object but persists — The only difference between `useRef()` and creating a `{current: ...}` object yourself is that `useRef` will give you the same ref object on every render.
    - previous state by `useRef`
      ```js
      function usePrevious(value) {
@@ -830,7 +830,7 @@ tbd
      }
      ```
 
-1. `React.useImperativeHandle()` -- used with `forwardRef`
+1. `React.useImperativeHandle()` — used with `forwardRef`
    ```ts
    // NOTE: this does not accept strings, but this will have to be fixed by removing strings from type Ref<T>
    /**
@@ -859,9 +859,9 @@ tbd
      FancyInput = forwardRef(FancyInput);
      ```
 
-1. `React.useLayoutEffect()` -- identical to useEffect, but it fires synchronously after all DOM mutations, before the browser has a chance to paint
+1. `React.useLayoutEffect()` — identical to useEffect, but it fires synchronously after all DOM mutations, before the browser has a chance to paint
 
-1. `React.useDebugValue()` -- display a label for custom hooks in React DevTools.
+1. `React.useDebugValue()` — display a label for custom hooks in React DevTools.
    ```ts
    /**
     * `useDebugValue` can be used to display a label for custom hooks in React DevTools.
@@ -911,7 +911,7 @@ tbd
    - hydrate a container whose HTML contents were rendered by `ReactDOMServer`
    - React will attempt to attach event listeners to the existing markup.
    - React expects that the rendered content is identical between the server and the client
-     - intentionally need to render something different on the server and the client -- `this.state.isClient`, which you can set to `true` in `componentDidMount()`
+     - intentionally need to render something different on the server and the client — `this.state.isClient`, which you can set to `true` in `componentDidMount()`
 
 1. `ReactDOM.unmountComponentAtNode()`
    ```ts
@@ -921,21 +921,21 @@ tbd
 
 # ReactDOMServer
 
-1. `ReactDOMServer.renderToString()` -- Render a React element to its initial HTML
+1. `ReactDOMServer.renderToString()` — Render a React element to its initial HTML
    ```ts
    function renderToString(element: ReactElement): string;
    ```
    - call `ReactDOM.hydrate()` on a node that already has this server-rendered markup, React will preserve it and only attach event handlers
 
-1. `ReactDOMServer.renderToStaticMarkup()` -- Similar to `renderToString`, except this doesn’t create extra DOM attributes that React uses internally, such as `data-reactroot`
+1. `ReactDOMServer.renderToStaticMarkup()` — Similar to `renderToString`, except this doesn’t create extra DOM attributes that React uses internally, such as `data-reactroot`
    - useful if you want to use React as a simple static page generator
 
-1. `ReactDOMServer.renderToNodeStream()` -- `renderToString` which returns a stream
+1. `ReactDOMServer.renderToNodeStream()` — `renderToString` which returns a stream
    ```ts
    function renderToNodeStream(element: ReactElement): NodeJS.ReadableStream;
    ```
 
-1. `ReactDOMServer.renderToStaticNodeStream()` -- `renderToStaticMarkup` which returns a stream
+1. `ReactDOMServer.renderToStaticNodeStream()` — `renderToStaticMarkup` which returns a stream
 
 1. `NoSsr`
    ```jsx
@@ -1005,8 +1005,8 @@ tbd
 1. event pooling
    - the `SyntheticEvent` object will be reused and all properties will be nullified after the event callback has been invoked
    - cannot access the event in an asynchronous way
-   - `persist()` -- which will remove the synthetic event from the pool and allow references to the event to be retained by user code
-   - specific event types interface -- [.d.ts](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/react/index.d.ts#L1070)
+   - `persist()` — which will remove the synthetic event from the pool and allow references to the event to be retained by user code
+   - specific event types interface — [.d.ts](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/react/index.d.ts#L1070)
 
 # Test Utilities
 

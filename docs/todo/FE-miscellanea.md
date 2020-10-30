@@ -48,22 +48,22 @@
      - It is also possible to terminate the connection by a 3-way handshake, when host A sends a FIN and host B replies with a FIN & ACK (merely combines 2 steps into one) and host A replies with an ACK.
      - 四次挥手的原因
        - 客户端发送了 FIN 连接释放报文之后，服务器收到了这个报文，就进入了 CLOSE-WAIT 状态。这个状态是为了让服务器端发送还未传送完毕的数据，传送完毕之后，服务器会发送 FIN 连接释放报文。
-     - TIME_WAIT -- 客户端接收到服务器端的 FIN 报文后进入此状态，此时并不是直接进入 CLOSED 状态，还需要等待一个时间计时器设置的时间 2MSL。这么做有两个理由：
+     - TIME_WAIT — 客户端接收到服务器端的 FIN 报文后进入此状态，此时并不是直接进入 CLOSED 状态，还需要等待一个时间计时器设置的时间 2MSL。这么做有两个理由：
        - 确保最后一个确认报文能够到达。如果 B 没收到 A 发送来的确认报文，那么就会重新发送连接释放请求报文，A 等待一段时间就是为了处理这种情况的发生。
        - 等待一段时间是为了让本连接持续时间内所产生的所有报文都从网络中消失，使得下一个新的连接不会出现旧的连接请求报文。
-   - Congestion control -- four intertwined algorithms: slow-start, congestion avoidance, fast retransmit, and fast recovery
-     - slow start -- begins initially with a congestion window size (cwnd) of 1, 2, 4 or 10 MSS (maximum segment size). The value for the congestion window size will be increased by one with each acknowledgement (ACK) received, effectively doubling the window size each round-trip time. The transmission rate will be increased by the slow-start algorithm until either a loss is detected, or the receiver's advertised window (rwnd) is the limiting factor, or ssthresh (slow start threshold) is reached. If a loss event occurs, TCP assumes that it is due to network congestion and takes steps to reduce the offered load on the network. These measurements depend on the exact TCP congestion avoidance algorithm used.
-     - congestion avoidance -- Once ssthresh is reached, TCP changes from slow-start algorithm to the linear growth (congestion avoidance) algorithm. At this point, the window is increased by 1 segment for each round-trip delay time (RTT).
-     - fast retransmit -- reduces the time a sender waits before retransmitting a lost segment
+   - Congestion control — four intertwined algorithms: slow-start, congestion avoidance, fast retransmit, and fast recovery
+     - slow start — begins initially with a congestion window size (cwnd) of 1, 2, 4 or 10 MSS (maximum segment size). The value for the congestion window size will be increased by one with each acknowledgement (ACK) received, effectively doubling the window size each round-trip time. The transmission rate will be increased by the slow-start algorithm until either a loss is detected, or the receiver's advertised window (rwnd) is the limiting factor, or ssthresh (slow start threshold) is reached. If a loss event occurs, TCP assumes that it is due to network congestion and takes steps to reduce the offered load on the network. These measurements depend on the exact TCP congestion avoidance algorithm used.
+     - congestion avoidance — Once ssthresh is reached, TCP changes from slow-start algorithm to the linear growth (congestion avoidance) algorithm. At this point, the window is increased by 1 segment for each round-trip delay time (RTT).
+     - fast retransmit — reduces the time a sender waits before retransmitting a lost segment
        - If an acknowledgement is not received for a particular segment within a specified time (a function of the estimated round-trip delay time), the sender will assume the segment was lost in the network, and will retransmit the segment.
        - Duplicate acknowledgement is the basis for the fast retransmit mechanism. After receiving a packet (e.g. with sequence number 1), the receiver sends an acknowledgement by adding 1 to the sequence number (i.e. acknowledgement number 2). This indicates to the sender that the receiver received the packet number 1 and it expects packet number 2. Suppose that three subsequent packets are lost. The next packets the receiver sees are packet numbers 5 and 6. After receiving packet number 5, the receiver sends an acknowledgement, but still only for sequence number 2. When the receiver receives packet number 6, it sends yet another acknowledgement value of 2. Duplicate acknowledgement occurs when the sender receives more than one acknowledgement with the same sequence number (2 in this example).
        - When a sender receives several duplicate acknowledgements, it can be reasonably confident that the segment with the next higher sequence number was dropped. A sender with fast retransmit will then retransmit this packet immediately without waiting for its timeout.
        - TCP Reno 3个包？ 因为数据包在网络可能乱序到达，因此定义网络乱序度3，超过3个duplicated ack才判断丢包。
-     - fast recovery (TCP Reno) -- A fast retransmit is sent, half of the current CWND is saved as ssthresh and as new CWND, thus skipping slow start and going directly to the congestion avoidance algorithm. The overall algorithm here is called fast recovery.
+     - fast recovery (TCP Reno) — A fast retransmit is sent, half of the current CWND is saved as ssthresh and as new CWND, thus skipping slow start and going directly to the congestion avoidance algorithm. The overall algorithm here is called fast recovery.
      - Vulnerabilities
-       - Denial of service -- By using a spoofed IP address and repeatedly sending purposely assembled SYN packets, followed by many ACK packets, attackers can cause the server to consume large amounts of resources keeping track of the bogus connections. This is known as a SYN flood attack.
-       - Connection hijacking -- An attacker who is able to eavesdrop a TCP session and redirect packets can hijack a TCP connection. To do so, the attacker learns the sequence number from the ongoing communication and forges a false segment that looks like the next segment in the stream. Such a simple hijack can result in one packet being erroneously accepted at one end. When the receiving host acknowledges the extra segment to the other side of the connection, synchronization is lost.
-       - TCP veto -- An attacker who can eavesdrop and predict the size of the next packet to be sent can cause the receiver to accept a malicious payload without disrupting the existing connection. The attacker injects a malicious packet with the sequence number and a payload size of the next expected packet. When the legitimate packet is ultimately received, it is found to have the same sequence number and length as a packet already received and is silently dropped as a normal duplicate packet—the legitimate packet is "vetoed" by the malicious packet.
+       - Denial of service — By using a spoofed IP address and repeatedly sending purposely assembled SYN packets, followed by many ACK packets, attackers can cause the server to consume large amounts of resources keeping track of the bogus connections. This is known as a SYN flood attack.
+       - Connection hijacking — An attacker who is able to eavesdrop a TCP session and redirect packets can hijack a TCP connection. To do so, the attacker learns the sequence number from the ongoing communication and forges a false segment that looks like the next segment in the stream. Such a simple hijack can result in one packet being erroneously accepted at one end. When the receiving host acknowledges the extra segment to the other side of the connection, synchronization is lost.
+       - TCP veto — An attacker who can eavesdrop and predict the size of the next packet to be sent can cause the receiver to accept a malicious payload without disrupting the existing connection. The attacker injects a malicious packet with the sequence number and a payload size of the next expected packet. When the legitimate packet is ultimately received, it is found to have the same sequence number and length as a packet already received and is silently dropped as a normal duplicate packet—the legitimate packet is "vetoed" by the malicious packet.
 
 1. [UDP](https://en.wikipedia.org/wiki/User_Datagram_Protocol)
    - UDP uses a simple connectionless communication model with a minimum of protocol mechanism. UDP provides checksums for data integrity, and port numbers for addressing different functions at the source and destination of the datagram. It has no handshaking dialogues, and thus exposes the user's program to any unreliability of the underlying network; there is no guarantee of delivery, ordering, or duplicate protection.
@@ -83,7 +83,7 @@
      5. TCP保证数据正确性，UDP可能丢包；
      6. TCP保证数据顺序，UDP不保证。
 
-1. socket -- socket是一种"打开—读/写—关闭"模式的实现，服务器和客户端各自维护一个"文件"，在建立连接打开后，可以向自己文件写入内容供对方读取或者读取对方内容，通讯结束时关闭文件
+1. socket — socket是一种"打开—读/写—关闭"模式的实现，服务器和客户端各自维护一个"文件"，在建立连接打开后，可以向自己文件写入内容供对方读取或者读取对方内容，通讯结束时关闭文件
 
 ## HTTP
 
@@ -97,7 +97,7 @@
      - HTTP/1.1开始，即使请求header中没有携带Connection: Keep-Alive，传输也会默认以持久连接的方式进行。
      - 持久连接的弊端被提出 —— HOLB（Head of Line Blocking）: 即持久连接下一个连接中的请求仍然是串行的，如果某个请求出现网络阻塞等问题，会导致同一条连接上的后续请求被阻塞。
      - 提出了pipelining概念，即客户端可以在一个请求发送完成后不等待响应便直接发起第二个请求，服务端在返回响应时会按请求到达的顺序依次返回。响应仍然是按请求的顺序串行返回的。所以pipelining并没有被广泛接受，几乎所有代理服务都不支持pipelining，部分浏览器不支持pipelining，支持的大部分也会将其默认关闭
-   - SPDY和HTTP/2：multiplexing -- multiplexing即多路复用，在SPDY中提出，同时也在HTTP/2中实现。multiplexing技术能够让多个请求和响应的传输完全混杂在一起进行，通过streamId来互相区别。这彻底解决了holb问题，同时还允许给每个请求设置优先级，服务端会先响应优先级高的请求。
+   - SPDY和HTTP/2：multiplexing — multiplexing即多路复用，在SPDY中提出，同时也在HTTP/2中实现。multiplexing技术能够让多个请求和响应的传输完全混杂在一起进行，通过streamId来互相区别。这彻底解决了holb问题，同时还允许给每个请求设置优先级，服务端会先响应优先级高的请求。
      - [multiplexing](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/14)
 
 1. 缓存
@@ -107,27 +107,27 @@
      ![][p1]
 
      [p1]: ./images/1.png
-     - 强缓存 -- 可以理解为无须验证的缓存策略。对强缓存来说，响应头中有两个字段 Expires/Cache-Control 来表明规则。
-       - Expires -- 指缓存过期的时间，超过了这个时间点就代表资源过期。有一个问题是由于使用具体时间，如果时间表示出错或者没有转换到正确的时区都可能造成缓存生命周期出错。并且 Expires 是 HTTP/1.0 的标准，现在更倾向于用 HTTP/1.1 中定义的 Cache-Control。两个同时存在时也是 Cache-Control 的优先级更高。
-       - Cache-Control -- Cache-Control 可以由多个字段组合而成
+     - 强缓存 — 可以理解为无须验证的缓存策略。对强缓存来说，响应头中有两个字段 Expires/Cache-Control 来表明规则。
+       - Expires — 指缓存过期的时间，超过了这个时间点就代表资源过期。有一个问题是由于使用具体时间，如果时间表示出错或者没有转换到正确的时区都可能造成缓存生命周期出错。并且 Expires 是 HTTP/1.0 的标准，现在更倾向于用 HTTP/1.1 中定义的 Cache-Control。两个同时存在时也是 Cache-Control 的优先级更高。
+       - Cache-Control — Cache-Control 可以由多个字段组合而成
          1. max-age 指定一个时间长度，在这个时间段内缓存是有效的，单位是s。例如设置 Cache-Control:max-age=31536000
          2. s-maxage 同 max-age，覆盖 max-age、Expires，但仅适用于共享缓存，在私有缓存中被忽略。
          3. public 表明响应可以被任何对象（发送请求的客户端、代理服务器等等）缓存。
          4. private 表明响应只能被单个用户（可能是操作系统用户、浏览器用户）缓存，是非共享的，不能被代理服务器缓存。
          5. no-cache 强制所有缓存了该响应的用户，在使用已缓存的数据前，发送带验证器的请求到服务器。不是字面意思上的不缓存。
          6. no-store 禁止缓存，每次请求都要向服务器重新获取数据。
-     - 协商缓存 -- 客户端和服务器端通过某种验证机制验证当前请求资源是否可以使用缓存
+     - 协商缓存 — 客户端和服务器端通过某种验证机制验证当前请求资源是否可以使用缓存
        - Last-modified/If-Modified-Since
          - Last-modified: 服务器端资源的最后修改时间，响应头部会带上这个标识。第一次请求之后，浏览器记录这个时间
          - 再次请求时，请求头部带上 If-Modified-Since 即为之前记录下的时间。服务器端收到带 If-Modified-Since 的请求后会去和资源的最后修改时间对比。若修改过就返回最新资源，状态码 200，若没有修改过则返回 304 Not Modified。
-       - Etag/If-None-Match -- 由服务器端上生成的一段 hash 字符串，第一次请求时响应头带上 ETag: abcd，之后的请求中带上 If-None-Match: abcd，服务器检查 ETag，返回 304 或 200。
+       - Etag/If-None-Match — 由服务器端上生成的一段 hash 字符串，第一次请求时响应头带上 ETag: abcd，之后的请求中带上 If-None-Match: abcd，服务器检查 ETag，返回 304 或 200。
        - 区别
          - 某些服务器不能精确得到资源的最后修改时间，这样就无法通过最后修改时间判断资源是否更新。
          - Last-modified 只能精确到秒。
          - 一些资源的最后修改时间改变了，但是内容没改变，使用 Last-modified 看不出内容没有改变。
          - Etag 的精度比 Last-modified 高，属于强验证，要求资源字节级别的一致，优先级高。如果服务器端有提供 ETag 的话，必须先对 ETag 进行 Conditional Request。
          - 实际使用 ETag/Last-modified 要注意保持一致性，做负载均衡和反向代理的话可能会出现不一致的情况。计算 ETag 也是需要占用资源的，如果修改不是过于频繁，看自己的需求用 Cache-Control 是否可以满足。
-   - 其他 -- 打包出来文件带hash后缀或版本号，文件内容改变后相当于请求一个新文件
+   - 其他 — 打包出来文件带hash后缀或版本号，文件内容改变后相当于请求一个新文件
 
 1. GET and POST
    - 语义： 请求数据 vs 提交数据
@@ -147,7 +147,7 @@
      - printing to the output buffer and then flushing (sending the contents of the output buffer to the client). This is the core of HTTP streaming
      - client side: listening for the `readystatechange` event and focusing on `readyState` 3, keep track of the progress and slice the response
 
-1. server-sent events -- `EventSource`
+1. server-sent events — `EventSource`
    - no IE and Edge support
    - instance opens a persistent connection to an HTTP server, which sends events in `text/event-stream` format (MIME type)
      - If the connection is closed, a reconnect is attempted
@@ -157,15 +157,15 @@
    - constructor: `EventSource(url: string, EventSourceInitDict?: EventSourceInit)`
      - EventSourceInit: `withCredentials` property defaults to `false`
    - properties
-     - `EventSource.readyState` Read only -- A number representing the state of the connection. Possible values are `EventSource.CONNECTING` (0), `OPEN` (1), or `CLOSED` (2)
-     - `EventSource.url` Read only -- A `DOMString` representing the URL of the source
-     - `EventSource.withCredentials` Read only -- A Boolean indicating whether the EventSource object was instantiated with cross-origin (CORS) credentials set (`true`), or not (`false`, the default)
+     - `EventSource.readyState` Read only — A number representing the state of the connection. Possible values are `EventSource.CONNECTING` (0), `OPEN` (1), or `CLOSED` (2)
+     - `EventSource.url` Read only — A `DOMString` representing the URL of the source
+     - `EventSource.withCredentials` Read only — A Boolean indicating whether the EventSource object was instantiated with cross-origin (CORS) credentials set (`true`), or not (`false`, the default)
    - Event handlers
-     - `EventSource.onerror` -- interface is `Event`, not `UIEvent` nor `ProgressEvent`
-     - `EventSource.onmessage` -- interface is `MessageEvent`
-     - `EventSource.onopen` -- a connection with an event source is opened, interface is `Event`
+     - `EventSource.onerror` — interface is `Event`, not `UIEvent` nor `ProgressEvent`
+     - `EventSource.onmessage` — interface is `MessageEvent`
+     - `EventSource.onopen` — a connection with an event source is opened, interface is `Event`
    - methods
-     - `EventSource.close()` -- Closes the connection, if any, and sets the `readyState` attribute to `CLOSED`. If the connection is already closed, the method does nothing
+     - `EventSource.close()` — Closes the connection, if any, and sets the `readyState` attribute to `CLOSED`. If the connection is already closed, the method does nothing
 
 1. `WebSocket`
    - provide full-duplex, bidirectional communication with the server over a single, long-lasting connection
@@ -179,31 +179,31 @@
      - protocol defaults to `''`
    - properties
      - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket#Properties)
-     - `WebSocket.binaryType` -- The binary data type used by the connection
-     - `WebSocket.bufferedAmount` Read only -- The number of bytes of queued data
-     - `WebSocket.extensions` Read only -- The extensions selected by the server
-     - `WebSocket.protocol` Read only -- The sub-protocol selected by the server
-     - `WebSocket.readyState` Read only -- The current state of the connection
+     - `WebSocket.binaryType` — The binary data type used by the connection
+     - `WebSocket.bufferedAmount` Read only — The number of bytes of queued data
+     - `WebSocket.extensions` Read only — The extensions selected by the server
+     - `WebSocket.protocol` Read only — The sub-protocol selected by the server
+     - `WebSocket.readyState` Read only — The current state of the connection
        - `WebSocket.OPENING` (0) — The connection is being established
        - `WebSocket.OPEN` (1) — The connection has been established
        - `WebSocket.CLOSING` (2) — The connection is beginning to close
        - `WebSocket.CLOSE` (3) — The connection is closed
-     - `WebSocket.url` Read only -- The absolute URL of the WebSocket
+     - `WebSocket.url` Read only — The absolute URL of the WebSocket
    - handler properties
-     - `WebSocket.onclose` -- An event listener to be called when the connection is closed
+     - `WebSocket.onclose` — An event listener to be called when the connection is closed
        - `CloseEvent`
-     - `WebSocket.onerror` -- An event listener to be called when an error occurs
+     - `WebSocket.onerror` — An event listener to be called when an error occurs
        - interface: `Event`
-     - `WebSocket.onmessage` -- An event listener to be called when a message is received from the server
+     - `WebSocket.onmessage` — An event listener to be called when a message is received from the server
        - see before `MessageEvent`
-     - `WebSocket.onopen` -- An event listener to be called when the connection is opened
+     - `WebSocket.onopen` — An event listener to be called when the connection is opened
        - interface: `Event`
    - Methods
-     - `WebSocket.close([code[, reason]])` -- Closes the connection
-     - `WebSocket.send(data)` -- Enqueues data to be transmitted
+     - `WebSocket.close([code[, reason]])` — Closes the connection
+     - `WebSocket.send(data)` — Enqueues data to be transmitted
        - `data: USVString | Blob | ArrayBuffer | ArrayBufferView`
 
-1. fetch -- Concepts and usage
+1. fetch — Concepts and usage
    - At the heart of Fetch
      - are the Interface abstractions of HTTP `Request`s, `Response`s, `Headers`, and `Body` payloads, along with a global `fetch()` method for initiating asynchronous resource requests
      - completely `Promise`-based
@@ -225,9 +225,9 @@
    - `Number.MAX_SAFE_INTEGER`, `Number.MIN_SAFE_INTEGER`
      - The reasoning behind that number is that JavaScript uses double-precision floating-point format numbers as specified in IEEE 754 and can only safely represent numbers between -(2^53^ - 1) and 2^53^ - 1
      - Safe in this context refers to the ability to represent integers exactly and to correctly compare them. For example, `Number.MAX_SAFE_INTEGER + 1 === Number.MAX_SAFE_INTEGER + 2` will evaluate to `true`
-   - `Number.MAX_VALUE`, `Number.MIN_VALUE` -- 2^1024^
+   - `Number.MAX_VALUE`, `Number.MIN_VALUE` — 2^1024^
 
-1. closure -- 当一个函数被创建并传递或从另一个函数返回时，它会携带一个背包。背包中是函数声明时作用域内的所有变量。
+1. closure — 当一个函数被创建并传递或从另一个函数返回时，它会携带一个背包。背包中是函数声明时作用域内的所有变量。
 
 1. module
    - [github](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/28)
@@ -243,7 +243,7 @@
    - CMD
      - 支持动态引入依赖文件。
      - 依赖就近，延迟执行, 可以把你的依赖写进代码的任意一行
-   - UMD -- 兼容不同的加载规范
+   - UMD — 兼容不同的加载规范
    - ES6
      - ES6 模块输出的是值的引用，输出接口动态绑定，而 CommonJS 输出的是值的拷贝
      - ES6 模块编译时执行，而 CommonJS 模块总是在运行时加载
@@ -254,7 +254,7 @@
 1. 性能优化
    - 加载与执行
      - 底部或defer
-     - 动态加载 -- `<script>`, xhr
+     - 动态加载 — `<script>`, xhr
      - js文件合并
    - 减少作用域嵌套
    - 批量修改DOM：脱离——修改——放回
@@ -318,7 +318,7 @@
      - 方法都在构造函数中定义，无法复用
      - 不能继承父类原型属性/方法，只能继承父类的实例属性和方法
 
-1. Combination Inheritance -- prototype Chaining + constructor stealing
+1. Combination Inheritance — prototype Chaining + constructor stealing
    - 缺点：
      - 由于调用了两次父类，所以产生了两份实例
    - 优点：
@@ -398,7 +398,7 @@
    1. Preflight requests
       - no IE10 and before
       - when not a simple request, a “preflight” request is made to the server, then the main request
-      - preflight -- OPTIONS method and sends the following headers:
+      - preflight — OPTIONS method and sends the following headers:
         - Origin — Same as in simple requests.
         - Access-Control-Request-Method — The method that the request wants to use.
         - Access-Control-Request-Headers — (Optional) A comma-separated list of the custom headers being used.
@@ -427,7 +427,7 @@
 1. iframe 信息传递
    - `location.hash`，改变 hash 值不会导致页面刷新，所以可以利用 hash 值来进行数据的传递，当然数据量是有限的。
      - 假设 localhost:8080 下有文件 cs1.html 要和 localhost:8081 下的 cs2.html 传递消息，cs1.html 首先创建一个隐藏的 iframe，iframe 的 src 指向 localhost:8081/cs2.html#data，这时的 hash 值就可以做参数传递。
-   - `window.name` -- 在不同的页面（甚至不同域名）加载后依旧存在（如果没修改则值不会变化），并且可以支持非常长的 name 值（2MB）
+   - `window.name` — 在不同的页面（甚至不同域名）加载后依旧存在（如果没修改则值不会变化），并且可以支持非常长的 name 值（2MB）
      ```JavaScript
      // code on a.html
      ifr.onload = function() { // this points to b.html
@@ -448,12 +448,12 @@
        - `HTMLIFrameElement.contentWindow` (to reference an embedded `<iframe>` from its parent window),
        - `Window.parent` (to reference the parent window from within an embedded `<iframe>),` or
        - `Window.frames` + an index value (named or numeric)
-     - `message` -- Data to be sent to the other window. The data is serialized using the structured clone algorithm
-     - `targetOrigin` -- Specifies what the origin of targetWindow must be for the event to be dispatched
+     - `message` — Data to be sent to the other window. The data is serialized using the structured clone algorithm
+     - `targetOrigin` — Specifies what the origin of targetWindow must be for the event to be dispatched
        - a URI or `"*"` for any
        - Failing to provide a specific target discloses the data you send to any interested malicious site
        - posting a message to a page at a `file:` URL currently requires that the `targetOrigin` argument be `"*"`
-     - `transfer` -- Is a sequence of `Transferable` objects that are transferred with the message
+     - `transfer` — Is a sequence of `Transferable` objects that are transferred with the message
        - The ownership of these objects is given to the destination side and they are no longer usable on the sending side
        - The `ArrayBuffer`, `MessagePort` and `ImageBitmap` types implement this interface
    - The structured clone algorithm
@@ -499,7 +499,7 @@
    - Session cookies
      - default setting for cookies
      - deleted when the client shuts down
-   - Permanent cookies -- expire at a specific date (`Expires`) or after a specific length of time in seconds (`Max-Age`)
+   - Permanent cookies — expire at a specific date (`Expires`) or after a specific length of time in seconds (`Max-Age`)
      ```
      Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT;
      ```
@@ -514,23 +514,23 @@
      - `Secure`: HTTPS only
      - `HttpOnly`: cookies are inaccessible to JavaScript's `Document.cookie` API
    - `SameSite` experimental: a cookie shouldn't be sent with cross-site requests
-     - `=Strict` -- prevent the cookie from being sent by the browser to the target site in all cross-site browsing context, even when following a regular link
-     - `=Lax` -- only send cookies for TOP LEVEL navigation GET requests. This is sufficient for user tracking, but it will prevent many CSRF attacks
+     - `=Strict` — prevent the cookie from being sent by the browser to the target site in all cross-site browsing context, even when following a regular link
+     - `=Lax` — only send cookies for TOP LEVEL navigation GET requests. This is sufficient for user tracking, but it will prevent many CSRF attacks
    - Scope of cookies
-     - `Domain` -- allowed hosts to receive the cookie
+     - `Domain` — allowed hosts to receive the cookie
        - If unspecified, it defaults to the host of the current document location, excluding subdomains
        - if specified, subdomains are always included
        - a domain that does not include the origin server should be rejected by the user agent
-     - `Path` -- indicates a URL path that must exist in the requested URL in order to send the `Cookie` header
+     - `Path` — indicates a URL path that must exist in the requested URL in order to send the `Cookie` header
        - for example: `Path=/docs`
        - only absolute paths, no `..` or `.`
 
-1. `Document.cookie: string` -- Read all cookies (URI encoded)
-   - Write a new cookie -- `document.cookie = 'key=value'`
+1. `Document.cookie: string` — Read all cookies (URI encoded)
+   - Write a new cookie — `document.cookie = 'key=value'`
      - coordination: `encodeURIComponent()`
      - optional followed by attributes
      - `Date.toUTCString()` when setting `Expires`
-   - simple framework -- [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie/Simple_document.cookie_framework)
+   - simple framework — [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie/Simple_document.cookie_framework)
    - get
      ```javascript
      function (sKey) {
@@ -539,7 +539,7 @@
      }
      ```
 
-   - remove -- set `Expires` to past (`Thu, 01 Jan 1970 00:00:00 GMT`) or set `Max-Age` to non-positive
+   - remove — set `Expires` to past (`Thu, 01 Jan 1970 00:00:00 GMT`) or set `Max-Age` to non-positive
      ```javascript
      function (sKey, sPath, sDomain) {
          if (!this.hasItem(sKey)) { return false; }
@@ -597,7 +597,7 @@
    1. opacity=0的元素依然能触发已经绑定的事件。
    1. opacity,transition对她有效(毫无争议)
 
-1. BFC 即 Block Formatting Contexts (块级格式化上下文) -- contains everything inside of the element creating it
+1. BFC 即 Block Formatting Contexts (块级格式化上下文) — contains everything inside of the element creating it
    - The rules for positioning and clearing of floats apply only to things within the same block formatting context
    - Margin collapsing also occurs only between blocks that belong to the same block formatting context.
    - 阻止元素被浮动元素覆盖(但是文本信息不会被浮动元素所覆盖)：触发被覆盖元素的BFC
@@ -618,8 +618,8 @@
      - multicol containers (elements where column-count or column-width is not auto, including elements with column-count: 1)
      - column-span: all should always create a new formatting context, even when the column-span: all element isn't contained by a multicol container
 
-1. IFC -- Inline Formatting Contexts
-   - create IFC -- 一个块级元素中仅包含内联级别元素
+1. IFC — Inline Formatting Contexts
+   - create IFC — 一个块级元素中仅包含内联级别元素
    - Vertical padding and borders will be applied but may overlap content above and below
    - 应用场景
      - 水平居中：当一个块要在环境中水平居中时，设置其为 inline-block 则会在外层产生 IFC，通过设置父容器 text-align:center 则可以使其水平居中。
@@ -669,11 +669,11 @@
 1. vertical centering
    - [Generator](http://howtocenterincss.com/)
    - use CSS table, flexbox, grid
-   - natural height container -- apply an equal top and bottom padding to the container
-   - fixed height container or avoid padding -- `display: table-cell` and `vertical-align: middle`
-   - one line text -- set a tall line height equal to the desired container height
+   - natural height container — apply an equal top and bottom padding to the container
+   - fixed height container or avoid padding — `display: table-cell` and `vertical-align: middle`
+   - one line text — set a tall line height equal to the desired container height
      - If the contents aren’t inline, you may have to set them to `inline-block`
-   - height known -- absolute positioning
+   - height known — absolute positioning
 
 1. 横屏竖屏，移动端适配
    - 基本设置
@@ -708,13 +708,13 @@
      ```
 
 1. 响应式布局
-   - static -- px
-   - liquid -- `width: ?%`, scaling the width of parts of the design relative to the window with `max-*`, `min-*`
-   - 弹性布局 -- 包裹文字的各元素的尺寸采用em做单位，而页面的主要划分区域的尺寸仍使用百分数或px做单位（同「流式布局」或「固定布局」）
+   - static — px
+   - liquid — `width: ?%`, scaling the width of parts of the design relative to the window with `max-*`, `min-*`
+   - 弹性布局 — 包裹文字的各元素的尺寸采用em做单位，而页面的主要划分区域的尺寸仍使用百分数或px做单位（同「流式布局」或「固定布局」）
      - 使用了rem单位的弹性布局在移动端也很受欢迎
      - 使用vw、vh等后起之秀的单位，可以实现完美的流式布局（高度和文字大小都可以变得“流式”），弹性布局就不再必要了。
-   - adaptive -- `@media` with static-like, having defined layouts for different resolutions
-   - responsive -- `@media` with liquid-like
+   - adaptive — `@media` with static-like, having defined layouts for different resolutions
+   - responsive — `@media` with liquid-like
 
 # MV*
 
@@ -722,7 +722,7 @@
    - 把管理用户界面的层次称为View
    - 应用程序的数据为Model（注意这里的Model指的是Domain Model，这个应用程序对需要解决的问题的数据抽象，不包含应用的状态，可以简单理解为对象）
    - Model提供数据操作的接口，执行相应的业务逻辑。
-   - MV* -- View如何同步Model的变更，View和Model之间如何粘合在一起。
+   - MV* — View如何同步Model的变更，View和Model之间如何粘合在一起。
 
 1. small-talk 80 MVC  
    ![][p2]
@@ -757,7 +757,7 @@
    - 缺点：
      - Presenter中除了应用逻辑以外，还有大量的View->Model，Model->View的手动同步逻辑，造成Presenter比较笨重，维护起来会比较困难。
 
-1. MVVM -- 可以看作是一种特殊的MVP（Passive View）模式，或者说是对MVP模式的一种改良。
+1. MVVM — 可以看作是一种特殊的MVP（Passive View）模式，或者说是对MVP模式的一种改良。
    - ViewModel的含义就是 "Model of View"，视图的模型。它的含义包含了领域模型（Domain Model）和视图的状态（State）
      - 在图形界面应用程序当中，界面所提供的信息可能不仅仅包含应用程序的领域模型。还可能包含一些领域模型不包含的视图状态，例如电子表格程序上需要显示当前排序的状态是顺序的还是逆序的，而这是Domain Model所不包含的，但也是需要显示的信息。
    - MVVM的调用关系
@@ -777,9 +777,9 @@
    1. 当状态变更的时候，重新构造一棵新的对象树。然后用新的树和旧的树进行比较，记录两棵树差异
    1. 把2所记录的差异应用到步骤1所构建的真正的DOM树上，视图就更新了
 
-1. vue 的双向绑定 -- `Proxy`类，劫持get, set
+1. vue 的双向绑定 — `Proxy`类，劫持get, set
 
-1. angular -- 代理异步操作，而数据的变化是且仅可能是由于异步事件而产生的
+1. angular — 代理异步操作，而数据的变化是且仅可能是由于异步事件而产生的
 
 # Node
 
@@ -803,12 +803,12 @@
    - [zhihu](https://zhuanlan.zhihu.com/p/40160380), also other posts of the author
    - [github](https://github.com/acdlite/react-fiber-architecture)
 
-1. diff -- [zhihu](https://zhuanlan.zhihu.com/p/20346379)
+1. diff — [zhihu](https://zhuanlan.zhihu.com/p/20346379)
 
-1. `setState` -- [github](https://github.com/sisterAn/blog/issues/26)
+1. `setState` — [github](https://github.com/sisterAn/blog/issues/26)
 
-1. garbage collection -- [blog](https://segmentfault.com/a/1190000000440270)
+1. garbage collection — [blog](https://segmentfault.com/a/1190000000440270)
 
-1. 为什么通常在发送数据埋点请求的时候使用的是 1x1 像素的透明 gif 图片 -- [github](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/87)
+1. 为什么通常在发送数据埋点请求的时候使用的是 1x1 像素的透明 gif 图片 — [github](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/87)
 
-1. Redux -- [zhihu](https://www.zhihu.com/search?q=redux%20%E5%8E%9F%E7%90%86&type=content)
+1. Redux — [zhihu](https://www.zhihu.com/search?q=redux%20%E5%8E%9F%E7%90%86&type=content)

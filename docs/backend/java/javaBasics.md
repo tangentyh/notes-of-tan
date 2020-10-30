@@ -62,9 +62,7 @@
      - `-Xprof` — profiling, support was removed in 10.0
      - `-XshowSettings:properties`, `-XshowSettings:locale`
      - `-Xverify:none`, or `-noverify` — turn off verification when loading classes
-     - memory related -- see JVM
-       - `-Xss`
-       - `-Xms`, `-Xmx`
+     - memory related — see [JVM](./JVM.md#memory)
    - enable and disable assertion — see [Assertion](#Assertion)
    - system properties — `-D`, `System::getProperty`, `System::getProperties`
      - log related — see [Logging](#Logging)
@@ -313,7 +311,7 @@
      - hexadecimal, octal and binary — `0x`, `0`, `0b` or `0B`
      - friendly underscores — `1_000_000`, `0b1111_0100_0010_0100_0000`
    - no `unsigned`
-   - shift overflow bits -- mod
+   - shift overflow bits — mod
      ```java
      1l << 65 // 1l << (65 % 64)
      ```
@@ -1068,7 +1066,7 @@
    - no block variable shadowing — illegal to declare a parameter or a local variable in the lambda that has the same name as a local variable
    - block scope — the same scope as a nested block
    - same `this` — `this` is the same as what outside the lambda
-   - number of instantiations -- only one instantiation inside loops when no closure
+   - number of instantiations — only one instantiation inside loops when no closure
      ```java
      static IntUnaryOperator oper = null;
      static int opCounter = 0;
@@ -2089,7 +2087,7 @@ see [Logging](./javaMisc.md#Logging).
    - `@java.lang.annotation.Target` — the contexts in which an annotation type is applicable, any declaration except a type parameter declaration if absent
      - `ElementType[] value`
      - `enum java.lang.annotation.ElementType` — `ANNOTATION_TYPE`, `CONSTRUCTOR`, `FIELD`, `LOCAL_VARIABLE`, `METHOD`, `PACKAGE`, `PARAMETER`, `TYPE`, `TYPE_PARAMETER`, `TYPE_USE`
-       - `TYPE` -- class, interface (including annotation type), or enum declaration
+       - `TYPE` — class, interface (including annotation type), or enum declaration
    - `@java.lang.annotation.Retention` — how long annotations with the annotated type are to be retained, defaults to `RetentionPolicy.CLASS` if absent
      - `RetentionPolicy value`
      - `enum java.lang.annotation.RetentionPolicy`

@@ -461,7 +461,7 @@
              ((-o-transform-style: preserve-3d) or (-webkit-transform-style: preserve-3d))) {}
    ```
 
-1. `@page` -- modify some CSS properties when printing a document; can only change the margins, orphans, widows, and page breaks
+1. `@page` — modify some CSS properties when printing a document; can only change the margins, orphans, widows, and page breaks
    ```
    @page <page-selector-list> {
      <page-body>
@@ -559,7 +559,7 @@
        - `:out-of-range`
    - language — `:lang()`
    - custom element — `:defined` — any element that has been defined, standard and custom with `CustomElementRegistry.define()`
-   - shadow DOM -- tbd
+   - shadow DOM — tbd
    - `@page`
      - `:first`
      - `:left`

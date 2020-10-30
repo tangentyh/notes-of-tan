@@ -361,7 +361,7 @@
       <artifactId>jcl-over-slf4j</artifactId>
    </dependency>
    ```
-   - `org.apache.logging.log4j.ThreadContext` -- stores properties in the current thread
+   - `org.apache.logging.log4j.ThreadContext` — stores properties in the current thread
 
 ### Logger
 
@@ -584,8 +584,8 @@
    jdbc:postgresql:example
    ```
 
-1. JDBC escape syntax -- translate to database-specific syntax variations, see [JDBC Reference Information](https://docs.oracle.com/en/database/oracle/oracle-database/18/jjdbc/JDBC-reference-information.html#GUID-DFF83C4A-D0F8-420C-BA66-8681B939B787)
-   - control -- `Statement::setEscapeProcessing`
+1. JDBC escape syntax — translate to database-specific syntax variations, see [JDBC Reference Information](https://docs.oracle.com/en/database/oracle/oracle-database/18/jjdbc/JDBC-reference-information.html#GUID-DFF83C4A-D0F8-420C-BA66-8681B939B787)
+   - control — `Statement::setEscapeProcessing`
    - temporal
      ```
      {d '2008-01-24'}
@@ -598,7 +598,7 @@
      {fn user()}
      ```
    - calling stored procedures
-   - outer joins -- `oj`
+   - outer joins — `oj`
    - the escape character in `LIKE` clauses
 
 ### JDBC Classes
@@ -649,18 +649,18 @@
    extends Wrapper, AutoCloseable
    ```
    - metadata
-     - `DatabaseMetaData getMetaData()` -- information about the database's tables, its supported SQL grammar, its stored procedures, the capabilities of this connection, and so on
-   - configuration -- should not use a SQL statements to configure if a JDBC method available
+     - `DatabaseMetaData getMetaData()` — information about the database's tables, its supported SQL grammar, its stored procedures, the capabilities of this connection, and so on
+   - configuration — should not use a SQL statements to configure if a JDBC method available
      - `void abort(Executor executor)`
      - `void close()`
      - `SQLWarning getWarnings()`, `void clearWarnings()`
      - `String getSchema()`, `void setSchema(String schema)`
      - `getClientInfo`, `setClientInfo`
-   - transaction -- should not use a SQL statements to configure if a JDBC method available
+   - transaction — should not use a SQL statements to configure if a JDBC method available
      - `void setAutoCommit(boolean autoCommit)` — defaults to `true`
      - `boolean getAutoCommit()`
      - `void setTransactionIsolation(int level)`
-       - isolation levels as `static int` fields -- `TRANSACTION_NONE`, `TRANSACTION_READ_COMMITTED`, `TRANSACTION_READ_UNCOMMITTED`, `TRANSACTION_REPEATABLE_READ`, `TRANSACTION_SERIALIZABLE`
+       - isolation levels as `static int` fields — `TRANSACTION_NONE`, `TRANSACTION_READ_COMMITTED`, `TRANSACTION_READ_UNCOMMITTED`, `TRANSACTION_REPEATABLE_READ`, `TRANSACTION_SERIALIZABLE`
      - `int getTransactionIsolation()`
      - `void commit()`
      - `Savepoint setSavepoint()`  
@@ -668,16 +668,16 @@
      - `void releaseSavepoint(Savepoint savepoint)`
      - `void rollback()`  
        `void rollback(Savepoint savepoint)`
-   - statements -- one or more, according to `DatabaseMetaData::getMaxStatements`
+   - statements — one or more, according to `DatabaseMetaData::getMaxStatements`
      - `Statement createStatement()`  
        `Statement createStatement(int resultSetType, int resultSetConcurrency)`  
        `Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability)`
-       - `resultSetType` -- `ResultSet.TYPE_FORWARD_ONLY`, `ResultSet.TYPE_SCROLL_INSENSITIVE`, `ResultSet.TYPE_SCROLL_SENSITIVE`
-       - `resultSetConcurrency` -- `ResultSet.CONCUR_READ_ONLY`, `ResultSet.CONCUR_UPDATABLE`
-       - `resultSetHoldability` -- `ResultSet.HOLD_CURSORS_OVER_COMMIT`, `ResultSet.CLOSE_CURSORS_AT_COMMIT`
-     - `prepareCall` -- for `CALL` stored procedures
-     - `prepareStatement` -- `PREPARE` and `EXECUTE`
-   - `java.sql.DatabaseMetaData` -- information about the DBMS, the driver, and the results of some `SHOW` statements
+       - `resultSetType` — `ResultSet.TYPE_FORWARD_ONLY`, `ResultSet.TYPE_SCROLL_INSENSITIVE`, `ResultSet.TYPE_SCROLL_SENSITIVE`
+       - `resultSetConcurrency` — `ResultSet.CONCUR_READ_ONLY`, `ResultSet.CONCUR_UPDATABLE`
+       - `resultSetHoldability` — `ResultSet.HOLD_CURSORS_OVER_COMMIT`, `ResultSet.CLOSE_CURSORS_AT_COMMIT`
+     - `prepareCall` — for `CALL` stored procedures
+     - `prepareStatement` — `PREPARE` and `EXECUTE`
+   - `java.sql.DatabaseMetaData` — information about the DBMS, the driver, and the results of some `SHOW` statements
       ```java
       public interface DatabaseMetaData extends Wrapper
       ```
@@ -690,13 +690,13 @@
    ```
    - one `ResultSet` a time — all execution methods in the `Statement` interface implicitly close a current `ResultSet` object of the statement if an open one exists
    - `ResultSet getResultSet()`
-   - `getMoreResults` -- for databases that also allow submission of multiple SELECT statements in a single query
-   - `void setEscapeProcessing(boolean enable)` -- defaults to `true`
-   - autogenerated keys -- whether retrieve autogenerated keys, often the primary key
+   - `getMoreResults` — for databases that also allow submission of multiple SELECT statements in a single query
+   - `void setEscapeProcessing(boolean enable)` — defaults to `true`
+   - autogenerated keys — whether retrieve autogenerated keys, often the primary key
      - `int executeUpdate(String sql, int autoGeneratedKeys)` and other methods
        - `static int RETURN_GENERATED_KEYS`
        - `static int NO_GENERATED_KEYS`
-   - batch -- no `SELECT`
+   - batch — no `SELECT`
      - `void addBatch(String sql)`
      - `int[] executeBatch()`
    - execute
@@ -743,14 +743,14 @@
      - `__ get__(int columnIndex)` — index starts from 1
      - `__ get__(String columnLabel)`
    - `update-` prefixed methods — like `get-` methods, for interactive update
-     - `void updateRow()` -- updates the underlying database with the new contents of the current row, changes will be discarded if not called
+     - `void updateRow()` — updates the underlying database with the new contents of the current row, changes will be discarded if not called
      - `void cancelRowUpdates()`
-   - insert -- for interactive scenarios
+   - insert — for interactive scenarios
      1. `void moveToInsertRow()`
      1. `update-` methods
      1. `void insertRow()`
      1. `void moveToCurrentRow()`
-   - `void deleteRow()` -- for interactive scenarios
+   - `void deleteRow()` — for interactive scenarios
 
 1. JDBC type interfaces
    - `java.lang` type classes, `String` and stream type classes, `java.math` type classes, primitive types
@@ -760,8 +760,8 @@
    - `java.sql.Clob`
    - `java.sql.Ref`
    - `java.sql.RowId`
-   - `java.sql.SQLData` -- SQL user-defined type (UDT)
-   - `java.sql.SQLType` -- a generic SQL type, called a JDBC type or a vendor specific data type
+   - `java.sql.SQLData` — SQL user-defined type (UDT)
+   - `java.sql.SQLType` — a generic SQL type, called a JDBC type or a vendor specific data type
    - `java.sql.Date`
      ```java
      public class Date extends java.util.Date
@@ -774,24 +774,24 @@
      ```java
      public class Timestamp extends java.util.Date
      ```
-   - `java.sql.Types` -- `static int` constants that are used to identify generic SQL types
+   - `java.sql.Types` — `static int` constants that are used to identify generic SQL types
      - `ARRAY`, `BIGINT`, `BINARY`, `BIT`, `BLOB`, `BOOLEAN`, `TINYINT`, `VARBINARY`, `VARCHAR`
      - more
 
 #### Row Sets
 
-1. `javax.sql.RowSet` -- a connected rowset or more commonly, a disconnected rowset
+1. `javax.sql.RowSet` — a connected rowset or more commonly, a disconnected rowset
    ```java
    public interface RowSet extends ResultSet
    ```
-   - `javax.sql.rowset.JdbcRowSet -- added functionality of connections, like transaction
-   - `javax.sql.rowset.CachedRowSet` -- a disconnected rowset
+   - `javax.sql.rowset.JdbcRowSet — added functionality of connections, like transaction
+   - `javax.sql.rowset.CachedRowSet` — a disconnected rowset
      ```java
      public interface CachedRowSet extends RowSet, Joinable
      ```
-     - `javax.sql.rowset.WebRowSet` -- a cached row set that can be saved to an XML file
-       - `javax.sql.rowset.FilteredRowSet` -- for filtering
-       - `javax.sql.rowset.JoinRowSet` -- for `JOIN`
+     - `javax.sql.rowset.WebRowSet` — a cached row set that can be saved to an XML file
+       - `javax.sql.rowset.FilteredRowSet` — for filtering
+       - `javax.sql.rowset.JoinRowSet` — for `JOIN`
 
 1. `interface javax.sql.rowset.RowSetFactory`
    - `__RowSet create__RowSet()`
@@ -893,10 +893,10 @@
      - `static Duration between(Temporal startInclusive, Temporal endExclusive)`
      - more
 
-1. `java.time.OffsetDateTime` -- A date-time with an offset from UTC/Greenwich in the ISO-8601 calendar system, such as `2007-12-03T10:15:30+01:00`
+1. `java.time.OffsetDateTime` — A date-time with an offset from UTC/Greenwich in the ISO-8601 calendar system, such as `2007-12-03T10:15:30+01:00`
    - SQL type — `TIMESTAMP` with a timezone
 
-1. `java.time.ZonedDateTime` -- `OffsetDateTime` with `ZoneId`, such as `2007-12-03T10:15:30+01:00 Europe/Paris`
+1. `java.time.ZonedDateTime` — `OffsetDateTime` with `ZoneId`, such as `2007-12-03T10:15:30+01:00 Europe/Paris`
    - SQL type — `TIMESTAMP` with a timezone
    - The Internet Assigned Numbers Authority (IANA) [database](www.iana.org/time-zones)
    - `ZoneId getZone()`

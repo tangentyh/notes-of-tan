@@ -54,10 +54,10 @@
 
 1. attributes
    - global attributes on [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes)
-   - `async` HTML5 -- indicating that the browser should, if possible, execute the script asynchronously
+   - `async` HTML5 — indicating that the browser should, if possible, execute the script asynchronously
       - must not be used if the `src` attribute is absent (i.e. for inline scripts). If it is included in this case it will have no effect
       - Dynamically inserted scripts (using `document.createElement()`) execute asynchronously by default
-   - `defer` -- Boolean attribute is set to indicate to a browser that the script is meant to be executed after the document has been parsed, but before firing `DOMContentLoaded`
+   - `defer` — Boolean attribute is set to indicate to a browser that the script is meant to be executed after the document has been parsed, but before firing `DOMContentLoaded`
      - Scripts with the defer attribute will prevent the `DOMContentLoaded` event from firing until the script has loaded and finished evaluating
      - must not be used if the `src` attribute is absent (i.e. for inline scripts), in this case it would have no effect
      - To achieve a similar effect for dynamically inserted scripts use `async=false` instead
@@ -88,15 +88,15 @@
 1. Window Relationships and Frames
    - frames: `<iframe>`
      - deprecated: `<frameset>` and `<frame>`
-   - `Window.frames: Window` -- Returns the window itself, which is an array-like object, listing the direct sub-frames of the current window
+   - `Window.frames: Window` — Returns the window itself, which is an array-like object, listing the direct sub-frames of the current window
      - `window.frames[0]` is the same thing as `document.getElementsByTagName("iframe")[0].contentWindow`
-   - access frames -- bracket notation
+   - access frames — bracket notation
      - by number
      - by `name` attribute
      - `parent`: points to the current frame’s immediate parent frame
        - when there are no frames, `parent` is equal to `top` (and both are equal to `window`)
    - The `top` object always points to the very top (outermost) frame, which is the browser window itself
-   - `Window.frameElement: Element` -- the element in which the window is embedded, or null if the element is either top-level or is embedded into a cross origin document
+   - `Window.frameElement: Element` — the element in which the window is embedded, or null if the element is either top-level or is embedded into a cross origin document
      - Despite this property's name, it works for documents embedded within any embedding point, including `<object>`, `<iframe>`, or `<embed>`
 
 1. Window Position
@@ -216,12 +216,12 @@
 1. UI components
    - `Window.locationbar`, `Window.menubar`, `Window.personalbar`, `Window.scrollbars`, `Window.statusbar`, `Window.toolbar`
    - visibility can be checked: `Window.locationbar.visible`
-   - `Window.devicePixelRatio` -- device pixel to CSS pixel, high on mobile
+   - `Window.devicePixelRatio` — device pixel to CSS pixel, high on mobile
 
-1. cryptography -- `Window.crypto: Crypto`
-   - `Crypto.getRandomValues<T extends TypedArray>(array: T): T` -- fill a typed array with random numbers (random in its cryptographic meaning)
-   - `Crypto.subtle: SubtleCrypto` -- providing access to common cryptographic primitives, like hashing, signing, encryption or decryption
-   - `SubtleCrypto` -- encryption, decryption, digest, sign, verify, key related
+1. cryptography — `Window.crypto: Crypto`
+   - `Crypto.getRandomValues<T extends TypedArray>(array: T): T` — fill a typed array with random numbers (random in its cryptographic meaning)
+   - `Crypto.subtle: SubtleCrypto` — providing access to common cryptographic primitives, like hashing, signing, encryption or decryption
+   - `SubtleCrypto` — encryption, decryption, digest, sign, verify, key related
      - [algorithm](https://www.w3.org/TR/WebCryptoAPI/#algorithm-overview)
      - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto)
      - `TextEncoder` for text buffer
@@ -237,12 +237,12 @@
        - `HTMLIFrameElement.contentWindow` (to reference an embedded `<iframe>` from its parent window),
        - `Window.parent` (to reference the parent window from within an embedded `<iframe>),` or
        - `Window.frames` + an index value (named or numeric)
-     - message -- Data to be sent to the other window. The data is serialized using the structured clone algorithm
-     - targetOrigin -- Specifies what the origin of targetWindow must be for the event to be dispatched
+     - message — Data to be sent to the other window. The data is serialized using the structured clone algorithm
+     - targetOrigin — Specifies what the origin of targetWindow must be for the event to be dispatched
        - a URI or `"*"` for any
        - Failing to provide a specific target discloses the data you send to any interested malicious site
        - posting a message to a page at a `file:` URL currently requires that the `targetOrigin` argument be `"*"`
-     - `transfer` -- Is a sequence of `Transferable` objects that are transferred with the message
+     - `transfer` — Is a sequence of `Transferable` objects that are transferred with the message
        - The ownership of these objects is given to the destination side and they are no longer usable on the sending side
        - The `ArrayBuffer`, `MessagePort` and `ImageBitmap` types implement this interface
    - The structured clone algorithm
@@ -309,20 +309,20 @@
      - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Navigator)
      - `userAgent`, `language`, `languages`
 
-1. plugins -- `NavigatorPlugins.plugins: PluginArray`
-   - `PluginArray` -- array-like object for storing `Plugin` objects
+1. plugins — `NavigatorPlugins.plugins: PluginArray`
+   - `PluginArray` — array-like object for storing `Plugin` objects
      - `PluginArray.item(index: number): Plugin`
      - `PluginArray.namedItem(name: string): Plugin`
-     - `PluginArray.refresh(reload?: boolean): void` -- Refreshes all plugins on the current page, optionally reloading documents
+     - `PluginArray.refresh(reload?: boolean): void` — Refreshes all plugins on the current page, optionally reloading documents
    - `Plugin`
      - `Plugin.name`, `Plugin.filename`, `Plugin.description`, `Plugin.version`
      - `Plugin.length`: The number of MIME types handled by this plug-in
      - `Plugin.item(index: number): MimeType`
-     - `Plugin.namedItem(name: string): MimeType` -- name is a MIME type
-   - `NavigatorPlugins.mimeTypes: MimeTypeArray` -- an array-like object of `MimeType` objects representing the MIME types recognized by the browser
+     - `Plugin.namedItem(name: string): MimeType` — name is a MIME type
+   - `NavigatorPlugins.mimeTypes: MimeTypeArray` — an array-like object of `MimeType` objects representing the MIME types recognized by the browser
      - `MimeTypeArray.item(index: number): MimeType`
-     - `MimeTypeArray.namedItem(name: string): MimeType` -- name is a MIME type
-   - `MimeType` -- information about a MIME type associated with a particular plugin
+     - `MimeTypeArray.namedItem(name: string): MimeType` — name is a MIME type
+   - `MimeType` — information about a MIME type associated with a particular plugin
      - `MimeType.type`, `MimeType.description`, `MimeType.suffixes`, `MimeType.enabledPlugin`
    - in IE, plugins are implemented using COM objects, which are identified by unique strings
      ```javascript
@@ -354,28 +354,28 @@
      ```
      similar to the above one, protocol can be `"mailto"` or `"ftp"`
 
-1. Geolocation API -- `Navigator.geolocation: Geolocation` (available only in secure contexts (HTTPS))
+1. Geolocation API — `Navigator.geolocation: Geolocation` (available only in secure contexts (HTTPS))
    - represents an object able to programmatically obtain the position of the device
      - the user is notified and asked to grant permission
    - `Geolocation.getCurrentPosition(successCallback, errorCallback?, options?: PositionOptions): void`
      - `successCallback(pos: Position)`
      - `errorCallback(err: PositionError)`
-   - `Geolocation.watchPosition(successCallback, errorCallback?, options?): number` -- register a handler function that will be called automatically each time the position of the device changes
-   - `Geolocation.clearWatch(watchId: number): void` -- unregister location/error monitoring handlers using the id returned by `Geolocation.watchPosition()`
+   - `Geolocation.watchPosition(successCallback, errorCallback?, options?): number` — register a handler function that will be called automatically each time the position of the device changes
+   - `Geolocation.clearWatch(watchId: number): void` — unregister location/error monitoring handlers using the id returned by `Geolocation.watchPosition()`
    - `Position`
      - `Position.coords: Coordinates`
        - `Coordinates.latitude` in degree, `Coordinates.longitude` in degree, `Coordinates.accuracy` in meters
        - in meters and can be `null`: `Coordinates.altitude`, `Coordinates.altitudeAccuracy`
-       - `Coordinates.heading` -- how far off from heading true north the device is, 0 is true north, `NaN` when `speed` is 0, can be `null`
-       - `Coordinates.speed` -- m/s, can be `null`
-     - `Position.timestamp: DOMTimeStamp` -- the date and the time of the creation of the `Position` object it belongs to. The precision is to the millisecond
+       - `Coordinates.heading` — how far off from heading true north the device is, 0 is true north, `NaN` when `speed` is 0, can be `null`
+       - `Coordinates.speed` — m/s, can be `null`
+     - `Position.timestamp: DOMTimeStamp` — the date and the time of the creation of the `Position` object it belongs to. The precision is to the millisecond
    - `PositionError`
      - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/PositionError)
    - `PositionOptions`
-     - `PositionOptions.enableHighAccuracy: boolean` -- indicates the application would like to receive the best possible results, default `false`
+     - `PositionOptions.enableHighAccuracy: boolean` — indicates the application would like to receive the best possible results, default `false`
        - slower response times or increased power consumption trade off
-     - `PositionOptions.timeout: number` -- the maximum length of time (in milliseconds) the device is allowed to take in order to return a position, defaults to `Infinity`
-     - `PositionOptions.maximumAge: number` -- the maximum age in milliseconds of a possible cached position that is acceptable to return, defaults to 0
+     - `PositionOptions.timeout: number` — the maximum length of time (in milliseconds) the device is allowed to take in order to return a position, defaults to `Infinity`
+     - `PositionOptions.maximumAge: number` — the maximum age in milliseconds of a possible cached position that is acceptable to return, defaults to 0
    - availability
      - providers other than Google on [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API#Availability)
 
@@ -392,8 +392,8 @@
    - represents the user’s navigation history since the given window was first used
    - properties and methods (state introduced in HTML5)
      - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/History)
-     - `History.length` Read only -- Returns an Integer representing the number of elements in the session history, including the currently loaded page. For example, for a page loaded in a new tab this property returns 1
-     - `History.state` Read only -- Returns an any value representing the state at the top of the history stack
+     - `History.length` Read only — Returns an Integer representing the number of elements in the session history, including the currently loaded page. For example, for a page loaded in a new tab this property returns 1
+     - `History.state` Read only — Returns an any value representing the state at the top of the history stack
        - This is a way to look at the state without having to wait for a `popstate` event
      - `History.go(delta?: number): void`
        - delta: the number of pages to go backward or forward
@@ -402,13 +402,13 @@
        - without parameters or a value of 0 reloads the current page
      - `history.back()`, `history.forward()`
        - `history.go(-1)`, `history.go(1)`
-     - `History.pushState(data: any, title: string, url?: string): void` -- Pushes the given data onto the session history stack with the specified title and, if provided, URL
+     - `History.pushState(data: any, title: string, url?: string): void` — Pushes the given data onto the session history stack with the specified title and, if provided, URL
        - The data is treated as opaque by the DOM; you may specify any JavaScript object that can be serialized
        - title isn’t currently used by any implementations and so it is safe to either leave it as an empty string or provide a short title
        - url: relative or absolute, must be of the same origin. If omitted, it's set to the document's current URL
        - the browser’s address bar (`location.href`) changes to reflect the new relative URL. Despite this change, the browser does not make a request to the server, but it might attempt to load the URL later as below
        - if navigated back from a new domain, page will be reloaded with the given URL, and `popstate` event won't be fired because the page has been reloaded
-     - `History.replaceState(data: any, title: string, url?: string): void` -- Updates the most recent entry on the history stack to have the specified data, title, and, if provided, URL
+     - `History.replaceState(data: any, title: string, url?: string): void` — Updates the most recent entry on the history stack to have the specified data, title, and, if provided, URL
        - see `History.pushState()`, the difference is that this modifies the current history entry instead of creating a new one
 
 ## Client Detection
@@ -556,7 +556,7 @@
 1. `Node`
    - All node types inherit from `Node`
    - `Node` inherits `EventTarget`
-   - `Node.nodeType: number` Read only -- node type, equals to one of the below
+   - `Node.nodeType: number` Read only — node type, equals to one of the below
      ```javascript
      if (someNode.nodeType == 1){ //works in all browsers
      // if (someNode.nodeType == Node.ELEMENT_NODE) { //won’t work in IE < 9
@@ -575,7 +575,7 @@
      - `Node.DOCUMENT_TYPE_NODE` (10)
      - `Node.DOCUMENT_FRAGMENT_NODE` (11)
      - `Node.NOTATION_NODE` (12) deprecated
-   - `Node.nodeName: string` Read only, `Node.nodeValue` -- give specific information about the node, return values differentiate from node type
+   - `Node.nodeName: string` Read only, `Node.nodeValue` — give specific information about the node, return values differentiate from node type
      - `Node.nodeValue` is the content for `Comment` and `Text` nodes
 
 1. `NodeList`
@@ -610,21 +610,21 @@
      }
      ```
 
-1. Node Relationships, Read only -- child, parent, sibling
+1. Node Relationships, Read only — child, parent, sibling
    - `Node.childNodes: NodeList`
      - IE8 and earlier does not parse whitespace between tags as `Text` nodes
    - `Node.hasChildNodes(): boolean`
      - faster than check `.childNodes.length`
-   - `Node.parentNode` -- pointing to its parent
+   - `Node.parentNode` — pointing to its parent
    - `Node.previousSibling`, `Node.nextSibling`
    - `Node.firstChild`, `Node.lastChild`
      - `someNode.childNodes[0]`
      - `someNode.childNodes[someNode.childNodes.length-1]`
-   - `Node.ownerDocument: Document` -- a pointer to the document node that represents the entire document or `null`
+   - `Node.ownerDocument: Document` — a pointer to the document node that represents the entire document or `null`
    - `Node.contains(child: Node): boolean`
      - whether a node is a descendant of the current node
-   - `Node.isEqualNode(otherNode: Node): boolean` -- indicates whether or not two nodes are of the same type and all their defining data points match
-   - `Node.isSameNode(otherNode: Node): boolean` -- indicating whether or not the two nodes are the same (that is, they reference the same object)
+   - `Node.isEqualNode(otherNode: Node): boolean` — indicates whether or not two nodes are of the same type and all their defining data points match
+   - `Node.isSameNode(otherNode: Node): boolean` — indicating whether or not the two nodes are the same (that is, they reference the same object)
    - `Node.compareDocumentPosition(other: Node): number`
      - compares the position of the current node against another node
      - The return value is a bitmask
@@ -740,7 +740,7 @@
    - `document.forms` — Contains all `<form>` elements in the document. The same as `document.getElementsByTagName("form")`
    - `document.images` — Contains all `<img>` elements in the document. The same as document.getElementsByTagName(“img”) .
    - `document.links` — Contains all `<a>` elements with an href attribute in the document
-   - `Document.embeds` -- `<embed>` (and `<object>` ???)
+   - `Document.embeds` — `<embed>` (and `<object>` ???)
    - `Document.scripts`
 
 1. Page Visibility
@@ -751,11 +751,11 @@
      - Timers such as `setTimeout()` are throttled in background/inactive tabs to help improve performance
      - Tabs running code that's using real-time network connections (WebSockets and WebRTC) go unthrottled
      - IndexedDB processes are also left unthrottled in order to avoid timeouts
-   - `Document.hidden: boolean` Read only -- indicating if the page is hidden from view. This may mean the page is in a background tab or that the browser is minimized
+   - `Document.hidden: boolean` Read only — indicating if the page is hidden from view. This may mean the page is in a background tab or that the browser is minimized
    - `Document.visibilityState: VisibilityState`
-     - `'visible'` -- The page content may be at least partially visible. In practice this means that the page is the foreground tab of a non-minimized window
-     - `'hidden'` -- The page content is not visible to the user. In practice this means that the document is either a background tab or part of a minimized window, or the OS screen lock is active
-     - `'prerender'` -- The page content is being prerendered and is not visible to the user (considered hidden for purposes of document.hidden). The document may start in this state, but will never transition to it from another value. Note: browser support is optional
+     - `'visible'` — The page content may be at least partially visible. In practice this means that the page is the foreground tab of a non-minimized window
+     - `'hidden'` — The page content is not visible to the user. In practice this means that the document is either a background tab or part of a minimized window, or the OS screen lock is active
+     - `'prerender'` — The page content is being prerendered and is not visible to the user (considered hidden for purposes of document.hidden). The document may start in this state, but will never transition to it from another value. Note: browser support is optional
    - `visibilitychange` event
      - interface: `Event`
      - `bubbles`: `true`
@@ -1206,23 +1206,23 @@ The HTML5 specification, on the other hand, contains a large amount of JavaScrip
 1. Changes to HTMLDocument
    - `document.readyState` returns
      - `loading` — The document is loading
-     - `interactive` -- The document has finished loading and the document has been parsed but sub-resources such as images, stylesheets and frames are still loading
+     - `interactive` — The document has finished loading and the document has been parsed but sub-resources such as images, stylesheets and frames are still loading
        - IE10 and earlier have quirks
      - `complete` — The document is completely loaded
        - The state indicates that the `load` event is about to fire
      - When the value of this property changes a `readystatechange` event fires on the `document` object
      - Before this property was widely available, you would need to add an `onload` event handler to set a flag indicating that the document was loaded
 
-1. Compatibility Mode -- `document.compatMode`
+1. Compatibility Mode — `document.compatMode`
    - when in standards mode, `document.compatMode` is equal to `"CSS1Compat"`
    - when in quirks mode, `document.compatMode` is `"BackCompat"`
 
-1. The head Property -- `document.head`
+1. The head Property — `document.head`
    ```javascript
    var head = document.head || document.getElementsByTagName("head")[0];
    ```
 
-1. Character Set Properties -- `document.characterSet`
+1. Character Set Properties — `document.characterSet`
    - By default, this value is `"UTF-16"`
    - may be changed by using `<meta>` elements or response headers
    - can be directly set
@@ -1309,7 +1309,7 @@ The HTML5 specification, on the other hand, contains a large amount of JavaScrip
      - `5` — Force IE5 (quirks mode)
    - without the tag: By default, the browser uses the doctype to determine if the document mode should be the best available standards mode or quirks mode
 
-1. Markup Insertion -- `HTMLElement.outerText`: widely supported
+1. Markup Insertion — `HTMLElement.outerText`: widely supported
    - As a getter, it returns the same value as `Node.innerText`
    - As a setter, it removes the current node and replaces it with the given text
 
@@ -1419,7 +1419,7 @@ See before DOM Level 1.
        - Simply removing the property allows the default value to be used
      - `setProperty(propertyName, value, priority)` — Sets the given property to the given value with a priority (either `"important"` or an empty string)
 
-1. Computed Styles -- `window.getComputedStyle(elt: Element, pseudoElt?: string): CSSStyleDeclaration` (read only)
+1. Computed Styles — `window.getComputedStyle(elt: Element, pseudoElt?: string): CSSStyleDeclaration` (read only)
    - also contains the styles that have cascaded
    - elt: for which to get the computed style
    - pseudoElt: A string specifying the pseudo-element to match. Must be omitted (or `null`) for regular elements
@@ -1550,7 +1550,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
        - This property can be set to change the scroll position of the element
        - If set to a value greater than the maximum available, settles to maximum
 
-1. Determining Element Dimensions -- `Element.getBoundingClientRect(): ClientRect | DOMRect`
+1. Determining Element Dimensions — `Element.getBoundingClientRect(): ClientRect | DOMRect`
    - IE and Edge return a non-standard `ClientRect` object ([MSDN: ClientRect](http://msdn.microsoft.com/en-us/library/hh826029(VS.85).aspx)) which does not have the `x` and `y` properties found in standard `DOMRect` objects
    - `DOMRect` inherits properties from its parent, `DOMRectReadOnly.` The difference is that they are not read-only anymore
      - [properties](https://developer.mozilla.org/en-US/docs/Web/API/DOMRect)
@@ -1832,7 +1832,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
        - `capture`: A `Boolean`
        - `once`: A `Boolean`. If true, the `listener` would be automatically removed when invoked
        - `passive`: A `Boolean` which, if `true`, indicates that the function specified by `listener` will never call `preventDefault()`. If a passive `listener` does call `preventDefault()`, the user agent will do nothing other than generate a console warning
-   - `EventTarget.removeEventListener(): void` -- same arguments
+   - `EventTarget.removeEventListener(): void` — same arguments
      - no `once` property if `AddEventListenerOptions` used
      - Event handlers added via `addEventListener()` can be removed only by using `removeEventListener()` and passing in the same arguments
        - which means anonymous functions added cannot be removed
@@ -1861,19 +1861,19 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      once all event handlers have been executed, the `event` object is destroyed
    - constructor: `Event(typeArg: DOMString, eventInitDict?: EventInit)`
    - properties: read only
-     - `Event.bubbles` Read only -- A Boolean indicating whether the event bubbles up through the DOM or not
-     - `Event.cancelable` Read only -- A Boolean indicating whether the event is cancelable.
-     - `Event.currentTarget` Read only -- A reference to the currently registered target for the event. This is the object to which the event is currently slated to be sent; it's possible this has been changed along the way through retargeting.
-     - `Event.defaultPrevented` Read only -- Indicates whether or not `event.preventDefault()` has been called on the event.
-     - `Event.eventPhase` Read only -- Indicates which phase of the event flow is being processed.
+     - `Event.bubbles` Read only — A Boolean indicating whether the event bubbles up through the DOM or not
+     - `Event.cancelable` Read only — A Boolean indicating whether the event is cancelable.
+     - `Event.currentTarget` Read only — A reference to the currently registered target for the event. This is the object to which the event is currently slated to be sent; it's possible this has been changed along the way through retargeting.
+     - `Event.defaultPrevented` Read only — Indicates whether or not `event.preventDefault()` has been called on the event.
+     - `Event.eventPhase` Read only — Indicates which phase of the event flow is being processed.
        - `Event.NONE` 0
        - `Event.CAPTURING_PHASE` 1
        - `Event.AT_TARGET` 2
        - `Event.BUBBLING_PHASE` 3
-     - `Event.target` Read only -- A reference to the target to which the event was originally dispatched.
-     - `Event.timeStamp` Read only -- The time at which the event was created (in milliseconds). By specification, this value is time since epoch, but in reality browsers' definitions vary; in addition, work is underway to change this to be a `DOMHighResTimeStamp` instead.
-     - `Event.type` Read only -- The name of the event (case-insensitive).
-     - `Event.isTrusted` Read only -- Indicates whether or not the event was initiated by the browser (after a user click for instance) or by a script
+     - `Event.target` Read only — A reference to the target to which the event was originally dispatched.
+     - `Event.timeStamp` Read only — The time at which the event was created (in milliseconds). By specification, this value is time since epoch, but in reality browsers' definitions vary; in addition, work is underway to change this to be a `DOMHighResTimeStamp` instead.
+     - `Event.type` Read only — The name of the event (case-insensitive).
+     - `Event.isTrusted` Read only — Indicates whether or not the event was initiated by the browser (after a user click for instance) or by a script
    - methods
      - `Event.composedPath()`, (non-standard) `Event.deepPath()`
      - `Event.preventDefault()`
@@ -1958,10 +1958,10 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 
 1. Focus Events
    - work in concert with the `document.hasFocus()` and `document.activeElement`
-   - `blur` -- An element has lost focus (does not bubble)
-   - `focus` -- An element has received focus (does not bubble)
-   - `focusin` -- An element is about to receive focus (bubbles)
-   - `focusout` -- An element is about to lose focus (bubbles)
+   - `blur` — An element has lost focus (does not bubble)
+   - `focus` — An element has received focus (does not bubble)
+   - `focusin` — An element is about to receive focus (bubbles)
+   - `focusout` — An element is about to lose focus (bubbles)
    - order
      1. `focusout` fires on the element losing focus
      1. `focusin` fires on the element receiving focus
@@ -1974,23 +1974,23 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - constructor: `MouseEvent(typeArg: DOMString, eventInitDict?: MouseEventInit)`
    - inherits: `UIEvent`
    - coordinate properties
-     - `MouseEvent.clientX` Read only -- The X coordinate of the mouse pointer in local (DOM content) coordinates
+     - `MouseEvent.clientX` Read only — The X coordinate of the mouse pointer in local (DOM content) coordinates
        - experimental alias: `MouseEvent.x`
-     - `MouseEvent.clientY` Read only -- The Y coordinate of the mouse pointer in local (DOM content) coordinates
+     - `MouseEvent.clientY` Read only — The Y coordinate of the mouse pointer in local (DOM content) coordinates
        - experimental alias: `MouseEvent.y`
-     - `MouseEvent.pageX` Read only -- The X coordinate of the mouse pointer relative to the whole document
-     - `MouseEvent.pageY` Read only -- The Y coordinate of the mouse pointer relative to the whole document
-     - `MouseEvent.screenX` Read only -- The X coordinate of the mouse pointer in global (screen) coordinates
-     - `MouseEvent.screenY` Read only -- The Y coordinate of the mouse pointer in global (screen) coordinates
-     - `MouseEvent.offsetX` Read only -- The X coordinate of the mouse pointer relative to the position of the padding edge of the target node
-     - `MouseEvent.offsetY` Read only -- The Y coordinate of the mouse pointer relative to the position of the padding edge of the target node
+     - `MouseEvent.pageX` Read only — The X coordinate of the mouse pointer relative to the whole document
+     - `MouseEvent.pageY` Read only — The Y coordinate of the mouse pointer relative to the whole document
+     - `MouseEvent.screenX` Read only — The X coordinate of the mouse pointer in global (screen) coordinates
+     - `MouseEvent.screenY` Read only — The Y coordinate of the mouse pointer in global (screen) coordinates
+     - `MouseEvent.offsetX` Read only — The X coordinate of the mouse pointer relative to the position of the padding edge of the target node
+     - `MouseEvent.offsetY` Read only — The Y coordinate of the mouse pointer relative to the position of the padding edge of the target node
    - modifier key properties: return a Boolean indicating whether the key was down
      - `MouseEvent.altKey` Read only
      - `MouseEvent.ctrlKey` Read only
      - `MouseEvent.shiftKey` Read only
      - `MouseEvent.metaKey` Read only: ⌘ or ⊞
        - not IE8 and earlier
-   - related element property -- `MouseEvent.relatedTarget` read only
+   - related element property — `MouseEvent.relatedTarget` read only
      - next `EventTarget` for the below, or `null`
      - `mouseenter`
      - `mouseleave`
@@ -2021,10 +2021,10 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - do not confuse with scroll event
      - do not rely on delta properties to get the content's scrolling direction
    - properties
-     - `WheelEvent.deltaX` Read only -- Returns a double representing the horizontal scroll amount
-     - `WheelEvent.deltaY` Read only -- Returns a double representing the vertical scroll amount
-     - `WheelEvent.deltaZ` Read only -- Returns a double representing the scroll amount for the z-axis
-     - `WheelEvent.deltaMode` Read only -- Returns an unsigned long representing the unit of the delta values scroll amount. Permitted values are:
+     - `WheelEvent.deltaX` Read only — Returns a double representing the horizontal scroll amount
+     - `WheelEvent.deltaY` Read only — Returns a double representing the vertical scroll amount
+     - `WheelEvent.deltaZ` Read only — Returns a double representing the scroll amount for the z-axis
+     - `WheelEvent.deltaMode` Read only — Returns an unsigned long representing the unit of the delta values scroll amount. Permitted values are:
        - `DOM_DELTA_PIXEL` `0x00` The delta values are specified in pixels.
        - `DOM_DELTA_LINE` `0x01` The delta values are specified in lines.
        - `DOM_DELTA_PAGE` `0x02` The delta values are specified in pages.
@@ -2146,9 +2146,9 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
        - For `compositionend` events, this is the string as committed to the editor
 
 1. Text Composition Events
-   - `compositionstart` -- The composition of a passage of text is prepared (similar to `keydown` for a keyboard input, but works with other inputs such as speech recognition)
-   - `compositionupdate` -- A character is added to a passage of text being composed
-   - `compositionend` -- The composition of a passage of text has been completed or canceled
+   - `compositionstart` — The composition of a passage of text is prepared (similar to `keydown` for a keyboard input, but works with other inputs such as speech recognition)
+   - `compositionupdate` — A character is added to a passage of text being composed
+   - `compositionend` — The composition of a passage of text has been completed or canceled
 
 #### Session History Events
 
@@ -2162,18 +2162,18 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
        - Indicates if the document is loading from a cache
 
 1. Session History Events
-   - `pagehide` -- A session history entry is being traversed from
+   - `pagehide` — A session history entry is being traversed from
      - fires immediately before the `unload` event
-   - `pageshow` -- A session history entry is being traversed to
+   - `pageshow` — A session history entry is being traversed to
      - On a newly loaded page, `pageshow` fires after the `load` event
-   - `popstate` (`PopStateEvent` interface) -- A session history entry is being navigated to (in certain cases)
+   - `popstate` (`PopStateEvent` interface) — A session history entry is being navigated to (in certain cases)
 
 1. `hashchange` event
    - the fragment identifier (`#`) of the URL has changed
    - interface: `HashChangeEvent`
      - properties
-       - `HashChangeEvent.newURL` Read only -- The new URL to which the window is navigating
-       - `HashChangeEvent.oldURL` Read only -- The previous URL from which the window was navigated
+       - `HashChangeEvent.newURL` Read only — The new URL to which the window is navigating
+       - `HashChangeEvent.oldURL` Read only — The previous URL from which the window was navigated
 
 #### Sensor Events
 
@@ -2182,10 +2182,10 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - interface: `DeviceOrientationEvent`
    - constructor: `DeviceOrientationEvent(typeArg: DOMString, eventInitDict?: DeviceOrientationEventInit)`
    - properties
-     - `DeviceOrientationEvent.absolute` Read only -- A boolean that indicates whether or not the device is providing orientation data absolutely
-     - `DeviceOrientationEvent.alpha` Read only -- A number representing the motion of the device around the z axis, express in degrees with values ranging from 0 to 360
-     - `DeviceOrientationEvent.beta` Read only -- A number representing the motion of the device around the x axis, express in degrees with values ranging from -180 to 180. This represents a front to back motion of the device
-     - `DeviceOrientationEvent.gamma` Read only -- A number representing the motion of the device around the y axis, express in degrees with values ranging from -90 to 90. This represents a left to right motion of the device
+     - `DeviceOrientationEvent.absolute` Read only — A boolean that indicates whether or not the device is providing orientation data absolutely
+     - `DeviceOrientationEvent.alpha` Read only — A number representing the motion of the device around the z axis, express in degrees with values ranging from 0 to 360
+     - `DeviceOrientationEvent.beta` Read only — A number representing the motion of the device around the x axis, express in degrees with values ranging from -180 to 180. This represents a front to back motion of the device
+     - `DeviceOrientationEvent.gamma` Read only — A number representing the motion of the device around the y axis, express in degrees with values ranging from -90 to 90. This represents a left to right motion of the device
 
 1. `devicemotion` event: experimental WD
    - fired at a regular interval and indicates the amount of physical force of acceleration the device is receiving at that time
@@ -2193,10 +2193,10 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - interface: `DeviceMotionEvent`
    - properties
      - If the hardware isn't capable of providing this information, this property returns `null`
-     - `DeviceMotionEvent.acceleration` Read only -- An object with properties `x`, `y` and `z` giving the acceleration of the device on the three axis X, Y and Z. Acceleration is expressed in m/s^2^
-     - `DeviceMotionEvent.accelerationIncludingGravity` Read only -- An object with properties `x`, `y` and `z` giving the acceleration of the device on the three axis X, Y and Z with the effect of gravity. Acceleration is expressed in m/s^2^
-     - `DeviceMotionEvent.rotationRate` Read only -- An object with properties `alpha`, `beta` and `gamma` giving the rate of change of the device's orientation on the three orientation axis alpha, beta and gamma. Rotation rate is expressed in degrees per seconds
-     - `DeviceMotionEvent.interval` Read only -- A number representing the interval of time, in milliseconds, at which data is obtained from the device
+     - `DeviceMotionEvent.acceleration` Read only — An object with properties `x`, `y` and `z` giving the acceleration of the device on the three axis X, Y and Z. Acceleration is expressed in m/s^2^
+     - `DeviceMotionEvent.accelerationIncludingGravity` Read only — An object with properties `x`, `y` and `z` giving the acceleration of the device on the three axis X, Y and Z with the effect of gravity. Acceleration is expressed in m/s^2^
+     - `DeviceMotionEvent.rotationRate` Read only — An object with properties `alpha`, `beta` and `gamma` giving the rate of change of the device's orientation on the three orientation axis alpha, beta and gamma. Rotation rate is expressed in degrees per seconds
+     - `DeviceMotionEvent.interval` Read only — A number representing the interval of time, in milliseconds, at which data is obtained from the device
 
 #### Touch Events
 
@@ -2235,19 +2235,19 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - constructor: `Touch(TouchInitDict: TouchInit)`
    - inherits: no parent
    - properties
-     - `Touch.identifier` Read only -- Returns a unique identifier for this Touch object. A given touch point (say, by a finger) will have the same identifier for the duration of its movement around the surface. This lets you ensure that you're tracking the same touch all the time
-     - `Touch.screenX` Read only -- Returns the X coordinate of the touch point relative to the left edge of the screen
-     - `Touch.screenY` Read only -- Returns the Y coordinate of the touch point relative to the top edge of the screen
-     - `Touch.clientX` Read only -- Returns the X coordinate of the touch point relative to the left edge of the browser viewport, not including any scroll offset
-     - `Touch.clientY` Read only -- Returns the Y coordinate of the touch point relative to the top edge of the browser viewport, not including any scroll offset
-     - `Touch.pageX` Read only -- Returns the X coordinate of the touch point relative to the left edge of the document. Unlike clientX, this value includes the horizontal scroll offset, if any
-     - `Touch.pageY` Read only -- Returns the Y coordinate of the touch point relative to the top of the document. Unlike clientY, this value includes the vertical scroll offset, if any
-     - `Touch.target` Read only -- Returns the Element on which the touch point started when it was first placed on the surface, even if the touch point has since moved outside the interactive area of that element or even been removed from the document
+     - `Touch.identifier` Read only — Returns a unique identifier for this Touch object. A given touch point (say, by a finger) will have the same identifier for the duration of its movement around the surface. This lets you ensure that you're tracking the same touch all the time
+     - `Touch.screenX` Read only — Returns the X coordinate of the touch point relative to the left edge of the screen
+     - `Touch.screenY` Read only — Returns the Y coordinate of the touch point relative to the top edge of the screen
+     - `Touch.clientX` Read only — Returns the X coordinate of the touch point relative to the left edge of the browser viewport, not including any scroll offset
+     - `Touch.clientY` Read only — Returns the Y coordinate of the touch point relative to the top edge of the browser viewport, not including any scroll offset
+     - `Touch.pageX` Read only — Returns the X coordinate of the touch point relative to the left edge of the document. Unlike clientX, this value includes the horizontal scroll offset, if any
+     - `Touch.pageY` Read only — Returns the Y coordinate of the touch point relative to the top of the document. Unlike clientY, this value includes the vertical scroll offset, if any
+     - `Touch.target` Read only — Returns the Element on which the touch point started when it was first placed on the surface, even if the touch point has since moved outside the interactive area of that element or even been removed from the document
    - experimental touch area properties
-     - `Touch.radiusX` Read only -- Returns the X radius of the ellipse that most closely circumscribes the area of contact with the screen. The value is in pixels of the same scale as `screenX`
-     - `Touch.radiusY` Read only -- Returns the Y radius of the ellipse that most closely circumscribes the area of contact with the screen. The value is in pixels of the same scale as `screenY`
-     - `Touch.rotationAngle` Read only -- Returns the angle (in degrees) that the ellipse described by radiusX and radiusY must be rotated, clockwise, to most accurately cover the area of contact between the user and the surface
-     - `Touch.force` Read only -- Returns the amount of pressure being applied to the surface by the user, as a float between 0.0 (no pressure) and 1.0 (maximum pressure)
+     - `Touch.radiusX` Read only — Returns the X radius of the ellipse that most closely circumscribes the area of contact with the screen. The value is in pixels of the same scale as `screenX`
+     - `Touch.radiusY` Read only — Returns the Y radius of the ellipse that most closely circumscribes the area of contact with the screen. The value is in pixels of the same scale as `screenY`
+     - `Touch.rotationAngle` Read only — Returns the angle (in degrees) that the ellipse described by radiusX and radiusY must be rotated, clockwise, to most accurately cover the area of contact between the user and the surface
+     - `Touch.force` Read only — Returns the amount of pressure being applied to the surface by the user, as a float between 0.0 (no pressure) and 1.0 (maximum pressure)
 
 #### Clipboard Events
 
@@ -2274,9 +2274,9 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
        - if format is not specified, the data associated with all types is removed
 
 1. `ClipboardEvent` types
-   - `cut` -- The selection has been cut and copied to the clipboard
-   - `copy` -- The selection has been copied to the clipboard
-   - `paste` -- The item from the clipboard has been pasted
+   - `cut` — The selection has been cut and copied to the clipboard
+   - `copy` — The selection has been copied to the clipboard
+   - `paste` — The item from the clipboard has been pasted
 
 #### Message Events
 
@@ -2294,22 +2294,22 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - constructor: `MessageEvent(type: "message", eventInitDict?: MessageEventInit)`
    - inherits: `Event`
    - properties
-     - `MessageEvent.data` Read only -- The data sent by the message emitter
-     - `MessageEvent.origin` Read only -- A `USVString` representing the origin of the message emitter
+     - `MessageEvent.data` Read only — The data sent by the message emitter
+     - `MessageEvent.origin` Read only — A `USVString` representing the origin of the message emitter
        - For IDN host names only, the value of the origin property is not consistently Unicode or punycode
        - for greatest compatibility check for both the IDN and punycode values when using this property if you expect messages from IDN sites
-     - `MessageEvent.lastEventId` Read only -- A `DOMString` representing a unique ID for the event
-     - `MessageEvent.source` Read only -- A `MessageEventSource` (which can be a `WindowProxy`, `MessagePort`, or `ServiceWorker` object) representing the message emitter
-     - `MessageEvent.ports` Read only -- An array of `MessagePort` objects representing the ports associated with the channel the message is being sent through (where appropriate, e.g. in channel messaging or when sending a message to a shared worker)
+     - `MessageEvent.lastEventId` Read only — A `DOMString` representing a unique ID for the event
+     - `MessageEvent.source` Read only — A `MessageEventSource` (which can be a `WindowProxy`, `MessagePort`, or `ServiceWorker` object) representing the message emitter
+     - `MessageEvent.ports` Read only — An array of `MessagePort` objects representing the ports associated with the channel the message is being sent through (where appropriate, e.g. in channel messaging or when sending a message to a shared worker)
    - event types
-     - `message` -- fired when message received
+     - `message` — fired when message received
        - important to verify `origin` and `source`
 
 #### Drag & Drop Events
 
 1. `DragEvent`
    - HTML5 specification, not IE9 and before
-   - HTML `draggable` attribute -- indicates whether the element can be dragged
+   - HTML `draggable` attribute — indicates whether the element can be dragged
      - enumerated attribute, can set to `true`, `false`, `auto`
    - make HTML element draggable
      - By default, only text selections, images, and links can be dragged
@@ -2320,19 +2320,19 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - constructor: `DragEvent(type: string, eventInitDict?: DragEventInit)`
      - it is not possible to create a useful `DataTransfer` object from script, since `DataTransfer` objects have a processing and security model that is coordinated by the browser during drag-and-drops
    - properties
-     - `DragEvent.dataTransfer: DataTransfer` Read only -- The data that is transferred during a drag and drop interaction.
+     - `DragEvent.dataTransfer: DataTransfer` Read only — The data that is transferred during a drag and drop interaction.
 
 1. Event Types of `DragEvent`
-   - `dragstart` -- The user starts dragging an element or text selection
-   - `drag` -- An element or text selection is being dragged (fired continuously with different intervals according to cursor movement)
-   - `dragend` -- A drag operation is being ended (by releasing a mouse button or hitting the escape key)
-   - `dragenter` -- A dragged element or text selection enters a valid drop target
+   - `dragstart` — The user starts dragging an element or text selection
+   - `drag` — An element or text selection is being dragged (fired continuously with different intervals according to cursor movement)
+   - `dragend` — A drag operation is being ended (by releasing a mouse button or hitting the escape key)
+   - `dragenter` — A dragged element or text selection enters a valid drop target
      - Default Action: Reject immediate user selection as potential target element
      - buggy, people use `dragover` to allow the drop
-   - `dragover` -- An element or text selection is being dragged over a valid drop target (fired continuously with different intervals according to cursor movement)
+   - `dragover` — An element or text selection is being dragged over a valid drop target (fired continuously with different intervals according to cursor movement)
      - `preventDefault()` to allow drop when not allowed
-   - `dragleave` -- A dragged element or text selection leaves a valid drop target
-   - `drop` -- An element is dropped on a valid drop target
+   - `dragleave` — A dragged element or text selection leaves a valid drop target
+   - `drop` — An element is dropped on a valid drop target
      - last chance to retrieve `DataTransfer`???
 
 1. `DataTransfer`
@@ -2340,40 +2340,40 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - only in the handler for `dragstart`, associated `DataTransfer` is writeable
    - constructor: `DataTransfer()`
    - properties
-     - `DataTransfer.dropEffect` -- Gets the type of drag-and-drop operation currently selected or sets the operation to a new type. Only affect cursor style. The value must be
-       - `copy` -- A copy of the source item is made at the new location
-       - `move` -- An item is moved to a new location
-       - `link` -- A link is established to the source at the new location
-       - `none` -- The item may not be dropped
+     - `DataTransfer.dropEffect` — Gets the type of drag-and-drop operation currently selected or sets the operation to a new type. Only affect cursor style. The value must be
+       - `copy` — A copy of the source item is made at the new location
+       - `move` — An item is moved to a new location
+       - `link` — A link is established to the source at the new location
+       - `none` — The item may not be dropped
        - Assigning any other value to dropEffect has no effect and the old value is retained
        - example: [MDN](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/dropEffect#Example)
-     - `DataTransfer.effectAllowed` -- Provides all of the types of operations that are possible. Must be one of
-       - `none` -- The item may not be dropped
-       - `copy` -- A copy of the source item may be made at the new location
-       - `copyLink` -- A copy or link operation is permitted
-       - `copyMove` -- A copy or move operation is permitted
-       - `link` -- A link may be established to the source at the new location
-       - `linkMove` -- A link or move operation is permitted
-       - `move` -- An item may be moved to a new location
-       - `all` -- All operations are permitted
-       - `uninitialized` -- The default value when the effect has not been set, equivalent to `all`
+     - `DataTransfer.effectAllowed` — Provides all of the types of operations that are possible. Must be one of
+       - `none` — The item may not be dropped
+       - `copy` — A copy of the source item may be made at the new location
+       - `copyLink` — A copy or link operation is permitted
+       - `copyMove` — A copy or move operation is permitted
+       - `link` — A link may be established to the source at the new location
+       - `linkMove` — A link or move operation is permitted
+       - `move` — An item may be moved to a new location
+       - `all` — All operations are permitted
+       - `uninitialized` — The default value when the effect has not been set, equivalent to `all`
        - Assigning any other value to `effectAllowed` has no effect and the old value is retained
        - IE will change the value to be lowercased
-     - `DataTransfer.files` -- Contains a `FileList` of all the local files available on the data transfer
+     - `DataTransfer.files` — Contains a `FileList` of all the local files available on the data transfer
        - If the drag operation doesn't involve dragging files, this property is an empty list
        - [`File`](https://developer.mozilla.org/en-US/docs/DOM/File)
-     - `DataTransfer.items` Read only -- Gives a `DataTransferItemList` object which is a list of all of the drag data
-     - `DataTransfer.types` Read only -- An array of strings giving the formats that were set in the `dragstart` event
+     - `DataTransfer.items` Read only — Gives a `DataTransferItemList` object which is a list of all of the drag data
+     - `DataTransfer.types` Read only — An array of strings giving the formats that were set in the `dragstart` event
        - MIME type such as `text/plain` and `text/uri-list`, or less common legacy type as `"text"`, `"Text"`, `"url"`
    - methods
-     - `DataTransfer.clearData(format?: string)` -- Remove the data associated with a given type
+     - `DataTransfer.clearData(format?: string)` — Remove the data associated with a given type
        - If the type is `''` or not specified, the data associated with all types is removed
        - If data for the specified type does not exist, or the data transfer contains no data, this method will have no effect
-     - `DataTransfer.getData(format: string): string` -- Retrieves the data for a given type, or an empty string if data for that type does not exist or the data transfer contains no data
-     - `DataTransfer.setData(format: string, data: string)` -- Set the data for a given type
+     - `DataTransfer.getData(format: string): string` — Retrieves the data for a given type, or an empty string if data for that type does not exist or the data transfer contains no data
+     - `DataTransfer.setData(format: string, data: string)` — Set the data for a given type
        - If data for the type does not exist, it is added at the end, such that the last item in the types list will be the new format
        - If data for the type already exists, the existing data is replaced in the same position
-     - `DataTransfer.setDragImage(image: Element, x: number, y: number)` -- Set the image to be used for dragging if a custom one is desired
+     - `DataTransfer.setDragImage(image: Element, x: number, y: number)` — Set the image to be used for dragging if a custom one is desired
        - img: `HTMLImageElement`, `HTMLCanvasElement` etc.
        - x, y: offsets where the image should appear relative to the mouse pointer
 
@@ -2384,21 +2384,21 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `DataTransferItemList.length`
    - methods
      - `DataTransferItemList.add(data: file): DataTransferItem`  
-       `DataTransferItemList.add(data: string, type: string): DataTransferItem` -- Adds an item (either a File object or a string) to the drag item list and returns a DataTransferItem object for the new item
-     - `DataTransferItemList.remove(index: number): void` -- Removes the drag item from the list at the given index
-     - `DataTransferItemList.clear(): void` -- Removes all of the drag items from the list
-     - `DataTransferItemList.item(index)` -- Getter that returns a DataTransferItem at the given index
+       `DataTransferItemList.add(data: string, type: string): DataTransferItem` — Adds an item (either a File object or a string) to the drag item list and returns a DataTransferItem object for the new item
+     - `DataTransferItemList.remove(index: number): void` — Removes the drag item from the list at the given index
+     - `DataTransferItemList.clear(): void` — Removes all of the drag items from the list
+     - `DataTransferItemList.item(index)` — Getter that returns a DataTransferItem at the given index
        - also bracket notation
 
 1. `DataTransferItem`
    - no IE and Safari support
    - represents one drag data item
    - properties
-     - `DataTransferItem.kind` Read only -- The kind of drag data item, string or file
-     - `DataTransferItem.type` Read only -- The drag data item's type, typically a MIME type
+     - `DataTransferItem.kind` Read only — The kind of drag data item, string or file
+     - `DataTransferItem.type` Read only — The drag data item's type, typically a MIME type
    - methods
-     - `DataTransferItem.getAsFile(): File` -- Returns the File object associated with the drag data item (or null if the drag item is not a file)
-     - `DataTransferItem.getAsString(callback: (data: string) => void): void` -- Invokes the specified callback with the drag data item string as its argument
+     - `DataTransferItem.getAsFile(): File` — Returns the File object associated with the drag data item (or null if the drag item is not a file)
+     - `DataTransferItem.getAsString(callback: (data: string) => void): void` — Invokes the specified callback with the drag data item string as its argument
 
 ### Memory and Performance
 
@@ -2439,9 +2439,9 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
       - Unlike "native" events, which are fired by the DOM and invoke event handlers asynchronously via the [event loop](https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/), dispatchEvent invokes event handlers synchronously
 
 1. `HTMLElement` method
-   - `HTMLElement.blur()` -- Removes keyboard focus from the currently focused element
-   - `HTMLElement.click()` -- Sends a mouse click event to the element
-   - `HTMLElement.focus()` -- Makes the element the current keyboard focus
+   - `HTMLElement.blur()` — Removes keyboard focus from the currently focused element
+   - `HTMLElement.click()` — Sends a mouse click event to the element
+   - `HTMLElement.focus()` — Makes the element the current keyboard focus
 
 1. The old-fashioned way
    ```javascript
@@ -2499,31 +2499,31 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - can overwrite native properties if they share the same name
      - eg a form with an input named action will have its `action` property return that input instead of the form's `action` HTML attribute
    - properties
-     - `HTMLFormElement.elements` Read only -- A `HTMLFormControlsCollection` holding all form controls belonging to this form element
+     - `HTMLFormElement.elements` Read only — A `HTMLFormControlsCollection` holding all form controls belonging to this form element
        - `<button>` `<fieldset>` `<object>` `<output>` `<select>` `<textarea>`
        - `<input>` (with the exception that any whose `type` is `"image"` are omitted for historical reasons)
-     - `HTMLFormElement.length` Read only -- A `long` reflecting the number of controls in the form
-     - `HTMLFormElement.name` -- A `DOMString` reflecting the value of the form's `name` HTML attribute, containing the name of the form
-     - `HTMLFormElement.method` -- A `DOMString` reflecting the value of the form's `method` HTML attribute, indicating the HTTP method used to submit the form. Only specified values can be set
-     - `HTMLFormElement.target` -- A DOMString reflecting the value of the form's `target` HTML attribute, indicating where to display the results received from submitting the form
-     - `HTMLFormElement.action` -- A DOMString reflecting the value of the form's `action` HTML attribute, containing the URI of a program that processes the information submitted by the form
-     - `HTMLFormElement.encoding` or `HTMLFormElement.enctype` -- A `DOMString` reflecting the value of the form's `enctype` HTML attribute, indicating the type of content that is used to transmit the form to the server. Only specified values can be set. The two properties are synonyms
-     - `HTMLFormElement.acceptCharset` -- A `DOMString` reflecting the value of the form's accept-charset HTML attribute, representing the character encoding that the server accepts
-     - `HTMLFormElement.autocomplete` -- A `DOMString` reflecting the value of the form's `autocomplete` HTML attribute, indicating whether the controls in this form can have their values automatically populated by the browser
-     - `HTMLFormElement.noValidate` -- A Boolean reflecting the value of the form's `novalidate` HTML attribute, indicating whether the form should not be validated
+     - `HTMLFormElement.length` Read only — A `long` reflecting the number of controls in the form
+     - `HTMLFormElement.name` — A `DOMString` reflecting the value of the form's `name` HTML attribute, containing the name of the form
+     - `HTMLFormElement.method` — A `DOMString` reflecting the value of the form's `method` HTML attribute, indicating the HTTP method used to submit the form. Only specified values can be set
+     - `HTMLFormElement.target` — A DOMString reflecting the value of the form's `target` HTML attribute, indicating where to display the results received from submitting the form
+     - `HTMLFormElement.action` — A DOMString reflecting the value of the form's `action` HTML attribute, containing the URI of a program that processes the information submitted by the form
+     - `HTMLFormElement.encoding` or `HTMLFormElement.enctype` — A `DOMString` reflecting the value of the form's `enctype` HTML attribute, indicating the type of content that is used to transmit the form to the server. Only specified values can be set. The two properties are synonyms
+     - `HTMLFormElement.acceptCharset` — A `DOMString` reflecting the value of the form's accept-charset HTML attribute, representing the character encoding that the server accepts
+     - `HTMLFormElement.autocomplete` — A `DOMString` reflecting the value of the form's `autocomplete` HTML attribute, indicating whether the controls in this form can have their values automatically populated by the browser
+     - `HTMLFormElement.noValidate` — A Boolean reflecting the value of the form's `novalidate` HTML attribute, indicating whether the form should not be validated
    - methods
-     - `HTMLFormElement.submit()` -- Submits the form to the server
+     - `HTMLFormElement.submit()` — Submits the form to the server
        - no `submit` event is raised (in particular, the form's `onsubmit` event handler is not run)
        - and constraint validation is not triggered either
        - If a form control (such as a submit button) has a name or id of submit it will mask the form's submit method
-     - `HTMLFormElement.reset()` -- Resets the form to its initial state
+     - `HTMLFormElement.reset()` — Resets the form to its initial state
        - does not reset other attributes in the input, such as `disabled`
        - fires the `reset` event
-     - `HTMLFormElement.checkValidity()` -- Returns `true` if the element's child controls are subject to constraint validation and satisfy those constraints; returns `false` if some controls do not satisfy their constraint
+     - `HTMLFormElement.checkValidity()` — Returns `true` if the element's child controls are subject to constraint validation and satisfy those constraints; returns `false` if some controls do not satisfy their constraint
        - Fires an event named `invalid` at any control that does not satisfy its constraint
          - such controls are considered invalid if the event is not canceled
        - It is up to the programmer to decide how to respond to `false
-     - `HTMLFormElement.reportValidity()` -- Returns `true` if the element's child controls satisfy their validation constraint
+     - `HTMLFormElement.reportValidity()` — Returns `true` if the element's child controls satisfy their validation constraint
        - When `false` is returned, cancelable `invalid` events are fired for each invalid child and validation problems are reported to the use
 
 1. Submitting Forms
@@ -2568,14 +2568,14 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 
 1. Form-Field Properties
    - `<fieldset>`
-      - `disabled` -- If this Boolean attribute is set, all form controls that are descendants of the `<fieldset>`, are disabled
+      - `disabled` — If this Boolean attribute is set, all form controls that are descendants of the `<fieldset>`, are disabled
          - meaning they are not editable and won't be submitted along with the `<form>`
          - They won't receive any browsing events, like mouse clicks or focus-related events
          - By default browsers display such controls grayed out. Note that form elements inside a descendant `<legend>` element won't be disabled
-      - `form` HTML5 -- This attribute takes the value of the `id` attribute of a `<form>` element you want the `<fieldset>` to be part of
+      - `form` HTML5 — This attribute takes the value of the `id` attribute of a `<form>` element you want the `<fieldset>` to be part of
         - even if it is not inside the form
         - If not specified, its default value is the `id` of the nearest `<form>` element it is a descendant of
-      - `name` HTML5 -- The name associated with the group
+      - `name` HTML5 — The name associated with the group
    - common form-field properties
      - `<button>` `<object>` `<output>` `<select>` `<textarea>` `<input>` (only with certain field types)
      - `disabled`
@@ -2585,7 +2585,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `value` — The value of the field that will be submitted to the server. For file-input fields, this property is read only and simply contains the file’s path on the computer.
      - `autofocus` HTML5
 
-1. Common Form-Field Events -- `change`
+1. Common Form-Field Events — `change`
    - fired for `<input>`, `<select>`, and `<textarea>` elements when a change to the element's value is committed by the user
      - When the element is activated (by clicking or using the keyboard) for `<input type="radio">` and `<input type="checkbox">`
      - When the user commits the change explicitly (e.g. by selecting a value from a `<select>`'s dropdown with a mouse click, by selecting a date from a date picker for `<input type="date">`, by selecting a file in the file picker for `<input type="file">`, etc.)
@@ -2621,9 +2621,9 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      document.selection.createRange().text; // IE8 and earlier
      ```
      - alternative: `Window.getSelection(): Selection`
-     - `HTMLInputElement.selectionStart` -- unsigned long: Returns / Sets the beginning index of the selected text
+     - `HTMLInputElement.selectionStart` — unsigned long: Returns / Sets the beginning index of the selected text
        - When there's no selection, this returns the offset of the character immediately following the current text input cursor position
-     - `HTMLInputElement.selectionEnd` -- unsigned long: Returns / Sets the end index of the selected text
+     - `HTMLInputElement.selectionEnd` — unsigned long: Returns / Sets the end index of the selected text
        - When there's no selection, this returns the offset of the character immediately following the current text input cursor position
 
 1. Blocking Characters
@@ -2656,7 +2656,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - the ability for browsers to validate data in forms before submitting to the server
      - This capability enables basic validation even when JavaScript is unavailable or fails to load
 
-1. Required Fields -- `required` attribute
+1. Required Fields — `required` attribute
    ```html
    <input type="text" name="username" required>
    ```
@@ -2708,7 +2708,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
        - `ValidityState.customError` Read only
          - Is a Boolean indicating the element's custom validity message has been set to a non-empty string by calling the element's `setCustomValidity()` method
 
-1. Disabling Validation -- `novalidate` attribute
+1. Disabling Validation — `novalidate` attribute
      ```html
      <form method="post" action="signup.php" novalidate >
      <!-- form elements here -->
@@ -2731,28 +2731,28 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - interface: `HTMLSelectElement`
    - properties
      - see before
-     - `HTMLSelectElement.options` Read only -- An `HTMLOptionsCollection` representing the set of `<option>` elements contained by this element
-     - `HTMLSelectElement.selectedOptions` Read only -- An `HTMLCollection` representing the set of `<option>` elements that are selected
-     - `HTMLSelectElement.selectedIndex` -- A `long` reflecting the index of the first selected `<option>` element. The value -1 indicates no element is selected
+     - `HTMLSelectElement.options` Read only — An `HTMLOptionsCollection` representing the set of `<option>` elements contained by this element
+     - `HTMLSelectElement.selectedOptions` Read only — An `HTMLCollection` representing the set of `<option>` elements that are selected
+     - `HTMLSelectElement.selectedIndex` — A `long` reflecting the index of the first selected `<option>` element. The value -1 indicates no element is selected
        - set it removes all selections and selects just the single option specified
    - methods
      - see before
      - bracket notation
-       - `HTMLSelectElement.add(element, before): void` -- Adds an element to the collection of option elements for this select element
+       - `HTMLSelectElement.add(element, before): void` — Adds an element to the collection of option elements for this select element
          - `element: HTMLOptionElement | HTMLOptGroupElement`
          - `before?: number | HTMLElement`
            - where should be inserted before
            - `null` or `undefined` appends to the end
-       - `HTMLSelectElement.item()` -- Gets an item from the options collection for this `<select>` element
-       - `HTMLSelectElement.namedItem()` -- Gets the item in the options collection with the specified name. The name string can match either the `id` or the `name` attribute of an option node
-       - `HTMLSelectElement.remove(index: number): void` -- Removes the element at the specified index from the options collection for this select element
+       - `HTMLSelectElement.item()` — Gets an item from the options collection for this `<select>` element
+       - `HTMLSelectElement.namedItem()` — Gets the item in the options collection with the specified name. The name string can match either the `id` or the `name` attribute of an option node
+       - `HTMLSelectElement.remove(index: number): void` — Removes the element at the specified index from the options collection for this select element
 
 1. `HTMLOptionElement`
    - properties
-     - `selected` Boolean -- Indicates whether the option is currently selected.
-     - `defaultSelected` Boolean -- Contains the initial value of the selected HTML attribute, indicating whether the option is selected by default or not
-     - `index` Read only long -- The position of the option within the list of `options` it belongs to, in tree-order. If the option is not part of a list of options, like when it is part of the `<datalist>` element, the value is 0
-     - `text` DOMString -- Contains the text content of the element
+     - `selected` Boolean — Indicates whether the option is currently selected.
+     - `defaultSelected` Boolean — Contains the initial value of the selected HTML attribute, indicating whether the option is selected by default or not
+     - `index` Read only long — The position of the option within the list of `options` it belongs to, in tree-order. If the option is not part of a list of options, like when it is part of the `<datalist>` element, the value is 0
+     - `text` DOMString — Contains the text content of the element
    - constructor: `Option(text?: string, value?: string, defaultSelected?: boolean, selected?: boolean)`
 
 ### Rich Text Editing
@@ -2795,7 +2795,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 1. `HTMLCanvasElement` methods
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement#Methods)
    - `HTMLCanvasElement.getContext(contextId, contextAttributes)`: see after
-   - `HTMLCanvasElement.captureStream()` experimental -- Returns a `CanvasCaptureMediaStream` that is a real-time video capture of the surface of the canvas
+   - `HTMLCanvasElement.captureStream()` experimental — Returns a `CanvasCaptureMediaStream` that is a real-time video capture of the surface of the canvas
    - `HTMLCanvasElement.toDataURL(type?: string, args?: number): string`
      - type: MIME type image format, defaults to `image/png`
      - args: between 0 and 1 indicating image quality if the requested type is `image/jpeg` or `image/webp`, defaults to 0.92
@@ -2851,40 +2851,40 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - uses line style
    - values
      - defaults to `#000`
-     - `color` -- A `DOMString` parsed as CSS `<color>` value
-     - `gradient` -- A `CanvasGradient` object (a linear or radial gradient)
-     - `pattern` -- A `CanvasPattern` object (a repetitive image)
+     - `color` — A `DOMString` parsed as CSS `<color>` value
+     - `gradient` — A `CanvasGradient` object (a linear or radial gradient)
+     - `pattern` — A `CanvasPattern` object (a repetitive image)
    - Line styles
-     - `CanvasRenderingContext2D.lineWidth` -- Width of lines. Default 1.0
+     - `CanvasRenderingContext2D.lineWidth` — Width of lines. Default 1.0
        - zero, negative, `Infinity` and `NaN` values are ignored
-     - `CanvasRenderingContext2D.lineCap` -- Type of endings on the end of lines. Possible values: `butt` (default), `round`, `square`  
+     - `CanvasRenderingContext2D.lineCap` — Type of endings on the end of lines. Possible values: `butt` (default), `round`, `square`  
        ![][p6]
 
        [p6]: images/6.png
-     - `CanvasRenderingContext2D.lineJoin` -- Defines the type of corners where two lines meet. Possible values: round, bevel, miter (default)  
+     - `CanvasRenderingContext2D.lineJoin` — Defines the type of corners where two lines meet. Possible values: round, bevel, miter (default)  
        ![][p7]
 
        [p7]: images/7.png
-     - `CanvasRenderingContext2D.miterLimit` -- Miter limit ratio. Default 10
+     - `CanvasRenderingContext2D.miterLimit` — Miter limit ratio. Default 10
        - zero, negative, `Infinity` and `NaN` values are ignored
        - how far the outside connection point can be placed from the inside connection point
        - If two lines exceed this value, a bevel join gets drawn instead
-     - `CanvasRenderingContext2D.setLineDash(segments: number[]): void` -- Sets the current line dash pattern
+     - `CanvasRenderingContext2D.setLineDash(segments: number[]): void` — Sets the current line dash pattern
        - segments: length of line and gap
        - If the number of elements in the array is odd, the elements of the array get copied and concatenated: `[5, 15, 25]` will become `[5, 15, 25, 5, 15, 25]`
-     - `CanvasRenderingContext2D.getLineDash(): number[]` -- Returns the current line dash pattern array containing an even number of non-negative numbers
-     - `CanvasRenderingContext2D.lineDashOffset` -- Specifies where to start a dash array on a line
+     - `CanvasRenderingContext2D.getLineDash(): number[]` — Returns the current line dash pattern array containing an even number of non-negative numbers
+     - `CanvasRenderingContext2D.lineDashOffset` — Specifies where to start a dash array on a line
        - defaults to 0.0
 
 1. Drawing rectangles: only primitive shape
    - arguments: `(x: number, y: number, w: number, h: number): void`
      - (x, y) staring point coordination
      - w: width, h: hight
-   - `CanvasRenderingContext2D.clearRect()` -- Sets all pixels in the rectangle defined by starting point (x, y) and size (width, height) to transparent black, erasing any previously drawn content
-   - `CanvasRenderingContext2D.fillRect()` -- Draws a filled rectangle at (x, y) position whose size is determined by width and height
-   - `CanvasRenderingContext2D.strokeRect()` -- Paints a rectangle which has a starting point at (x, y) and has a w width and an h height onto the canvas, using the current stroke style
+   - `CanvasRenderingContext2D.clearRect()` — Sets all pixels in the rectangle defined by starting point (x, y) and size (width, height) to transparent black, erasing any previously drawn content
+   - `CanvasRenderingContext2D.fillRect()` — Draws a filled rectangle at (x, y) position whose size is determined by width and height
+   - `CanvasRenderingContext2D.strokeRect()` — Paints a rectangle which has a starting point at (x, y) and has a w width and an h height onto the canvas, using the current stroke style
 
-1. Trailing effect -- change `clearRect()` into
+1. Trailing effect — change `clearRect()` into
    ```javascript
    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
    ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -2901,28 +2901,28 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - methods
        - methods below
        - no `beginPath()` method, but `Path2D.addPath(path: Path2D, transform?: SVGMatrix): void`
-   - `CanvasRenderingContext2D.beginPath(): void` -- Starts a new path by emptying the list of sub-paths. Call this method when you want to create a new path
-   - `CanvasRenderingContext2D.moveTo(x: number, y: number): void` -- Moves the starting point of a new sub-path to the (x, y) coordinates
-   - `CanvasRenderingContext2D.lineTo(x: number, y: number): void` -- Connects the last point in the sub-path to the x, y coordinates with a straight line
-   - `CanvasRenderingContext2D.closePath(): void` -- Causes the point of the pen to move back to the start of the current sub-path. It tries to draw a straight line from the current point to the start. If the shape has already been closed or has only one point, this function does nothing
-   - `CanvasRenderingContext2D.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y): void` -- Adds a cubic Bézier curve to the path
+   - `CanvasRenderingContext2D.beginPath(): void` — Starts a new path by emptying the list of sub-paths. Call this method when you want to create a new path
+   - `CanvasRenderingContext2D.moveTo(x: number, y: number): void` — Moves the starting point of a new sub-path to the (x, y) coordinates
+   - `CanvasRenderingContext2D.lineTo(x: number, y: number): void` — Connects the last point in the sub-path to the x, y coordinates with a straight line
+   - `CanvasRenderingContext2D.closePath(): void` — Causes the point of the pen to move back to the start of the current sub-path. It tries to draw a straight line from the current point to the start. If the shape has already been closed or has only one point, this function does nothing
+   - `CanvasRenderingContext2D.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y): void` — Adds a cubic Bézier curve to the path
      - The first two points are control points and the third one is the end point
      - The starting point is the last point in the current path
      - degenerate to quadratic when no start point
-   - `CanvasRenderingContext2D.quadraticCurveTo(cpx, cpy, x, y)` -- Adds a quadratic Bézier curve to the current path
+   - `CanvasRenderingContext2D.quadraticCurveTo(cpx, cpy, x, y)` — Adds a quadratic Bézier curve to the current path
    - `CanvasRenderingContext2D.arc(x, y, radius, startAngle, endAngle, anticlockwise?: boolean): void`
      - Adds an arc to the path which is centered at (x, y) position with radius r starting at startAngle and ending at endAngle going in the given direction (defaulting to clockwise)
      - angles in radian
-   - `CanvasRenderingContext2D.arcTo()` -- Adds an arc to the path with the given control points and radius, connected to the previous point by a straight line  
+   - `CanvasRenderingContext2D.arcTo()` — Adds an arc to the path with the given control points and radius, connected to the previous point by a straight line  
      ![][p8]
 
      [p8]: images/8.png
      - never elliptical. Typical use could be making a rounded corner
      - The arc is tangential
-   - `CanvasRenderingContext2D.ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise?: boolean): void` -- Adds an ellipse to the path which is centered at (x, y) position with the radii radiusX and radiusY starting at startAngle and ending at endAngle going in the given direction
+   - `CanvasRenderingContext2D.ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise?: boolean): void` — Adds an ellipse to the path which is centered at (x, y) position with the radii radiusX and radiusY starting at startAngle and ending at endAngle going in the given direction
      - no IE support
      - angles in radian
-   - `CanvasRenderingContext2D.rect(x, y, w, h): void` -- creates a path for a rectangle at position (x, y) with a size that is determined by width and height
+   - `CanvasRenderingContext2D.rect(x, y, w, h): void` — creates a path for a rectangle at position (x, y) with a size that is determined by width and height
      - and the sub-path is marked as closed
 
 1. Drawing paths
@@ -2931,62 +2931,62 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
        - `"nonzero"`: The non-zero winding rule, which is the default rule.
        - `"evenodd"`: The even-odd winding rule.
        - [wikipedia](https://en.wikipedia.org/wiki/Nonzero-rule)
-   - `CanvasRenderingContext2D.stroke(path?: Path2D): void` -- Strokes the sub-paths with the current stroke style
+   - `CanvasRenderingContext2D.stroke(path?: Path2D): void` — Strokes the sub-paths with the current stroke style
    - `CanvasRenderingContext2D.drawFocusIfNeeded(element: Element): void`,  
-     `CanvasRenderingContext2D.drawFocusIfNeeded(path: Path2D, element)` -- If a given element is focused, this method draws a focus ring around the current path
+     `CanvasRenderingContext2D.drawFocusIfNeeded(path: Path2D, element)` — If a given element is focused, this method draws a focus ring around the current path
    - `CanvasRenderingContext2D.scrollPathIntoView(fillRule?)`  
-     `CanvasRenderingContext2D.scrollPathIntoView(path, fillRule?)` -- Scrolls the current path or a given path into the view.
+     `CanvasRenderingContext2D.scrollPathIntoView(path, fillRule?)` — Scrolls the current path or a given path into the view.
      - experimental
-   - `CanvasRenderingContext2D.clip()` -- Creates a clipping path from the current sub-paths
+   - `CanvasRenderingContext2D.clip()` — Creates a clipping path from the current sub-paths
      - Everything drawn after `clip()` is called appears inside the clipping path only
      - Everything that falls outside of this path won't get drawn on the canvas
    - `CanvasRenderingContext2D.isPointInPath(x, y, fillRule?): boolean`  
-     `CanvasRenderingContext2D.isPointInPath(path, x, y, fillRule?)` -- Reports whether or not the specified point is contained in the current path
+     `CanvasRenderingContext2D.isPointInPath(path, x, y, fillRule?)` — Reports whether or not the specified point is contained in the current path
    - `CanvasRenderingContext2D.isPointInStroke(x, y): boolean`  
-     `CanvasRenderingContext2D.isPointInStroke(path, x, y)` -- Reports whether or not the specified point is inside the area contained by the stroking of a path
+     `CanvasRenderingContext2D.isPointInStroke(path, x, y)` — Reports whether or not the specified point is inside the area contained by the stroking of a path
      - stroke has width
      - no IE support
 
 #### Text Drawing
 
 1. Text styles
-   - `CanvasRenderingContext2D.font` -- Font setting. CSS `font` value. Default value `10px sans-serif`
-   - `CanvasRenderingContext2D.textAlign` -- Text alignment setting. Possible values: `start` (default), `end`, `left`, `right` or `center`
-   - `CanvasRenderingContext2D.textBaseline` -- Baseline alignment setting. Possible values: `top`, `hanging`, `middle`, `alphabetic` (default), `ideographic`, `bottom`  
+   - `CanvasRenderingContext2D.font` — Font setting. CSS `font` value. Default value `10px sans-serif`
+   - `CanvasRenderingContext2D.textAlign` — Text alignment setting. Possible values: `start` (default), `end`, `left`, `right` or `center`
+   - `CanvasRenderingContext2D.textBaseline` — Baseline alignment setting. Possible values: `top`, `hanging`, `middle`, `alphabetic` (default), `ideographic`, `bottom`  
      ![][p9]
 
      [p9]: images/9.png
-   - `CanvasRenderingContext2D.direction` -- text direction. Possible values: `ltr`, `rtl`, `inherit` (default)
+   - `CanvasRenderingContext2D.direction` — text direction. Possible values: `ltr`, `rtl`, `inherit` (default)
 
 1. Drawing text
-   - `CanvasRenderingContext2D.fillText(text, x, y, maxWidth?): void` -- Draws (fills) a given text at the given (x,y) position
+   - `CanvasRenderingContext2D.fillText(text, x, y, maxWidth?): void` — Draws (fills) a given text at the given (x,y) position
      - maxWidth  
        ![][p10]
 
        [p10]: images/10.png
        - when `undefined`, no limit
        - else the user agent will adjust the kerning
-   - `CanvasRenderingContext2D.strokeText(text, x, y, maxWidth?): void` -- Draws (strokes) a given text at the given (x, y) position
-   - `CanvasRenderingContext2D.measureText(text)` -- Returns a `TextMetrics` object
+   - `CanvasRenderingContext2D.strokeText(text, x, y, maxWidth?): void` — Draws (strokes) a given text at the given (x, y) position
+   - `CanvasRenderingContext2D.measureText(text)` — Returns a `TextMetrics` object
      - properties of `TextMetrics` on [MDN](https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics#Properties)
-     - `TextMetrics.width` Read only -- Is a double giving the calculated width of a segment of inline text in CSS pixels. It takes into account the current font of the context
+     - `TextMetrics.width` Read only — Is a double giving the calculated width of a segment of inline text in CSS pixels. It takes into account the current font of the context
 
 #### Transformation and State
 
 1. Transformations
-   - `CanvasRenderingContext2D.rotate(angle)` -- Adds a rotation to the transformation matrix. The angle argument represents a clockwise rotation angle and is expressed in radians
-   - `CanvasRenderingContext2D.scale(x, y)` -- Adds a scaling transformation to the canvas units by x horizontally and by y vertically
-   - `CanvasRenderingContext2D.translate(x, y)` -- Adds a translation transformation by moving the canvas and its origin x horizontally and y vertically on the grid
+   - `CanvasRenderingContext2D.rotate(angle)` — Adds a rotation to the transformation matrix. The angle argument represents a clockwise rotation angle and is expressed in radians
+   - `CanvasRenderingContext2D.scale(x, y)` — Adds a scaling transformation to the canvas units by x horizontally and by y vertically
+   - `CanvasRenderingContext2D.translate(x, y)` — Adds a translation transformation by moving the canvas and its origin x horizontally and y vertically on the grid
      - not affected by previous translate
-   - `CanvasRenderingContext2D.transform(m11, m12, m21, m22, dx, dy)` -- Multiplies the current transformation matrix with the matrix described by its arguments
+   - `CanvasRenderingContext2D.transform(m11, m12, m21, m22, dx, dy)` — Multiplies the current transformation matrix with the matrix described by its arguments
 
      $$
      {\displaystyle {\begin{bmatrix}x'\\y'\\1\end{bmatrix}}={\begin{bmatrix}m_{11}&m_{21}&d_{x}\\m_{12}&m_{22}&d_{y}\\0&0&1\end{bmatrix}}{\begin{bmatrix}x\\y\\1\end{bmatrix}}}
      $$
 
      scaling, skewing and moving, respectively
-   - `CanvasRenderingContext2D.setTransform(m11, m12, m21, m22, dx, dy)` -- Resets the current transform to the identity matrix, and then invokes the `transform()` method with the same arguments
-   - `CanvasRenderingContext2D.resetTransform(): void` -- Resets the current transform by the identity matrix
+   - `CanvasRenderingContext2D.setTransform(m11, m12, m21, m22, dx, dy)` — Resets the current transform to the identity matrix, and then invokes the `transform()` method with the same arguments
+   - `CanvasRenderingContext2D.resetTransform(): void` — Resets the current transform by the identity matrix
      - equivalent to `setTransform(1, 0, 0, 1, 0, 0);`
 
 1. The canvas state
@@ -2995,9 +2995,9 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - The current clipping region
      - The current dash list
      - The current values of the following attributes: `strokeStyle`, `fillStyle`, `globalAlpha`, `lineWidth`, `lineCap`, `lineJoin`, `miterLimit`, `lineDashOffset`, `shadowOffsetX`, `shadowOffsetY`, `shadowBlur`, `shadowColor`, `globalCompositeOperation`, `font`, `textAlign`, `textBaseline`, `direction`, `imageSmoothingEnabled`
-   - `CanvasRenderingContext2D.save(): void` -- Saves the current drawing style state using a stack so you can revert any change you make to it using `restore()`
-   - `CanvasRenderingContext2D.restore(): void` -- Restores the drawing style state to the last element on the 'state stack' saved by `save()`
-   - `CanvasRenderingContext2D.canvas` -- A read-only back-reference to the `HTMLCanvasElement`. Might be `null` if it is not associated with a `<canvas>` element
+   - `CanvasRenderingContext2D.save(): void` — Saves the current drawing style state using a stack so you can revert any change you make to it using `restore()`
+   - `CanvasRenderingContext2D.restore(): void` — Restores the drawing style state to the last element on the 'state stack' saved by `save()`
+   - `CanvasRenderingContext2D.canvas` — A read-only back-reference to the `HTMLCanvasElement`. Might be `null` if it is not associated with a `<canvas>` element
 
 #### Image Drawing
 
@@ -3019,21 +3019,21 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      [p11]: images/11.png
 
 1. Image smoothing
-   - `CanvasRenderingContext2D.imageSmoothingEnabled` -- Image smoothing mode; if disabled, images will not be smoothed if scaled, defaults to `true`
+   - `CanvasRenderingContext2D.imageSmoothingEnabled` — Image smoothing mode; if disabled, images will not be smoothed if scaled, defaults to `true`
 
 1. Pixel manipulation
    - `ImageData`
      - represents the underlying pixel data of an area of a `<canvas>` element
      - constructor: `ImageData(width, height)`, `ImageData(array, width, height)`
      - properties
-       - `ImageData.data` Read only -- Is a `Uint8ClampedArray` representing a one-dimensional array containing the data in the RGBA order, with integer values between 0 and 255 (included)
-       - `ImageData.height` Read only -- Is an unsigned long representing the actual height, in pixels, of the `ImageData`
-       - `ImageData.width` Read only -- Is an unsigned long representing the actual width, in pixels, of the `ImageData`
+       - `ImageData.data` Read only — Is a `Uint8ClampedArray` representing a one-dimensional array containing the data in the RGBA order, with integer values between 0 and 255 (included)
+       - `ImageData.height` Read only — Is an unsigned long representing the actual height, in pixels, of the `ImageData`
+       - `ImageData.width` Read only — Is an unsigned long representing the actual width, in pixels, of the `ImageData`
    - `CanvasRenderingContext2D.createImageData(w, h): ImageData`  
-     `CanvasRenderingContext2D.createImageData(imagedata)` -- Creates a new, **blank** `ImageData` object with the specified dimensions. All of the pixels in the new object are transparent black
-   - `CanvasRenderingContext2D.getImageData(sx, sy, sw, sh)` -- Returns an `ImageData` object representing the underlying pixel data for the area of the canvas denoted by the rectangle which starts at (sx, sy) and has an sw width and sh height
+     `CanvasRenderingContext2D.createImageData(imagedata)` — Creates a new, **blank** `ImageData` object with the specified dimensions. All of the pixels in the new object are transparent black
+   - `CanvasRenderingContext2D.getImageData(sx, sy, sw, sh)` — Returns an `ImageData` object representing the underlying pixel data for the area of the canvas denoted by the rectangle which starts at (sx, sy) and has an sw width and sh height
      - not affected by the canvas transformation matrix
-   - `CanvasRenderingContext2D.putImageData(imagedata, dx, dy, dirtyX?, dirtyY?, dirtyWidth?, dirtyHeight): void` -- Paints data from the given `ImageData` object onto the bitmap. If a dirty rectangle is provided, only the pixels from that rectangle are painted (slice of imagedata)
+   - `CanvasRenderingContext2D.putImageData(imagedata, dx, dy, dirtyX?, dirtyY?, dirtyWidth?, dirtyHeight): void` — Paints data from the given `ImageData` object onto the bitmap. If a dirty rectangle is provided, only the pixels from that rectangle are painted (slice of imagedata)
 
 1. in coordination
    - `self.createImageBitmap(image, options?): Promise<ImageBitmap>` +1 overload
@@ -3044,27 +3044,27 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 #### Shadows, Gradients and Patterns
 
 1. shadows
-   - `CanvasRenderingContext2D.shadowBlur` -- Specifies the level blurring effect. Default 0
-   - `CanvasRenderingContext2D.shadowColor` -- Color of the shadow. Default fully-transparent black
-   - `CanvasRenderingContext2D.shadowOffsetX` -- Horizontal distance the shadow will be offset. Default 0
-   - `CanvasRenderingContext2D.shadowOffsetY` -- Vertical distance the shadow will be offset. Default 0
+   - `CanvasRenderingContext2D.shadowBlur` — Specifies the level blurring effect. Default 0
+   - `CanvasRenderingContext2D.shadowColor` — Color of the shadow. Default fully-transparent black
+   - `CanvasRenderingContext2D.shadowOffsetX` — Horizontal distance the shadow will be offset. Default 0
+   - `CanvasRenderingContext2D.shadowOffsetY` — Vertical distance the shadow will be offset. Default 0
 
 1. Gradients
    - `CanvasRenderingContext2D.createLinearGradient(x0, y0, x1, y1): CanvasGradient`
      - Creates a linear gradient along the line given by the coordinates represented by the parameters
-   - `CanvasGradient.addColorStop(offset, color): void` -- Adds a new stop, defined by an offset and a color, to the gradient. If the offset is not between 0 and 1 an `INDEX_SIZE_ERR` is raised, if the color can't be parsed as a CSS `<color>`, a `SYNTAX_ERR` is raised.
-   - `CanvasRenderingContext2D.createRadialGradient(x0, y0, r0, x1, y1, r1): CanvasGradient` -- Creates a radial gradient given by the coordinates of the two circles represented by the parameters
+   - `CanvasGradient.addColorStop(offset, color): void` — Adds a new stop, defined by an offset and a color, to the gradient. If the offset is not between 0 and 1 an `INDEX_SIZE_ERR` is raised, if the color can't be parsed as a CSS `<color>`, a `SYNTAX_ERR` is raised.
+   - `CanvasRenderingContext2D.createRadialGradient(x0, y0, r0, x1, y1, r1): CanvasGradient` — Creates a radial gradient given by the coordinates of the two circles represented by the parameters
      - start circle and end circle respectively
 
 1. Patterns
-   - `CanvasRenderingContext2D.createPattern(image, repetition): CanvasPattern` -- Creates a pattern using the specified image (a `CanvasImageSource`). It repeats the source in the directions specified by the repetition argument
+   - `CanvasRenderingContext2D.createPattern(image, repetition): CanvasPattern` — Creates a pattern using the specified image (a `CanvasImageSource`). It repeats the source in the directions specified by the repetition argument
      - make fully loaded before use: `onload`
      - repetition
        - `"repeat"`, `''`, `null` (both directions)
        - `"repeat-x"` (horizontal only)
        - `"repeat-y"` (vertical only)
        - `"no-repeat"` (neither)
-   - `CanvasPattern` -- An opaque object describing a pattern
+   - `CanvasPattern` — An opaque object describing a pattern
      - can be used as a `fillStyle` or `strokeStyle`
      - method: `CanvasPattern.setTransform(matrix): void`
        - matrix: `SVGMatrix`???
@@ -3072,8 +3072,8 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 #### Composition and Optimization
 
 1. Compositing
-   - `CanvasRenderingContext2D.globalAlpha` -- Alpha value that is applied to shapes and images before they are composited onto the canvas. Default 1.0 (opaque)
-   - `CanvasRenderingContext2D.globalCompositeOperation` -- With globalAlpha applied this sets how shapes and images are drawn onto the existing bitmap
+   - `CanvasRenderingContext2D.globalAlpha` — Alpha value that is applied to shapes and images before they are composited onto the canvas. Default 1.0 (opaque)
+   - `CanvasRenderingContext2D.globalCompositeOperation` — With globalAlpha applied this sets how shapes and images are drawn onto the existing bitmap
      - types on [MDN](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation#Types)
      - `source-over` (default) — New drawing is drawn on top of the existing image
      - `source-in` — New drawing is drawn only where it overlaps the existing image. Everything else becomes transparent
@@ -3150,60 +3150,60 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement#Properties)
      - HTML attributes
        - `HTMLMediaElement.defaultMuted`
-     - `HTMLMediaElement.currentSrc` Read only -- Returns a `DOMString` with the absolute URL of the chosen media resource
+     - `HTMLMediaElement.currentSrc` Read only — Returns a `DOMString` with the absolute URL of the chosen media resource
        - The value is an empty string if the `networkState` property is EMPTY
-     - `HTMLMediaElement.currentTime` -- Is a double indicating the current playback time in seconds. Setting this value seeks the media to the new time
-     - `HTMLMediaElement.defaultPlaybackRate` -- Is a double indicating the default playback rate for the media
-     - `HTMLMediaElement.playbackRate` -- Is a double that indicates the rate at which the media is being played back
+     - `HTMLMediaElement.currentTime` — Is a double indicating the current playback time in seconds. Setting this value seeks the media to the new time
+     - `HTMLMediaElement.defaultPlaybackRate` — Is a double indicating the default playback rate for the media
+     - `HTMLMediaElement.playbackRate` — Is a double that indicates the rate at which the media is being played back
        - if negative, the media is played backwards??? (not widely supported)
        - The pitch of the audio is corrected by default and is the same for every speed
-     - `HTMLMediaElement.duration` Read only -- Returns a double indicating the length of the media in seconds
+     - `HTMLMediaElement.duration` Read only — Returns a double indicating the length of the media in seconds
        - or 0 if no media data is available
        - If the media data is available but the length is unknown, this value is `NaN`
        - If the media is streamed and has no predefined length, the value is `Inf`
-     - `HTMLMediaElement.ended` Read only -- Returns a Boolean that indicates whether the media element has finished playing
-     - `HTMLMediaElement.error` Read only -- Returns a `MediaError` object for the most recent error, or `null` if there has not been an error
+     - `HTMLMediaElement.ended` Read only — Returns a Boolean that indicates whether the media element has finished playing
+     - `HTMLMediaElement.error` Read only — Returns a `MediaError` object for the most recent error, or `null` if there has not been an error
        - [`MediaError`](https://developer.mozilla.org/en-US/docs/Web/API/MediaError)
        - `MediaError.code`, `MediaError.message`
-     - `HTMLMediaElement.networkState` Read only -- Returns a unsigned short (enumeration) indicating the current state of fetching the media over the network
+     - `HTMLMediaElement.networkState` Read only — Returns a unsigned short (enumeration) indicating the current state of fetching the media over the network
        - `HTMLMediaElement.NETWORK_EMPTY` 0 There is no data yet. Also, `readyState` is `HAVE_NOTHING`
        - `NETWORK_IDLE` 1 `HTMLMediaElement` is active and has selected a resource, but is not using the network
        - `NETWORK_LOADING` 2 The browser is downloading `HTMLMediaElement` data
        - `NETWORK_NO_SOURCE` 3 No `HTMLMediaElement` `src` found
-     - `HTMLMediaElement.paused` Read only -- Returns a Boolean that indicates whether the media element is paused
-     - `HTMLMediaElement.played` Read only -- Returns a `TimeRanges` object that contains the ranges of the media source that the browser has played, if any
-     - `HTMLMediaElement.readyState` Read only -- Returns a unsigned short (enumeration) indicating the readiness state of the media
+     - `HTMLMediaElement.paused` Read only — Returns a Boolean that indicates whether the media element is paused
+     - `HTMLMediaElement.played` Read only — Returns a `TimeRanges` object that contains the ranges of the media source that the browser has played, if any
+     - `HTMLMediaElement.readyState` Read only — Returns a unsigned short (enumeration) indicating the readiness state of the media
        - `HTMLMediaElement.HAVE_NOTHING` 0 No information is available about the media resource
        - `HAVE_METADATA` 1 Enough of the media resource has been retrieved that the metadata attributes are initialized. Seeking will no longer raise an exception
        - `HAVE_CURRENT_DATA` 2 Data is available for the current playback position, but not enough to actually play more than one frame
        - `HAVE_FUTURE_DATA` 3 Data for the current playback position as well as for at least a little bit of time into the future is available (in other words, at least two frames of video, for example)
        - `HAVE_ENOUGH_DATA` 4 Enough data is available—and the download rate is high enough—that the media can be played through to the end without interruption
-     - `HTMLMediaElement.seekable` Read only -- Returns a `TimeRanges` object that contains the time ranges that the user is able to seek to, if any
-     - `HTMLMediaElement.seeking` Read only -- Returns a Boolean that indicates whether the media is in the process of seeking to a new position
-     <!-- - `HTMLMediaElement.textTracks` Read only -- Returns the list of `TextTrack` objects contained in the element -->
-     - `HTMLMediaElement.volume` -- Is a double indicating the audio volume, from 0.0 (silent) to 1.0 (loudest)
+     - `HTMLMediaElement.seekable` Read only — Returns a `TimeRanges` object that contains the time ranges that the user is able to seek to, if any
+     - `HTMLMediaElement.seeking` Read only — Returns a Boolean that indicates whether the media is in the process of seeking to a new position
+     <!-- - `HTMLMediaElement.textTracks` Read only — Returns the list of `TextTrack` objects contained in the element -->
+     - `HTMLMediaElement.volume` — Is a double indicating the audio volume, from 0.0 (silent) to 1.0 (loudest)
    - methods
      - not complete
-     - `HTMLMediaElement.canPlayType(type: string): string` -- Determines whether the specified media type can be played back. possible return
+     - `HTMLMediaElement.canPlayType(type: string): string` — Determines whether the specified media type can be played back. possible return
        - `'probably'`: The specified media type appears to be playable
        - `'maybe'`: Cannot tell if the media type is playable without playing it
        - `''` (empty string): The specified media type definitely cannot be played
        - type: MIME type
-     - `HTMLMediaElement.pause()` -- Pauses the media playback
-     - `HTMLMediaElement.play(): Promise` -- Begins playback of the media
+     - `HTMLMediaElement.pause()` — Pauses the media playback
+     - `HTMLMediaElement.play(): Promise` — Begins playback of the media
        - return in modern browsers: A `Promise` which is `fulfilled` when playback has been started, or is `rejected` if for any reason playback cannot be started
 
 1. `HTMLVideoElement`
    - inherits: `HTMLMediaElement`
    - properties and methods
-     - `HTMLVideoElement.videoHeight` Read only -- Returns an unsigned long containing the intrinsic height of the resource in CSS pixels
-     - `HTMLVideoElement.videoWidth` Read only -- Returns an unsigned long containing the intrinsic width of the resource in CSS pixels
-     - `HTMLVideoElement.getVideoPlaybackQuality()` -- Returns a `VideoPlaybackQuality` objects that contains the current playback metrics
+     - `HTMLVideoElement.videoHeight` Read only — Returns an unsigned long containing the intrinsic height of the resource in CSS pixels
+     - `HTMLVideoElement.videoWidth` Read only — Returns an unsigned long containing the intrinsic width of the resource in CSS pixels
+     - `HTMLVideoElement.getVideoPlaybackQuality()` — Returns a `VideoPlaybackQuality` objects that contains the current playback metrics
    - properties of `VideoPlaybackQuality`
-     - `VideoPlaybackQuality.creationTime` Read only -- A `DOMHighResTimeStamp` containing the time in miliseconds since the start of the navigation and the creation of the object
-     - `VideoPlaybackQuality.totalVideoFrames` Read only -- An unsigned long giving the number of video frames created and dropped since the creation of the associated `HTMLVideoElement`
-     - `VideoPlaybackQuality.droppedVideoFrames` Read only -- An unsigned long giving the number of video frames dropped since the creation of the associated `HTMLVideoElement`
-     - `VideoPlaybackQuality.corruptedVideoFrames` Read only -- An unsigned long giving the number of video frames corrupted since the creation of the associated `HTMLVideoElement`. A corrupted frame may be created or dropped
+     - `VideoPlaybackQuality.creationTime` Read only — A `DOMHighResTimeStamp` containing the time in miliseconds since the start of the navigation and the creation of the object
+     - `VideoPlaybackQuality.totalVideoFrames` Read only — An unsigned long giving the number of video frames created and dropped since the creation of the associated `HTMLVideoElement`
+     - `VideoPlaybackQuality.droppedVideoFrames` Read only — An unsigned long giving the number of video frames dropped since the creation of the associated `HTMLVideoElement`
+     - `VideoPlaybackQuality.corruptedVideoFrames` Read only — An unsigned long giving the number of video frames corrupted since the creation of the associated `HTMLVideoElement`. A corrupted frame may be created or dropped
 
 1. `HTMLAudioElement`
    - inherits: `HTMLMediaElement`
@@ -3211,9 +3211,9 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 
 1. `TimeRanges`
    - used to represent a set of time ranges, primarily for the purpose of tracking which portions of media have been buffered when loading
-   - `TimeRanges.length` Read only -- Returns an unsigned long representing the number of time ranges represented by the time range object
-   - `TimeRanges.start(index: number): number` -- Returns the time for the start of the range with the specified index
-   - `TimeRanges.end(index: number): number` -- Returns the time for the end of the specified range
+   - `TimeRanges.length` Read only — Returns an unsigned long representing the number of time ranges represented by the time range object
+   - `TimeRanges.start(index: number): number` — Returns the time for the start of the range with the specified index
+   - `TimeRanges.end(index: number): number` — Returns the time for the end of the specified range
 
 1. Media Events
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Media_events)
@@ -3236,7 +3236,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - constructor: `DOMParser()`
    - method: `DOMParser.parseFromString(source: string, MIMEType: string): Document`
      - some MIMEType: `"application/xml"`, `"image/svg+xml"`, `"text/html"`
-   - Error handling -- does not throw an exception, but instead returns an error document:
+   - Error handling — does not throw an exception, but instead returns an error document:
      ```xml
      <parsererror xmlns="http://www.mozilla.org/newlayout/xml/parsererror.xml">
      (error description)
@@ -3282,27 +3282,27 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `XMLHttpRequestEventTarget.ontimeout`
      - `XMLHttpRequest.load` events also available on `XMLHttpRequest`
    - properties
-     - `XMLHttpRequest.readyState` Read only -- Returns an unsigned short, the state of the request
-       - `0` `XMLHttpRequest.UNSENT` -- Client has been created. `open()` not called yet
-       - `1` `OPENED` -- `open()` has been called
-       - `2` `HEADERS_RECEIVED` -- `send()` has been called, and headers and status are available
-       - `3` `LOADING` -- Downloading; `responseText` holds partial data
-       - `4` `DONE` -- The operation is complete
+     - `XMLHttpRequest.readyState` Read only — Returns an unsigned short, the state of the request
+       - `0` `XMLHttpRequest.UNSENT` — Client has been created. `open()` not called yet
+       - `1` `OPENED` — `open()` has been called
+       - `2` `HEADERS_RECEIVED` — `send()` has been called, and headers and status are available
+       - `3` `LOADING` — Downloading; `responseText` holds partial data
+       - `4` `DONE` — The operation is complete
        - different for IE
-     - `XMLHttpRequest.response` Read only -- Returns an `ArrayBuffer`, `Blob`, `Document`, JavaScript object, or a `DOMString`, depending on the value of `XMLHttpRequest.responseType`, contains the response entity body
-     - `XMLHttpRequest.responseText` Read only -- Returns a `DOMString` that contains the response to the request as text, or `null` if the request was unsuccessful or has not yet been sent
-     - `XMLHttpRequest.responseType` -- Is an enumerated value that defines the response type
+     - `XMLHttpRequest.response` Read only — Returns an `ArrayBuffer`, `Blob`, `Document`, JavaScript object, or a `DOMString`, depending on the value of `XMLHttpRequest.responseType`, contains the response entity body
+     - `XMLHttpRequest.responseText` Read only — Returns a `DOMString` that contains the response to the request as text, or `null` if the request was unsuccessful or has not yet been sent
+     - `XMLHttpRequest.responseType` — Is an enumerated value that defines the response type
        - allow modification, default value `"text"` is used if empty string
-       - `"arraybuffer"` -- The response is a JavaScript `ArrayBuffer` containing binary data
-       - `"blob"` -- The response is a `Blob` object containing the binary data
-       - `"document"` -- The response is an HTML `Document` or XML `XMLDocument`, as appropriate based on the MIME type of the received data
-       - `"json"` -- The response is a JavaScript object created by parsing the contents of received data as JSON
-       - `"text"` -- The response is text in a `DOMString` object
+       - `"arraybuffer"` — The response is a JavaScript `ArrayBuffer` containing binary data
+       - `"blob"` — The response is a `Blob` object containing the binary data
+       - `"document"` — The response is an HTML `Document` or XML `XMLDocument`, as appropriate based on the MIME type of the received data
+       - `"json"` — The response is a JavaScript object created by parsing the contents of received data as JSON
+       - `"text"` — The response is text in a `DOMString` object
        - cannot change the value of `responseType` in a synchronous `XMLHttpRequest` except when the request belongs to a `Worker`
        - Attempts to set the value of `responseType` to `"document"` are ignored in a `Worker`
-     - `XMLHttpRequest.responseURL` Read only -- Returns the serialized URL of the response or the empty string if the URL is `null`
-     - `XMLHttpRequest.responseXML` Read only  Not available to workers -- Returns a `Document` containing the response to the request, or `null` if the request was unsuccessful, has not yet been sent, or cannot be parsed as XML or HTML
-     - `XMLHttpRequest.status` Read only -- Returns an unsigned short with the [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) of the response of the request
+     - `XMLHttpRequest.responseURL` Read only — Returns the serialized URL of the response or the empty string if the URL is `null`
+     - `XMLHttpRequest.responseXML` Read only  Not available to workers — Returns a `Document` containing the response to the request, or `null` if the request was unsuccessful, has not yet been sent, or cannot be parsed as XML or HTML
+     - `XMLHttpRequest.status` Read only — Returns an unsigned short with the [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) of the response of the request
        - 0: not completed or error
        - 100-102: Information responses
        - 200-208, 216: successful responses
@@ -3310,38 +3310,38 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
        - 400-418, 421-426, 428, 429, 431, 451: client error responses
        - 500-508, 510, 511: server error responses
        - If the server response doesn't explicitly specify a status code, will assume the default value 200
-     - `XMLHttpRequest.statusText` Read only -- Returns a `DOMString` containing the response string returned by the HTTP server
+     - `XMLHttpRequest.statusText` Read only — Returns a `DOMString` containing the response string returned by the HTTP server
        - such as "OK", or "Not Found"
-     - `XMLHttpRequest.timeout` -- Is an unsigned long representing the number of milliseconds a request can take before automatically being terminated
+     - `XMLHttpRequest.timeout` — Is an unsigned long representing the number of milliseconds a request can take before automatically being terminated
        - may not use a timeout for synchronous requests with an owning window
        - defaults to 0, no timeout
-     - `XMLHttpRequest.upload` Read only -- Is an `XMLHttpRequestUpload` for setting event listeners, representing the upload process
+     - `XMLHttpRequest.upload` Read only — Is an `XMLHttpRequestUpload` for setting event listeners, representing the upload process
        - see Progress Events
-     - `XMLHttpRequest.withCredentials` -- Is a Boolean that indicates whether or not cross-site Access-Control requests should be made using credentials such as cookies or authorization headers
+     - `XMLHttpRequest.withCredentials` — Is a Boolean that indicates whether or not cross-site Access-Control requests should be made using credentials such as cookies or authorization headers
    - methods
      - `XMLHttpRequest.open(method, url): void`  
-       `XMLHttpRequest.open(method, url, async: boolean, username?: string, password?: string): void` -- Initializes a request
+       `XMLHttpRequest.open(method, url, async: boolean, username?: string, password?: string): void` — Initializes a request
        - Calling this method for an already active request (one for which `open()` has already been called) is the equivalent of calling `abort()`
        - method: [HTTP request method](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods), such as "GET", "POST", "PUT", "DELETE"
        - async: defaults to `true`, in fact, many browsers have deprecated synchronous XHR support on the main thread entirely. Synchronous requests are permitted in `Worker`
-     - `XMLHttpRequest.send(body?): void` -- Sends the request. If the request is asynchronous (which is the default), this method returns as soon as the request is sent and the result is delivered using events
+     - `XMLHttpRequest.send(body?): void` — Sends the request. If the request is asynchronous (which is the default), this method returns as soon as the request is sent and the result is delivered using events
        - If the request is synchronous, this method doesn't return until the response has arrived
        - body: defaults to `null` for `"GET"`, `"HEAD"`, for `"PUT"` it can be `Document`, `Blob`, `ArrayBuffer`, `ArrayBufferView`, `FormData`, `URLSearchParams`, `ReadableStream`, or `USVString`
-     - `XMLHttpRequest.setRequestHeader(name: string, value: string): void` -- Sets the value of an HTTP request header. You must call `setRequestHeader()` after `open(),` but before `send()`
+     - `XMLHttpRequest.setRequestHeader(name: string, value: string): void` — Sets the value of an HTTP request header. You must call `setRequestHeader()` after `open(),` but before `send()`
        - each call after the first call, the specified text is appended to the end of the existing header's content
        - If no `Accept` header has been set using this, an `Accept` header with the type `"*/*"` is sent with the request when `send()` is called
        - For security reasons, some headers can only be controlled by the user agent, see [MDN](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/setRequestHeader)
-     - `XMLHttpRequest.abort()` -- Aborts the request if it has already been sent
+     - `XMLHttpRequest.abort()` — Aborts the request if it has already been sent
        - When a request is aborted, its `readyState` is changed to `XMLHttpRequest.UNSENT` (0) and the request's `status` code is set to 0.
-     - `XMLHttpRequest.getAllResponseHeaders()` -- Returns all the response headers, separated by CRLF, as a string, or `null` if no response has been received
+     - `XMLHttpRequest.getAllResponseHeaders()` — Returns all the response headers, separated by CRLF, as a string, or `null` if no response has been received
        - If a network error happened, an empty string is returned
-     - `XMLHttpRequest.getResponseHeader(name: string): string` -- Returns the string containing the text of the specified header, or `null` if either the response has not yet been received or the header doesn't exist in the response
+     - `XMLHttpRequest.getResponseHeader(name: string): string` — Returns the string containing the text of the specified header, or `null` if either the response has not yet been received or the header doesn't exist in the response
        - If there are multiple response headers with the same name, then their values are returned as a single concatenated string, separated by a pair of comma and space
        - the header name is case-insensitive
        - [HTTP headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers)
        - By default, only the 6 simple response headers are exposed: Cache-Control, Content-Language, Content-Type, Expires, Last-Modified, Pragma
        - If you want clients to be able to access other headers, the server response have to list them using the Access-Control-Expose-Headers header
-     - `XMLHttpRequest.overrideMimeType()` -- Overrides the MIME type returned by the server
+     - `XMLHttpRequest.overrideMimeType()` — Overrides the MIME type returned by the server
        - This method must be called before calling `send()`
        - If the server doesn't provide a `Content-Type` header, `XMLHttpRequest` assumes that the MIME type is `"text/xml"`. If the content isn't valid XML, an "XML Parsing Error: not well-formed" error occurs
        - `XMLHttpRequest.responseType` in conjunction with `XMLHttpRequest.response` is preferred
@@ -3371,15 +3371,15 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - `for (var p of myFormData)` is equivalent to `for (var p of myFormData.entries())`
    - constructor: `FormData(form?: HTMLFormElement)`
    - methods
-     - `FormData.append(name, value, filename?: string): void` -- Appends a new value onto an existing key inside a FormData object, or adds the key if it does not already exist
-     - `FormData.delete(name): void` -- Deletes a key/value pair from a FormData object
-     - `FormData.entries(): IterableIterator<[string, FormDataEntryValue]>` -- Returns an `iterator` allowing to go through all key/value pairs contained in this object
-     - `FormData.get(name): FormDataEntryValue` -- Returns the first value associated with a given key from within a FormData object
-     - `FormData.getAll(name): FormDataEntryValue[]` -- Returns an array of all the values associated with a given key from within a FormData
-     - `FormData.has(name): boolean` -- Returns a boolean stating whether a FormData object contains a certain key/value pair
-     - `FormData.keys(): IterableIterator<string>` -- Returns an `iterator` allowing to go through all keys of the key/value pairs contained in this object
-     - `FormData.set(name, value, filename?: string): void` -- Sets a new value for an existing key inside a FormData object, or adds the key/value if it does not already exist
-     - `FormData.values(): IterableIterator<FormDataEntryValue>` -- Returns an `iterator` allowing to go through all values of the key/value pairs contained in this object
+     - `FormData.append(name, value, filename?: string): void` — Appends a new value onto an existing key inside a FormData object, or adds the key if it does not already exist
+     - `FormData.delete(name): void` — Deletes a key/value pair from a FormData object
+     - `FormData.entries(): IterableIterator<[string, FormDataEntryValue]>` — Returns an `iterator` allowing to go through all key/value pairs contained in this object
+     - `FormData.get(name): FormDataEntryValue` — Returns the first value associated with a given key from within a FormData object
+     - `FormData.getAll(name): FormDataEntryValue[]` — Returns an array of all the values associated with a given key from within a FormData
+     - `FormData.has(name): boolean` — Returns a boolean stating whether a FormData object contains a certain key/value pair
+     - `FormData.keys(): IterableIterator<string>` — Returns an `iterator` allowing to go through all keys of the key/value pairs contained in this object
+     - `FormData.set(name, value, filename?: string): void` — Sets a new value for an existing key inside a FormData object, or adds the key/value if it does not already exist
+     - `FormData.values(): IterableIterator<FormDataEntryValue>` — Returns an `iterator` allowing to go through all values of the key/value pairs contained in this object
 
 ### Progress Events
 
@@ -3393,18 +3393,18 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
          // ...
      }
      ```
-     - `ProgressEvent.lengthComputable` Read only -- Is a Boolean flag indicating if the total work to be done, and the amount of work already done, by the underlying process is calculable. In other words, it tells if the progress is measurable or not
-     - `ProgressEvent.loaded` Read only -- Is an unsigned long long representing the amount of work already performed by the underlying process. The ratio of work done can be calculated with the property and `ProgressEvent.total`. When downloading a resource using HTTP, this only represent the part of the content itself, not headers and other overhead
-     - `ProgressEvent.total` Read only -- Is an unsigned long long representing the total amount of work that the underlying process is in the progress of performing. When downloading a resource using HTTP, this only represent the content itself, not headers and other overhead
+     - `ProgressEvent.lengthComputable` Read only — Is a Boolean flag indicating if the total work to be done, and the amount of work already done, by the underlying process is calculable. In other words, it tells if the progress is measurable or not
+     - `ProgressEvent.loaded` Read only — Is an unsigned long long representing the amount of work already performed by the underlying process. The ratio of work done can be calculated with the property and `ProgressEvent.total`. When downloading a resource using HTTP, this only represent the part of the content itself, not headers and other overhead
+     - `ProgressEvent.total` Read only — Is an unsigned long long representing the total amount of work that the underlying process is in the progress of performing. When downloading a resource using HTTP, this only represent the content itself, not headers and other overhead
 
 1. progress event types
-   - `loadstart` -- The upload has begun
-   - `progress` -- Periodically delivered to indicate the current amount of progress made so far
-   - `abort` -- The upload operation was aborted
-   - `error` -- The upload failed due to an error
-   - `load` -- The upload completed successfully
-   - `timeout` -- `XMLHttpRequest.timeout` exceeded
-   - `loadend` -- The upload completed; this event does not differentiate between success or failure, and is sent at the very end of the upload process, regardless of the outcome
+   - `loadstart` — The upload has begun
+   - `progress` — Periodically delivered to indicate the current amount of progress made so far
+   - `abort` — The upload operation was aborted
+   - `error` — The upload failed due to an error
+   - `load` — The upload completed successfully
+   - `timeout` — `XMLHttpRequest.timeout` exceeded
+   - `loadend` — The upload completed; this event does not differentiate between success or failure, and is sent at the very end of the upload process, regardless of the outcome
    - You need to add the event listeners before calling `open()` on the request. Otherwise the progress events will not fire
    - The download events are fired on the `XMLHttpRequest` object itself, the upload events are fired on the `XMLHttpRequest.upload` object
    - Progress events are not available for the `file:` protocol
@@ -3436,7 +3436,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 1. Preflight requests
    - no IE10 and before
    - when not a simple request, a “preflight” request is made to the server, then the main request
-   - preflight -- OPTIONS method and sends the following headers:
+   - preflight — OPTIONS method and sends the following headers:
      - Origin — Same as in simple requests.
      - Access-Control-Request-Method — The method that the request wants to use.
      - Access-Control-Request-Headers — (Optional) A comma-separated list of the custom headers being used.
@@ -3515,7 +3515,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - Once the data is sent, the connection is closed by the browser and a new connection is immediately opened up to the server
      - timeout problem
      - the HTTP specification requiring browsers to limit simultaneous connections to two per hostname, the limitation is removed in 2014, but browsers still has the cap, higher than 2 though
-   - HTTP streaming -- use `Transfer Encoding: chunked` header to indicate data is sent in a series of chunks, originally used to indicate the `Content-Length` is uncertain and omitted
+   - HTTP streaming — use `Transfer Encoding: chunked` header to indicate data is sent in a series of chunks, originally used to indicate the `Content-Length` is uncertain and omitted
      - uses a single HTTP connection for the entire lifetime of the page
      - The browser sends a request to the server and the server holds that connection open, periodically sending data through the connection to the server
      - printing to the output buffer and then flushing (sending the contents of the output buffer to the client). This is the core of HTTP streaming
@@ -3534,21 +3534,21 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - constructor: `EventSource(url: string, EventSourceInitDict?: EventSourceInit)`
      - EventSourceInit: `withCredentials` property defaults to `false`
    - properties
-     - `EventSource.readyState` Read only -- A number representing the state of the connection. Possible values are `EventSource.CONNECTING` (0), `OPEN` (1), or `CLOSED` (2)
-     - `EventSource.url` Read only -- A `DOMString` representing the URL of the source
-     - `EventSource.withCredentials` Read only -- A Boolean indicating whether the EventSource object was instantiated with cross-origin (CORS) credentials set (`true`), or not (`false`, the default)
+     - `EventSource.readyState` Read only — A number representing the state of the connection. Possible values are `EventSource.CONNECTING` (0), `OPEN` (1), or `CLOSED` (2)
+     - `EventSource.url` Read only — A `DOMString` representing the URL of the source
+     - `EventSource.withCredentials` Read only — A Boolean indicating whether the EventSource object was instantiated with cross-origin (CORS) credentials set (`true`), or not (`false`, the default)
    - Event handlers
-     - `EventSource.onerror` -- interface is `Event`, not `UIEvent` nor `ProgressEvent`
-     - `EventSource.onmessage` -- interface is `MessageEvent`
-     - `EventSource.onopen` -- a connection with an event source is opened, interface is `Event`
+     - `EventSource.onerror` — interface is `Event`, not `UIEvent` nor `ProgressEvent`
+     - `EventSource.onmessage` — interface is `MessageEvent`
+     - `EventSource.onopen` — a connection with an event source is opened, interface is `Event`
    - methods
-     - `EventSource.close()` -- Closes the connection, if any, and sets the `readyState` attribute to `CLOSED`. If the connection is already closed, the method does nothing
+     - `EventSource.close()` — Closes the connection, if any, and sets the `readyState` attribute to `CLOSED`. If the connection is already closed, the method does nothing
 
 1. Event stream format (server side)
    - a simple stream of text data which must be encoded using UTF-8
    - A colon as the first character of a line is in essence a comment, and is ignored
      - a server can send a comment periodically to keep the connection alive
-   - Fields -- Each message received has some combination of the following fields, one per line:
+   - Fields — Each message received has some combination of the following fields, one per line:
      ```
      event: userconnect
      data: {"username": "bobby", "time": "02:33:48"}
@@ -3559,14 +3559,14 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      event: usermessage
      data: {"username": "bobby", "time": "02:34:11", "text": "Hi everyone."}
      ```
-     - `event` -- named custom event, an event will be dispatched on the browser to the listener for the specified event name
+     - `event` — named custom event, an event will be dispatched on the browser to the listener for the specified event name
        - The `onmessage` handler is called if no event name is specified for a message
-     - `data` -- The data field for the message. When the `EventSource` receives multiple consecutive lines that begin with `data:`, it will concatenate them, inserting a newline character between each one. Trailing newlines are removed
+     - `data` — The data field for the message. When the `EventSource` receives multiple consecutive lines that begin with `data:`, it will concatenate them, inserting a newline character between each one. Trailing newlines are removed
        - JSON or string
-     - `id` -- The event ID to set the `EventSource` object's last event ID value
+     - `id` — The event ID to set the `EventSource` object's last event ID value
        - By setting an ID, the `EventSource` object keeps track of the last event fired
        - If the connection is dropped, a special HTTP header called Last-Event-ID is sent along with the request so that the server can determine which event is appropriate to fire next
-     - `retry` -- The reconnecting time to use when attempting to send the event. This must be an integer, specifying the reconnecting time in milliseconds. If a non-integer value is specified, the field is ignored
+     - `retry` — The reconnecting time to use when attempting to send the event. This must be an integer, specifying the reconnecting time in milliseconds. If a non-integer value is specified, the field is ignored
      - All other field names are ignored
      - If a line doesn't contain a colon, the entire line is treated as the field name with an empty value string
 
@@ -3580,7 +3580,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - When a Web Socket is created in JavaScript, an HTTP request is sent to the server to initiate a connection. When the server responds, the connection uses HTTP upgrade to switch from HTTP to the Web Socket protocol
      - `Connection: Upgrade`, `Upgrade: websocket`
      - `101 Switching Protocols`, `Upgrade: websocket`
-     - timeout problem -- heartbeat messages called pings and pongs, one peer periodically sends a tiny packet to the other (the ping), and the other peer responds with a packet containing the same data (the pong)
+     - timeout problem — heartbeat messages called pings and pongs, one peer periodically sends a tiny packet to the other (the ping), and the other peer responds with a packet containing the same data (the pong)
      - no limit on the number of open connections per hostname
    - constructor: `WebSocket(url, protocol?)`
      - connection is established upon construct
@@ -3588,36 +3588,36 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - protocol defaults to `''`
    - properties
      - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket#Properties)
-     - `WebSocket.binaryType` -- The binary data type used by the connection
-     - `WebSocket.bufferedAmount` Read only -- The number of bytes of queued data
-     - `WebSocket.extensions` Read only -- The extensions selected by the server
-     - `WebSocket.protocol` Read only -- The sub-protocol selected by the server
-     - `WebSocket.readyState` Read only -- The current state of the connection
+     - `WebSocket.binaryType` — The binary data type used by the connection
+     - `WebSocket.bufferedAmount` Read only — The number of bytes of queued data
+     - `WebSocket.extensions` Read only — The extensions selected by the server
+     - `WebSocket.protocol` Read only — The sub-protocol selected by the server
+     - `WebSocket.readyState` Read only — The current state of the connection
        - `WebSocket.OPENING` (0) — The connection is being established
        - `WebSocket.OPEN` (1) — The connection has been established
        - `WebSocket.CLOSING` (2) — The connection is beginning to close
        - `WebSocket.CLOSE` (3) — The connection is closed
-     - `WebSocket.url` Read only -- The absolute URL of the WebSocket
+     - `WebSocket.url` Read only — The absolute URL of the WebSocket
    - handler properties
-     - `WebSocket.onclose` -- An event listener to be called when the connection is closed
+     - `WebSocket.onclose` — An event listener to be called when the connection is closed
        - `CloseEvent`
-     - `WebSocket.onerror` -- An event listener to be called when an error occurs
+     - `WebSocket.onerror` — An event listener to be called when an error occurs
        - interface: `Event`
-     - `WebSocket.onmessage` -- An event listener to be called when a message is received from the server
+     - `WebSocket.onmessage` — An event listener to be called when a message is received from the server
        - see before `MessageEvent`
-     - `WebSocket.onopen` -- An event listener to be called when the connection is opened
+     - `WebSocket.onopen` — An event listener to be called when the connection is opened
        - interface: `Event`
    - Methods
-     - `WebSocket.close([code[, reason]])` -- Closes the connection
-     - `WebSocket.send(data)` -- Enqueues data to be transmitted
+     - `WebSocket.close([code[, reason]])` — Closes the connection
+     - `WebSocket.send(data)` — Enqueues data to be transmitted
        - `data: USVString | Blob | ArrayBuffer | ArrayBufferView`
 
-1. `CloseEvent` -- `WebSocket.onclose`
+1. `CloseEvent` — `WebSocket.onclose`
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent)
    - properties
-     - `CloseEvent.code` Read only -- Returns an unsigned short containing the close code send by the server
-     - `CloseEvent.reason` Read only -- Returns a `DOMString` indicating the reason the server closed the connection. This is specific to the particular server and sub-protocol
-     - `CloseEvent.wasClean` Read only -- Returns a Boolean that Indicates whether or not the connection was cleanly closed
+     - `CloseEvent.code` Read only — Returns an unsigned short containing the close code send by the server
+     - `CloseEvent.reason` Read only — Returns a `DOMString` indicating the reason the server closed the connection. This is specific to the particular server and sub-protocol
+     - `CloseEvent.wasClean` Read only — Returns a Boolean that Indicates whether or not the connection was cleanly closed
 
 1. tools for web sockets
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API#Tools)
@@ -3699,12 +3699,12 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - Network Events
      - interface: `Event`
      - event types
-       - `online` -- The browser has gained access to the network
-       - `offline` -- The browser has lost access to the network
-     - Bubbles -- No
-     - Cancelable -- No
-     - Target -- DefaultView (`window`)
-     - Default Action -- None
+       - `online` — The browser has gained access to the network
+       - `offline` — The browser has lost access to the network
+     - Bubbles — No
+     - Cancelable — No
+     - Target — DefaultView (`window`)
+     - Default Action — None
 
 1. application cache, or appcache
    - deprecated: Use Service Workers instead
@@ -3759,7 +3759,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - Session cookies
        - default setting for cookies
        - deleted when the client shuts down
-     - Permanent cookies -- expire at a specific date (`Expires`) or after a specific length of time in seconds (`Max-Age`)
+     - Permanent cookies — expire at a specific date (`Expires`) or after a specific length of time in seconds (`Max-Age`)
        ```
        Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT;
        ```
@@ -3772,23 +3772,23 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `Secure`: HTTPS only
      - `HttpOnly`: cookies are inaccessible to JavaScript's `Document.cookie` API
    - `SameSite` experimental: a cookie shouldn't be sent with cross-site requests
-     - `=Strict` -- prevent the cookie from being sent by the browser to the target site in all cross-site browsing context, even when following a regular link
-     - `=Lax` -- only send cookies for TOP LEVEL navigation GET requests. This is sufficient for user tracking, but it will prevent many CSRF attacks
+     - `=Strict` — prevent the cookie from being sent by the browser to the target site in all cross-site browsing context, even when following a regular link
+     - `=Lax` — only send cookies for TOP LEVEL navigation GET requests. This is sufficient for user tracking, but it will prevent many CSRF attacks
    - Scope of cookies
-     - `Domain` -- allowed hosts to receive the cookie
+     - `Domain` — allowed hosts to receive the cookie
        - If unspecified, it defaults to the host of the current document location, excluding subdomains
        - if specified, subdomains are always included
        - a domain that does not include the origin server should be rejected by the user agent
-     - `Path` -- indicates a URL path that must exist in the requested URL in order to send the `Cookie` header
+     - `Path` — indicates a URL path that must exist in the requested URL in order to send the `Cookie` header
        - for example: `Path=/docs`
        - only absolute paths, no `..` or `.`
 
-1. `Document.cookie: string` -- Read all cookies (URI encoded)
-   - Write a new cookie -- `document.cookie = 'key=value'`
+1. `Document.cookie: string` — Read all cookies (URI encoded)
+   - Write a new cookie — `document.cookie = 'key=value'`
      - coordination: `encodeURIComponent()`
      - optional followed by attributes
      - `Date.toUTCString()` when setting `Expires`
-   - simple framework -- [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie/Simple_document.cookie_framework)
+   - simple framework — [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie/Simple_document.cookie_framework)
    - get
      ```javascript
      function (sKey) {
@@ -3796,7 +3796,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
          return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1")) || null;
      }
      ```
-   - remove -- set `Expires` to past (`Thu, 01 Jan 1970 00:00:00 GMT`) or set `Max-Age` to non-positive
+   - remove — set `Expires` to past (`Thu, 01 Jan 1970 00:00:00 GMT`) or set `Max-Age` to non-positive
      ```javascript
      function (sKey, sPath, sDomain) {
          if (!this.hasItem(sKey)) { return false; }
@@ -3838,9 +3838,9 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - provides mechanisms by which browsers can store key/value pairs
    - in a much more intuitive fashion than using cookies
    - The keys and the values are always strings (note that integer keys will be automatically converted to strings, just like what objects do)
-   - `Window.sessionStorage: Storage` -- maintains a separate storage area for each given origin that's available for the duration of the page session (the browser is not closed, including page reloads and restores)
+   - `Window.sessionStorage: Storage` — maintains a separate storage area for each given origin that's available for the duration of the page session (the browser is not closed, including page reloads and restores)
      - Opening a page in a new tab or window will cause a new session to be initiated with the value of the top-level browsing context, which differs from how session cookies work
-   - `Window.localStorage: Storage` -- does the same thing, but persists even when the browser is closed and reopened
+   - `Window.localStorage: Storage` — does the same thing, but persists even when the browser is closed and reopened
    - availability
      - IE8+
      - Safari, which in Private Browsing mode gives us an empty localStorage object with a quota of zero, effectively making it unusable
@@ -3849,22 +3849,22 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 
 1. `Storage`
    - properties
-     - `Storage.length` Read only -- Returns an integer representing the number of data items stored in the `Storage` object
-   - methods -- keys and values are always strings
-     - `Storage.key(index: number): string` -- When passed a number n, this method will return the name of the nth key in the storage
-     - `Storage.getItem(key)` -- When passed a key name, will return that key's value
-     - `Storage.setItem(key, value)` -- When passed a key name and value, will add that key to the storage, or update that key's value if it already exists
+     - `Storage.length` Read only — Returns an integer representing the number of data items stored in the `Storage` object
+   - methods — keys and values are always strings
+     - `Storage.key(index: number): string` — When passed a number n, this method will return the name of the nth key in the storage
+     - `Storage.getItem(key)` — When passed a key name, will return that key's value
+     - `Storage.setItem(key, value)` — When passed a key name and value, will add that key to the storage, or update that key's value if it already exists
        - may throw an exception if the storage is full
-     - `Storage.removeItem(key)` -- When passed a key name, will remove that key from the storage, do nothing when no such key
+     - `Storage.removeItem(key)` — When passed a key name, will remove that key from the storage, do nothing when no such key
        - `delete` with object notation
-     - `Storage.clear(): void` -- When invoked, will empty all keys out of the storage
-     - plain object key value notation -- automatically invokes `Storage.getItem()` and `Storage.setItem()`
+     - `Storage.clear(): void` — When invoked, will empty all keys out of the storage
+     - plain object key value notation — automatically invokes `Storage.getItem()` and `Storage.setItem()`
        - `.` or bracket notation
        - not recommended
 
 1. `StorageEvent`
    - inherits: `Event` as all other events
-   - event type: `storage` -- fired when a storage area has been modified
+   - event type: `storage` — fired when a storage area has been modified
      - target: DefaultView (`window`)
      - does not bubble, not cancelable, no default action
    - constructor: `StorageEvent('storage')`
@@ -3872,8 +3872,8 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `StorageEvent.key`
      - `StorageEvent.oldValue`
      - `StorageEvent.newValue`
-     - `StorageEvent.url` -- The address of the document whose key changed
-     - `StorageEvent.storageArea` -- The Storage object that was affected
+     - `StorageEvent.url` — The address of the document whose key changed
+     - `StorageEvent.storageArea` — The Storage object that was affected
 
 #### IndexedDB
 
@@ -3903,22 +3903,22 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 1. `Blob`
    - represents a file-like object of immutable, raw data
    - constructor: `Blob(blobParts?: BlobPart[], options?: BlobPropertyBag)`
-     - `BlobPart[]` -- an `Array` of `ArrayBuffer`, `ArrayBufferView`, `Blob`, `DOMString` objects, or a mix of any of such objects, that will be put inside the `Blob`. `DOMStrings` are encoded as UTF-8
-     - `BlobPropertyBag.type` -- the MIME type of the content of the array that will be put in the blob, defaults to `''`
+     - `BlobPart[]` — an `Array` of `ArrayBuffer`, `ArrayBufferView`, `Blob`, `DOMString` objects, or a mix of any of such objects, that will be put inside the `Blob`. `DOMStrings` are encoded as UTF-8
+     - `BlobPropertyBag.type` — the MIME type of the content of the array that will be put in the blob, defaults to `''`
    - properties
-     - `Blob.size` Read only -- The size, in bytes, of the data contained in the `Blob` object
-     - `Blob.type` Read only -- A string indicating the MIME type of the data contained in the `Blob`. If the type is unknown, this string is empty
-   - `Blob.slice(start?: number, end?: number, contentType?: string): Blob` -- create a new `Blob` object containing the data in the specified range of bytes of the source
-     - `start`, `end` -- in bytes, Pythonic
-     - `contentType` -- defaults to `''`
+     - `Blob.size` Read only — The size, in bytes, of the data contained in the `Blob` object
+     - `Blob.type` Read only — A string indicating the MIME type of the data contained in the `Blob`. If the type is unknown, this string is empty
+   - `Blob.slice(start?: number, end?: number, contentType?: string): Blob` — create a new `Blob` object containing the data in the specified range of bytes of the source
+     - `start`, `end` — in bytes, Pythonic
+     - `contentType` — defaults to `''`
 
 1. `File`
    - inherits `Blob`
    - source: `HTMLInputElement.files`, `DataTransfer.files`, etc.
    - constructor: `File(fileBits: BlobPart[], fileName: string, options?: FilePropertyBag)`
-     - `FilePropertyBag.type` -- `BlobPropertyBag.type`
-     - `FilePropertyBag.lastModified` -- A number representing the number of milliseconds between the Unix time epoch and when the file was last modified. Defaults to a value of `Date.now()`
-   - properties, Read only -- `File.lastModified`, `File.name`, `File.size`, `File.type`
+     - `FilePropertyBag.type` — `BlobPropertyBag.type`
+     - `FilePropertyBag.lastModified` — A number representing the number of milliseconds between the Unix time epoch and when the file was last modified. Defaults to a value of `Date.now()`
+   - properties, Read only — `File.lastModified`, `File.name`, `File.size`, `File.type`
 
 1. `FileReader`
    - lets web applications asynchronously read the contents of files (or raw data buffers) stored on the user's computer
@@ -3926,12 +3926,12 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - usage: initialize, attach event handlers, call read method
    - constructor: `FileReader()`
    - properties
-     - `FileReader.error` Read only -- A `DOMException` representing the error that occurred while reading the file
+     - `FileReader.error` Read only — A `DOMException` representing the error that occurred while reading the file
      - `FileReader.readyState` Read only
-       - `FileReader.EMPTY` 0 -- No data has been loaded yet
-       - `FileReader.LOADING` 1 -- Data is currently being loaded
-       - `FileReader.DONE` 2 -- The entire read request has been completed
-     - `FileReader.result` Read only -- The file's contents. This property is only valid after the read operation is complete, and the format of the data depends on which of the methods was used to initiate the read operation
+       - `FileReader.EMPTY` 0 — No data has been loaded yet
+       - `FileReader.LOADING` 1 — Data is currently being loaded
+       - `FileReader.DONE` 2 — The entire read request has been completed
+     - `FileReader.result` Read only — The file's contents. This property is only valid after the read operation is complete, and the format of the data depends on which of the methods was used to initiate the read operation
    - Event handlers
      - `FileReader.onabort`
      - `FileReader.onerror`
@@ -3939,22 +3939,22 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `FileReader.onloadstart`
      - `FileReader.onloadend`
      - `FileReader.onprogress`
-   - methods -- reads both `Blob` and `File`
-     - `FileReader.abort(): void` -- Aborts the read operation. Upon return, the readyState will be `DONE`
-     - `FileReader.readAsArrayBuffer(blob): void` -- Starts reading, once finished, the `result` attribute contains an `ArrayBuffer` representing the file's data
-     - `FileReader.readAsBinaryString(blob): void` -- Starts reading, once finished, the `result` attribute contains the raw binary data from the file as a `string`
+   - methods — reads both `Blob` and `File`
+     - `FileReader.abort(): void` — Aborts the read operation. Upon return, the readyState will be `DONE`
+     - `FileReader.readAsArrayBuffer(blob): void` — Starts reading, once finished, the `result` attribute contains an `ArrayBuffer` representing the file's data
+     - `FileReader.readAsBinaryString(blob): void` — Starts reading, once finished, the `result` attribute contains the raw binary data from the file as a `string`
        - not recommended, use `FileReader.readAsArrayBuffer()` instead
-     - `FileReader.readAsDataURL(blob): void` -- Starts reading, once finished, the `result` attribute contains a `data: URL` representing the file's data
+     - `FileReader.readAsDataURL(blob): void` — Starts reading, once finished, the `result` attribute contains a `data: URL` representing the file's data
        - also static method `URL.createObjectURL(object: File|Blob|MediaSource): string`
-       - `URL.revokeObjectURL(objectURL: string): void` -- let the browser know not to keep the reference to the file any longer
-     - `FileReader.readAsText(blob, encoding?): void` -- Starts reading, once finished, the `result` attribute contains the contents of the file as a text string
+       - `URL.revokeObjectURL(objectURL: string): void` — let the browser know not to keep the reference to the file any longer
+     - `FileReader.readAsText(blob, encoding?): void` — Starts reading, once finished, the `result` attribute contains the contents of the file as a text string
 
 ### Fullscreen API
 
-1. `Element.requestFullscreen(): Promise<void>` -- issues an asynchronous request to make the element be displayed full-screen
+1. `Element.requestFullscreen(): Promise<void>` — issues an asynchronous request to make the element be displayed full-screen
    - This method must be invoked from a user interaction or a device orientation change, else it will fail
      - not for `<object>`, `<frame>`, or `<iframe>` without `allowfullscreen` attribute
-   - when success -- resolve and the document will receive a `fullscreenchange` event
+   - when success — resolve and the document will receive a `fullscreenchange` event
    - If permission is denied, the promise is rejected and the document receives a `fullscreenerror` event
 
 1. `Document.exitFullscreen(): Promise<void>`
@@ -3963,15 +3963,15 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 
 1. `Document.fullscreenEnabled: boolean`
 
-1. `DocumentOrShadowRoot.fullscreenElement: Element` -- `Element` currently being presented in full-screen mode in this document, or `null` if full-screen mode is not currently in use
+1. `DocumentOrShadowRoot.fullscreenElement: Element` — `Element` currently being presented in full-screen mode in this document, or `null` if full-screen mode is not currently in use
 
 1. Events
    - `fullscreenchange`, `fullscreenerror`
    - interface: `Event`
-   - Bubbles -- Yes
-   - Cancelable -- No
-   - Target -- Document
-   - Default Action -- None
+   - Bubbles — Yes
+   - Cancelable — No
+   - Target — Document
+   - Default Action — None
 
 ### Performance
 
@@ -3979,7 +3979,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - provides access to performance-related information for the current page
    - methods
      - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Performance#Methods)
-     - `Performance.now()` -- more precise than `Date.now()`
+     - `Performance.now()` — more precise than `Date.now()`
 
 ### Web Worker
 
