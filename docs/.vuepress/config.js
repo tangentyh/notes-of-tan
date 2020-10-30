@@ -34,19 +34,56 @@ module.exports = {
     docsDir: 'docs',
     editLinks: true,
     // custom text for edit link. Defaults to "Edit this page"
-    editLinkText: 'See This Page On GitHub',
+    editLinkText: 'Edit This Page On GitHub',
     lastUpdated: true,
     nav: [
       {
         text: 'Java',
-        link: '/backend/java/javaBasics',
+        items: [
+          { text: 'Java Basics', link: '/backend/java/javaBasics' },
+          { text: 'Java Utilities', link: '/backend/java/javaUtils' },
+          { text: 'Java Concurrency', link: '/backend/java/javaConcurrency' },
+          { text: 'Java IO', link: '/backend/java/javaIO' },
+          { text: 'Java Miscellanea', link: '/backend/java/javaMisc' },
+          { text: 'Java Virtual Machine', link: '/backend/java/JVM' },
+        ]
+      },
+      {
+        text: 'Backend',
+        items: [
+          { text: 'Spring', link: '/backend/SpringNotes' },
+          { text: 'OS', link: '/backend/OS-Notes' },
+          { text: 'Database', link: '/backend/database' },
+          { text: 'SQL', link: '/backend/SQL_notes' },
+          { text: 'Distributed System', link: '/backend/distributed' },
+          { text: 'Redis', link: '/backend/redis-notes' },
+        ]
+      },
+      {
+        text: 'Frontend',
+        items: [
+          { text: 'CSS', link: '/CSS-notes' },
+          { text: 'HTML', link: '/html-notes' },
+          { text: 'JS, TS', link: '/todo/jsNotes' },
+          { text: 'BOM, DOM, Web API', link: '/BOM_DOM_notes' },
+          { text: 'React', link: '/todo/react_notes' },
+        ]
+      },
+      {
+        text: 'Other',
+        items: [
+          { text: 'Algorithm', link: '/algo_notes' },
+          { text: 'Git', link: '/git_notes' },
+          { text: 'Design Pattern', link: 'DesignPatternNotes' },
+          { text: 'MacOS', link: 'mac-notes' },
+        ]
       },
       // {
       //   text: 'VuePress',
       //   link: 'https://v1.vuepress.vuejs.org'
       // }
     ],
-    displayAllHeaders: true, // Default: false
+    // displayAllHeaders: true, // Default: false
     // activeHeaderLinks: false, // Default: true
     sidebar: {
       '/backend/java/': [
@@ -57,10 +94,10 @@ module.exports = {
           children: [
             // '',
             'javaBasics',
+            'javaUtils',
             'javaConcurrency',
             'javaIO',
             'javaMisc',
-            'javaUtils',
             'JVM',
           ]
         },
