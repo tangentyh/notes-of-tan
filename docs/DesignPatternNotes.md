@@ -10,13 +10,13 @@
      - object
 
 1. index
-   - [creational](#creational)
+   - [creational](#Creational)
      - class — Factory Method
      - object — Abstract Factory, Builder, Prototype, Singleton
-   - [structural](#structural)
+   - [structural](#Structural)
      - class and object — Adapter
      - object — Bridge, Composite, Decorator, Facade, Flyweight, Proxy
-   - [behavioral](#behavioral)
+   - [behavioral](#Behavioral)
      - class — Interpreter, Template Method
      - object — Chain of Responsibility, Command, Iterator, Mediator, Memento, Observer, State, Strategy, Visitor
 

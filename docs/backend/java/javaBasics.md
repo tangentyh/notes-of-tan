@@ -42,7 +42,7 @@
        java Message -g cruel world
        # args: ["-g", "cruel", "world"]
        ```
-     - jar — `java -jar MyProgram.jar`, see [Jar](#jar)
+     - jar — `java -jar MyProgram.jar`, see [Jar](#JAR)
        ```
        java [options] -jar <jarfile> [args...]
        ```
@@ -62,12 +62,12 @@
      - `-Xprof` — profiling, support was removed in 10.0
      - `-XshowSettings:properties`, `-XshowSettings:locale`
      - `-Xverify:none`, or `-noverify` — turn off verification when loading classes
-     - memory related — see [JVM](./JVM.md#memory)
-   - enable and disable assertion — see [Assertion](#assertion)
+     - memory related — see [JVM](./JVM.md#Memory)
+   - enable and disable assertion — see [Assertion](#Assertion)
    - system properties — `-D`, `System::getProperty`, `System::getProperties`
-     - log related — see [Logging](#logging)
+     - log related — see [Logging](#Logging)
        - log configuration file location — `-Djava.util.logging.config.file=configFile`
-     - see [`Properties`](./javaUtils.md#legacy-collections) for list of system properties
+     - see [`Properties`](./javaUtils.md#Legacy-Collections) for list of system properties
    - remote debug
      ```shell
      java -Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=8000,suspend=n \
@@ -112,7 +112,7 @@
 
 1. `jconsole` — Java Monitoring and Management Console
 
-1. `jmap` and `jhat` (deprecated) for heap dump and examining dump — see [Debugging](#debugging)
+1. `jmap` and `jhat` (deprecated) for heap dump and examining dump — see [Debugging](#Debugging)
 
 1. `serialver` — get serial version ID
 
@@ -215,7 +215,7 @@
 
 1. iterator — `for (variable : collection) statement`
    - `collection` — an array or an object of a class that implements the `Iterable` interface
-   - see [Collections](./javaUtils.md#collections)
+   - see [Collections](./javaUtils.md#Collections)
 
 1. vararg parameter — `...`
    - if only an array passed, then that array is used, without nesting
@@ -590,7 +590,7 @@
      - `static long currentTimeMillis()`
      - `static long nanoTime()`
      - `static native int identityHashCode(Object x)` — `Object::hashCode` regardless of overriden or not, 0 for `null`
-   - system property — see [Legacy Collections](./javaUtils.MD#legacy-collections) for the list of system properties
+   - system property — see [Legacy Collections](./javaUtils.md#Legacy-Collections) for the list of system properties
      - `static Properties getProperties()`
      - `static String getProperty(String key)`  
        `static String getProperty(String key, String def)`
@@ -599,7 +599,7 @@
        `static String setProperty(String key, String value)`
      - `static String clearProperty(String key)`
      - `static String lineSeparator()` — equivalent to `System.getProperty("line.separator")`
-       - see [`File`](./javaIO.md#file-classes) for other separators
+       - see [`File`](./javaIO.md#File-Classes) for other separators
    - environment
      - `static Map<String,String> getenv()`
      - `static String getenv(String name)`
@@ -1116,7 +1116,7 @@
    - for conversion from lambdas — conversion to a functional interface is the only function for lambdas
    - object instance used behind the scenes — methods like `Arrays::sort` receives an object of some class that implements the interface, lambda is executed when invoking the method of that interface
    - `@FunctionalInterface` — optional annotation
-   - lambda expression holders (also function interface) — see [Common Functional Interfaces](#common-functional-interfaces) for `java.util.function`
+   - lambda expression holders (also function interface) — see [Common Functional Interfaces](#Common-Functional-Interfaces) for `java.util.function`
 
 1. method reference — use as lambdas
    ```java
@@ -1672,7 +1672,7 @@
      - exception wrapping — use `Throwable::initCause` to throw as another wrapped type and `Throwable::getCause` for original failure
      - bypass exception specification limit — rethrow a wrapped `RuntimeException` if a method cannot throw checked exception
        - for `IOException` — for example, `java.io.UncheckedIOException` is designed to wrap `IOException`
-     - use generics to make checked exceptions unchecked, see [Generics](#generics)
+     - use generics to make checked exceptions unchecked, see [Generics](#Generics)
    - smart narrowing — when rethrow any exception
      ```java
      public void updateRecord() throws SQLException {
@@ -1801,7 +1801,7 @@
 
 ### Logging
 
-see [Logging](./javaMisc.md#logging).
+see [Logging](./javaMisc.md#Logging).
 
 ## Generics
 

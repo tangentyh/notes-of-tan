@@ -186,7 +186,7 @@
    - `Reader` methods
 
 1. stdin, stdout, stderr
-   - see [`System`](./javaBasics.md#system)
+   - see [`System`](./javaBasics.md#System)
    - see `InputStream` (`BufferedInputStream`) and `PrintStream`
 
 ### Basic IO Stream
@@ -987,7 +987,7 @@
 
 ## NIO
 
-1. file related — see [File Classes](#file-classes)
+1. file related — see [File Classes](#File-Classes)
 
 ### NIO Buffers
 
@@ -1294,7 +1294,7 @@
 
 #### Channel Implementations
 
-1. `FileChannel` — see [File Classes](#file-classes), extends `AbstractInterruptibleChannel` but not `AbstractSelectableChannel`
+1. `FileChannel` — see [File Classes](#File-Classes), extends `AbstractInterruptibleChannel` but not `AbstractSelectableChannel`
 
 1. `java.nio.channels.SocketChannel` — like `Socket`, but a selectable channel
    ```java
@@ -1531,7 +1531,7 @@
      ```
      - `static int` HTTP status codes
      - `InputStream getErrorStream()` — 404 will throw `FileNotFoundException`, but response data can be also useful
-     - cookies — see [HTTP Cookie](#http-cookie)
+     - cookies — see [HTTP Cookie](#HTTP-Cookie)
 
 #### HTTP Cookie
 

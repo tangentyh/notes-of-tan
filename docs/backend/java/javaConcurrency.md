@@ -52,7 +52,7 @@
        void run();
    }
    ```
-   - see [Callable and Future](#callable-and-future) for more
+   - see [Callable and Future](#Callable-and-Future) for more
    - conversion to `Callable` — `Executors::callable`
 
 1. `Thread`
@@ -218,7 +218,7 @@
    ```
    - intrinsic lock — every object has an intrinsic lock, used if declared with `synchronized`
      - static methods — the intrinsic lock of associated `Class<?>` is used
-   - equivalent conditions in `Object` — see [Inheritance](./javaBasics.md#inheritance) for other `Object` APIs
+   - equivalent conditions in `Object` — see [Inheritance](./javaBasics.md#Inheritance) for other `Object` APIs
      - `void notify()`
      - `void notifyAll()`
      - `void wait()`
@@ -615,7 +615,7 @@
      - `FutureTask(Callable<V> callable)`
      - `FutureTask(Runnable runnable, V result)`
 
-1. `java.util.concurrent.ForkJoinTask` — see [Fork-Join](#fork-join)
+1. `java.util.concurrent.ForkJoinTask` — see [Fork-Join](#Fork-Join)
 
 1. `java.util.concurrent.CompletableFuture` — A `Future` that may be explicitly completed (setting its value and status), and may be used as a `CompletionStage`, supporting dependent functions and actions that trigger upon its completion (`Promise.then` in JS), can be async
    ```java
@@ -738,7 +738,7 @@
    ```
    - creation — returned by `Executors.newScheduledThreadPool(int)`, `Executors.newSingleThreadScheduledExecutor()`
 
-1. `java.util.concurrent.ForkJoinPool` — see [Fork-Join](#fork-join)
+1. `java.util.concurrent.ForkJoinPool` — see [Fork-Join](#Fork-Join)
 
 1. `java.util.concurrent.Executors` — factory and utility methods
    - thread pools
@@ -855,7 +855,7 @@
 
 ## Synchronizers
 
-1. Memory consistency effects — happen-before, see [volatile](#volatile-and-atomics)
+1. Memory consistency effects — happen-before, see [volatile](#volatile-and-Atomics)
 
 1. `AbstractQueuedSynchronizer::compareAndSetState` — uses `VarHandle::compareAndSet`
    <!-- TODO -->

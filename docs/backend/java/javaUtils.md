@@ -77,7 +77,7 @@
 
 ## Collections and Maps
 
-1. concurrent collections — see [Thread-Safe Collections](./javaConcurrency.md#thread-safe-collections), and [`SynchronousQueue`](./javaConcurrency.md#data-exchange-synchronizers)
+1. concurrent collections — see [Thread-Safe Collections](./javaConcurrency.md#Thread-Safe-Collections), and [`SynchronousQueue`](./javaConcurrency.md#Data-Exchange-Synchronizers)
 
 1. `Iterable`
    ```java
@@ -152,8 +152,8 @@
    - `static <T> Comparator<T> reverseOrder()`  
      `static <T> Comparator<T> reverseOrder(Comparator<T> cmp)`
      - called by `Comparator::reverseOrder` and `Comparator::reversed`
-   - list related — see [List](#list)
-   - views and wrappers — see [Views and Wrappers](#views-and-wrappers)
+   - list related — see [List](#List)
+   - views and wrappers — see [Views and Wrappers](#Views-and-Wrappers)
      - `Collections::unmodifiableCollection`
      - `Collections::synchronizedCollection`
      - `Collections::checkedCollection`
@@ -409,7 +409,7 @@
    - checked views
    - subset methods
 
-1. `BitSet` — see [Legacy Collections](#legacy-collections)
+1. `BitSet` — see [Legacy Collections](#Legacy-Collections)
 
 ### Maps
 
@@ -558,7 +558,7 @@
    - one for n wrapper — `static <T> List<T> nCopies(int n, T o)`
      - returns an immutable list consisting of n copies of the specified object, `o` is stored only once
    - stack view — `static <T> Queue<T> asLifoQueue(Deque<T> deque)`
-   - set view from map, see [Set](#set) — `static <E> Set<E> newSetFromMap(Map<E,Boolean> map)`
+   - set view from map, see [Set](#Set) — `static <E> Set<E> newSetFromMap(Map<E,Boolean> map)`
    - wrappers containing only one element — immutable, instance of inner class in `Collections`, containing only one element
      - `static <T> Set<T> singleton(T o)`
      - `static <T> List<T> singletonList(T o)`
@@ -634,7 +634,7 @@
      - `Properties(Properties defaults)`
      - `String getProperty(String key)`
      - `String getProperty(String key, String defaultValue)` — `defaultValue` only when no secondary `Properties` and `key` absent
-   - system properties — see `java` in [CLI](./javaBasics.md#cli), find accessible names in `$JAVA_HOME/conf/security/java.policy`
+   - system properties — see `java` in [CLI](./javaBasics.md#CLI), find accessible names in `$JAVA_HOME/conf/security/java.policy`
      ```shell
      # jshell> System.getProperties().forEach((k, v) -> System.out.printf("%s=%s\n", k, v))
      $ java -XshowSettings:properties --version
@@ -980,7 +980,7 @@
 
 ## Other Utils
 
-1. date and time related — see [Time](./javaMisc.md#time)
+1. date and time related — see [Time](./javaMisc.md#Time)
 
 1. `java.util.PropertyPermission` — system property permissions
 
@@ -1060,7 +1060,7 @@
    ```
    - `interface java.util.zip.Checksum`
 
-1. ZIP streams — see [ZIP Streams](./javaIO.md#zip-streams)
+1. ZIP streams — see [ZIP Streams](./javaIO.md#ZIP-Streams)
 
 1. `java.security.MessageDigest` — MD5, SHA-1, SHA-256, SHA-384, and SHA-512
    ```java

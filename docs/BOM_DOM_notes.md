@@ -848,7 +848,7 @@
        ```
        access limited based on cross-domain security restrictions
 
-1. Manipulating Attributes: see also [The `Attr` Type](#the-attr-type)
+1. Manipulating Attributes: see also [The `Attr` Type](#The-Attr-Type)
    - work on any attribute, including those defined as properties
    - All all recognized (non-custom) attributes on an element are also accessible as properties
      - not only the five properties defined on `HTMLElement`
@@ -1038,7 +1038,7 @@
    - Child nodes are not supported in HTML
    - Child nodes may be `Text` or `EntityReference` in XML
 
-1. add an attribute: see also [The `Element` Type](#the-element-type)
+1. add an attribute: see also [The `Element` Type](#The-Element-Type)
    ```javascript
    var attr = document.createAttribute("align");
    attr.value = "left";
@@ -1937,7 +1937,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - for browsers without support, it has been suggested that a timeout should be set during page loading with a millisecond delay of 0
    - `readystatechange`
      - fired when the `readyState` attribute of a document has changed
-     - see before [HTML5](#html5) DOM Extensions
+     - see before [HTML5](#HTML5) DOM Extensions
 
 1. View Events
    - `fullscreenchange`

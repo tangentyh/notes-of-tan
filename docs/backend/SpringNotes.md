@@ -612,7 +612,7 @@
    - `String value` — `@AliasFor(annotation=Component.class)`
    - `boolean proxyBeanMethods` — see modes in `@Bean`
    - bootstrapping
-     - `AnnotationConfigApplicationContext::register`, see [Configure Contexts](#configure-contexts)
+     - `AnnotationConfigApplicationContext::register`, see [Configure Contexts](#Configure-Contexts)
      - use `<context:component-scan/>`, which has an `annotation-config` attribute
        - `<context:annotation-config/>` — enable `org.springframework.context.annotation.ConfigurationClassPostProcessor` and other annotation-related post processors for bootstrapping processing of `@Configuration` classes
          ```xml
