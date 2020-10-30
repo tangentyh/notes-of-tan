@@ -77,7 +77,7 @@
 
 ## Collections and Maps
 
-1. concurrent collections — see [Thread-Safe Collections](./javaConcurrency#Thread-Safe-Collections), and [`SynchronousQueue`](./javaConcurrency#Data-Exchange-Synchronizers)
+1. concurrent collections — see [Thread-Safe Collections](./javaConcurrency.md#thread-safe-collections), and [`SynchronousQueue`](./javaConcurrency.md#data-exchange-synchronizers)
 
 1. `Iterable`
    ```java
@@ -164,8 +164,7 @@
 
 1. `java.util.List`
    ```java
-   public interface List<E>
-   extends Collection<E>
+   public interface List<E> extends Collection<E>
    ```
    - `java.util.AbstractList<E>` — This class provides a skeletal implementation of the `List` interface to minimize the effort required to implement this interface backed by a "random access" data store (such as an array)
      ```java

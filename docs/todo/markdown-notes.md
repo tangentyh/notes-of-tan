@@ -1,12 +1,13 @@
 # Markdown
 
-TODO: format, vuepress extension
+TODO: format
 
 [[toc]]
 
 ## Resources
 
 - [typora support](http://support.typora.io/)
+- [Markdown Extensions | VuePress](https://vuepress.vuejs.org/guide/markdown.html#header-anchors)
 - tbd
 
 ## Styles

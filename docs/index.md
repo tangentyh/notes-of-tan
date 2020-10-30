@@ -6,12 +6,12 @@ tagline: of Tan
 actionText: Start Reading →️
 actionLink: ./#notes-of-tan
 features:
-- title: Hierarchical
-  details: Knowledge graph but in simple plain style.
 - title: No Duplicates
   details: Once and for all.
+- title: Hierarchical
+  details: Knowledge graph but in simple plain style.
 - title: Neat
-  details: Use as few words as possible, as long as understandable.
+  details: Wording as short as possible, as long as understandable.
 footer: CC BY-NC-SA 4.0 Licensed | Copyright © 2020-present tangentyh
 ---
 

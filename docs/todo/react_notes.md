@@ -1,4 +1,6 @@
-# Miscellanea
+# React
+
+## Miscellanea
 
 1. JSX
    ```ts
@@ -93,11 +95,11 @@
    - React 16 depends on the collection types `Map` and `Set`
    - a global polyfill in your bundled application, such as core-js or babel-polyfill
 
-# Accessibility
+## Accessibility
 
 tbd
 
-# Context
+## Context
 
 1. Context
    - some data needs to be accessible by many components at different nesting levels
@@ -175,7 +177,7 @@ tbd
      }
      ```
 
-# Code Splitting
+## Code Splitting
 
 1. `import()`
 
@@ -230,7 +232,7 @@ tbd
      ```
    - named export — intermediate module reexport
 
-# Error Boundaries
+## Error Boundaries
 
 1. Error Boundaries
    - catch errors during rendering, in lifecycle methods, and in constructors of the whole tree below them
@@ -278,7 +280,7 @@ tbd
    }
    ```
 
-# Refs, Forwarding Refs
+## Refs, Forwarding Refs
 
 1. Ref forwarding
    - alternative — explicitly pass a ref as a differently named prop
@@ -373,7 +375,7 @@ tbd
      - `value` and `checked` for controlled counterparts
    - an `<input type="file" />` is always an uncontrolled component
 
-# Portals
+## Portals
 
 1. Portals — a first-class way to render children into a DOM node that exists outside the DOM hierarchy of the parent component
    - An event fired from inside a portal will propagate to ancestors in the containing React tree, even if those elements are not ancestors in the DOM tree
@@ -383,7 +385,7 @@ tbd
    function createPortal(children: ReactNode, container: Element, key?: null | string): ReactPortal;
    ```
 
-# Fragment
+## Fragment
 
 1. return an array
    ```jsx
@@ -423,7 +425,7 @@ tbd
    }
    ```
 
-# Strict Mode
+## Strict Mode
 
 1. Strict Mode
    - does not render any visible UI. It activates additional checks and warnings for its descendants
@@ -443,9 +445,9 @@ tbd
    const StrictMode: ExoticComponent<{ children?: ReactNode }>;
    ```
 
-# API
+## API
 
-## Component, memo
+### Component, memo
 
 1. function component
    ```ts
@@ -543,7 +545,7 @@ tbd
      - This means that React will skip rendering the component, and reuse the last rendered result.
    - By default it will only shallowly compare complex objects in the props object
 
-## Create Element
+### Create Element
 
 1. `React.createElement`
    ```ts
@@ -566,7 +568,7 @@ tbd
 
 1. `React.createFactory` — legacy helper
 
-## Transform Element
+### Transform Element
 
 1. `React.cloneElement`
    ```ts
@@ -603,9 +605,9 @@ tbd
    - `React.Children.toArray` — Returns the children opaque data structure as a flat array with keys assigned to each child.
      - prefixes each key in the returned array so that each element’s key is scoped to the input array containing it
 
-# Hooks
+## Hooks
 
-## Concepts
+### Concepts
 
 1. hooks
    - use state and other React features without writing a class
@@ -628,7 +630,7 @@ tbd
    - do not have a specific signature, can pass information as the return value
    - the extract of common patterns
 
-## Basic Hooks
+### Basic Hooks
 
 1. type definations
    ```ts
@@ -684,7 +686,7 @@ tbd
    - always re-render when the context value changes
    - works as `static contextType = MyContext` in a class, or to `<MyContext.Consumer>`
 
-## Additional Hooks
+### Additional Hooks
 
 1. `React.useReducer()` — alternative to `useState`
    ```ts
@@ -877,7 +879,7 @@ tbd
    function useDebugValue<T>(value: T, format?: (value: T) => any): void;
    ```
 
-# ReactDOM
+## ReactDOM
 
 1. `ReactDOM.render()`
    ```ts
@@ -919,7 +921,7 @@ tbd
    ```
    - Returns `true` if a component was unmounted and `false` if there was no component to unmount.
 
-# ReactDOMServer
+## ReactDOMServer
 
 1. `ReactDOMServer.renderToString()` — Render a React element to its initial HTML
    ```ts
@@ -978,7 +980,7 @@ tbd
    }
    ```
 
-# SyntheticEvent
+## SyntheticEvent
 
 1. `SyntheticEvent`
    ```ts
@@ -1008,7 +1010,7 @@ tbd
    - `persist()` — which will remove the synthetic event from the pool and allow references to the event to be retained by user code
    - specific event types interface — [.d.ts](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/react/index.d.ts#L1070)
 
-# Test Utilities
+## Test Utilities
 
 1. `ReactTestUtils`
    ```js

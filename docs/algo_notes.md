@@ -2,6 +2,8 @@
 
 ## Miscellaneous
 
+1. [OI Wiki](https://oi-wiki.org/)
+
 1. index virtual map
    ```javascript
    A = (x, y) => (2*x+1) % (y|1);
