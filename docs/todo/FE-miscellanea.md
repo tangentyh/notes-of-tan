@@ -22,6 +22,10 @@
 
 ![](https://www.google.com/s2/favicons?domain=github.com)[GitHub - airuikun/Weekly-FE-Interview: 每周十道前端大厂面试题，并收集大家在大厂面试中遇到的难题，一起共同成长。](https://github.com/airuikun/Weekly-FE-Interview)
 
+- [goldbergyoni/nodebestpractices: The Node.js best practices list (November 2020)](https://github.com/goldbergyoni/nodebestpractices)
+
+- [h5bp/Front-end-Developer-Interview-Questions: A list of helpful front-end related questions you can use to interview potential candidates, test yourself or completely ignore.](https://github.com/h5bp/Front-end-Developer-Interview-Questions)
+
 # Network
 
 ## 交换, TCP, UDP

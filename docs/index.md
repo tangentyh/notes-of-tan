@@ -51,9 +51,11 @@ So much knowledge :books: , so little time :hourglass_flowing_sand:.
    - [Design Pattern](./DesignPatternNotes.md)
    - [MacOS](./mac-notes.md)
 
-1. To be overhauled
+1. Todo
    - those in [todo](./todo) folder
    - [BOM, DOM and Web APIs](./BOM_DOM_notes.md)
+   - [Network](https://cyc2018.github.io/CS-Notes/#/notes/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%20-%20%E7%9B%AE%E5%BD%951)
+   - [Linux](https://cyc2018.github.io/CS-Notes/#/notes/Linux)
 
 ## Docs for Docs
 
@@ -75,4 +77,10 @@ For reference:
 - [wx-chevalier (王下邀月熊)](https://github.com/wx-chevalier), for various topics
 - [kamranahmedse/developer-roadmap: Roadmap to becoming a web developer in 2020](https://github.com/kamranahmedse/developer-roadmap)
 - [dypsilon/frontend-dev-bookmarks: Manually curated collection of resources for frontend web developers.](https://github.com/dypsilon/frontend-dev-bookmarks), unmaintained now
+- [free-programming-books/free-programming-books.md at master · EbookFoundation/free-programming-books](https://github.com/EbookFoundation/free-programming-books/blob/master/free-programming-books.md)
+  - [中文版](https://github.com/EbookFoundation/free-programming-books/blob/master/free-programming-books-zh.md)
+- [donnemartin/system-design-primer: Learn how to design large-scale systems. Prep for the system design interview. Includes Anki flashcards.](https://github.com/donnemartin/system-design-primer)
+- [iluwatar/java-design-patterns: Design patterns implemented in Java](https://github.com/iluwatar/java-design-patterns)
+- [mtdvio/every-programmer-should-know: A collection of (mostly) technical things every software developer should know about](https://github.com/mtdvio/every-programmer-should-know)
+- [papers-we-love/papers-we-love: Papers from the computer science community to read and discuss.](https://github.com/papers-we-love/papers-we-love)
 - more...
