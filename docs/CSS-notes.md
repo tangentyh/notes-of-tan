@@ -1922,7 +1922,7 @@
    - why — Floated elements don't use any height, need to fix float elements overflow the container  
      ![][p12]
 
-     [p12]: images/12.png
+     [p12]: ./images/12.png
    - occur when — If an element contains only floated elements, or contains width limited floated elements
    - fix
      - flex fix — wrap the container with a new `display: flex` container
@@ -1950,7 +1950,7 @@
 1. Unexpected “float catching”  
    ![][p13]
 
-   [p13]: images/13.png
+   [p13]: ./images/13.png
    ```CSS
    .media:nth-child(odd) {
      clear: left;
@@ -2068,7 +2068,7 @@
    - `align-items` — In Flexbox it controls the alignment of items on the Cross Axis, sets the `align-self` value on all direct children as a group  
      ![][p14]
 
-     [p14]: images/14.png
+     [p14]: ./images/14.png
      ```
      normal | stretch | <baseline-position> | [ <overflow-position>? <self-position> ]
      where

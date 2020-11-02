@@ -1511,10 +1511,10 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - `HTMLElement.offsetHeight` Read only  
      ![][p1]
 
-     [p1]: images/1.png
+     [p1]: ./images/1.png
      ![][p2]
 
-     [p2]: images/2.png
+     [p2]: ./images/2.png
      - Returns a number containing the height of an element, relative to the layout
    - `HTMLElement.offsetLeft` Read only
      - Returns a double, the distance from this element's left border to its `offsetParent`'s left border
@@ -1529,7 +1529,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - comprise the space occupied by the element’s content and its padding  
      ![][p3]
 
-     [p3]: images/3.png
+     [p3]: ./images/3.png
      - the space taken up by scrollbars is not counted
    - are read-only and are calculated each time they are accessed
    - `Element.clientWidth`
@@ -1664,7 +1664,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - select node
      ![][p4]
 
-     [p4]: images/4.png
+     [p4]: ./images/4.png
      - `Range.selectNode(node: Node): void`: Sets the Range to contain the `Node` and its contents
      - `Range.selectNodeContents(node: Node): void`: Sets the Range to contain the contents of a `Node`
    - before or after
@@ -2858,7 +2858,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 1. The Grid  
    ![][p5]
 
-   [p5]: images/5.png
+   [p5]: ./images/5.png
 
 1. Fills and Strokes
    - Fill automatically fills in the shape with a specific style (color, gradient, or image) while stroke colors only the edges
@@ -2879,11 +2879,11 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `CanvasRenderingContext2D.lineCap` — Type of endings on the end of lines. Possible values: `butt` (default), `round`, `square`  
        ![][p6]
 
-       [p6]: images/6.png
+       [p6]: ./images/6.png
      - `CanvasRenderingContext2D.lineJoin` — Defines the type of corners where two lines meet. Possible values: round, bevel, miter (default)  
        ![][p7]
 
-       [p7]: images/7.png
+       [p7]: ./images/7.png
      - `CanvasRenderingContext2D.miterLimit` — Miter limit ratio. Default 10
        - zero, negative, `Infinity` and `NaN` values are ignored
        - how far the outside connection point can be placed from the inside connection point
@@ -2935,7 +2935,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - `CanvasRenderingContext2D.arcTo()` — Adds an arc to the path with the given control points and radius, connected to the previous point by a straight line  
      ![][p8]
 
-     [p8]: images/8.png
+     [p8]: ./images/8.png
      - never elliptical. Typical use could be making a rounded corner
      - The arc is tangential
    - `CanvasRenderingContext2D.ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise?: boolean): void` — Adds an ellipse to the path which is centered at (x, y) position with the radii radiusX and radiusY starting at startAngle and ending at endAngle going in the given direction
@@ -2974,7 +2974,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - `CanvasRenderingContext2D.textBaseline` — Baseline alignment setting. Possible values: `top`, `hanging`, `middle`, `alphabetic` (default), `ideographic`, `bottom`  
      ![][p9]
 
-     [p9]: images/9.png
+     [p9]: ./images/9.png
    - `CanvasRenderingContext2D.direction` — text direction. Possible values: `ltr`, `rtl`, `inherit` (default)
 
 1. Drawing text
@@ -2982,7 +2982,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - maxWidth  
        ![][p10]
 
-       [p10]: images/10.png
+       [p10]: ./images/10.png
        - when `undefined`, no limit
        - else the user agent will adjust the kerning
    - `CanvasRenderingContext2D.strokeText(text, x, y, maxWidth?): void` — Draws (strokes) a given text at the given (x, y) position
@@ -3035,7 +3035,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight  
      ![][p11]
 
-     [p11]: images/11.png
+     [p11]: ./images/11.png
 
 1. Image smoothing
    - `CanvasRenderingContext2D.imageSmoothingEnabled` — Image smoothing mode; if disabled, images will not be smoothed if scaled, defaults to `true`
