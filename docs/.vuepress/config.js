@@ -75,6 +75,7 @@ module.exports = {
           { text: 'Algorithm', link: '/algo_notes' },
           { text: 'Git', link: '/git_notes' },
           { text: 'Design Pattern', link: 'DesignPatternNotes' },
+          { text: 'HTTP', link: 'HTTP' },
           { text: 'MacOS', link: 'mac-notes' },
         ]
       },

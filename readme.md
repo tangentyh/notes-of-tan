@@ -34,6 +34,7 @@ So much knowledge :books: , so little time :hourglass_flowing_sand:.
    - [Algorithm](./docs/algo_notes.md)
    - [Git](./docs/git_notes.md)
    - [Design Pattern](./docs/DesignPatternNotes.md)
+   - [HTTP](./docs/HTTP.md)
    - [MacOS](./docs/mac-notes.md)
 
 1. Todo

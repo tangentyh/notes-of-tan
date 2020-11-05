@@ -17,6 +17,8 @@ footer: CC BY-NC-SA 4.0 Licensed | Copyright © 2020-present tangentyh
 
 # Notes of Tan
 
+⚠️❗️ No IE support❗️⚠️
+
 The repo is intended for personal notes keeping :yum:.
 
 So much knowledge :books: , so little time :hourglass_flowing_sand:.
@@ -49,6 +51,7 @@ So much knowledge :books: , so little time :hourglass_flowing_sand:.
    - [Algorithm](./algo_notes.md)
    - [Git](./git_notes.md)
    - [Design Pattern](./DesignPatternNotes.md)
+   - [HTTP](./HTTP.md)
    - [MacOS](./mac-notes.md)
 
 1. Todo
