@@ -528,3 +528,37 @@ Gossip — the reach of a broadcast and the reliability of anti-entropy
    - sticky session
    - session replication
    - session server
+
+### Cache
+
+1. cache properties
+   - hit rate
+   - space
+   - eviction strategy
+     - FIFO
+     - LRU
+     - LFU
+
+1. cache location
+   - hardware
+   - browser
+   - CDN
+   - gateway
+   - server local
+   - distributed
+
+1. 缓存问题
+   - 缓存穿透 — 对某个一定不存在的数据进行请求，该请求将会穿透缓存到达数据库
+     - 方案
+       - 对这些不存在的数据缓存一个空数据
+       - 对这类请求进行过滤
+   - 缓存雪崩 — 由于数据没有被加载到缓存中，或者缓存数据在同一时间大面积失效（过期），又或者缓存服务器宕机，导致大量的请求都到达数据库
+     - 方案
+       - 合理设置缓存过期时间来
+       - 高可用
+       - 缓存预热
+   - 缓存一致性
+   - 缓存 “无底洞” 现象 — 添加了大量缓存节点，但是性能不但没有好转反而下降的现象
+     - 原因 — 随着缓存节点数目的增加，键值分布到更多的节点上，导致客户端一次批量操作会涉及多次网络操作，这意味着批量操作的耗时会随着节点数目的增加而不断增大。此外，网络连接数变多，对节点的性能也有一定影响
+     - 方案
+       - 减少网络通信次数 — 优化 batch，使用长连接 / 连接池，NIO 等
