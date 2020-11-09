@@ -43,7 +43,7 @@ module.exports = {
           { text: 'Java Basics', link: '/backend/java/javaBasics' },
           { text: 'Java Utilities', link: '/backend/java/javaUtils' },
           { text: 'Java Concurrency', link: '/backend/java/javaConcurrency' },
-          { text: 'Java IO', link: '/backend/java/javaIO' },
+          { text: 'IO', link: '/backend/java/javaIO' },
           { text: 'Java Miscellanea', link: '/backend/java/javaMisc' },
           { text: 'Java Virtual Machine', link: '/backend/java/JVM' },
         ]

@@ -59,7 +59,7 @@
      ```
    - `-verbose` — watch class loading
    - `java -X` — a listing of all nonstandard options
-     - `-Xprof` — profiling, support was removed in 10.0
+     - `-Xprof` — profiling, support was removed in JDK 10
      - `-XshowSettings:properties`, `-XshowSettings:locale`
      - `-Xverify:none`, or `-noverify` — turn off verification when loading classes
      - memory related — see [JVM](./JVM.md#Memory)
@@ -156,7 +156,7 @@
    - each jar file contains a `META-INF/MANIFEST.MF` manifest file
    - syntax — key-value entries
      - main section — starts with `Manifest-Version`, applies to the whole JAR file
-     - Subsequent entries — starts with `Name`, can specify properties of named entities such as individual files, packages, or URLs
+     - subsequent entries — starts with `Name`, can specify properties of named entities such as individual files, packages, or URLs
      - section delimiter — blank lines
      - file end — the file must end with a newline
    - edit manifest
