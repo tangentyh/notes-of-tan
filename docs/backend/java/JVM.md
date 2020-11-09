@@ -111,35 +111,14 @@
        - serial — serial old, CMS
        - ParNew — serial old, CMS
        - parallel scavenge — serial old, parallel old
-   - API
-     - use
-     - `-XX:+UseSerialGC` — 在新生代和老年代使用串行收集器
-     - `-XX:+UseParNewGC` — 在新生代使用并行收集器
-     - `-XX:+UseParallelGC` — 新生代使用并行回收收集器，更加关注吞吐量
-     - `-XX:+UseParallelOldGC` — 老年代使用并行回收收集器
-     - `-XX:+UseConcMarkSweepGC` — 新生代使用并行收集器，老年代使用CMS+串行收集器
-       - `-XX:ParallelCMSThreads` — 设定CMS的线程数量
-     - `-XX:+UseG1GC` — 启用G1垃圾回收器
-       - `-XX:G1HeapRegionSize`, `-XX:G1NewSizePercent`, `-XX:G1MaxNewSizePercent`
-     - `-XX:+UnlockExperimentalVMOptions` `-XX:+UseZGC` — 启用ZGC
-       - `-XX:ZCollectionInterval` — ZGC发生的最小时间间隔，单位秒
-       - `-XX:ZAllocationSpikeTolerance` — ZGC触发自适应算法的修正系数，默认2，数值越大，越早的触发ZGC
-       - `-XX:+UnlockDiagnosticVMOptions` `-XX:-ZProactive` — 是否启用主动回收，默认开启，这里的配置表示关闭。
-     - `-XX:+UseShenandoahGC`
-     - `-XX:ParallelGCThreads` — 设置用于垃圾回收的线程数
-     - `-XX:ConcGCThreads` — 并发回收垃圾的线程。默认是总核数的12.5%，8核CPU默认是1。调大后GC变快，但会占用程序运行时的CPU资源，吞吐会受到影响。
-     - `-XX:MaxGCPauseMillis`
-     - `-XX:PretenureSizeThreshold`
-     - `-XX:InitiatingHeapOccupancyPercent`
-     - `-Xlog` — 设置GC日志中的内容、格式、位置以及每个日志的大小
-       ```
-       -Xlog:safepoint,classhisto*=trace,age*,gc*=info:file=/opt/logs/logs/gc-%t.log:time,tid,tags:filecount=5,filesize=50m
-       -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xloggc:/home/logs/gc.log
-       ```
-     - `-XX:+PrintCommandLineFlags` — print flags, can check used GC configurations
-   - serial — mark-copy, default GC for young generation in client scenario, single thread, about 100ms for 100 to 200M garbage
+   - default GC
+     - since JDK 9 — G1
+     - JDK 8
+       - parallel GC for server class machine (with at least 2 processors and at least 2 GB of physical memory)
+       - serial GC for client class machine (single processor or 32-bit platform)
+   - serial — mark-copy, single thread, about 100ms for 100 to 200M garbage
      - serial old — serial GC for tenure generation, mark-compact, can serve as backup for CMS
-   - ParNew — serial GC but multithread, default GC for young generation in server scenario
+   - ParNew — serial GC but multithread
    - parallel scavenge — similar to ParNew, but throughput (user CPU time versus total CPU time) first in contrast to minimizing pause time, better UX being more responsive with small pause time although smaller young generation and more frequent GC
      - parallel old — parallel scavenge for tenure generation
      - GC ergonomics — with `-XX:+UseAdaptiveSizePolicy`, 不需要手工指定新生代的大小（-Xmn）、Eden 和 Survivor 区的比例、晋升老年代对象年龄等细节参数了。JVM 会根据当前系统的运行情况收集性能监控信息，动态调整这些参数以提供最合适的停顿时间或者最大的吞吐量, `-XX:AdaptiveSizePolicyOutputInterval=1` for logging
@@ -147,7 +126,7 @@
      - disadvantages
        - low throughput
        - concurrent mode failure — the CMS collector is unable to finish reclaiming the unreachable objects before the tenured generation fills up, or if an allocation cannot be satisfied with the available free space blocks in the tenured generation; serial old as backup
-         - float garbage — objects that are traced by the garbage collector thread may subsequently become unreachable by the time collection process ends
+         - float garbage — objects that are traced by the garbage collector (reachable) thread may subsequently become unreachable by the time collection process ends, due to concurrently running application thread
        - segmentation from mark sweep
      - phases
        1. initial mark — stop-the-world but fast, mark objects directly connected to GC roots
@@ -170,6 +149,32 @@
        - predictable GC pause durations
    - ZGC — shorter pause than Shenandoah, tbd
    - Shenandoah — higher throughput than ZGC, tbd
+
+1. GC CLI
+   - `-XX:+UseSerialGC` — 在新生代和老年代使用串行收集器
+   - `-XX:+UseParNewGC` — 在新生代使用并行收集器
+   - `-XX:+UseParallelGC` — 新生代使用并行回收收集器，更加关注吞吐量
+   - `-XX:+UseParallelOldGC` — 老年代使用并行回收收集器
+   - `-XX:+UseConcMarkSweepGC` — 新生代使用并行收集器，老年代使用CMS+串行收集器
+     - `-XX:ParallelCMSThreads` — 设定CMS的线程数量
+   - `-XX:+UseG1GC` — 启用G1垃圾回收器
+     - `-XX:G1HeapRegionSize`, `-XX:G1NewSizePercent`, `-XX:G1MaxNewSizePercent`
+   - `-XX:+UnlockExperimentalVMOptions` `-XX:+UseZGC` — 启用ZGC
+     - `-XX:ZCollectionInterval` — ZGC发生的最小时间间隔，单位秒
+     - `-XX:ZAllocationSpikeTolerance` — ZGC触发自适应算法的修正系数，默认2，数值越大，越早的触发ZGC
+     - `-XX:+UnlockDiagnosticVMOptions` `-XX:-ZProactive` — 是否启用主动回收，默认开启，这里的配置表示关闭。
+   - `-XX:+UseShenandoahGC`
+   - `-XX:ParallelGCThreads` — 设置用于垃圾回收的线程数
+   - `-XX:ConcGCThreads` — 并发回收垃圾的线程。默认是总核数的12.5%，8核CPU默认是1。调大后GC变快，但会占用程序运行时的CPU资源，吞吐会受到影响。
+   - `-XX:MaxGCPauseMillis`
+   - `-XX:PretenureSizeThreshold`
+   - `-XX:InitiatingHeapOccupancyPercent`
+   - `-Xlog` — 设置GC日志中的内容、格式、位置以及每个日志的大小
+     ```
+     -Xlog:safepoint,classhisto*=trace,age*,gc*=info:file=/opt/logs/logs/gc-%t.log:time,tid,tags:filecount=5,filesize=50m
+     -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xloggc:/home/logs/gc.log
+     ```
+   - `-XX:+PrintCommandLineFlags` — print flags, can check used GC configurations
 
 ## Reference
 
@@ -260,7 +265,7 @@
          - dynamic binding — resolving can happen after initializing for dynamic binding purposes
      - initializing — execute `<clinit>()` for assignments of non-`final` static fields and static blocks
    - class loaders
-     - The bootstrap class loader — loads the system classes (typically, from the JAR file `rt.jar`, modules from JDK 9)
+     - The bootstrap class loader — loads the system classes (typically, from the JAR file `rt.jar`, from modules since JDK 9)
        - usually implemented in C — as an integral part of the virtual machine, no `ClassLoader` object involved, `String.class.getClassLoader()` is `null`
      - The extension class loader — loads “standard extensions” from the `jre/lib/ext` directory, the loader does not use the class path
        - no more `jre/lib/ext` from JDK 9 — The javac compiler and java launcher will exit if the `java.ext.dirs` system property is set, or if the `lib/ext` directory exists

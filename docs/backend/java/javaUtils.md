@@ -71,9 +71,10 @@
    implements Serializable
    ```
 
-1. MVC
-   - `java.util.Observable`
-   - `interface java.util.Observer`
+1. observer — `java.util.Observable`, `interface java.util.Observer`
+   - deprecated since JDK 9 — the event model supported by `Observer` and `Observable` is quite limited, the order of notifications delivered by `Observable` is unspecified, and state changes are not in one-for-one correspondence with notifications
+   - for a richer event model, consider using the `java.beans`
+   - for reactive streams style — `java.util.concurrent.Flow`
 
 ## Collections and Maps
 
@@ -495,7 +496,7 @@
    public class TreeMap<K,V> extends AbstractMap<K,V>
    implements NavigableMap<K,V>, Cloneable, Serializable
    ```
-   - do not support the `Entry::setValue` method — `Map.Entry` returned by methods in this class and its views represent snapshots of mappings at the time they were produced
+   - do not support the `Entry::setValue` method — entries exported as `AbstractMap.SimpleImmutableEntry<>(e)` for most methods
 
 1. `java.util.EnumMap` — for use with enum types
    ```java
@@ -537,6 +538,7 @@
    public class IdentityHashMap<K,V> extends AbstractMap<K,V>
    implements Map<K,V>, Serializable, Cloneable
    ```
+   - underlying implementation — closed hashing, value placed next to key bucket, resize when `3 * size > len` (load factor of 0.667)
    - constant-time performance for the basic operations (`get` and `put`) — assuming the system identity hash function (`System.identityHashCode(Object)`) disperses elements properly among the buckets
    - rehashing may be fairly expensive — initialize with large expected capacity
 
@@ -857,7 +859,7 @@
      - `<U> U reduce(U identity, BiFunction<U,? super T,U> accumulator, BinaryOperator<U> combiner)`
      - `Collectors::reducing`
    - result (terminal operation)
-     - `Stream<T> peek(Consumer<? super T> action)`
+     - `Stream<T> peek(Consumer<? super T> action)` — consume results but an intermediate operation
      - `void forEach(Consumer<? super T> action)`
      - `void forEachOrdered(Consumer<? super T> action)` — when in parallel mode and order matters
      - `Object[] toArray()`  
@@ -1005,7 +1007,7 @@
    ```java
    public final class Optional<T> extends Object
    ```
-   - fallback to `null
+   - fallback to `null`
      - `boolean isPresent()`
      - `T get()`
    - transformation
@@ -1039,7 +1041,7 @@
                                                         LongSummaryStatistics::accept,
                                                         LongSummaryStatistics::combine);
        ```
-   - statics
+   - statistics
      - `double getAverage()`
      - `long getCount()`
      - `long|int|double getMax()`
