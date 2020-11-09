@@ -442,6 +442,14 @@
      ```
      - `-d`, `--delete`
      - `-D` — `--delete --force`
+   - rename or copy
+     ```
+     git branch (-m | -M) [<oldbranch>] <newbranch>
+     git branch (-c | -C) [<oldbranch>] <newbranch>
+     ```
+     - `-m` `--move` — move/rename a branch and the corresponding reflog
+     - `-M` — shortcut for `--move --force`
+     - `-c` `--copy`, `-C` — similar to `-m` but copy
    - list
      ```
      git branch -vv
@@ -694,7 +702,7 @@
 
 1. `git status`
 
-1. `git diff` -- see [Get Info](#Get-Info)
+1. `git diff` — see [Get Info](#Get-Info)
 
 1. `git log` — Show commit logs
    ```shell
@@ -717,7 +725,7 @@
      ```
      - `--pretty[=<format>]`, `--format=<format>`
        - `<format>` — [git docs](https://git-scm.com/docs/git-log#_pretty_formats)
-       - example -- log commit message
+       - example — log commit message
          ```shell
          git log --format=%B -n 1 <commit>
          ```
