@@ -23,6 +23,7 @@
    - `nfds` — the highest-numbered file descriptor in any of the three sets, plus 1
    - `fd_set` — array based, of size `FD_SETSIZE` which defaults to 1024
    - `readset`、`writeset`、`exceptset` — 分别对应读、写、异常条件的描述符集合, three classes of events on the specified set of file descriptors, can be `NULL`; upon return, each of the file descriptor sets will be cleared of all file descriptors except for those that are ready / exceptional
+   - return — on success, return the number of file descriptors contained in the three returned descriptor sets; 0 on timeout; -1 on error
 
 1. `poll` — similar to `select`, but with more event types and no size constraint for array `*fds`
    ```c
@@ -39,6 +40,7 @@
          if ( fds[0].revents & POLLIN )
              fds[0].revents = 0;
      ```
+   - return — on success, returns a nonnegative value which is the number of elements in the `pollfds` whose `revents` fields have been set to a nonzero value; 0 on timeout; -1 on error
 
 1. `epoll` — event poll
    ```c
@@ -51,6 +53,7 @@
    - `epoll_ctl` — add, modify, or remove entries in the interest list of the `epoll` instance referred to by the file descriptor `epfd`. 已注册的描述符在内核中会被维护在一棵红黑树上
      - `op`, `fd` — it requests that the operation `op` be performed for the target file descriptor, `fd`
    - `epoll_wait` — waits for events on the `epoll` instance referred to by the file descriptor `epfd`. The buffer pointed to by `events` is used to return information from the ready list about file descriptors in the interest list that have some events available
+     - return — on success, return the number of file descriptors ready for the requested I/O; 0 on timeout; -1 on error
    - mode
      - LT, level trigger — default, blocking and non-blocking, after `epoll_wait`, 进程可以不立即处理该事件，下次调用 `epoll_wait()` 会再次通知进程
      - ET, edge trigger — non-blocking, after `epoll_wait`, 下次再调用 `epoll_wait()` 时不会再得到事件到达的通知
@@ -59,34 +62,23 @@
    - `epoll` 进程不需要通过轮询来获得事件完成的描述符
    - `epoll` 只需要将描述符从进程缓冲区向内核缓冲区拷贝一次
      - `select` and `poll`, 每次调用都需要将全部描述符从应用进程缓冲区复制到内核缓冲区
+   - number and duration of fd — 需要监控的描述符状态变化多，而且都是非常短暂的，也没有必要使用 epoll。因为 epoll 中的所有描述符都存储在内核中，造成每次需要对描述符的状态改变都需要通过 epoll_ctl() 进行系统调用，频繁系统调用降低效率。并且 epoll 的描述符存储在内核，不容易调试。
    - 对多线程编程更友好，一个线程调用了 `epoll_wait()` 另一个线程关闭了同一个描述符也不会产生像 `select` 和 `poll` 的不确定情况
      - 如果一个线程对某个描述符调用了 `select` 或者 `poll`，另一个线程关闭了该描述符，会导致调用结果不确定
    - `select` `timeout` 参数精度为微秒, 更加适用于实时性要求比较高的场景，而 `poll` 和 `epoll` 为毫秒
 
-1. Netty 粘包拆包 — distinguish data boundary
-   - `DelimiterBasedFrameDecoder`
-   - `LineBasedFrameDecoder`
-   - `FixedLengthFrameDecoder`
-
 ## Java IO
 
+1. Netty 粘包拆包 — distinguish data boundary
+   - delimiter
+     - `DelimiterBasedFrameDecoder`
+     - `LineBasedFrameDecoder`
+   - length
+     - `FixedLengthFrameDecoder`
+     - length header
+
 1. `java.io` exceptions
-   - `java.io.IOException` extends `Exception`
-     - `java.io.CharConversionException`
-     - `java.io.EOFException`
-     - `java.io.FileNotFoundException`
-     - `java.io.InterruptedIOException`
-     - `java.io.ObjectStreamException`
-     - `java.io.InvalidClassException`
-     - `java.io.InvalidObjectException`
-     - `java.io.NotActiveException`
-     - `java.io.NotSerializableException`
-     - `java.io.OptionalDataException`
-     - `java.io.StreamCorruptedException`
-     - `java.io.WriteAbortedException`
-     - `java.io.SyncFailedException`
-     - `java.io.UnsupportedEncodingException`
-     - `java.io.UTFDataFormatException`
+   - `java.io.IOException` extends `Exception` — `java.io.CharConversionException` - `java.io.EOFException` - `java.io.FileNotFoundException` - `java.io.InterruptedIOException` - `java.io.ObjectStreamException` - `java.io.InvalidClassException` - `java.io.InvalidObjectException` - `java.io.NotActiveException` - `java.io.NotSerializableException` - `java.io.OptionalDataException` - `java.io.StreamCorruptedException` - `java.io.WriteAbortedException` - `java.io.SyncFailedException` - `java.io.UnsupportedEncodingException` - `java.io.UTFDataFormatException`
    - `java.io.UncheckedIOException` extends `RuntimeException`
 
 ### Console
@@ -581,7 +573,7 @@
        ```java
        MODIFIER Object readResolve() throws ObjectStreamException;
        ```
-   - serial number — associate the object a number in encounter order and save or read the object data when first encounter, only save the serial number or read the object reference when encountered afterwards
+   - serial number — when serializing, associate the object a number in encounter order and save or read the object data when first encounter, only save the serial number or read the object reference when encountered afterwards
    - file structure
      - magic number — `ACED`
      - version number of the object serialization format — `0005` for JDK 8
@@ -1102,28 +1094,8 @@
      - `java.nio.channels.FileLockInterruptionException`
      - `java.nio.channels.InterruptedByTimeoutException`
    - `RuntimeException`
-     - `IllegalArgumentException`
-       - `java.nio.channels.IllegalChannelGroupException`
-       - `java.nio.channels.IllegalSelectorException`
-       - `java.nio.channels.UnresolvedAddressException`
-       - `java.nio.channels.UnsupportedAddressTypeException`
-     - `IllegalStateException`
-       - `java.nio.channels.AcceptPendingException`
-       - `java.nio.channels.AlreadyBoundException`
-       - `java.nio.channels.AlreadyConnectedException`
-       - `java.nio.channels.CancelledKeyException`
-       - `java.nio.channels.ClosedSelectorException`
-       - `java.nio.channels.ConnectionPendingException`
-       - `java.nio.channels.IllegalBlockingModeException`
-       - `java.nio.channels.NoConnectionPendingException`
-       - `java.nio.channels.NonReadableChannelException`
-       - `java.nio.channels.NonWritableChannelException`
-       - `java.nio.channels.NotYetBoundException`
-       - `java.nio.channels.NotYetConnectedException`
-       - `java.nio.channels.OverlappingFileLockException`
-       - `java.nio.channels.ReadPendingException`
-       - `java.nio.channels.ShutdownChannelGroupException`
-       - `java.nio.channels.WritePendingException`
+     - `IllegalArgumentException` — `java.nio.channels.IllegalChannelGroupException` - `java.nio.channels.IllegalSelectorException` - `java.nio.channels.UnresolvedAddressException` - `java.nio.channels.UnsupportedAddressTypeException`
+     - `IllegalStateException` — `java.nio.channels.AcceptPendingException` - `java.nio.channels.AlreadyBoundException` - `java.nio.channels.AlreadyConnectedException` - `java.nio.channels.CancelledKeyException` - `java.nio.channels.ClosedSelectorException` - `java.nio.channels.ConnectionPendingException` - `java.nio.channels.IllegalBlockingModeException` - `java.nio.channels.NoConnectionPendingException` - `java.nio.channels.NonReadableChannelException` - `java.nio.channels.NonWritableChannelException` - `java.nio.channels.NotYetBoundException` - `java.nio.channels.NotYetConnectedException` - `java.nio.channels.OverlappingFileLockException` - `java.nio.channels.ReadPendingException` - `java.nio.channels.ShutdownChannelGroupException` - `java.nio.channels.WritePendingException`
 
 1. conversion between stream and channel — constructors of stream based classes and `java.nio.channels.Channels` methods
    - channel to stream
@@ -1234,7 +1206,7 @@
      - cancelled-key set — the set of keys that have been cancelled (`SelectableChannel::close` or `SelectionKey::cancel`) but whose channels have not yet been deregistered, not directly accessible; removed from the key set during selection operations
    - selection — during which keys may be added to and removed from a selector's selected-key set and may be removed from its key and cancelled-key sets
      - step
-       1. empty cancelled-key set itself and from key set
+       1. empty cancelled-key set, itself and from key set
        1. OS queried for an update as to the readiness of each remaining channel, if ready, add to selected-key set and its ready-operation set overwritten if newly add otherwise merged
        1. keys added to the cancelled-key set during the process are as step 1
      - `abstract int select()` — blocking
