@@ -267,7 +267,7 @@ Content-Location: /new.html
    1. communication symmetric encrypted with the session key starts
 
 1. authenticate
-   - CA, Certificate Authority — third parties trusted by both the client and the server, whose public keys
+   - CA, Certificate Authority — third parties trusted by both the client and the server, who sign certificates
    - signing — CA sign public keys of servers to generate certificates, which contains the data and the signature
      - signature — hash of the data encrypted by the private key of the signer
    - authentication in HTTPS — the server sends the certificate, the client verify the certificate
