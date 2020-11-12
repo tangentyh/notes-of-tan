@@ -52,7 +52,7 @@ module.exports = {
         text: 'Backend',
         items: [
           { text: 'Spring', link: '/backend/SpringNotes' },
-          { text: 'OS', link: '/backend/OS-Notes' },
+          { text: 'OS', link: '/backend/OS-notes' },
           { text: 'Database', link: '/backend/database' },
           { text: 'SQL', link: '/backend/SQL_notes' },
           { text: 'Distributed System', link: '/backend/distributed' },
@@ -74,9 +74,9 @@ module.exports = {
         items: [
           { text: 'Algorithm', link: '/algo_notes' },
           { text: 'Git', link: '/git_notes' },
-          { text: 'Design Pattern', link: 'DesignPatternNotes' },
-          { text: 'HTTP', link: 'HTTP' },
-          { text: 'MacOS', link: 'mac-notes' },
+          { text: 'Design Pattern', link: '/DesignPatternNotes' },
+          { text: 'HTTP', link: '/HTTP' },
+          { text: 'MacOS', link: '/mac-notes' },
         ]
       },
       // {
