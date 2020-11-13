@@ -316,8 +316,6 @@
      1l << 65 // 1l << (65 % 64)
      ```
 
-1. loop shift
-
 1. float point types
    - types
      - `float` — 4 bytes
@@ -328,8 +326,8 @@
      - exponent — `e`
      - binary exponent — `p`, e.g. `0x1.0p-3` (2^-3)
    - overflows and errors
-     - `Double.POSITIVE_INFINITY`, `Double.NEGATIVE_INFINITY`, and `Double.NaN`
-     - `Double.isNaN()`
+     - `Double.POSITIVE_INFINITY`, `Double.NEGATIVE_INFINITY`, and `Double.NaN`, also in `Float`
+     - `Double::isNaN`, also in `Float`
 
 1. `char` — describes a code unit in the UTF-16 BE encoding
    - syntax — single quote
@@ -347,8 +345,6 @@
    - code unit — a 16-bit value
      - supplementary characters — whose code points are greater than `U+FFFF`, encoded as consecutive pairs of code units, a range of 2048 unused values of the basic multilingual plane
      - surrogates area — high-surrogates range `U+D800` to `U+DBFF` for the first code unit, low-surrogates range `U+DC00` to `U+DFFF` for the second code unit
-   - usage
-     - use `String` — recommendation is not to use the `char` type unless you are actually manipulating UTF-16 code units
 
 1. `boolean`
    - cannot convert between integers and boolean values
@@ -388,7 +384,7 @@
    }
    ```
    - `enum` extends `Enum` — `Size` is actually a subclass of `Enum`, having exactly four instances (static field)
-     - ?? — not possible to construct new objects, `==` can be used
+     - singleton — not possible to construct new objects, `==` can be used
    - implicitly defined methods (i.e. added by the compiler)
      - `static E[] values()`
      - `static E valueOf(String name)`
@@ -401,7 +397,7 @@
    - `String toString()`
    - `static <T extends Enum<T>> T valueOf(Class<T> enumType, String name)`
    - `int ordinal()`
-   - `int compareTo(E other)` — order comparaison, result <0, 0 or >0
+   - `int compareTo(E other)` — by ordinal number
 
 1. arrays
    ```java
@@ -414,12 +410,7 @@
      - `final int length`
      - `T[] clone()`
      - `Object` methods
-   - initialization
-     - all elements are initialized with zero or `false`
-     - Arrays of objects are initialized with the special value `null`
-       ```java
-       String[] names = new String[10];
-       ```
+   - initialization -- zero, `false`, or `null`
    - two dimensional
      ```java
      double[][] balances;
@@ -451,12 +442,12 @@
      - field variable shadowing — `this.` is optional, local variables can shadow instance fields
      - implicit parameter — implicit parameter `this` does not appear in the method declaration
        - can be explicitly declared as the first parameter, usually for annotations
-     - as constructor — the form `this(...)`, constructor call must be the first statement in a constructor
+     - as constructor — constructor call in the form `this(...)` must be the first statement in a constructor
    - initialization
      - implicit field initialization — fields automatically set to a default zero
      - explicit field initialization — initialize with constant value or an expression
      - initialization block
-       - can be `static` — static initialization block
+       - can be `static` — static initialization block, executed when loading the class
        - can set fields but cannot read later fields — legal to set fields defined later in the class. However, to avoid circular definitions, not legal to read from fields initialized later
      - execution order — runs after `super()` call or other constructor call, but before the rest of the constructor, see below
    - constructors
@@ -467,15 +458,15 @@
    - execution order when a constructor is called
      1. other constructor call — if the first line of the constructor calls a second constructor, then the second constructor runs before the body of this constructor.
      1. implicit field initialization — all data fields are initialized to their default values (0 , `false` , or `null`)
-     1. explicit field initialization and initialization blocks — all field initializers and initialization blocks are executed, in the order in which they occur in the class declaration
+     1. explicit field initialization and initialization blocks — all field initializers and initialization blocks are executed, in the order they appear in the class declaration
      1. the rest — The body of the constructor is executed.
    - encapsulation
      - getter, setter — `private` data field with `public` accessor and mutator
      - return clone for mutable objects — If you need to return a reference to a mutable object, return a clone
    - destructor
      - garbage collection — Java does automatic garbage collection, does not support destructors
-     - `Object::finalize` — The `finalize` method will be called before the garbage collector sweeps away the object, but do not rely on, since cannot know when this method will be called, deprecated in JDK 9
-     - `Runtime::addShutdownHook`
+     - `Object::finalize` deprecated since JDK 9 and `java.lang.ref.PhantomReference` -- see [JVM](./JVM.md#Reference), and javadoc of `Object::finalize` tbd
+     - `Runtime::addShutdownHook` -- for JVM
 
 1. access modifiers
    - `public` — no access limit
@@ -483,14 +474,13 @@
    - `protected` — can be accessed by subclasses and within the same package
      - limitation to subclasses — when not within the same package, `SuperType.protectedField` are not accessible to subclass
    - default package access — when no access modifiers specified, can be accessed within the same package
-   - use in fields — `private` is recommended
    - access privileges when overriding — no more restrictive access privileges when overriding
 
 1. other modifiers
    - `final`
      - `final` fields — must be initialized when the object is constructed (can be initialized in constructor) and cannot be modified
      - `final` methods — cannot be overloaded
-     - `final class` — cannot be inherited, and only the methods, not the fields, are automatically `final`
+     - `final class` — cannot be inherited, and methods are automatically `final`
      - `final` parameters — cannot be modified
    - `static`
      - call by instance — static methods can be invoked by object call, but not recommended
@@ -508,7 +498,7 @@
    - `static double random()` — uses `java.util.Random` behind scenes
    - `min`, `max`
    - double
-     - `public static double ulp(double d)` — An ulp, unit in the last place, of a double value is the positive distance between this floating-point value and the double value next larger in magnitude
+     - `public static double ulp(double d)` — an ulp, unit in the last place, of a double value is the positive distance between this floating-point value and the double value next larger in magnitude
    - rounding
      - `static double ceil(double a)`
      - `static long round(double a)`  
@@ -518,8 +508,6 @@
      - `Math.floorMod(x, y)` — `x - Math.floorDiv(x, y) * y`
        - compared to `x % y` — `x - x / y * y`
    - `-Exact` suffixed methods — `ArithmeticException` if overflow
-     - `static int addExact(int x, int y)`  
-       `static long addExact(long x, long y)`
      - `addExact`, `subtractExact`, `multiplyExact`, `decrementExact`, `incrementExact`, `negateExact`
      - `static int toIntExact(long value)`
    - more
@@ -841,7 +829,7 @@
      - `static int reverseBytes(int i)`
      - `static int rotateLeft(int i, int distance)`
      - `static int rotateRight(int i, int distance)`
-   - for `int` and `null` compatible
+   - for `int`
      - `static int compare(int x, int y)`
      - `static int hashCode(int value)`
      - `static String toString(int i)`
@@ -853,6 +841,7 @@
      - `static int MAX_EXPONENT`
      - `static int MIN_EXPONENT`
      - `static double MIN_NORMAL`
+     - `Math::ulp`
    - infinite and not a number
      - `static double NaN`
      - `static double NEGATIVE_INFINITY`
@@ -943,9 +932,9 @@
      - for arrays — arrays will come up with something like `"[I@1a46e30"`, where `[I` denotes an array of integers <!-- ]] -->
    - `Class<?> getClass()`
    - `protected Object clone()`
-   - `protected void finalize()` — deprecated in JDK 9
-   - concurrency related — see after
-   - methods in `Objects` and object wrappers
+   - `protected void finalize()` — deprecated in JDK 9, see [before](#Classes-and-Modifiers)
+   - concurrency related — see [Concurrency](./javaConcurrency.md)
+   - methods in utility class `Objects`
 
 ## Interfaces, Lambdas and Inner Classes
 
@@ -964,7 +953,6 @@
    - can be generic — `class Employee implements Comparable<Employee>`
    - use as super type — supports `instanceof`, `extend`, multiple inheritance
      - diamond problem — see below
-   - initialization time point — initialized when they are first accessed, typically by reading a field that is not a compile time constant
 
 1. default methods
    - `default` implementation
@@ -999,7 +987,7 @@
 
 #### Common Interfaces
 
-1. `Interface Comparable<T>` — `int compareTo(T o)`
+1. `interface Comparable<T>` — `int compareTo(T o)`
    - overflow when implementing with subtraction — make sure absolute values of operands are at most `(Integer.MAX_VALUE - 1) / 2`
      - otherwise use `Integer.compare()`
    - `equals()` compliance — strongly recommended (though not required) to comply with `equals()`
@@ -1009,7 +997,7 @@
      if (getClass() != other.getClass()) throw new ClassCastException();
      ```
 
-1. `Interface java.util.Comparator<T>` — `int compare(T o1, T o2)`
+1. `interface java.util.Comparator<T>` — `int compare(T o1, T o2)`
    - nature and reversed order
      - `static <T extends Comparable<? super T>> Comparator<T> naturalOrder()`
      - `static <T extends Comparable<? super T>> Comparator<T> reverseOrder()` — uses `Collections::reverseOrder` under the hood
@@ -1039,7 +1027,7 @@
      - `static <T> Comparator<T> nullsFirst(Comparator<? super T> comparator)`
      - `static <T> Comparator<T> nullsLast(Comparator<? super T> comparator)`
 
-1. `Interface Cloneable`
+1. `interface Cloneable`
    - mark interface — serves as a tag, a checked `CloneNotSupportedException` if an object requests cloning but does not implement that interface
    - make a class cloneable — implement this interface, redefine `clone` to be `public`
      - `Object::clone` — protected, and does a shallow copy
@@ -1221,7 +1209,7 @@
 ### Inner Class
 
 1. inner class
-   - explicit reference to the outer class — outer class can be explicitly referred to as `OuterClass.this`
+   - `OuterClass.this` — explicit reference to the outer class
      - passed as implicit parameter to inner class constructors
    - implicit reference — can access the data from the scope in which they are defined
      - synthesized constructor parameter for implicit reference — the compiler modifies all inner class constructors, adding a parameter for the outer class reference
@@ -1251,7 +1239,7 @@
    - mechanism for more privileged access to outer class — synthesized outer class backdoor method
      - backdoor method — outer class generates a package accessible static `access$0(OuterClass outer)` method (method name can vary slightly), for inner class, outer class private field access is translated to backdoor method call
      - vulnerability — the generated backdoor method name is not legal in source code, but can be exploited by build or modify a class file
-   - JVM unaware — the virtual machine does not have any special knowledge about inner classes
+   - transparent to JVM — the virtual machine does not have any special knowledge about inner classes
    - verify by inspecting class files — use `javap -p` to verify
 
 1. local inner class — class locally in a single method
@@ -1259,17 +1247,15 @@
    - restricted scope — scope is always restricted to the block being declared
    - effectively final closure — can access effectively final local variables
      - as final fields — behind the scenes stored as a final field of inner class, and spawned to constructor for initialization
-     - access mutable data — use an array of length 1
    - anonymous inner subclass
      ```java
      new SuperType(construction parameters) {
          // inner class methods and data
      }
      ```
-     - implement an interface — `SuperType` can be an interface, the inner class implements that interface
-     - extend a class — `SuperType` can also be a class, the inner class extends that class
-       - a different subclass — take care that `equals()` with `SuperType` may fail
-     - anonymity cannot have constructors — the name of a constructor must be the same as the name of a class
+     - implementing or extending — `SuperType` can be an interface or a class, the inner class implements that interface or extends the class
+       - a different subclass — take care that `equals()` checking `getClass() == otherObject.getClass()` may fail
+     - no constructor redefining — anonymity cannot have constructors — the name of a constructor must be the same as the name of a class
      - use case
        - double brace initialization for `ArrayList`
          ```java
@@ -1294,8 +1280,8 @@
 ## Reflection
 
 1. runtime type identification — used by VM for method resolution
-   - `Class getClass()` in `Object`
-   - `static Class<?> forName(String className)` in `Class`
+   - `Object::getClass`
+   - `Class::forName`
    - `T.class` if `T` is any Java type (or `void.class`)
    - type capturing — use `Class<T>` as a parameter for type match, when called with a class object, the type parameter `T` will be matched
 
@@ -1461,9 +1447,8 @@
    public class ProxyTest {
        public static void main(String... args) {
            Object[] elems = new Object[1000];
-           for (int i = elems.length - 1; i >= 0; —i) {
-               elems[i] = Proxy.newProxyInstance(null, new Class[]{ Comparable.class }, new TraceHandler(Integer.valueOf(i)));
-           }
+           final Class[] clz = { Comparable.class };
+           Arrays.setAll(elems, i -> Proxy.newProxyInstance(null, clz, new TraceHandler(Integer.valueOf(i))));
            Arrays.binarySearch(elems, Integer.valueOf(ThreadLocalRandom.current().nextInt(elements.length) + 1));
        }
    }
@@ -1478,10 +1463,8 @@
          // print method name
          System.out.print("." + m.getName() + "(");
          // print explicit arguments
-         if (args != null)
-         {
-            for (int i = 0; i < args.length; i++)
-            {
+         if (args != null) {
+            for (int i = 0; i < args.length; i++) {
                System.out.print(args[i]);
                if (i < args.length - 1) System.out.print(", ");
             }
@@ -1497,9 +1480,10 @@
 
 ### Debugging
 
-1. general
+1. debugging
    - use debugger
    - test with main method, or unit test tools
+   - print or log
 
 1. print or log
    - debug by print concatenated or formatted string
@@ -1519,7 +1503,7 @@
        });
        ```
 
-1. CLI options related to debugging
+1. CLI options related to debugging — tbd
    - `ctrl` + `\` — get thread dump when the program hangs??
    - `java`
      - use `-verbose` when launching JVM for diagnosing class path problems
@@ -1671,7 +1655,7 @@
    - rethrow — `throw` in `catch` block
      - exception wrapping — use `Throwable::initCause` to throw as another wrapped type and `Throwable::getCause` for original failure
      - bypass exception specification limit — rethrow a wrapped `RuntimeException` if a method cannot throw checked exception
-       - for `IOException` — for example, `java.io.UncheckedIOException` is designed to wrap `IOException`
+       - for `IOException` — `java.io.UncheckedIOException` is designed to wrap `IOException`
      - use generics to make checked exceptions unchecked, see [Generics](#Generics)
    - smart narrowing — when rethrow any exception
      ```java
@@ -1741,7 +1725,7 @@
          void close() throws Exception;
      }
      ```
-   - multiple resources — use semicolon as delimiter
+   - multiple resources — use `;` as delimiter
    - when both `try` block and `AutoCloseable::close` throw exception — any exceptions thrown by `close` methods are suppressed
    - can have `catch` and `finally` blocks, but not recommended
 
@@ -1812,7 +1796,7 @@ see [Logging](./javaMisc.md#Logging).
      - typed are subtypes — typed ones are subtypes of the raw one
      - warning when using raw types
      - raw at runtime — types only checked when compiling, all are raw without type at runtime
-   - differently parallelized, different type — no relationship between `Generic<Type_2>` and `Generic<Type_2>`, regardless of the relationship between the type variables
+   - differently parameterized, different type — no relationship between `Generic<Type_2>` and `Generic<Type_2>`, regardless of the relationship between the type variables
    - at runtime in JVM
      - erased to bound — type variables are erased and replaced by first bound, or `Object`
      - cast when needed — compiler inserts casts to other bounds when necessary
@@ -1846,6 +1830,7 @@ see [Logging](./javaMisc.md#Logging).
      ```
      - class bound — must be the first one in the bounds list
      - interface bound and class bound — arbitrary number of interfaces, but at most one class
+     - `&`
    - wildcards — `?`
      - `?` — for a variable of type `?`, can only assign when left value is `Object`, or right value is `null`
      - `? extends SomeType` — including; a variable of this type can only be right value
@@ -1970,7 +1955,7 @@ see [Logging](./javaMisc.md#Logging).
      ```
      - cannot be extended or implemented explicitly
      - when being processed — tools that process annotations receive objects implementing annotation interfaces, and call methods to retrieve elements
-     - `java.lang.annotation.Annotation` — The common interface extended by all annotation types. Note that an interface that manually extends this one does not define an annotation type.
+     - `java.lang.annotation.Annotation` — the common interface extended by all annotation types. Note that an interface that manually extends this one does not define an annotation type.
        ```java
        public interface Annotation
        ```
@@ -1988,7 +1973,7 @@ see [Logging](./javaMisc.md#Logging).
      ```
      - marker annotation — annotations no elements need to be specified when annotating
      - single value annotation — only one element called `value`
-   - annotation element types — non-null, usually `""` or `Void.class` as substitution
+   - annotation element types — non-null, usually `""` or `Void.class` as substitution of `null`
      - primitive types
      - `String`
      - `Class`
