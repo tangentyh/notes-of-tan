@@ -410,7 +410,7 @@
      - `final int length`
      - `T[] clone()`
      - `Object` methods
-   - initialization -- zero, `false`, or `null`
+   - initialization — zero, `false`, or `null`
    - two dimensional
      ```java
      double[][] balances;
@@ -465,8 +465,8 @@
      - return clone for mutable objects — If you need to return a reference to a mutable object, return a clone
    - destructor
      - garbage collection — Java does automatic garbage collection, does not support destructors
-     - `Object::finalize` deprecated since JDK 9 and `java.lang.ref.PhantomReference` -- see [JVM](./JVM.md#Reference), and javadoc of `Object::finalize` tbd
-     - `Runtime::addShutdownHook` -- for JVM
+     - `Object::finalize` deprecated since JDK 9 and `java.lang.ref.PhantomReference` — see [JVM](./JVM.md#Reference), and javadoc of `Object::finalize` tbd
+     - `Runtime::addShutdownHook` — for JVM
 
 1. access modifiers
    - `public` — no access limit
@@ -717,15 +717,15 @@
      - `StringBuilder(int capacity)`
      - `StringBuilder(String str)`
    - modify
-     - `StringBuilder append(String str)`
-     - `StringBuilder append(char c)`
+     - `append`
      - `StringBuilder appendCodePoint(int cp)`
      - `void setCharAt(int i, char c)`
-     - `StringBuilder insert(int offset, String str)`
-     - `StringBuilder insert(int offset, char c)`
+     - `insert`
      - `StringBuilder delete(int startIndex, int endIndex)`
      - `StringBuilder deleteCharAt(int index)`
      - more
+   - reuse
+     - `void setLength(int newLength)`
    - output — `String toString()`
 
 1. `StringBuffer`
