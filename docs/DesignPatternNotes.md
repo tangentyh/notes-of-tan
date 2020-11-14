@@ -34,7 +34,8 @@
 Creational design patterns abstract the instantiation process, They help make a system independent of how its objects are created, composed, and represented.
 
 1. Singleton
-   - double lock
+   - other implementation — eager, lazy without thread safe, method synchronized lazy
+   - double `null` check
      ```java
      public class Singleton {
          private volatile static Singleton uniqueInstance;
@@ -86,6 +87,11 @@ Creational design patterns abstract the instantiation process, They help make a 
      }
      ```
      - examples — `java.util.concurrent.ThreadFactory`, `org.springframework.beans.factory.BeanFactory`, `java.net.SocketImplFactory`
+       ```java
+       public interface ThreadFactory {
+           Thread newThread(Runnable r);
+       }
+       ```
    - Simple Factory — 把实例化的操作单独放到一个类中，这个类就成为简单工厂类，让简单工厂类来决定应该用哪个具体子类来实例化; in some literature there is no Simple Factory, but the definition of Factory Method is expanded
      ```java
      public class SimpleFactory {
@@ -100,6 +106,18 @@ Creational design patterns abstract the instantiation process, They help make a 
      }
      ```
      - examples — `java.util.EnumSet`, `java.util.ResourceBundle`, `java.text.NumberFormat`, `java.nio.charset.Charset`, `org.springframework.aop.framework.ProxyFactory`, `React.createElement`
+       ```java
+       // EnumSet::noneOf
+       public static <E extends Enum<E>> EnumSet<E> noneOf(Class<E> elementType) {
+           Enum<?>[] universe = getUniverse(elementType);
+           if (universe == null)
+               throw new ClassCastException(elementType + " not an enum");
+           if (universe.length <= 64)
+               return new RegularEnumSet<>(elementType, universe);
+           else
+               return new JumboEnumSet<>(elementType, universe);
+       }
+       ```
 
 1. Builder — separate the construction of a complex object from its representation so that the same construction process can create different representations
    - examples — Spring security, `StringBuilder`, `java.nio.ByteBuffer`, `Appendable`, `java.util.stream.Stream.Builder`
@@ -151,7 +169,7 @@ Structural patterns are concerned with how classes and objects are composed to f
 1. Decorator — Attach additional responsibilities to an object dynamically. Decorators provide a flexible alternative to subclassing for extending functionality.
    - examples — `@` in Python and TypeScript, `java.io.FilterInputStream`, `java.io.FilterOutputStream`, `java.io.FilterReader`, `java.io.FilterWriter`, some views in `java.util.Collections`
 
-1. Facade — Provide a unified interface to a set of interfaces in a subsystem. Facade defines a higher-level interface that makes the subsystem easier to use.
+1. Facade (Façade) — Provide a unified interface to a set of interfaces in a subsystem. Facade defines a higher-level interface that makes the subsystem easier to use.
    - example — Compiler: Scanner, Parser, ProgramNode, BytecodeStream, and ProgramNodeBuilder
 
 1. Flyweight — Use sharing to support large numbers of fine-grained objects efficiently, where intrinsic states are immutable but extrinsic states can vary
@@ -225,7 +243,8 @@ Structural patterns are concerned with how classes and objects are composed to f
    - examples — `java.io.Serializable`
 
 1. Observer — Define a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically.
-   - examples — `java.util.Observer`, `java.util.Observable`, `java.util.EventListener`, [RxJava](https://github.com/ReactiveX/RxJava)
+   - examples — `java.util.EventListener`, `java.util.concurrent.Flow`, [RxJava](https://github.com/ReactiveX/RxJava)
+     - `java.util.Observer`, `java.util.Observable` — deprecated since JDK 9, see [Event Handling](./backend/java/javaUtils.md#Event-Handling)
 
 1. State — Allow an object to alter its behavior when its internal state changes. The object will appear to change its class.
    ```java
@@ -265,7 +284,32 @@ Structural patterns are concerned with how classes and objects are composed to f
      - `javax.lang.model.element.AnnotationValue` and `javax.lang.model.element.AnnotationValueVisitor`
      - `javax.lang.model.element.Element` and `javax.lang.model.element.ElementVisitor`
      - `javax.lang.model.type.TypeMirror` and `javax.lang.model.type.TypeVisitor`
-     - `java.nio.file.Files::walkFileTree` and `java.nio.file.FileVisitor`
+     - `java.nio.file.FileVisitor` used in `java.nio.file.Files::walkFileTree`
+       ```java
+       // example from javadoc of FileVisitor
+       Path start = ...
+       Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
+           @Override
+           public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+               throws IOException
+           {
+               Files.delete(file);
+               return FileVisitResult.CONTINUE;
+           }
+           @Override
+           public FileVisitResult postVisitDirectory(Path dir, IOException e)
+               throws IOException
+           {
+               if (e == null) {
+                   Files.delete(dir);
+                   return FileVisitResult.CONTINUE;
+               } else {
+                   // directory iteration failed
+                   throw e;
+               }
+           }
+       });
+       ```
      - `org.springframework.asm.ClassVisitor`, `org.springframework.asm.FieldVisitor`, `org.springframework.asm.MethodVisitor`, `org.springframework.asm.ModuleVisitor`, `org.springframework.asm.AnnotationVisitor`
 
 1. 空对象 — 使用什么都不做的空对象来代替 `null`。
