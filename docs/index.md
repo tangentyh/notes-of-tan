@@ -87,4 +87,5 @@ For reference:
 - [iluwatar/java-design-patterns: Design patterns implemented in Java](https://github.com/iluwatar/java-design-patterns)
 - [mtdvio/every-programmer-should-know: A collection of (mostly) technical things every software developer should know about](https://github.com/mtdvio/every-programmer-should-know)
 - [papers-we-love/papers-we-love: Papers from the computer science community to read and discuss.](https://github.com/papers-we-love/papers-we-love)
+- [lei-hsia/grokking-system-design: Grokking system design](https://github.com/lei-hsia/grokking-system-design)
 - more...
