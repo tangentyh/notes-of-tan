@@ -72,6 +72,26 @@
      - `⌃` `o` — Insert a new line after the insertion point, cursor stays
      - `⌃` `t` — swap character
 
+1. input method
+   - change order of input sources — tbd
+   - emoji, Keyboard viewer — in the input menu, or `⌃` `⌘` `␣`
+   - popup for accented alphabet — hold the key
+     - disable popup — `defaults write -g ApplePressAndHoldEnabled -bool false`
+   - alternative keyboard — hold `⌥`, optionally `shift`
+     - show alternative keyboard layout — System Preferences > Keyboard > Input Sources, hold `⌥` key
+     - [dead key](https://en.wikipedia.org/wiki/Dead_key)
+       - `⌥` `e` — á, é, í, ó, ú
+       - `⌥` `~` — à, è, ì, ò, ù
+       - `⌥` `u` — ä, ë, ï, ö, ü, ÿ
+       - `⌥` `i` — â, ê, î, ô, û
+       - `⌥` `n` — ã, õ, ñ
+       - `⌥` `c` — ç
+   - unicode hex input method — hold `⌥` to input chars by unicode hex
+   - dash
+     - en dash — `option` `-`
+     - em dash — `shift` `option` `-`
+     - Windows — `alt` `0150` and `alt` `0151`
+
 1. edit in Terminal — `bindkey -M main`, `⌥` or `esc` (`^[`) as meta key
    - docs
      - [zsh: 18 Zsh Line Editor](http://zsh.sourceforge.net/Doc/Release/Zsh-Line-Editor.html)
@@ -229,22 +249,6 @@
      - show desktop — in System Preferences > Mission Control
 
 1. force quit app — `⌥` `⌘` `esc`
-
-1. input method
-   - change order of input sources — tbd
-   - emoji, Keyboard viewer — in the input menu, or `⌃` `⌘` `␣`
-   - popup for accented alphabet — hold the key
-     - disable popup — `defaults write -g ApplePressAndHoldEnabled -bool false`
-   - alternative keyboard — hold `⌥`, optionally `shift`
-     - show alternative keyboard layout — System Preferences > Keyboard > Input Sources, hold `⌥` key
-     - [dead key](https://en.wikipedia.org/wiki/Dead_key)
-       - `⌥` `e` — á, é, í, ó, ú
-       - `⌥` `~` — à, è, ì, ò, ù
-       - `⌥` `u` — ä, ë, ï, ö, ü, ÿ
-       - `⌥` `i` — â, ê, î, ô, û
-       - `⌥` `n` — ã, õ, ñ
-       - `⌥` `c` — ç
-   - unicode hex input — hold `⌥` to input chars by unicode hex
 
 1. boot start
    - login items

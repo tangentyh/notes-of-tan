@@ -466,7 +466,7 @@
    - destructor
      - garbage collection — Java does automatic garbage collection, does not support destructors
      - `Object::finalize` deprecated since JDK 9 and `java.lang.ref.PhantomReference` — see [JVM](./JVM.md#Reference), and javadoc of `Object::finalize` tbd
-     - `Runtime::addShutdownHook` — for JVM
+     - `Runtime::addShutdownHook` — when JVM shutdown
 
 1. access modifiers
    - `public` — no access limit
