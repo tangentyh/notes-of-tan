@@ -57,8 +57,8 @@ So much knowledge :books: , so little time :hourglass_flowing_sand:.
 1. Todo
    - those in [todo](./todo) folder
    - [BOM, DOM and Web APIs](./BOM_DOM_notes.md)
-   - [Network](https://cyc2018.github.io/CS-Notes/#/notes/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%20-%20%E7%9B%AE%E5%BD%951)
-   - [Linux](https://cyc2018.github.io/CS-Notes/#/notes/Linux)
+   - [Network](https://github.com/CyC2018/CS-Notes/blob/master/notes/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%20-%20%E7%9B%AE%E5%BD%95.md)
+   - [Linux](https://github.com/CyC2018/CS-Notes/blob/master/notes/Linux.md)
    - [Code Style](https://github.com/CyC2018/CS-Notes/blob/master/notes/%E4%BB%A3%E7%A0%81%E9%A3%8E%E6%A0%BC%E8%A7%84%E8%8C%83.md)
 
 ## Docs for Docs
