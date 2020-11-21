@@ -207,6 +207,7 @@
          git config remote.pushdefault myfork
          git switch -c mybranch origin/master
          ```
+     - `stash@{<n>}`, `stash@{<date>}`
    - `<rev>`
      - `<rev>^[<n>]` — the nth parent of that commit object, `<rev>^` is equivalent to `<rev>^1`
      - `<rev>~[<n>]` — `<rev>~3` is equivalent to `<rev>^^^` which is equivalent to `<rev>^1^1^1`
@@ -814,6 +815,7 @@
 1. `git reflog` — the tips of branches and other references were updated in the local repository
 
 1. `git stash`
+   - location — the latest stored in `refs/stash`, other stored in the reflog, `stash@{<n>}`, `stash@{<date>}`
    - `--index` — also restore the index
    - `-k` `--keep-index`, `--no-keep-index` — keep the index intact
    - `-u` `--include-untracked`

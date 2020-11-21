@@ -6,14 +6,14 @@
    - Spring Framework
      - [Spring Framework Documentation](https://docs.spring.io/spring-framework/docs/current/spring-framework-reference/index.html)
      - [Overview (Spring Framework current API)](https://docs.spring.io/spring/docs/current/javadoc-api/)
-     - [Appendix A. Common application properties](https://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html)
    - AOP
      - [Overview (AspectJ(tm) aspectj5rt API)](https://www.eclipse.org/aspectj/doc/released/aspectj5rt-api/overview-summary.html)
      - [org.aspectj:aspectjweaver:1.9.4 API Doc :: Javadoc.IO](https://javadoc.io/doc/org.aspectj/aspectjweaver/1.9.4)
    - Spring Boot
+     - [Appendix A. Common application properties](https://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html)
      - [Spring Boot Reference Guide](https://docs.spring.io/spring-boot/docs/current/reference/html/)
      - [Spring Boot Reference Guide single page](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/)
-     - [Overview (Spring Boot 2.3.1.RELEASE API)](https://docs.spring.io/spring-boot/docs/current/api/)
+     - [Overview (Spring Boot RELEASE API)](https://docs.spring.io/spring-boot/docs/current/api/)
 
 1. philosophy
    - beans — Java objects that perform business logic, execute tasks, persist and retrieve persisted data, respond to HTTP requests, and more
@@ -772,7 +772,7 @@
        public interface Environment extends PropertyResolver
        ```
 
-1. `PropertySource` resolve order — [4.2. Externalized Configuration](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config)
+1. `PropertySource` resolve order — [4.2. Externalized Configuration](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config) — former ones override later ones
    1. devtools global settings properties in the `$HOME/.config/spring-boot` directory when devtools is active
    1. test related
    1. command line arguments — see arguments passing before
@@ -784,6 +784,8 @@
    1. `SPRING_APPLICATION_JSON` environment variable — `spring.application.json` in `application.properties`
       ```shell
       SPRING_APPLICATION_JSON='{ "data":{"server":"remoteserver:3030"}}'
+      java -Dspring.application.json='{"acme":{"name":"test"}}' -jar myapp.jar
+      java -jar myapp.jar --spring.application.json='{"acme":{"name":"test"}}'
       ```
    1. servlet
       1. `ServletConfig` init parameters
@@ -793,12 +795,12 @@
    1. OS Environment variables
    1. a `RandomValuePropertySource` that has properties only in `random.*`
    1. application properties
-      1. profile-specific application properties (`application-{profile}.properties` and YAML variants)
-         1. outside of the package jar
-         1. inside of the package jar
-      1. plain `application.properties` and YAML variants
-         1. outside of the package jar
-         1. inside of the package jar
+      1. outside the package jar
+         1. profile-specific application properties (`application-{profile}.properties` and YAML variants)
+         1. plain `application.properties` and YAML variants
+      1. inside the package jar
+         1. profile-specific application properties
+         1. plain application properties
    1. `@PropertySource`
    1. `SpringApplication::setDefaultProperties`
 
@@ -807,11 +809,13 @@
      - `spring.config.name` — defaults to `application`, for customized config filename
      - `spring.config.location` — for customized location
      - `spring.config.additional-location`
+     - `spring.config.import`
    - set activate profiles
      - `@org.springframework.test.context.ActiveProfiles`
      - `ConfigurableEnvironment::setActiveProfiles`
-     - `spring.profiles.active`, `spring.profiles.default` as fallback — defaults to `application-default.properties`, use `application.properties` if no specific profiles exist
-     - `spring.profiles` — `List<String>` that at least one should match for the document to be included
+     - `spring.profiles.active`, use `spring.profiles.default` if not specified — defaults to `application-default.properties`; `application.properties` always used
+     - `spring.profiles` — `List<String>` that at least one should match for the document to be included, kind similar to the `@Conditional`
+       - use new and less confusing `spring.config.activate.on-cloud-platform`, `spring.config.activate.on-profile` (cannot be used with `spring.profiles.active`)
      - `spring.profiles.include` — `List<String>` to unconditionally activate
 
 ## SpEL

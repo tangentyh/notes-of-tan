@@ -901,6 +901,8 @@
 
 #### File Stream
 
+Use new classes in `java.nio` like `Files`, `Paths` instead when possible.
+
 1. file streams
    - `java.io.FileInputStream`
       ```java
