@@ -173,7 +173,7 @@ Structural patterns are concerned with how classes and objects are composed to f
    - example — Compiler: Scanner, Parser, ProgramNode, BytecodeStream, and ProgramNodeBuilder
 
 1. Flyweight — Use sharing to support large numbers of fine-grained objects efficiently, where intrinsic states are immutable but extrinsic states can vary
-   - examples — `Integer::valueOf`, also on `Boolean`, `Byte`, `Character`, `Short`, `Long` and `BigDecimal`
+   - examples — `Integer::valueOf`, also on `Boolean`, `Byte`, `Character`, `Short`, `Long`, `BigDecimal` and `BigInteger`
 
 1. Proxy — Provide a surrogate or placeholder for another object to control access to it.
    - taxonomy
@@ -265,19 +265,19 @@ Structural patterns are concerned with how classes and objects are composed to f
 
 1. Strategy — Define a family of algorithms, encapsulate each one, and make them interchangeable. Strategy lets the algorithm vary independently from clients that use it.
    ```java
-   public class Context<T> {
+   public class Context<T extends Strategy> {
      private T strategy;
      public void operation() { strategy.doAlgorithm(); }
    }
    ```
-   - examples — `javax.servlet.http.HttpServlet::service`, `java.security.MessageDigest::digest`
+   - examples — `javax.servlet.http.HttpServlet`, `java.security.MessageDigest::digest`
 
 1. Template Method — Define the skeleton of an algorithm in an operation, deferring some steps to subclasses. Template Method lets subclasses redefine certain steps of an algorithm without changing the algorithm's structure.
    - examples
      - all non-abstract methods of `java.io.InputStream`, `java.io.OutputStream`, `java.io.Reader` and `java.io.Writer`
      - default methods in collection interfaces and all non-abstract methods in collection companion classes
        - `LinkedHashMap::afterNodeRemoval`, `LinkedHashMap::afterNodeInsertion`, `LinkedHashMap::afterNodeAccess` overrides those in `HashMap`
-     - React Lifecycle methods
+     - React lifecycle
 
 1. Visitor — Represent an operation to be performed on the elements of an object structure. Visitor lets you define a new operation without changing the classes of the elements on which it operates.
    - examples
