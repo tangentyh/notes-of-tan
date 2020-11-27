@@ -402,7 +402,7 @@ Gossip — the reach of a broadcast and the reliability of anti-entropy
 
 1. generalized solution — tbd, [A Generalised Solution to Distributed Consensus](https://arxiv.org/abs/1902.06776)
 
-1. variants of read-modify-write registers instead of write-once registers
+1. variants which are read-modify-write registers instead of write-once registers
    - [Active Disk Paxos](https://doi.org/10.1145/571825.571837)
    - [CASPaxos](https://arxiv.org/abs/1802.07000)
 

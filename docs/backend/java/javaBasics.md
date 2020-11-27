@@ -512,7 +512,7 @@
      - `static int toIntExact(long value)`
    - more
 
-1. `java.util.Random` — generate a stream of pseudorandom numbers, of which `Math.random()` uses an `static final` instance
+1. `java.util.Random` — generate a stream of pseudorandom numbers, of which `Math.random()` uses an static inner class singleton instance
    ```java
    public class Random extends Object
    implements Serializable
@@ -652,7 +652,7 @@
        - `static String valueOf(type c)` — from various types
        - `static String copyValueOf(char[] data)` — `valueOf` equivalent  
          `static String copyValueOf(char[] data, int offset, int count)`
-     - `String concat(String str)`
+     - `String concat(String str)` — do nothing if empty string; in contrast, `+` will be compiled to temporary `StringBuilder`
      - `String(byte[] bytes)`  
        `String(byte[] bytes, Charset charset)`  
        `String(byte[] bytes, int offset, int length)`  
