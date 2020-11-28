@@ -14,8 +14,8 @@
    - priority — whenever the scheduler wants to pick a new thread, threads with higher priorities are preferred
      - inherit — initially set equal to the priority of the creating thread
      - mapped constants — `Thread.MIN_PRIORITY` 1, `Thread.NORM_PRIORITY` 5, `Thread.MAX_PRIORITY` 10, mapped to priority levels of the host platform
-     - Windows has seven priority levels, priorities are ignored in Linux??
-     - caveat — few scenarios there to ever tweak priorities. If you have several threads with a high priority that don’t become inactive, the lower-priority threads may never execute
+     - OS dependent — Windows has seven priority levels, thread priorities are ignored on Linux by default
+     - unrecommended — few scenarios there to ever tweak priorities. If you have several threads with a high priority that don’t become inactive, the lower-priority threads may never execute
    - daemon — serves other threads, JVM exits when only daemon threads remain
      - inherit — is a daemon thread if and only if the creating thread is a daemon
      - no persistence access — should never access a persistent resource such as a file or database since it can terminate at any time
@@ -28,22 +28,26 @@
      }
      ```
      - exceptions in `uncaughtException` — any exception thrown by this method will be ignored by JVM
-     - handler defaults — default handler defaults to `null`, individual handler defaults to `ThreadGroup`
+     - handler defaults — default handler (`static` `Thread::setDefaultUncaughtExceptionHandler`) defaults to `null`, individual handler (`Thread::setUncaughtExceptionHandler`) defaults to `ThreadGroup`
    - `ThreadGroup` — represents a set of threads. In addition, a thread group can also include other thread groups
-     - not recommended, use alternatives instead
+     ```java
+     public class ThreadGroup implements Thread.UncaughtExceptionHandler
+     ```
+     - unrecommended — use alternatives instead
+     - share some APIs of `Thread`
      - action orders of `ThreadGroup::uncaughtException` when an uncaught exception
-       - the `uncaughtException` method of the parent thread group
-       - otherwise, default handler if non-`null`
-       - otherwise, nothing happens if the `Throwable` is an instance of `ThreadDeath`
-       - otherwise, print the name of the thread and the stack trace to `System.err`
-   - `ThreadLocal`, `ThreadLocalRandom` — thread-local variables
+       1. the `uncaughtException` method of the parent thread group
+       1. otherwise, default handler if non-`null`
+       1. otherwise, nothing happens if the `Throwable` is an instance of `ThreadDeath`
+       1. otherwise, print the name of the thread and the stack trace to `System.err`
+   - `ThreadLocal`, `ThreadLocalRandom` — thread-local variables, see below
      ```java
      public static final ThreadLocal<SimpleDateFormat> dateFormat =
          ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd"));
      ```
      - motivations — avoid synchronization and blocking and boost performance
-       - the internal data structures used by `SimpleDateFormat` can be corrupted by concurrent access, and synchronization is expensive
-       - `Random` is thread safe using `AtomicLong::compareAndSet`, but inefficient if multiple threads need to wait for a single shared generator
+       - motivation of the above example — the internal data structures used by `SimpleDateFormat` can be corrupted by concurrent access, and synchronization is expensive
+       - motivation of `ThreadLocalRandom` — `Random` is thread safe using `AtomicLong::compareAndSet`, but inefficient if multiple threads need to wait for a single shared generator
 
 1. `Runnable` — should be implemented by any class whose instances are intended to be executed by a thread
    ```java
@@ -57,15 +61,14 @@
 
 1. `Thread`
    ```java
-   public class Thread extends Object
-   implements Runnable
+   public class Thread implements Runnable
    ```
    - constructors
      - `Thread(Runnable target)`
      - `Thread(Runnable target, String name)`
    - lifecycle
      - `void start()`
-     - `void run()` — called by `start()`, generally should not be called explicitly
+       - `void run()` — called by `start()`, generally should not be called explicitly
      - `void interrupt()` — set the interrupted status, if the thread is blocked, throw `InterruptedException` inside the thread
        - used by blocking methods — typically blocking methods (those related to `Thread.State.WAITING` and `Thread.State.TIMED_WAITING`) threaten to throw `InterruptedException`
    - wait
@@ -95,17 +98,10 @@
 1. `enum Thread.State`
    - `NEW` — after `new`, a thread that has not yet started is in this state.
    - `RUNNABLE` — after `start()`, a thread executing in the Java virtual machine is in this state, may not be running due to CPU time slicing
-   - `BLOCKED` — intrinsic object lock, a thread that is blocked waiting for a monitor lock is in this state.
+   - `BLOCKED` — intrinsic object lock, a thread that is blocked waiting for a monitor lock is in this state
    - `WAITING` — after `Object::wait`, `Thread::join`, or by `Lock` or `Condition`, a thread that is waiting indefinitely for another thread to perform a particular action is in this state.
    - `TIMED_WAITING` — after `Thread::sleep`, or methods for `WAITING` with a time parameter, a thread that is waiting for another thread to perform an action for up to a specified waiting time is in this state.
    - `TERMINATED` — A thread that has exited is in this state.
-
-1. `ThreadGroup`
-   ```java
-   public class ThreadGroup extends Object
-   implements Thread.UncaughtExceptionHandler
-   ```
-   - share some APIs of `Thread`
 
 1. `ThreadLocal`
    ```java
@@ -126,8 +122,8 @@
      }
      ```
    - `static <S> ThreadLocal<S> withInitial(Supplier<? extends S> supplier)`
-   - `ThreadLocal.ThreadLocalMap`, referenced by `Thread.threadLocals` field — open addressing hash table
-     - entry — `WeakReference<ThreadLocal<?>>` as key, whose hash value managed by a static `AtomicInteger`, `getAndAdd` for every `ThreadLocal` instance
+   - `ThreadLocal.ThreadLocalMap`, referenced by `Thread.threadLocals` instance field — hash table with closed hashing
+     - entry — `WeakReference<ThreadLocal<?>>` as key, whose hash value managed by a static `AtomicInteger`, which `getAndAdd` for every `ThreadLocal` instance
      - memory leak — referent of `WeakReference<ThreadLocal<?>>` keys can be reclaimed by GC, but no `ReferenceQueue` like in `WeakHashMap`, `expungeStaleEntries()` called only when rehash, and single entry expunge method called only when a stale entry encountered, possibly leaving stale entries not expunged
 
 1. `java.util.concurrent.ThreadLocalRandom`
@@ -224,9 +220,10 @@
      - `void wait()`
      - `void wait(long timeout)`
      - `void wait(long timeout, int nanos)`
-   - monitor — intrinsic lock is the loose adaption of the monitor concept
-     - [Monitor (synchronization) - Wikipedia](https://en.wikipedia.org/wiki/Monitor_(synchronization))
+   - monitor — intrinsic lock is the loose adaption of the monitor concept, see [Monitor (synchronization) - Wikipedia](https://en.wikipedia.org/wiki/Monitor_(synchronization))
    - JVM optimization — see [zhihu](https://zhuanlan.zhihu.com/p/75880892), [CS-Notes/Java 并发.md at master · CyC2018/CS-Notes](https://github.com/CyC2018/CS-Notes/blob/master/notes/Java%20%E5%B9%B6%E5%8F%91.md#%E5%8D%81%E4%BA%8C%E9%94%81%E4%BC%98%E5%8C%96)
+     - 锁膨胀 — unlocked, biased, lightweight, inflated
+     - 锁消除, 锁粗化, 自适应自旋锁
 
 1. `interface java.util.concurrent.locks.Lock`
    - `void lock()` — other threads are blocked if the lock cannot be acquired, cannot be interrupted
@@ -255,7 +252,7 @@
    - fair — a lot slower, a fair lock can still be unfair if the thread scheduler is unfair
      - `ReentrantLock()`
      - `ReentrantLock(boolean fair)`
-   - underlying implementation — `AbstractQueuedSynchronizer::compareAndSetState`
+   - underlying implementation — `AbstractQueuedSynchronizer`
 
 1. `java.util.concurrent.locks.ReentrantReadWriteLock` — read lock for accessors, write lock for mutators
    ```java
@@ -271,8 +268,8 @@
      - mutual exclusive or not — the read lock may be held simultaneously by multiple reader threads, so long as there are no writers. The write lock is exclusive
      - `writeLock` happen-before — must guarantee that the memory synchronization effects of `writeLock` operations: a thread successfully acquiring the read lock will see all updates made upon previous release of the write lock
      - simultaneous read and write lock — a writer can acquire the read lock, but not vice-versa
-     - overhead — the read-write lock implementation (which is inherently more complex than a mutual exclusion lock) can dominate the execution cost if the read operations are too short
-   - underlying implementation — `AbstractQueuedSynchronizer::compareAndSetState`
+     - performance — the read-write lock implementation (which is inherently more complex than a mutual exclusion lock) can dominate the execution cost if the read operations are too short
+   - underlying implementation — `AbstractQueuedSynchronizer`
 
 1. `java.util.concurrent.locks.StampedLock` — a capability-based lock, not reentrant, lock acquisition methods return a stamp that represents and controls access with respect to a lock state; lock release and conversion methods require stamps as arguments
    ```java
@@ -355,6 +352,7 @@
    - problems of concurrent write and read to instance fields
      - cache coherence — threads running in different processors may see different values for the same memory location
      - reorder — a memory value can be changed by another thread, but compilers assume memory values are only changed with explicit instructions, and compilers reorder instructions to maximize throughput
+   - solution to above problems
      - memory barrier, membar, memory fence or fence instruction — a type of barrier instruction that causes a CPU or compiler to enforce an ordering constraint on memory operations issued before and after the barrier instruction. This typically means that operations issued prior to the barrier are guaranteed to be performed before operations issued after the barrier
      - barrier — a barrier for a group of threads or processes in the source code means any thread/process must stop at this point and cannot proceed until all other threads/processes reach this barrier
    - ensure changes visible — compiler will insert the appropriate code to ensure that a change to the a variable in one thread is visible from any other thread that reads the variable
@@ -364,7 +362,7 @@
        > For the purposes of the Java programming language memory model, a single write to a non-volatile `long` or `double` value is treated as two separate writes: one to each 32-bit half. This can result in a situation where a thread sees the first 32 bits of a 64-bit value from one write, and the second 32 bits from another write.
    - also `synchronized` — changes visible before a variable is unlocked
 
-1. `java.util.concurrent.atomic` — use efficient machine-level instructions to guarantee atomicity without using locks
+1. `java.util.concurrent.atomic` package — use efficient machine-level instructions to guarantee atomicity without using locks
    - optimistic update — `compareAndSet` method, or use lambda like `accumulateAndGet` method
      ```java
      public static AtomicLong largest = new AtomicLong();
@@ -378,17 +376,17 @@
      - CAS, [Compare-and-swap - Wikipedia](https://en.wikipedia.org/wiki/Compare-and-swap)
        - ABA problem — use `AtomicStampedReference`, or traditional synchronization
    - delayed computation — `LongAdder`, `LongAccumulator`, `DoubleAdder`, `DoubleAccumulator`
-     - under high contention, performance suffers because the optimistic updates require too many retries
-     - the computation must be associative and commutative
-     - `identity` — initial value, also used when `accumulate()`
+     - problem with CAS — under high contention, performance suffers because the optimistic updates require too many retries
+     - limit — the computation must be associative and commutative
+     - `identity` in parameters — initial value, also used when `accumulate()`
 
-1. `java.util.concurrent.atomic` classes
+1. classes in `java.util.concurrent.atomic`
    - `java.util.concurrent.atomic.AtomicBoolean` (implements `Serializable`)
    - `java.util.concurrent.atomic.AtomicIntegerArray` (implements `Serializable`)
-   - `java.util.concurrent.atomic.AtomicIntegerFieldUpdater<T>`
+   - `java.util.concurrent.atomic.AtomicIntegerFieldUpdater<T>` — a reflection-based utility that enables atomic updates to designated `volatile int` fields of designated classes
    - `java.util.concurrent.atomic.AtomicLongArray` (implements `Serializable`)
    - `java.util.concurrent.atomic.AtomicLongFieldUpdater<T>`
-   - `java.util.concurrent.atomic.AtomicMarkableReference<V>`
+   - `java.util.concurrent.atomic.AtomicMarkableReference<V>` — maintains markable references by creating internal objects representing "boxed" [reference, boolean] pairs
    - `java.util.concurrent.atomic.AtomicReference<V>` (implements `Serializable`)
    - `java.util.concurrent.atomic.AtomicReferenceArray<E>` (implements `Serializable`)
    - `java.util.concurrent.atomic.AtomicReferenceFieldUpdater<T,V>`
@@ -420,20 +418,23 @@
    - producer consumer model
    - no synchronization needed — instead of synchronization and locks, queue the instructions and let only the access of one thread
    - the queue needs to be thread-safe — blocking queue blocks a thread when no slot for producer or no provision for consumer
-   - timeout — some methods have versions with timeout
+   - non-null — parameter validated, typically with `Objects::requireNonNull`
+   - implementation — `ReentrantLock` with `Condition`, except `SynchronousQueue`, `LinkedTransferQueue`
 
 1. `java.util.concurrent.BlockingQueue`
    ```java
    public interface BlockingQueue<E> extends Queue<E>
    ```
-   - non-null
+   - `boolean add(E e)` — usually `AbstractQueue::add`, no lock and `IllegalStateException` if full
    - blocking
-     - `E put(E e)`
-     - `E take()`
+     - `E put(E e) throws InterruptedException`
+     - `E take() throws InterruptedException`
    - timeout
-     - `boolean offer(E e, long timeout, TimeUnit unit)`  
-       `boolean offer(E e)` — 0 timeout
-     - `E poll(long timeout, TimeUnit unit)`
+     - `boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException`
+     - `E poll(long timeout, TimeUnit unit) throws InterruptedException`
+   - return special value
+     - `boolean offer(E e)` — possible to return `false` if full after lock acquired
+     - `E poll()` — possible to return `null` if empty after lock acquired
 
 1. `java.util.concurrent.BlockingDeque`
    ```java
@@ -470,16 +471,29 @@
    public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
    implements BlockingQueue<E>
    ```
-   - The head of the queue is that `Delayed` element whose delay expired furthest in the past
+   - comparison in backing priority queue — generally `Long::compare` with `Delayed::getDelay`
+   - implementation — block by remaining delay like in `take()` implemented by `Condition::awaitNanos` with `Delay::getDelay` as argument
    - `java.util.concurrent.Delay`
      ```java
      public interface Delayed extends Comparable<Delayed> {
-         long getDelay(TimeUnit unit);
+         long getDelay(TimeUnit unit); // remaining delay
      }
      ```
-     - consistency between `compareTo` and `getDelay` — a `compareTo` method needs to provide an ordering consistent with its `getDelay` method, which violates the consistency between `compareTo` and `equals`
+     - consistency between `compareTo`, `getDelay` and `equals` — a `compareTo` method needs to provide an ordering consistent with its `getDelay` method, which violates the consistency between `compareTo` and `equals`
 
-1. `java.util.concurrent.LinkedTransferQueue` — unbounded `TransferQueue` backed by dual queues of slack (refer to source code) based on linked nodes
+1. `java.util.concurrent.SynchronousQueue` — a mechanism that pairs up producer and consumer threads, a blocking queue in which each insert operation must wait for a corresponding remove operation by another thread, and vice versa
+   ```java
+   public class SynchronousQueue<E> extends AbstractQueue<E>
+   implements BlockingQueue<E>, Serializable
+   ```
+   - empty queue — no internal capacity, cannot `peek()`, etc.
+   - constructors — similar performance, but FIFO usually supports higher throughput under contention and LIFO maintains higher thread locality in common applications
+     - `SynchronousQueue()` — LIFO for non-fair mode
+     - `SynchronousQueue(boolean fair)` — FIFO for fairness, performance is similar for this collection
+   - implementation — dual queue with `LockSupport`, `VarHandle::compareAndSet`, see javadoc in source code
+   - other similar synchronizers — `LinkedTransferQueue`, `Exchanger`
+
+1. `java.util.concurrent.LinkedTransferQueue` — unbounded `TransferQueue` backed by dual queues of slack (refer to javadoc in source code) based on linked nodes
    ```java
    public class LinkedTransferQueue<E> extends AbstractQueue<E>
    implements TransferQueue<E>, Serializable
@@ -489,8 +503,17 @@
      public interface TransferQueue<E> extends BlockingQueue<E>
      ```
      - `void transfer(E e)` — transfers the specified element immediately if there exists a consumer already waiting, else waits until the element is received by a consumer
+     - `boolean tryTransfer(E e)`
+     - `boolean tryTransfer(E e, long timeout, TimeUnit unit)`
    - inaccurate `size()` — `size()` is O(n) and maybe inaccurate, due to non-data nodes and concurrency
    - atomicity for bulk operations — bulk operations `addAll`, `removeAll`, `retainAll`, `containsAll`, `equals`, and `toArray` are not guaranteed to be performed atomically
+   - implementation — dual queues with slack, see javadoc in source code
+   - comparison with `SynchronousQueue` — `LinkedTransferQueue` is more fast??, and
+     > Capability-wise, `LinkedTransferQueue` is actually a superset of `ConcurrentLinkedQueue`, `SynchronousQueue` (in “fair” mode), and unbounded `LinkedBlockingQueue`.  
+     > —— Doug Lea
+
+1. [Disruptor](https://lmax-exchange.github.io/disruptor/) — ring buffer, lock free, tbd
+   - [GitHub](https://github.com/LMAX-Exchange/disruptor)
 
 ### Concurrent Collections
 
@@ -507,6 +530,7 @@
    implements Queue<E>, Serializable
    ```
    - [Simple, Fast, and Practical Non-Blocking and Blocking Concurrent Queue Algorithms](http://www.cs.rochester.edu/~scott/papers/1996_PODC_queues.pdf)
+   - implementation — `VarHandle::compareAndSet`
 
 1. `java.util.concurrent.ConcurrentLinkedDeque`
    ```java
@@ -525,6 +549,7 @@
    public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
    implements ConcurrentNavigableMap<K,V>, Cloneable, Serializable
    ```
+   - implementation — `VarHandle::compareAndSet`
 
 1. `java.util.concurrent.ConcurrentHashMap`
    ```java
@@ -538,13 +563,13 @@
      - value non-null — `null` is for absent; if also for value, incompatible with the operation that use `synchronized` on the old value
      - put — `synchronized` on the old value, CAS if `null`
      - replace — `synchronized` on the old value
-     - lambda — `synchronized` on the old value, if `null`, CAS a dummy value and `synchronized` on the dummy value, compute lambda, set computed value, exit lock block
+     - lambda — `synchronized` on the old value, if `null`, CAS put a dummy value and `synchronized` on the dummy value, compute lambda, set computed value, then exit
      - use `ConcurrentHashMap<String, LongAdder>` with `putIfAbsent`
        ```java
        map.putIfAbsent(word, new LongAdder()).increment();
        map.computeIfAbsent(word, k -> new LongAdder()).increment(); // better
        ```
-   - `parallelismThreshold` of bulk operations — if the map contains more elements than the threshold, the bulk operation is parallelized, fully utilize the `ForkJoinPool.commonPool()` if set to 1
+   - `parallelismThreshold` parameter of bulk operations — if the map contains more elements than the threshold, the bulk operation is parallelized, fully utilize the `ForkJoinPool.commonPool()` if set to 1
    - `java.util.concurrent.ConcurrentMap`
      ```java
      public interface ConcurrentMap<K,V> extends Map<K,V>
@@ -557,13 +582,13 @@
 
 ### Copy on Write Collections
 
-1. `java.util.concurrent.CopyOnWriteArrayList` — all mutative operations (add, set, and so on) are implemented by making a fresh copy of the underlying array
+1. `java.util.concurrent.CopyOnWriteArrayList` — all mutative operations (add, set, and so on) are implemented by making a fresh copy of the underlying array, `synchronized` on a private field
    ```java
    public class CopyOnWriteArrayList<E> extends Object
    implements List<E>, RandomAccess, Cloneable, Serializable
    ```
    - tradeoff — efficient when traversal operations vastly outnumber mutations, and is useful when you cannot or don't want to synchronize traversals
-     - comparaison to synchronized view — when frequent mutation is needed, synchronized view of `ArrayList` can outperform a `CopyOnWriteArrayList`
+     - comparison to synchronized view — when frequent mutation is needed, synchronized view of `ArrayList` can outperform a `CopyOnWriteArrayList`
    - snapshot iterator — iterator method uses a reference to the state of the array at the point that the iterator was created
    - thread-safe — memory consistency
 
@@ -582,7 +607,7 @@
        V call() throws Exception;
    }
    ```
-   - methods for converting to `Callable` in `Executors`
+   - `Executors::callable` — methods for converting to `Callable`
 
 1. `java.util.concurrent.Future` — result-bearing action that can be cancelled
    ```java
@@ -701,6 +726,9 @@
    public class ExecutorCompletionService<V> extends Object
    implements CompletionService<V>
    ```
+   ```java
+   public interface CompletionService<V>
+   ```
    - constructors
      - `ExecutorCompletionService(Executor executor)`
      - `ExecutorCompletionService(Executor executor, BlockingQueue<Future<V>> completionQueue)`
@@ -723,9 +751,17 @@
    ```java
    public class ThreadPoolExecutor extends AbstractExecutorService
    ```
-   - creation — returned by `Executors.newCachedThreadPool()`, `Executors.newFixedThreadPool(int)`, `Executors.newSingleThreadExecutor()`
-   - reject policies when task queue overflow, as static inner classes
-     - `ThreadPoolExecutor.AbortPolicy` — `RejectedExecutionException`
+   - creation
+     - `Executors` — returned by `Executors::newCachedThreadPool`, `Executors::newFixedThreadPool`, `Executors::newSingleThreadExecutor`
+     - constructor parameters
+       - `int corePoolSize` — the number of threads to keep in the pool, even if they are idle, unless `ThreadPoolExecutor::allowCoreThreadTimeOut` with `true`
+       - `int maximumPoolSize`
+       - `long keepAliveTime`, `TimeUnit unit` — the maximum time that excess idle threads will wait for new tasks before terminating
+       - `BlockingQueue<Runnable> workQueue` — the queue to queue tasks if no idle core thread
+       - `ThreadFactory threadFactory` — optional, defaults to `Executors::defaultThreadFactory`
+       - `RejectedExecutionHandler` — optional, defaults to `AbortPolicy`
+   - `RejectedExecutionHandler` — reject policies when task queue overflow, as static inner classes, defaults to `AbortPolicy`
+     - `ThreadPoolExecutor.AbortPolicy` — throw `RejectedExecutionException`
      - `ThreadPoolExecutor.CallerRunsPolicy`
      - `ThreadPoolExecutor.DiscardOldestPolicy`
      - `ThreadPoolExecutor.DiscardPolicy`
@@ -736,19 +772,31 @@
    public class ScheduledThreadPoolExecutor extends ThreadPoolExecutor
    implements ScheduledExecutorService
    ```
-   - creation — returned by `Executors.newScheduledThreadPool(int)`, `Executors.newSingleThreadScheduledExecutor()`
+   - creation
+     - `Executors` — returned by `Executors::newScheduledThreadPool`, `Executors::newSingleThreadScheduledExecutor`
+     - inherited constructors, also constructors with more optional parameters
+       ```java
+       public ScheduledThreadPoolExecutor(int corePoolSize) {
+           super(corePoolSize, Integer.MAX_VALUE,
+                 DEFAULT_KEEPALIVE_MILLIS, MILLISECONDS, // 10 ms
+                 new DelayedWorkQueue()); // inner static class, like DelayQueue,
+                 // but element type is an inner class called ScheduledFutureTask
+                 // and every ScheduledFutureTask also records its index in the
+                 // backing array to speed up cancellation and removal
+       }
+       ```
 
 1. `java.util.concurrent.ForkJoinPool` — see [Fork-Join](#Fork-Join)
 
 1. `java.util.concurrent.Executors` — factory and utility methods
    - thread pools
-     - `static ExecutorService newCachedThreadPool()` — new threads are created as needed; idle threads are kept for 60 seconds  
+     - `static ExecutorService newCachedThreadPool()` — new threads are created as needed; idle threads are kept for 60 seconds, queue is `SynchronousQueue`  
        `static ExecutorService newCachedThreadPool(ThreadFactory threadFactory)`
-     - `static ExecutorService newFixedThreadPool(int nThreads)` — contains a fixed set of threads; tasks kept in a queue when overloaded; idle threads are kept indefinitely  
+     - `static ExecutorService newFixedThreadPool(int nThreads)` — contains a fixed set of threads; tasks kept in a `LinkedBlockingQueue` when overloaded
        `static ExecutorService newFixedThreadPool(int nThreads, ThreadFactory threadFactory)`
      - `static ScheduledExecutorService newScheduledThreadPool(int corePoolSize)` — fixed-thread pool for scheduled execution; a replacement for `java.util.Timer`  
        `static ScheduledExecutorService newScheduledThreadPool(int corePoolSize, ThreadFactory threadFactory)`
-     - `static ExecutorService newSingleThreadExecutor()` — a “pool” with a single thread that executes the submitted tasks sequentially  
+     - `static ExecutorService newSingleThreadExecutor()` — a “pool” with a single thread that executes the submitted tasks sequentially, queue is `LinkedBlockingQueue`  
        `static ExecutorService newSingleThreadExecutor(ThreadFactory threadFactory)`
      - `static ScheduledExecutorService newSingleThreadScheduledExecutor()` — scheduled version of `newSingleThreadExecutor`
        `static ScheduledExecutorService newSingleThreadScheduledExecutor(ThreadFactory threadFactory)`
@@ -772,11 +820,11 @@
        - stealing is rare — since large subtasks are at the tail, such stealing is rare
        - stealing is expensive — context switch between threads, even between CPUs if not the same core
        - only steal from adjacent thread to mitigate contention
-     - `ForkJoinPool` employing work stealing — efficient for recursive tasks, and event-style tasks (especially `asyncMode` for the latter)
+     - `ForkJoinPool` exploits work stealing — efficient for recursive tasks, and event-style tasks (especially `asyncMode` for the latter)
    - use and limitations
-     - high volume — Huge numbers of tasks and subtasks may be hosted by a small number of actual threads in a `ForkJoinPool`. The pool attempts to maintain enough active (or available) threads by dynamically adding, suspending, or resuming internal worker threads, even if some tasks are stalled waiting to join others
+     - suitable for high volume — huge numbers of tasks and subtasks may be hosted by a small number of actual threads in a `ForkJoinPool`. The pool attempts to maintain enough active (or available) threads by dynamically adding, suspending, or resuming internal worker threads, even if some tasks are stalled waiting to join others
      - no side effect — main use as computational tasks calculating pure functions or operating on purely isolated objects
-     - avoid `synchronized` methods or blocks — should minimize other blocking synchronization apart from joining other tasks or using synchronizers such as Phasers. Subdividable tasks should also not perform blocking I/O, and should ideally access variables that are completely independent of those accessed by other running tasks
+     - avoid `synchronized` methods or blocks — should minimize other blocking synchronization apart from joining other tasks or using synchronizers. Subdividable tasks should also not perform blocking I/O, and should ideally access variables that are completely independent of those accessed by other running tasks
      - define and use `ForkJoinTasks` that may block — three further considerations
        - independent — completion of few other tasks should be dependent on a task that blocks on external synchronization or I/O
        - small blocking tasks — to minimize resource impact, tasks should be small; ideally performing only the (possibly) blocking action
@@ -825,7 +873,7 @@
    - extending — extend one of the abstract classes that support a particular style of fork/join processing, defines a `compute` method that somehow uses the control methods supplied by this base class
      - tags — for use of specialized subclasses
      - base `final` support methods — should minimally implement protected methods
-     - `java.util.concurrent.RecursiveAction` — A recursive resultless `ForkJoinTask`
+     - `java.util.concurrent.RecursiveAction` — a recursive no return value `ForkJoinTask`
        ```java
        public abstract class RecursiveAction extends ForkJoinTask<Void>
        ```
@@ -839,7 +887,7 @@
        ```
        - tbd
 
-1. `java.util.concurrent.ForkJoinPool` — provides the entry point for submissions from non-`ForkJoinTask` clients, as well as management and monitoring operations
+1. `java.util.concurrent.ForkJoinPool` — provides the entry point for submissions from non-`ForkJoinTask` clients, as well as management and monitoring operations, queue is a internal class based on array
    ```java
    public class ForkJoinPool extends AbstractExecutorService
    ```
@@ -857,18 +905,28 @@
 
 1. Memory consistency effects — happen-before, see [volatile](#volatile-and-Atomics)
 
-1. `AbstractQueuedSynchronizer::compareAndSetState` — uses `VarHandle::compareAndSet`
+1. `java.util.concurrent.locks.AbstractQueuedSynchronizer` — tbd
    <!-- TODO -->
+   - `AbstractQueuedSynchronizer::compareAndSetState` — uses `VarHandle::compareAndSet`
    - CLH lock queue — the thread appends itself to the waiting queue and spins on the variable that can be updated only by the thread preceding it in the queue
-     - Java uses CLH locks for blocking synchronizers, but with the same tactic, see javadoc for `AbstractQueuedSynchronizer.Node`
-   - `java.util.concurrent.locks.LockSupport` — basic thread blocking primitives for creating locks and other synchronization classes
-     - underlying — `jdk.internal.misc.Unsafe::park`, `Unsafe::unpark`
-     - `static void park(Object blocker)` — park current thread, wrapped by set and unset `Thread.parkBlocker`
-     - `static void unpark(Thread thread)`
+     - Java uses CLH locks for blocking synchronizers, see javadoc of `AbstractQueuedSynchronizer.Node`
+
+1. `java.util.concurrent.locks.LockSupport` — basic thread blocking primitives for creating locks and other synchronization classes
+   - underlying — `jdk.internal.misc.Unsafe::park`, `Unsafe::unpark`
+   - `static void park(Object blocker)` — park current thread, wrapped by set and unset `Thread.parkBlocker`
+   - `static void unpark(Thread thread)`
+
+1. `java.util.concurrent.Exchanger` — allows two threads to exchange objects when both are ready for the exchange, a bidirectional form of a `SynchronousQueue`
+   ```java
+   public class Exchanger<V>
+   ```
+   - `V exchange(V x)` — waits for another thread to arrive at this exchange point (unless the current thread is interrupted), and then transfers the given object to it, receiving its object in return
+   - `V exchange(V x, long timeout, TimeUnit unit)`
+   - underlying implementation — `VarHandle::compareAndSetState`, `LockSupport`, see javadoc in source code for dual data structures
 
 ### Count Synchronizers
 
-1. `java.util.concurrent.Semaphore` — Allows a set of threads to wait until permits are available for proceeding, often used to restrict the number of threads than can access some (physical or logical) resource
+1. `java.util.concurrent.Semaphore` — allows a set of threads to wait until permits are available for proceeding, often used to restrict the number of threads than can access some (physical or logical) resource
    ```java
    public class Semaphore implements Serializable
    ```
@@ -890,22 +948,22 @@
      - `boolean tryAcquire(int permits)`
      - `boolean tryAcquire(int permits, long timeout, TimeUnit unit)`
      - `boolean tryAcquire(long timeout, TimeUnit unit)`
-   - underlying implementation — `AbstractQueuedSynchronizer::compareAndSetState`
+   - underlying implementation — `AbstractQueuedSynchronizer`
 
-1. `java.util.concurrent.CountDownLatch` — Allows a set of threads to wait until a count has been decremented to 0, and the count cannot be increased
+1. `java.util.concurrent.CountDownLatch` — allows a set of threads to wait until a count has been decremented to 0, and the count cannot be increased
    - constructor — `CountDownLatch(int count)`
-   - `void await()` — Causes the current thread to wait until the latch has counted down to zero and return immediately upon subsequent call, unless the thread is interrupted  
+   - `void await()` — causes the current thread to wait until the latch has counted down to zero and return immediately upon subsequent call, unless the thread is interrupted  
      `boolean await(long timeout, TimeUnit unit)`
    - `void countDown()` — decrements the count of the latch, releasing all waiting threads if the count reaches zero
    - `long getCount()`
-   - underlying implementation — `AbstractQueuedSynchronizer::compareAndSetState`
+   - underlying implementation — `AbstractQueuedSynchronizer`
 
-1. `java.util.concurrent.CyclicBarrier` — Allows a set of threads to wait until a predefined count of them has reached a common barrier, and then optionally executes a barrier action, and the count is reset
-   - all-or-none — If a thread leaves a barrier point prematurely and exceptionally, all other threads waiting at that barrier point will also leave abnormally via `BrokenBarrierException` (or `InterruptedException` if they too were interrupted at about the same time)
+1. `java.util.concurrent.CyclicBarrier` — allows a set of threads to wait until a predefined count of them has reached a common barrier, and then optionally executes a barrier action, and the count is reset
+   - all-or-none — if a thread leaves a barrier point prematurely and exceptionally, all other threads waiting at that barrier point will also leave abnormally via `BrokenBarrierException` (or `InterruptedException` if they too were interrupted at about the same time)
    - constructors
      - `CyclicBarrier(int parties)`
      - `CyclicBarrier(int parties, Runnable barrierAction)`
-   - `int await()` — Waits until all parties have invoked `await` on this barrier, returns the arrival index of that thread at the barrier  
+   - `int await()` — waits until all parties have invoked `await` on this barrier, returns the arrival index of that thread at the barrier  
      `int await(long timeout, TimeUnit unit)`
    - `int getNumberWaiting()`
    - `int getParties()` — the number of parties required to trip this barrier
@@ -913,59 +971,36 @@
    - `void reset()`
    - underlying implementation — `ReentrantLock`
 
-1. `java.util.concurrent.Phaser` — Like a cyclic barrier, but with a mutable party count, and can have multiple phases with phase number cycling from 0 to `Integer.MAX_VALUE`
+1. `java.util.concurrent.Phaser` — like a cyclic barrier, but with a mutable party count, and can have multiple phases with phase number cycling from 0 to `Integer.MAX_VALUE`
    - constructors
      - `Phaser()` — 0 parties, phase number 0
      - `Phaser(int parties)`
      - `Phaser(Phaser parent)`
      - `Phaser(Phaser parent, int parties)`
    - registration — change number of parties
-     - `int register()` — Adds a new unarrived party to this phaser
-     - `int bulkRegister(int parties)` — Adds the given number of new unarrived parties to this phaser
+     - `int register()` — adds a new unarrived party to this phaser
+     - `int bulkRegister(int parties)` — adds the given number of new unarrived parties to this phaser
    - tree tiering — children automatically register with and deregister from their parents according to the their numbers of registered parties
-     - `Phaser getParent()` — Returns the parent of this phaser, or null if none
-     - `Phaser getRoot()` — Returns the root ancestor of this phaser, which is the same as this phaser if it has no parent
-   - arrive — When the final party for a given phase arrives, an optional `onAdvance` is performed and the phase advances (phase number +1)
-     - `int arrive()` — Arrives at this phaser, without waiting for others to arrive
-     - `int arriveAndAwaitAdvance()` — Arrives at this phaser and awaits others
-     - `int arriveAndDeregister()` — Arrives at this phaser and deregisters from it without waiting for others to arrive
+     - `Phaser getParent()` — returns the parent of this phaser, or `null` if none
+     - `Phaser getRoot()` — returns the root ancestor of this phaser, which is the same as this phaser if it has no parent
+   - arrive — when the final party for a given phase arrives, an optional `onAdvance` is performed and the phase advances (phase number +1)
+     - `int arrive()` — arrives at this phaser, without waiting for others to arrive
+     - `int arriveAndAwaitAdvance()` — arrives at this phaser and awaits others
+     - `int arriveAndDeregister()` — arrives at this phaser and deregisters from it without waiting for others to arrive
    - await — wait at a specific phase, returns when the phaser advances to (or is already at) a different phase
-     - `int awaitAdvance(int phase)` — Awaits the phase of this phaser to advance from the given phase value, returning immediately if the current phase is not equal to the given phase value or this phaser is terminated
+     - `int awaitAdvance(int phase)` — awaits the phase of this phaser to advance from the given phase value, returning immediately if the current phase is not equal to the given phase value or this phaser is terminated
      - `int awaitAdvanceInterruptibly(int phase)`
      - `int awaitAdvanceInterruptibly(int phase, long timeout, TimeUnit unit)`
-   - termination — triggered when `onAdvance` returns `true`. Upon termination, all synchronization methods immediately return a negative integer and registration takes no effect
-     - `void forceTermination()` — Forces this phaser to enter termination state
-     - `boolean isTerminated()` — Returns true if this phaser has been terminated
+   - termination — triggered when `onAdvance` returns `true`; after termination, all synchronization methods immediately return a negative integer and registration takes no effect
+     - `void forceTermination()` — forces this phaser to enter termination state
+     - `boolean isTerminated()` — returns true if this phaser has been terminated
    - monitoring
-     - `int getArrivedParties()` — Returns the number of registered parties that have arrived at the current phase of this phaser
-     - `int getPhase()` — Returns the current phase number
-     - `int getRegisteredParties()` — Returns the number of parties registered at this phaser
-     - `int getUnarrivedParties()` — Returns the number of registered parties that have not yet arrived at the current phase of this phaser
-   - `protected boolean onAdvance(int phase, int registeredParties)` — Overridable method to perform an action upon impending phase advance, and to control termination
+     - `int getArrivedParties()` — returns the number of registered parties that have arrived at the current phase of this phaser
+     - `int getPhase()` — returns the current phase number
+     - `int getRegisteredParties()` — returns the number of parties registered at this phaser
+     - `int getUnarrivedParties()` — returns the number of registered parties that have not yet arrived at the current phase of this phaser
+   - `protected boolean onAdvance(int phase, int registeredParties)` — overridable method to perform an action upon impending phase advance, and to control termination
      ```java
      return registeredParties == 0; // default implementation
      ```
-   - underlying implementation — `VarHandle::compareAndSetState`
-
-### Data Exchange Synchronizers
-
-1. `java.util.concurrent.Exchanger` — Allows two threads to exchange objects when both are ready for the exchange, a bidirectional form of a `SynchronousQueue`
-   ```java
-   public class Exchanger<V> extends Object
-   ```
-   - `V exchange(V x)` — Waits for another thread to arrive at this exchange point (unless the current thread is interrupted), and then transfers the given object to it, receiving its object in return
-   - `V exchange(V x, long timeout, TimeUnit unit)`
-
-1. `java.util.concurrent.SynchronousQueue` — a mechanism that pairs up producer and consumer threads, a blocking queue in which each insert operation must wait for a corresponding remove operation by another thread, and vice versa
-   ```java
-   public class SynchronousQueue<E>
-   extends AbstractQueue<E>
-   implements BlockingQueue<E>, Serializable
-   ```
-   - empty queue — no internal capacity
-   - non-null
-   - constructors
-     - `SynchronousQueue()` — LIFO for non-fair mode
-     - `SynchronousQueue(boolean fair)` — FIFO for fairness, performance is similar for this collection
-   - `E poll()` — 0 timeout
-   - other inherited methods
+   - underlying implementation — `VarHandle::compareAndSetState`, `LockSupport`
