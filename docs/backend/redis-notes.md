@@ -30,16 +30,13 @@
 ### Data Structures
 
 1. string
-   - `c_str` — used in string literal, like when `redisLog`
-   - simple dynamic string，SDS — used as keys, values, and buffers
+   - `c_str` — used in string literal, like when `serverLog`
+   - simple dynamic string, SDS — used as keys, `OBJ_STRING`, and buffers
      ```c
-     struct sdshdr {
-         // 记录 buf 数组中已使用字节的数量
-         unsigned int len;
-         // 记录 buf 数组中未使用字节的数量
-         unsigned int free;
-         // c_str, '\0' ended, which is not counted in len
-         char buf[];
+     struct sdshdr { // old implementation
+         unsigned int len; // 记录 buf 数组中已使用字节的数量
+         unsigned int free; // 记录 buf 数组中未使用字节的数量
+         char buf[]; // c_str, '\0' ended, which is not counted in len
      };
      ```
      - capacity grow policy — if `len` < 1 MB, `free` = `len`; else, `free` = 1 MB
@@ -62,44 +59,30 @@
 1. dictionary, hash table — used in `OBJ_HASH` and database implementation, and more
    ```c
    typedef struct dict {
-       // 类型特定函数
-       dictType *type;
-       // 需要传给那些类型特定函数的可选参数
-       void *privdata;
-       // 哈希表
+       dictType *type; // functions for a specific type
+       void *privdata; // parameter for functions in dictType
        dictht ht[2];
-       // rehash 索引
-       int rehashidx; /* rehashing not in progress if rehashidx == -1 */
+       long rehashidx; /* rehashing not in progress if rehashidx == -1 */
+       unsigned long iterators; /* number of iterators currently running */
    } dict;
    ```
-   - `dictType`
+   - `dictType` — `setDictType`, `zsetDictType`, `dbDictType`, etc. predefined in `server.c`
      ```c
      typedef struct dictType {
-         // 计算哈希值的函数, MurmurHash algorithm for v3
-         unsigned int (*hashFunction)(const void *key);
-         // 复制键的函数
+         uint64_t (*hashFunction)(const void *key);
          void *(*keyDup)(void *privdata, const void *key);
-         // 复制值的函数
          void *(*valDup)(void *privdata, const void *obj);
-         // 对比键的函数
          int (*keyCompare)(void *privdata, const void *key1, const void *key2);
-         // 销毁键的函数
          void (*keyDestructor)(void *privdata, void *key);
-         // 销毁值的函数
          void (*valDestructor)(void *privdata, void *obj);
      } dictType;
      ```
    - `dictht` — dictionary hash table
      ```c
      typedef struct dictht {
-         // 哈希表数组
          dictEntry **table;
-         // size of table, defaults to 4
-         unsigned long size;
-         // 哈希表大小掩码，用于计算索引值
-         // 总是等于 size - 1
-         unsigned long sizemask;
-         // 该哈希表已有节点的数量
+         unsigned long size; // capacity
+         unsigned long sizemask; // size - 1
          unsigned long used;
      } dictht;
      ```
@@ -107,14 +90,17 @@
        ```c
        typedef struct dictEntry {
            void *key;
-           // 值
-           union { void *val; uint64_t u64; int64_t s64; } v;
-           // 指向下个哈希表节点，形成链表
+           union {
+               void *val;
+               uint64_t u64;
+               int64_t s64;
+               double d;
+           } v;
            struct dictEntry *next;
        } dictEntry;
        ```
      - hash value — `hashFunction(key) & sizemask`
-     - hash collision — separate chaining with `*next`, 程序总是将新节点添加到链表的表头位置
+     - hash collision — chaining with `*next`, new nodes added at head
    - rehash
      - expand — when not executing `BGSAVE` or `BGREWRITEAOF` and load factor >= 1, or when executing either one and load factor >= 5; expand to the size of the first 2^n that >= `ht[0].used * 2`
      - shrink — when load factor < 0.1; shrink to the size of the first 2^n that >= `ht[0].used`
@@ -123,11 +109,8 @@
 1. skiplist — used in `OBJ_ZSET`
    ```c
    typedef struct zskiplist {
-       // 表头节点和表尾节点
        struct zskiplistNode *header, *tail;
-       // 表中节点的数量
        unsigned long length;
-       // 表中层数最大的节点的层数
        int level;
    } zskiplist;
    ```
@@ -149,19 +132,16 @@
 1. int set — encoding-adapting ordered distinct array, used in `OBJ_SET` if the cardinality is low
    ```c
    typedef struct intset {
-       // 编码方式
        uint32_t encoding;
-       // 集合包含的元素数量
        uint32_t length;
-       // 保存元素的数组, ordered
-       int8_t contents[];
+       int8_t contents[]; // ordered
    } intset;
    ```
    - add element — O(N)
      - space saving — `contents` is of the smallest encoding possible, upgrade and reallocate if necessary
      - upgrade — if one encoding not enough, upgrade encoding of `contents` from `INTSET_ENC_INT16` to `INTSET_ENC_INT32` to `INTSET_ENC_INT64`, new element added at head or tail
 
-1. list — linked list, used in `OBJ_LIST` and various places
+1. list — doubly linked list, used internally such as struct fields
    ```c
    typedef struct listNode {
        struct listNode *prev;
@@ -171,17 +151,14 @@
    typedef struct list {
        listNode *head;
        listNode *tail;
-       unsigned long len;
-       // 节点值复制函数
-       void *(*dup)(void *ptr);
-       // 节点值释放函数
+       void *(*dup)(void *ptr); // duplication
        void (*free)(void *ptr);
-       // 节点值对比函数
-       int (*match)(void *ptr, void *key);
+       int (*match)(void *ptr, void *key); // comparison
+       unsigned long len;
    } list;
    ```
 
-1. ziplist — a sequential data structure that is continuous on memory, used in `OBJ_LIST` and `OBJ_HASH`
+1. ziplist — a sequential data structure that is continuous on memory (`unsigned char` array), used in `OBJ_LIST` and `OBJ_HASH`
    ```
    zlbytes zltail zllen [entries] zlend
     4b       4b    2b              0xFF
@@ -199,9 +176,16 @@
      - operations like push an entry — O(N), the possibility of long cascade update is low, which needs consecutive entries of length between 250 to 253b
        - cascade update — `previous_entry_length` of an entry updates from 1b to 5b, triggering the `previous_entry_length` update of the next entry, O(N^2) in the worst case
 
-1. listpack — designed to replace ziplist, [zhihu](https://zhuanlan.zhihu.com/p/103368879) tbd
+1. quicklist — doubly linked list, but its nodes contain a ziplist, used in `OBJ_LIST`, tbd
+
+1. listpack — `unsigned char` array like ziplist, designed to replace ziplist, currently only used in `OBJ_STREAM`, tbd
 
 1. radix tree — used in `OBJ_STREAM` and more, tbd
+
+1. zipmap — String -> String Map data structure optimized for size, used in ??
+   ```
+   <zmlen><len>"foo"<len><free>"bar"<len>"hello"<len><free>"world"
+   ```
 
 ### Data Types
 
@@ -214,7 +198,7 @@
        unsigned lru:LRU_BITS; /* LRU time (relative to global lru_clock) or
                                * LFU data (least significant 8 bits frequency
                                * and most significant 16 bits access time). */
-       int refcount; // 指向底层实现数据结构的指针
+       int refcount;
        void *ptr;
    } robj;
    ```
@@ -239,20 +223,20 @@
    - flyweight — for integers from 0 to 9999
    - empty collections — when add like `LPUSH`, an empty collection is prepared; empty collections will be garbage collected, except stream; read commands like `LLEN` and some write commands on an empty key behave like an empty collection held on the key
    - related commands
-     - `OBJECT`
+     - `OBJECT subcommand [arguments [arguments ...]]` — see `OBJECT HELP`
        - `OBJECT ENCODING`
        - `OBJECT REFCOUNT`
        - `OBJECT IDLETIME`
+       - `OBJECT FREQ` — available when `maxmemory-policy` is set to an LFU policy
        - `DEBUG OBJECT`
      - `TYPE`
      - see `redisDb`
 
 1. `OBJ_STRING`
    - corresponding `encoding`
-     - `OBJ_ENCODING_INT` — `long`, for numbers within range
-     - `OBJ_ENCODING_EMBSTR` — 使用 embstr 编码的 SDS, used when stirng length <= 39 bytes and when `long double`
-       - `embstr` — like raw SDS, but allocate one space for both `redisObject` and `sdshdr`, read only, and more
-     - `OBJ_ENCODING_RAW` — SDS, used when string length > 39 bytes
+     - `OBJ_ENCODING_INT` — `long long`, for numbers within range
+     - `OBJ_ENCODING_EMBSTR` — an object where the sds string is actually an unmodifiable string allocated in the same chunk as the object itself, used when string length <= 44 bytes (`OBJ_ENCODING_EMBSTR_SIZE_LIMIT`) and when `long double`
+     - `OBJ_ENCODING_RAW` — SDS, used when string length > 44 bytes
    - related commands
      - plain set and get
        - `SET key value [EX seconds|PX milliseconds|KEEPTTL] [NX|XX] [GET]`
@@ -280,7 +264,7 @@
        - `BITOP` — `AND`, `OR`, `XOR` and `NOT`
        - `BITPOS` — return the position of the first bit set to 1 or 0 in a string
    - HyperLogLog — probabilistic, count unique elements like a set, memory footprint of 12KB in worst case, standard error of 0.81%
-     - implementation — [HyperLogLog - Wikipedia](https://en.wikipedia.org/wiki/HyperLogLog), [`hyperloglog.c`](https://github.com/redis/redis/blob/c1aaad06d85c89ab7abebd5cefab026bdcb086ab/src/hyperloglog.c#L37-L180)
+     - implementation — [HyperLogLog - Wikipedia](https://en.wikipedia.org/wiki/HyperLogLog), [`hyperloglog.c`](https://github.com/redis/redis/blob/c1aaad06d85c89ab7abebd5cefab026bdcb086ab/src/hyperloglog.c#L37-L180), [redis.io](https://redis.io/commands/pfcount#hyperloglog-representation)
        - sparse representation
        - dense representation
        - `PFCOUNT` cache — last 8 bytes encode the latest computed cardinality for caching purposes
@@ -292,7 +276,7 @@
 1. `OBJ_LIST`
    - corresponding `encoding`
      - `OBJ_ENCODING_ZIPLIST` — when each element size < 64 bytes and list size < 512, `list-max-ziplist-value` and `list-max-ziplist-entries` in configurations
-     - `OBJ_ENCODING_LINKEDLIST`
+     - `OBJ_ENCODING_QUICKLIST` — `list-max-ziplist-size`, `list-compress-depth` in configurations
    - related commands
      - `LPUSH`, `RPUSH`
        - `LPUSHX`, `RPUSHX` — no operation if key does not exist
@@ -318,27 +302,35 @@
        - difference with top level keystore — use more small hashes with fields in lieu of keys to save memory, but no functions like `EXPIRE` for fields
      - `OBJ_ENCODING_HT`
    - related commands
-     - `HSET`, `HGET`
-     - `HMSET`, `HMGET`
+     - `HSET`, `HSETNX`
+       - `HMSET`, deprecated
+     - `HGET`, `HMGET`, `HGETALL`
      - `HEXISTS`
      - `HDEL`
      - `HLEN`
-     - `HGETALL`
-     - `HINCRBY`
+     - `HINCRBY`, `HINCRBYFLOAT`
+     - `HSTRLEN`
+     - `HKEYS`, `HVALS`
+     - `HSCAN`
 
 1. `OBJ_SET`
    - corresponding `encoding`
      - `OBJ_ENCODING_INTSET` — when only integer elements and cardinality < 512, `set-max-intset-entries` in configurations
-     - `OBJ_ENCODING_HT` — `null` as value
+     - `OBJ_ENCODING_HT` — `setDictType`, `null` as value
    - related commands
      - `SADD`
      - `SCARD`
-     - `SISMEMBER`
+     - between sets
+       - `SDIFF key [key ...]`, `SDIFFSTORE destination key [key ...]`
+       - `SINTER key [key ...]`, `SINTERSTORE`
+       - `SUNION`, `SUNIONSTORE`
+       - `SMOVE`
+     - `SISMEMBER`, `SMISMEMBER`
      - `SMEMBERS`
-     - `SRANDMEMBER`
-     - `SPOP`
+     - `SPOP` — Knuth sampling and Floyd sampling, not uniform distribution
+     - `SRANDMEMBER` — bucket based: an element alone in a bucket is much more likely to be returned than an element in a bucket with chained elements
      - `SREM`
-     - `SINTER`, `SINTERSTORE`
+     - `SSCAN`
 
 1. `OBJ_ZSET` — ordered set, sort by `memcmp()` if score is the same
    - corresponding `encoding`
@@ -379,8 +371,20 @@
      - `ZSCAN`
      - lexicographically — `ZRANGEBYLEX`, `ZREVRANGEBYLEX`, `ZREMRANGEBYLEX` and `ZLEXCOUNT`
 
+1. Geo related — of type `OBJ_ZSET`
+   - [Geohash - Wikipedia](https://en.wikipedia.org/wiki/Geohash) — latitude and longitude bits are interleaved in order to form an unique 52 bit integer, which does not lose precision when converted to `double`
+   - limitation — areas very near to the poles are not indexable; radiuses are approximated by perfect sphere model
+   - related commands
+     - `GEOADD key longitude latitude member [longitude latitude member ...]`
+     - `GEODIST`
+     - `GEOHASH` — standard Geohash instead of the Redis internal one
+     - `GEOPOS` — return the positions (longitude,latitude)
+     - `GEORADIUS` — get members within a specified circle
+     - `GEORADIUSBYMEMBER` — like `GEORADIUS` but the center of the circle is the specified member
+     - delete — `ZREM`
+
 1. `OBJ_STREAM` — log data structure, append only, allow consumers block waiting and has consumer groups, since 5.0
-   - corresponding `encoding` - `OBJ_ENCODING_STREAM`
+   - corresponding `encoding` - `OBJ_ENCODING_STREAM`, radix tree of listpacks
      ```c
      typedef struct stream {
          rax *rax;               /* The radix tree holding the stream. */
@@ -478,7 +482,7 @@
      1. return to the client
    - compare by
      ```
-     reids> SADD fruits "apple" "banana" "cherry"
+     redis> SADD fruits "apple" "banana" "cherry"
      redis> MSET apple-price 8 banana-price 5.5 cherry-price 7
      redis> SORT fruits BY *-price
      ```
@@ -563,12 +567,7 @@
    - `expires` — a dict where keys are pointers to keys in keyspace, values are `long long` UNIX timestamps
      - expungement strategy
        - lazy — expunge when reading the key
-       - periodic — expunge with a frequency and duration; continue from the last expunged `redisDb`, cycling the db array; examine and expunge keys randomly selected from `expires` for each `redisDb`
-     - related commands — `PEXPIREAT` under the hood
-       - `EXPIRE`, `PEXPIRE`, `SET` — TTL, in s or ms
-       - `EXPIREAT`, `PEXPIREAT` — UNIX timestamp, in s or ms
-       - `TTL`, `PTTL` — remaining time to live, in s or ms
-       - `PERSIST` — remove timestamp
+       - periodic — expunge in some frequency with a time limit, continue from the last expunged `redisDb`, cycling `redisServer.db` array: examine and expunge 20 keys randomly selected from `redisDb->expires` until no more than 25% of selected 20 keys expunged
      - replication related — key expungement of followers is controlled by the master, who sends `DEL` commands to followers
      - persistence related
        - RDB
@@ -577,16 +576,24 @@
        - AOF
          - when writing to AOF — when expunged, a `DEL` is explicitly appended
          - when rewriting AOF — expired keys filtered
+     - related commands — `PEXPIREAT` under the hood
+       - `EXPIRE`, `PEXPIRE`, `SET` — TTL, in s or ms, untouched by altering commands like `INCR`, `LPUSH`, `HSET`, `RENAME`, overwritten for other write commands
+       - `EXPIREAT`, `PEXPIREAT` — UNIX timestamp, in s or ms
+       - `TTL`, `PTTL` — remaining time to live, in s or ms
+       - `PERSIST` — remove timestamp
    - related commands
+     - `DEL`
+       - `UNLINK` — GC left to do
+     - `DUMP`, `RESTORE` — serialize and deserialize, format is opaque and non-standard, with checksum and values are encoded in the same format used by RDB with RDB version
+       - `MIGRATE` — see [Clustering](#Clustering)
+     - `MOVE key db` — between `redisServer.db`
+     - `KEYS pattern` — support more glob pattern
+     - `EXISTS key [key ...]`, `TOUCH key [key ...]`
      - `FLUSHDB`, `FLUSHALL` — delete all the keys
      - `RANDOMKEY`
      - `DBSIZE`
-     - `EXISTS`
-     - `DEL`
-     - `RENAME`
-     - `KEYS`
-     - `INFO`, `INFO STATS`
-     - `SCAN` — tbd
+     - `RENAME`, `RENAMENX`
+     - `SCAN` — incrementally iterate over a collection of elements
 
 1. `redisCommand`
    ```c
@@ -714,11 +721,23 @@
    - channels
      ```c
      struct redisServer {
-       // ...
-       dict *pubsub_channels;  /* channels a client is interested in (SUBSCRIBE) */
-       list *pubsub_patterns;  /* patterns a client is interested in (SUBSCRIBE) */
-       // ...
-     }
+         // ...
+         /* Pubsub */
+         dict *pubsub_channels;  /* Map channels to list of subscribed clients */
+         list *pubsub_patterns;  /* A list of pubsub_patterns */
+         dict *pubsub_patterns_dict;  /* A dict of pubsub_patterns */
+         int notify_keyspace_events; /* Events to propagate via Pub/Sub. This is an
+                                        xor of NOTIFY_... flags. */
+         // ...
+     };
+     ```
+     ```c
+     typedef struct client {
+         // ...
+         dict *pubsub_channels;  /* channels a client is interested in (SUBSCRIBE) */
+         list *pubsub_patterns;  /* patterns a client is interested in (SUBSCRIBE) */
+         // ...
+     } client;
      ```
      - `pubsub_channels` — `dict`, key as channel name, value as a linked list of subscribed clients
      - `pubsub_patterns` — `list`, `pubsubPattern` as elements
@@ -730,11 +749,14 @@
        ```
    - related commands
      - `SUBSCRIBE`
-     - `PUBLISH`
-     - `PSUBSCRIBE` — subscribe but support glob-style patterns
-     - `PUBSUB`
-     - `PUNSUBSCRIBE`
+     - `PSUBSCRIBE` — glob-style pattern subscribe
+     - `PUBLISH channel message` — O(N+M) where N is the number of clients subscribed to the receiving channel and M is the total number of subscribed patterns (by any client)
+     - `PUBSUB` — inspect the state of the Pub/Sub subsystem
+       - `PUBSUB CHANNELS [pattern]`
+       - `PUBSUB NUMSUB [channel-1 ... channel-N]`
+       - `PUBSUB NUMPAT`
      - `UNSUBSCRIBE`
+     - `PUNSUBSCRIBE`
 
 1. keyspace event notifications
    ```c
@@ -762,7 +784,7 @@
    - parameters
      - `event` — command name, like `del`
      - `key`, `dbid` — related key and db
-     - `type` — at least `K` or `E` should present in `notify-keyspace-events` otherwise no event
+     - `type` — `redisServer.notify_keyspace_events`, at least `K` or `E` should present in `notify-keyspace-events` otherwise no event
        ```c
        /* Keyspace changes notification classes. Every class is associated with a
         * character for configuration purposes. */
@@ -1071,11 +1093,11 @@
 
 1. related commands
    - `MULTI` — start transaction, `CLIENT_MULTI` in `client.flags`
-   - `EXEC` — commit
+   - `EXEC` — executes all previously queued commands
    - `WATCH`, `UNWATCH`
-   - `DISCARD`
+   - `DISCARD` — also `UNWATCH` all keys
 
-1. Lua scripts — transactional by definition
+1. Lua scripts — Lua 5.1, transactional by definition
    - create Lua environment
      1. 创建一个基础的 Lua 环境 by `lua_open`， 之后的所有修改都是针对这个环境进行的。
      1. 载入多个函数库到 Lua 环境里面， 让 Lua 脚本可以使用这些函数库来进行数据操作。 — tbd
@@ -1085,15 +1107,25 @@
      1. 创建 `redis.pcall` 函数的错误报告辅助函数， 这个函数可以提供更详细的出错信息。
      1. 对 Lua 环境里面的全局环境进行保护， 防止用户在执行 Lua 脚本的过程中， 将额外的全局变量添加到了 Lua 环境里面。
      1. 将完成修改的 Lua 环境保存到服务器状态的 `lua` 属性里面， 等待执行服务器传来的 Lua 脚本。
-   - `redis.call` and `redis.pcall` — executed by `redisServer.lua_client`
+   - `redis.call` and `redis.pcall` — executed by `redisServer.lua_client`, arguments are arguments of Redis commands
+     ```lua
+     return redis.call('set',KEYS[1],'bar')
+     ```
+     - error handling — if a Redis command call will result in an error, `redis.call()` will raise a Lua error that in turn will force `EVAL` to return an error to the command caller, while `redis.pcall()` will trap the error and return a Lua table representing the error
+     - keys must be passed explicitly — in order to be compatible with cluster
    - SHA1
      - as key — `redisServer->lua_scripts`, which is `dict` with SHA1 as key, function body as value
      - as Lua function name — function `f_<SHA1>()` is defined with the arguments of `EVAL`
-   - script executing — tbd
+   - [tbd from type conversion](https://redis.io/commands/eval#conversion-between-lua-and-redis-data-types)
    - related commands
-     - `EVAL`
-     - `EVALSHA`
-     - `SCRIPT`
+     - `EVAL script numkeys key [key ...] arg [arg ...]`
+     - `EVALSHA` — arguments as `EVAL`, scripts cached using `SCRIPT LOAD`
+     - `SCRIPT` — tbd
+       - `SCRIPT DEBUG`
+       - `SCRIPT EXISTS`
+       - `SCRIPT FLUSH`
+       - `SCRIPT KILL`
+       - `SCRIPT LOAD`
 
 1. other non-transactional batch
    - pipeline — batch commands but not in a transaction
@@ -1134,6 +1166,8 @@
      - `MEMORY PURGE`
      - `MEMORY STATS` — some overlap with `INFO`
      - `MEMORY USAGE` — the number of bytes that a key and its value require to be stored in RAM
+     - `OBJECT FREQ` — available when `maxmemory-policy` is set to an LFU policy
+     - `TOUCH key [key ...]` — alters the last access time of keys
 
 1. slow log
    - configurations — `slowlog-log-slower-than`, `slowlog-max-len`
