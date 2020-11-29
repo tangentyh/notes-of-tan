@@ -576,6 +576,7 @@ Gossip — the reach of a broadcast and the reliability of anti-entropy
      - FIFO
      - LRU
      - LFU
+     - more on [Cache replacement policies - Wikipedia](https://en.wikipedia.org/wiki/Cache_replacement_policies)
 
 1. cache location
    - hardware
@@ -584,6 +585,13 @@ Gossip — the reach of a broadcast and the reliability of anti-entropy
    - gateway
    - server local
    - distributed
+
+1. cache mode
+   - cache aside — resort to DB and update cache when cache miss; invalidate corresponding cache after DB write
+   - read through and write through
+     - read through — applications read cache, the cache itself determines when to update and where to update from
+     - write through — applications write to cache, cache update itself if cache hit and then write to DB synchronously; alternatively, in the same transaction to trade latency for consistency
+   - write behind — write to cache first, and asynchronously write to DB, possibly in batch
 
 1. 缓存问题
    - 缓存穿透 — 对某个一定不存在的数据进行请求，该请求将会穿透缓存到达数据库
