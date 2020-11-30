@@ -971,7 +971,7 @@
    - `void reset()`
    - underlying implementation — `ReentrantLock`
 
-1. `java.util.concurrent.Phaser` — like a cyclic barrier, but with a mutable party count, and can have multiple phases with phase number cycling from 0 to `Integer.MAX_VALUE`
+1. `java.util.concurrent.Phaser` — like a cyclic barrier, but faster??, with a mutable party count, and can have multiple phases with phase number cycling from 0 to `Integer.MAX_VALUE`
    - constructors
      - `Phaser()` — 0 parties, phase number 0
      - `Phaser(int parties)`
