@@ -22,39 +22,50 @@
 1. keys
    - primary key
      - compound key — primary key consisting of two or more columns
-     - natural key or surrogate key
+     - natural key or surrogate key (aka. synthetic key, typically a primary key)
    - foreign key — help keep spread-out data consistent
 
 1. index optimization
    - large data update — bootstrap with delete indexes before and re-create after
-   - covering index — An index that includes all the columns retrieved by a query. Instead of using the index values as pointers to find the full table rows, the query returns values from the index structure. Any column index or composite index could act as a covering index
+   - covering index — an index that includes all the columns retrieved by a query. Instead of using the index values as pointers to find the full table rows, the query returns values from the index structure. Any column index or composite index could act as a covering index
    - standalone column — `id + 1` does not utilize the index
    - composite index, aka. multiple-column index — prefixed index search capability; composite indexes outperform separated single column indexes; order matters, selective first or the most frequently used first
    - prefix indexing — `KEY_BLOCK_SIZE` like `max_sort_length`, for `BLOB`, `TEXT`, `VARCHAR`
 
 1. index structure, delete and purge
    - indexes
-     - clustered indexes — updated in-place, have hidden system columns
-     - secondary indexes — no hidden system columns, when updated, old secondary index records are delete-marked, new records are inserted, and delete-marked records are eventually purged; cluster index looked up when undo, covering index technique not used
+     - clustered indexes — primary key index, where data records held at left nodes; updated in-place, have hidden system columns
+     - secondary indexes — nodes hold pointers to clustered index nodes, no hidden system columns, when updated, old secondary index records are delete-marked, new records are inserted, and delete-marked records are eventually purged; when undo, cluster index looked up, covering index technique not used
+   - index queries — fewer rows to scan; help `ORDER BY` and `GROUP BY` even save temporary tables; random IO to sequential IO
    - delete and purge
      - delete — internally delete is an update on delete mark
      - purge — a type of garbage collection performed by one or more separate background threads (controlled by `innodb_purge_threads`) that runs on a periodic schedule, parses and processes undo log pages from the history list for removing delete-marked clustered and secondary index records
-     - history list — A list of transactions with delete-marked records scheduled to be processed by the InnoDB purge operation. Recorded in the undo log.
+     - history list — a list of transactions with delete-marked records scheduled to be processed by the InnoDB purge operation. Recorded in the undo log.
 
 1. 范式 — 为了解决四种异常。高级别范式的依赖于低级别的范式，1NF 是最低级别的范式
+   - example: 函数依赖
+     | Sno | Sname | Sdept | Mname | Cname | Grade |
+     | :---: | :---: | :---: | :---: | :---: |:---:|
+     | 1 | 学生-1 | 学院-1 | 院长-1 | 课程-1 | 90 |
+     | 2 | 学生-2 | 学院-2 | 院长-2 | 课程-2 | 80 |
+     | 2 | 学生-2 | 学院-2 | 院长-2 | 课程-1 | 100 |
+     | 3 | 学生-3 | 学院-2 | 院长-2 | 课程-2 | 95 |
+     1. Sno -> Sname, Sdept
+     1. Sdept -> Mname
+     1. Sno, Cname -> Grade
    - 函数依赖
-     - 键码
-     - 完全函数依赖，部分函数依赖
-     - 传递函数依赖
+     - 键码 — 能决定其他所有属性的最小属性集合
+     - 完全函数依赖，部分函数依赖 — Sdept -> Mname; all other columns -> Grade
+     - 传递函数依赖 — Sno -> Sdept -> Mname
    - 四种异常
-     - 冗余数据：例如 学生-2 出现了两次。
-     - 修改异常：修改了一个记录中的信息，但是另一个记录中相同的信息却没有被修改。
-     - 删除异常：删除一个信息，那么也会丢失其它信息。例如删除了 课程-1 需要删除第一行和第三行，那么 学生-1 的信息就会丢失。
-     - 插入异常：例如想要插入一个学生的信息，如果这个学生还没选课，那么就无法插入。
+     - 冗余数据 — 例如学生-2 出现了两次
+     - 修改异常 — 修改了一个记录中的信息，但是另一个记录中相同的信息却没有被修改
+     - 删除异常 — 删除一个信息，那么也会丢失其它信息。例如删除了 课程-1 需要删除第一行和第三行，那么 学生-1 的信息就会丢失
+     - 插入异常 — 例如想要插入一个学生的信息，如果这个学生还没选课，那么就无法插入
    - 范式
-     - 第一范式 (1NF) — 属性不可分。
-     - 第二范式 (2NF) — 每个非主属性完全函数依赖于键码。可以通过分解来满足。
-     - 第三范式 (3NF) — 非主属性不传递函数依赖于键码。
+     - 第一范式 (1NF) — 属性不可分
+     - 第二范式 (2NF) — 每个非主属性完全函数依赖于键码。可以通过分解来满足。如将例子中的表分为函数依赖分别为 1., 2. 和 3. 的两个表
+     - 第三范式 (3NF) — 非主属性不传递函数依赖于键码，如将上例的第一个表进一步分为函数关系分别为 1. 和 2. 的两个表
    - normalization — no duplicate or compound columns: refining a database design to ensure that each independent piece of information is in only one place (except for foreign keys)
 
 ## File and Page Structure
@@ -62,12 +73,13 @@
 1. DBMS architecture  
    ![](./images/sql3.png)
    - memory based, disk based
-     - durability of memory based stores — logs and checkpointing: backup copy updated by asynchronous batches
+     - durability of memory based stores — logs and checkpointing
    - column oriented or row oriented — how the data is stored on disk: row- or column-wise
-     - column oriented stores — values for the same column are stored contiguously on disk, a good fit for analytical workloads that compute aggre‐ gates
+     - column oriented stores — values for the same column are stored contiguously on disk, a good fit for analytical workloads that compute aggregates
        - two pioneer column-oriented stores — MonetDB and C-Store
-       - ID and virtual ID — row identifier for each value or use offset as implicit ID
-   - storage structure variables — Buffering, Immutability, and Ordering
+       - redundant row ID or virtual ID — row ID kept for each value or use offset as implicit ID, to reconstruct the row for things like joins, filtering, and multirow aggregates
+     - wide column stores — e.g. BigTable, HBase, as a multidimensional map, columns are grouped into column families (usually storing data of the same type), and inside each column family, data is stored row-wise, no relation with column oriented stores
+   - storage structure variables — buffering, immutability, and ordering
 
 1. files
    - data files
@@ -85,7 +97,7 @@
    - dynamic layout — from outside the page, slots are referenced only by their IDs, so the exact location is internal to the page
    - order — only need to reorganize pointers addressing the cells to preserve the order
    - grow — size grow towards free space in the center
-   - fragmented page and availability list — deletion adds deletion mark and updates an in-memory availability list; when inserting a new cell, we first check the availability list to find if there’s a segment where it may fit  
+   - fragmented page and availability list — like mark sweep GC algorithm, deletion adds deletion mark and updates an in-memory availability list; when inserting a new cell, we first check the availability list to find if there’s a segment where it may fit  
      ![](./images/sql2.png)
      - example: SQLite freeblocks — SQLite calls unoccupied segments freeblocks and stores a pointer to the first freeblock in the page header, along with the total number of free space to determine if new data can fit after defragmenting
      - segment fit
@@ -99,13 +111,14 @@
 
 1. paged binary trees — improve locality by grouping nodes into pages, making next nodes on the same page for some nodes; operations are nontrivial
 
-1. B-tree — increase node fanout, and reduce tree height, the number of node pointers, and the frequency of balancing operations
+1. B-tree — increase node fanout, to reduce tree height, the number of node pointers, and the frequency of balancing operations
    - leaf level sibling node pointers — simplify range scans, double-linked in some implementations
-   - from bottom to top — the number of leaf nodes grows, which increases the number of internal nodes and tree height
-   - B* tree — instead of splitting a single node into two half-empty ones, the algorithm splits two nodes into three nodes, each of which is two-thirds full
+   - from bottom to top — the number of leaf nodes grows, which propagates to higher levels and increases the number of internal nodes and tree height
+   - B+ tree — store values only in leaf nodes, affect higher level nodes only during splits and merges
+   - B* tree — when splitting, instead of splitting a single node into two half-full ones, the algorithm splits two nodes into three nodes, each of which is two-thirds full
      - B link tree — on top of B* tree, add high keys and sibling link pointers
    - some drawbacks
-     - write amplification
+     - write amplification — see [OS notes](./OS-notes.md#Disk)
      - space amplification — extra space reserved to make updates possible
    - tbd
    <!-- TODO -->
@@ -129,7 +142,7 @@
 
 1. transaction processing and recovery
    - page cache
-     - flush — flush when dirty page evicted; or a separate background process that cycles through the dirty pages that are likely to be evicted for quick eviction
+     - flush — flush when dirty page evicted; or a separate background process that cycles through the dirty pages that are likely to be evicted and flush them for quick eviction
      - durability — coordinated by the checkpoint process: ensure the write-ahead log (WAL) and page cache work in lockstep
      - optimization
        - pinning — pinned pages are kept in memory for a longer time, like nodes near a B-tree root
@@ -151,11 +164,11 @@
      - ARIES (Algorithm for Recovery and Isolation Exploiting Semantics) — a steal/no-force recovery algorithm
        - physical redo — changes can be installed quicker when recovery
        - logical undo — improve concurrency during normal operation
+         - compensation log records (CLR) — the undo process is logged as well to avoid repeating them
        - three phase
          1. analysis phase — identifies dirty pages in the page cache and transactions that were in progress at the time of a crash
          1. redo phase — repeats the history up to the point of a crash and restores the database to the previous state, and WAL used for repeating history
          1. undo phase — rolls back all incomplete transactions and restores the database to the last consistent state
-            - compensation log records (CLR) — the undo process is logged as well to avoid repeating them
 
 1. concurrency control
    - optimistic concurrency control (OCC)
@@ -191,7 +204,7 @@
    - write skew — each individual transaction respects the required invariants, but their combination does not satisfy these invariants; for example, two transaction withdraw $100 from an account with $150, making the balance negative while nonnegative for each transaction
 
 1. isolation levels
-   - see before
+   - see [`SET TRANSACTION`](./SQL_notes.md#SET-TRANSACTION)
    - snapshot isolation (SI) — [zhihu](https://zhuanlan.zhihu.com/p/54979396), read from the snapshot with values committed before the transaction’s start timestamp (no phantom read), first committer wins when write-write conflict
      - example — Google Percolator
 
@@ -252,7 +265,7 @@
            `id` int(11) primary key auto_increment,
            `xid` int, KEY `xid` (`xid`)
          ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-         insert into test(xid) values (1), (3), (5), (8), (11);
+         INSERT INTO test (xid) VALUES (1), (3), (5), (8), (11);
          ```
          ```SQL
          --- session A
@@ -307,9 +320,9 @@
        - `KEY` partitioning — similar to `HASH`, except that MySQL supplies the hashing function
      - composite partitioning — with `SUBPARTITION`
    - other partitioning strategy
-     - consistent hashing — [zhihu](https://zhuanlan.zhihu.com/p/34985026)
+     - consistent hashing — tbd
 
-1. problems and possible solutions
+1. problems when distributed and possible solutions
    - foreign key constraint
    - triggers and stored procedures
    - transaction — use distributed transaction
@@ -328,18 +341,18 @@
    - partition pruning, partition-wise joins — optimizer: do not scan partitions where there can be no matching values
    - concurrency — perform updates on multiple partitions simultaneously
 
-1. Replication
-   - Primary-Secondary Replication
+1. replication
+   - primary-secondary replication
      - master failover — promoting a replica to become a new master
-     - asynchronous or semisynchronous  
+     - asynchronous or semi-synchronous  
        ![](./images/sql4.png)  
        ![](./images/sql5.png)
-     - binlog 线程 ：负责将主服务器上的数据更改写入二进制日志（Binary log）中。
-     - I/O 线程 ：负责从主服务器上读取二进制日志，并写入从服务器的中继日志（Relay log）。
-     - SQL 线程 ：负责读取中继日志，解析出主服务器已经执行的数据更改并在从服务器中重放（Replay）。
-   - 读写分离 — 主服务器处理写操作以及实时性要求比较高的读操作，而从服务器处理读操作。
-     - 主从服务器负责各自的读和写，极大程度缓解了锁的争用；
-     - 增加冗余，提高可用性。
+     - binlog 线程 ：负责将主服务器上的数据更改写入二进制日志（binary log）中
+     - I/O 线程 ：负责从主服务器上读取二进制日志，并写入从服务器的中继日志（relay log）
+     - SQL 线程 ：负责读取中继日志，解析出主服务器已经执行的数据更改并在从服务器中重放（replay）
+   - 读写分离 — 主服务器处理写操作以及实时性要求比较高的读操作，而从服务器处理读操作
+     - 主从服务器负责各自的读和写，极大程度缓解了锁的争用
+     - 增加冗余，提高可用性
 
 ## InnoDB
 
@@ -351,7 +364,7 @@
    - 崩溃恢复：MyISAM 崩溃后发生损坏的概率比 InnoDB 高很多，而且恢复的速度也更慢。
    - 其它特性：MyISAM 支持压缩表和空间数据索引。
 
-1. correspondents
+1. persistency locations
    - databases — directories within `/data`
    - tables — files
    - triggers — files
@@ -360,8 +373,15 @@
    - default page size — 16 KB
    - stored off-page — not stored in page, does not effect main index, but a 20 B pointer is stored
 
-1. InnoDB Row Formats — tbd
+1. InnoDB row formats — tbd
 
 1. logs
    - [15.6 InnoDB On-Disk Structures](https://dev.mysql.com/doc/refman/8.0/en/innodb-on-disk-structures.html)
    - [5.4 MySQL Server Logs](https://dev.mysql.com/doc/refman/8.0/en/server-logs.html)
+     - error log
+     - general query log
+     - binary log
+     - relay log
+     - slow query log
+     - DDL log (metadata log)
+     - transaction related logs
