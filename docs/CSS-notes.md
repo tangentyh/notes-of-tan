@@ -84,50 +84,12 @@
    - comments — `/**/`
    - index start from 1 — `:nth-child()`, etc.
 
-### Concepts
-
-1. Layout and the containing block
-   - [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block)
-   - box model
-     - content box
-     - padding box
-     - border box
-     - margin box, transparent
-   - Most often, the containing block is the content area of an element's nearest block-level ancestor
-   - when `position` is `fixed` or `absolute`, the containing box changes
-
-1. [Logical Properties and Values](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Logical_Properties)
-   - use the abstract terms block and inline to describe the direction in which they flow
-   - block — The dimension perpendicular to the flow of text within a line
-   - inline — The dimension parallel to the flow of text within a line
-
-1. origin
-   - user agent
-   - author
-   - user
-
-1. Specificity — by which browsers decide which CSS property values are the most relevant to an element and, therefore, will be applied
-   - later defined is more specific
-   - directly target is more specific than inherited
-   - selector type, ascending order
-     - Type selectors, and pseudo-elements, 1.
-     - Class selectors, attributes selectors, and pseudo-classes, 1-0.
-     - ID selectors, 1-0-0.
-     - `style=` attribute, 1-0-0-0.
-   - exception
-     - `!important`, 1-0-0-0-0
-     - `:not()` is not considered pseudo-class, specificity up to its parameters
-     - Tree proximity ignorance — `html h1` more specific than `body h1` if it comes later
-   - rules of thumb — careful with `#id` and `!important`
-
 1. shorthand — set several rules simultaneously
    - separated by space for each rule
    - separate by `/` for two-value properties
    - usually clockwise, or horizontal to vertical
      - T, RL, B for triplets
    - when certain values omitted, they’ll be set implicitly to their initial value
-
-1. margin collapse and negative margin — see after
 
 ## CSS data type
 
@@ -473,6 +435,25 @@
 1. selector — identify specific HTML elements as targets for CSS styles
    - similar to XPATH
    - [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference#Selectors)
+
+1. priority
+   - by CSS origin
+     - user agent
+     - author
+     - user
+   - by specificity — by which browsers decide which CSS property values are the most relevant to an element and, therefore, will be applied
+     - later defined is more specific
+     - directly target is more specific than inherited
+     - selector type, ascending order
+       - Type selectors, and pseudo-elements, 1.
+       - Class selectors, attributes selectors, and pseudo-classes, 1-0.
+       - ID selectors, 1-0-0.
+       - `style=` attribute, 1-0-0-0.
+     - exception
+       - `!important`, 1-0-0-0-0
+       - `:not()` is not considered pseudo-class, specificity up to its parameters
+       - Tree proximity ignorance — `html h1` more specific than `body h1` if it comes later
+     - rules of thumb — careful with `#id` and `!important`
 
 1. Simple selectors
    - type selector `div` — HTML tag name
@@ -834,118 +815,57 @@
 
 ## Rules
 
-### special keywords
+### Notable Keywords
 
-1. special keywords
-   - `inherit`
-     - by default, properties pertaining to text, list properties, table border properties inherits
-   - `initial` — applies the initial (or default) value
-     - initial value — default value
-       - For inherited properties, the initial value is used on the root element only, as long as no specified value is supplied.
-       - For non-inherited properties, the initial value is used on all elements, as long as no specified value is supplied.
-   - `unset` — resets a property to its inherited value if it inherits from its parent, and to its initial value if not
-   - `revert` — rolls back the cascade so that a property takes on the value it would have had if there were no styles in the current style origin (author, user, or user-agent)
-   - `!important` — overrides any other declarations
-     ```CSS
-     input[type="password" i] {
-         -webkit-text-security: disc !important;
-     }
-     ```
-     - for global rule, avoid use if possible
-   - for some, not for all
+1. special values
+   - universally applicable
+     - `inherit` — by default, properties pertaining to text, list properties, table border properties inherits
+     - `initial` — applies the initial (or default) value
+       - for inherited properties — the initial value is used on the root element only, as long as no specified value is supplied
+       - for non-inherited properties — the initial value is used on all elements, as long as no specified value is supplied
+     - `unset` — resets a property to its inherited value if it inherits from its parent, and to its initial value if not
+     - `revert` — rolls back the cascade so that a property takes on the value it would have had if there were no styles in the current style origin (author, user, or user-agent)
+     - `!important` — overrides any other declarations
+       ```CSS
+       input[type="password" i] {
+           -webkit-text-security: disc !important;
+       }
+       ```
+       - for global rule, avoid use if possible
+   - common, but not for all
      - `auto` — adjusted automatically according to the content or the context of the element
      - `none`
      - `normal`
+     - `start` and `end` — relative to direction
+   - HTML related
+     - `attr()` — retrieve the value of an attribute of the selected HTML element and use it in the stylesheet
+        ```
+        attr( <attr-name> <type-or-unit>? [, <attr-fallback> ]? )
+        where
+        <type-or-unit> = string | color | url | integer | number | length | angle | time | frequency | cap | ch | em | ex | ic | lh | rlh | rem | vb | vi | vw | vh | vmin | vmax | mm | Q | cm | in | pt | pc | px | deg | grad | rad | turn | ms | s | Hz | kHz | %
+        ```
 
-1. `all` — sets all of an element's properties (other than `unicode-bidi` and `direction`)
-   - `initial | inherit | unset | revert`
-
-1. `start` and `end` — relative to direction
-
-1. `attr()` — retrieve the value of an attribute of the selected element and use it in the stylesheet
-   ```
-   attr( <attr-name> <type-or-unit>? [, <attr-fallback> ]? )
-   where
-   <type-or-unit> = string | color | url | integer | number | length | angle | time | frequency | cap | ch | em | ex | ic | lh | rlh | rem | vb | vi | vw | vh | vmin | vmax | mm | Q | cm | in | pt | pc | px | deg | grad | rad | turn | ms | s | Hz | kHz | %
-   ```
-
-### Background
-
-1. `background`
-   ```
-   [ <bg-layer> , ]* <final-bg-layer>
-   where
-   <bg-layer> = <bg-image> || <bg-position> [ / <bg-size> ]? || <repeat-style> || <attachment> || <box> || <box>
-   <final-bg-layer> = <'background-color'> || <bg-image> || <bg-position> [ / <bg-size> ]? || <repeat-style> || <attachment> || <box> || <box>
-   ```
-
-1. `background-image`
-   ```
-   <bg-image>#
-   where
-   <bg-image> = none | <image>
-   ```
-   - stacking one or more images — The background images are drawn on stacking context layers on top of each other. The first layer specified is drawn as if it is closest to the user.
-   - The borders of the element are then drawn on top of them
-   - and the background-color is drawn beneath them
-
-1. `background-position`
-   ```
-   <bg-position>#
-   one value: left | center | right | top | bottom | <length-percentage>
-   two value: [ left | center | right | <length-percentage> ] [ top | center | bottom | <length-percentage> ]
-   two value: [ center | [ left | right ] <length-percentage>? ] && [ center | [ top | bottom ] <length-percentage>? ]
-   ```
-   - sets the initial position for each background image. The position is relative to the position layer set by background-origin
-   - one value — The other dimension is then set to 50%
-     - `<length-percentage>` sets the X coordinate relative to the left edge
-
-1. `background-size` — the size of background images relative to container
-   ```
-   <bg-size>#
-   where
-   <bg-size> = [ <length-percentage> | auto ]{1,2} | cover | contain
-   ```
-
-1. `background-repeat` — A background image can be repeated along the horizontal and vertical axes, or not repeated at all
-   ```
-   <repeat-style>#
-   where
-   <repeat-style> = repeat-x | repeat-y | [ repeat | space | round | no-repeat ]{1,2}
-   ```
-   - `repeat-x` — `repeat no-repeat`
-   - `repeat-y` — `no-repeat repeat`
-
-1. `background-attachment` — position is fixed within the viewport, or scrolls with its containing block
-   ```
-   <attachment>#
-   where
-   <attachment> = scroll | fixed | local
-   ```
-
-1. `background-origin` — image position
-   ```
-   <box>#
-   where
-   <box> = border-box | padding-box | content-box
-   ```
-
-1. `background-clip` — whether background extends underneath its border
-   ```
-   <box>#
-   where
-   <box> = border-box | padding-box | content-box
-   ```
-   - `text` — experimental
-
-1. `background-color` — rendered behind `background-image`, `<color>`
-
-1. `background-blend-mode` — not in shorthand, how an element's background images should blend with each other and with the element's background color.
-   ```
-   <blend-mode>#
-   ```
+1. special properties
+   - `all` — sets all of an element's properties (other than `unicode-bidi` and `direction`)
+      ```
+      initial | inherit | unset | revert
+      ```
+   - logical properties and values — use the abstract terms `block` and `inline` to describe the direction in which they flow
+     - [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Logical_Properties)
+     - block — the dimension perpendicular to the flow of text within a line
+     - inline — the dimension parallel to the flow of text within a line
 
 ### Box Styling
+
+1. box model and the containing block
+   - [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block)
+   - box model
+     - content box
+     - padding box
+     - border box
+     - margin box, transparent
+   - containing block — most often, the containing block is the content area of an element's nearest block-level ancestor
+     - affected by `position` — when `position` is `fixed` or `absolute`, the containing box changes
 
 1. choose box for width and height properties
    - `box-sizing` — width and height properties apply to
@@ -1157,6 +1077,82 @@
      - a drop shadow (as if the box were raised above the content)
      - or drawn inside the border (even transparent ones), above the background, but below content, where the shadow box does not cover is drawn
    - `<length>{2, 4}` — `offset-x | offset-y | blur-radius | spread-radius`
+
+### Background
+
+1. `background`
+   ```
+   [ <bg-layer> , ]* <final-bg-layer>
+   where
+   <bg-layer> = <bg-image> || <bg-position> [ / <bg-size> ]? || <repeat-style> || <attachment> || <box> || <box>
+   <final-bg-layer> = <'background-color'> || <bg-image> || <bg-position> [ / <bg-size> ]? || <repeat-style> || <attachment> || <box> || <box>
+   ```
+
+1. `background-image`
+   ```
+   <bg-image>#
+   where
+   <bg-image> = none | <image>
+   ```
+   - stacking one or more images — The background images are drawn on stacking context layers on top of each other. The first layer specified is drawn as if it is closest to the user.
+   - The borders of the element are then drawn on top of them
+   - and the background-color is drawn beneath them
+
+1. `background-position`
+   ```
+   <bg-position>#
+   one value: left | center | right | top | bottom | <length-percentage>
+   two value: [ left | center | right | <length-percentage> ] [ top | center | bottom | <length-percentage> ]
+   two value: [ center | [ left | right ] <length-percentage>? ] && [ center | [ top | bottom ] <length-percentage>? ]
+   ```
+   - sets the initial position for each background image. The position is relative to the position layer set by background-origin
+   - one value — The other dimension is then set to 50%
+     - `<length-percentage>` sets the X coordinate relative to the left edge
+
+1. `background-size` — the size of background images relative to container
+   ```
+   <bg-size>#
+   where
+   <bg-size> = [ <length-percentage> | auto ]{1,2} | cover | contain
+   ```
+
+1. `background-repeat` — A background image can be repeated along the horizontal and vertical axes, or not repeated at all
+   ```
+   <repeat-style>#
+   where
+   <repeat-style> = repeat-x | repeat-y | [ repeat | space | round | no-repeat ]{1,2}
+   ```
+   - `repeat-x` — `repeat no-repeat`
+   - `repeat-y` — `no-repeat repeat`
+
+1. `background-attachment` — position is fixed within the viewport, or scrolls with its containing block
+   ```
+   <attachment>#
+   where
+   <attachment> = scroll | fixed | local
+   ```
+
+1. `background-origin` — image position
+   ```
+   <box>#
+   where
+   <box> = border-box | padding-box | content-box
+   ```
+
+1. `background-clip` — whether background extends underneath its border
+   ```
+   <box>#
+   where
+   <box> = border-box | padding-box | content-box
+   ```
+   - `text` — experimental
+
+1. `background-color` — rendered behind `background-image`, `<color>`
+
+1. `background-blend-mode` — not in shorthand, how an element's background images should blend with each other and with the element's background color.
+   ```
+   <blend-mode>#
+   ```
 
 ### font
 
@@ -1722,11 +1718,11 @@
      - The element generates a block element box that will be flowed with surrounding content as if it were a single inline box (behaving much like a replaced element would).
      - fills the available width
    - `inline-table` — It is equivalent to `inline table`
-      - The inline-table value does not have a direct mapping in HTML. It behaves like an HTML `<table>` element, but as an inline box, rather than a block-level box. Inside the table box is a block-level context.
+     - The inline-table value does not have a direct mapping in HTML. It behaves like an HTML `<table>` element, but as an inline box, rather than a block-level box. Inside the table box is a block-level context.
    - `inline-flex` — It is equivalent to `inline flex`
-      - The element behaves like an inline element and lays out its content according to the flexbox model.
+     - The element behaves like an inline element and lays out its content according to the flexbox model.
    - `inline-grid` — It is equivalent to `inline grid`
-      - The element behaves like an inline element and lays out its content according to the grid model.
+     - The element behaves like an inline element and lays out its content according to the grid model.
 
 ### lists
 
@@ -2416,7 +2412,7 @@
    - [necolas/normalize.css: A modern alternative to CSS resets](https://github.com/necolas/normalize.css)
    - see [Flex](#Flex)
 
-1. fix `<main>` inline by default
+1. fix `<main>` inline by default in some browsers
    ```CSS
    main {
      display: block;
