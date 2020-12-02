@@ -416,8 +416,8 @@ Gossip — the reach of a broadcast and the reliability of anti-entropy
      - publish / subscribe — JMS topics, like events
        - durable and non-durable subscriber — whether message persisted for unreachable subscribes
      - 集群订阅 — publish / subscribe for clusters, PTP for nodes in clusters
-   - message acknowledgement in JMS
-     - `AUTO_ACKNOWLEDGE` — after the reception of message (when the session has successfully returned from a call to receive or when the message listener called to process the message successfully returns)
+   - message acknowledgement in `javax.jms.Session`
+     - `AUTO_ACKNOWLEDGE` — after the reception of message (when the session has successfully returned from a call to `receive` or when the message listener called to process the message successfully returns)
      - `CLIENT_ACKNOWLEDGE` — after `javax.jms.Message::acknowledge`
      - `DUPS_OK_ACKNOWLEDGE` — batched, sends a client acknowledgment each time received a fixed number of messages, or when a fixed time interval has elapsed since the last acknowledgment was sent; the broker may redeliver the same message more than once
      - `SESSION_TRANSACTED` — deliver and consume messages in a local transaction
