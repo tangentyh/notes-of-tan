@@ -766,6 +766,9 @@
    ```shell
    git rev-list [<options>] <commit>…​ [[--] <path>…​]
    ```
+   - commit limiting options
+     - `--all` — as if all the refs in `refs/`, along with `HEAD`, are listed on the command line as `<commit>`
+     - `--branches[=<pattern>]` — all the refs in `refs/heads` as `<commit>`; if `<pattern>` given but no `?`, `*` or `[]`, `/*` at the end is implied
 
 1. `git rev-parse` — pick out and massage parameters??
    ```shell
@@ -791,6 +794,10 @@
 ### Content Search
 
 1. `git grep`
+   - search commit contents, see `git rev-list` above, from [Stack Overflow](https://stackoverflow.com/questions/2928584/how-to-grep-search-committed-code-in-the-git-history)
+     ```shell
+     git rev-list --all | xargs git grep <expression>
+     ```
 
 1. `git bisect`
 
