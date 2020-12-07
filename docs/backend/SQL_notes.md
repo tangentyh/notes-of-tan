@@ -319,6 +319,8 @@ Based on MySQL
 
 1. `SHOW VARIABLES` — see [System Variables](#System-Variables)
 
+1. `SHOW ENGINE`
+
 #### EXPLAIN
 
 1. `EXPLAIN`, `DESCRIBE`, `DESC`
@@ -371,6 +373,8 @@ Based on MySQL
        - 在应用层进行连接，可以更容易对数据库进行拆分，从而更容易做到高性能和可伸缩。
 
 ### DDL
+
+1. DDL statements, atomic or otherwise, implicitly end any transaction that is active in the current session
 
 #### CREATE TABLE
 
@@ -566,7 +570,7 @@ Based on MySQL
      - `ALL` (default), `DISTINCT` — `DISTINCT` implicitly sorts the data, `DISTINCTROW` is an alias
      - tbd — `HIGH_PRIORITY`, `STRAIGHT_JOIN`, `SQL_SMALL_RESULT`, `SQL_BIG_RESULT`, `SQL_BUFFER_RESULT`, `SQL_NO_CACHE`, `SQL_CALC_FOUND_ROWS`
    - `position` — column index, non-standard, deprecated
-   - `FOR UPDATE`, `FOR SHARE` — locking reads, tbd
+   - `FOR UPDATE`, `FOR SHARE` — locking reads
 
 1. `select_expr` — the select list that indicates which columns to retrieve
    ```
@@ -1180,11 +1184,13 @@ Based on MySQL
    - `SERIALIZABLE` — like `REPEATABLE READ`, but all reads are implicitly locking reads
    - `REPEATABLE READ` (default)
      - consistent read — read the snapshot established by the first read
-     - for locking reads (`SELECT` with `FOR UPDATE` or `FOR SHARE`), `UPDATE`, and `DELETE` statements — locking, see docs
+     - for locking reads (`SELECT` with `FOR UPDATE` or `FOR SHARE`), `UPDATE`, and `DELETE` statements — next-key locks, record locks, gap locks, see docs
    - `READ COMMITTED`
      - consistent read — read the snapshot that is reset to the time of each consistent read operation
-     - for locking reads (`SELECT` with `FOR UPDATE` or `FOR SHARE`), `UPDATE`, and `DELETE` statements — locks only index records; Gap locking is only used for foreign-key constraint checking and duplicate-key checking, see docs
-   - `READ UNCOMMITTED` — nonblocking `SELECT`, no consistent read; otherwise like `READ COMMITTED`
+     - for locking reads (`SELECT` with `FOR UPDATE` or `FOR SHARE`), `UPDATE`, and `DELETE` statements — record locks; gap locking is only used for foreign-key constraint checking and duplicate-key checking, see docs
+   - `READ UNCOMMITTED` — no consistent read; otherwise like `READ COMMITTED`
+
+1. check current `level` — `SHOW VARIABLES LIKE '%iso%'`
 
 #### Locks
 
@@ -1206,6 +1212,10 @@ Based on MySQL
    UNLOCK TABLES
    ```
    - more
+
+1. show lock
+   - `SHOW ENGINE INNODB STATUS`
+   - `SHOW OPEN TABLES`
 
 ### Dynamic SQL
 

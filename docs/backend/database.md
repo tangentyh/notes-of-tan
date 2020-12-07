@@ -169,6 +169,8 @@
          1. analysis phase — identifies dirty pages in the page cache and transactions that were in progress at the time of a crash
          1. redo phase — repeats the history up to the point of a crash and restores the database to the previous state, and WAL used for repeating history
          1. undo phase — rolls back all incomplete transactions and restores the database to the last consistent state
+     - InnoDB doublewrite buffer — a storage area in the system tablespace where InnoDB writes pages that are flushed from the buffer pool before writing them to their proper positions in the data file; if crashed in the middle of a page write, InnoDB can find a good copy of the page from the doublewrite buffer during crash recovery
+       - overhead — data is written to the doublewrite buffer as a large sequential chunk, with a single `fsync()` call to the OS
 
 1. concurrency control
    - optimistic concurrency control (OCC)
@@ -190,7 +192,6 @@
    - consistency — in transactions, the database remains in a consistent state at all times, after each commit or rollback; queries never see mix of old and new values
    - isolation — transactions cannot interfere with each other or see each other's uncommitted data; achieved through the locking mechanism
    - durability — the changes made by transactions are safe from power failures, system crashes, race conditions, or other potential dangers that many non-database applications are vulnerable to
-     - In InnoDB, the doublewrite buffer assists with durability
 
 1. read phenomena
    - dirty read — read data that was updated by another transaction but not yet committed, possible in `READ UNCOMMITTED`
@@ -206,7 +207,7 @@
 1. isolation levels
    - see [`SET TRANSACTION`](./SQL_notes.md#SET-TRANSACTION)
    - snapshot isolation (SI) — [zhihu](https://zhuanlan.zhihu.com/p/54979396), read from the snapshot with values committed before the transaction’s start timestamp (no phantom read), first committer wins when write-write conflict
-     - example — Google Percolator
+     - example — Google Percolator, `REPEATABLE READ` in MySQL
 
 1. consistent read — isolation: A read operation that uses snapshot information to present query results based on a point in time, regardless of changes performed by other transactions running at the same time
    - related isolation level — `READ COMMITTED` and `REPEATABLE READ` isolation levels
@@ -241,51 +242,66 @@
      - deduction — no phantom read if no locking reads following consistent reads in `REPEATABLE READ`
 
 1. locks
-   - locking mechanism
-     - like `java.util.concurrent.locks.ReentrantReadWriteLock`
-       - X lock, aka write lock — exclusive
-       - S lock, aka read lock — shared
-     - only write locks while make sure read is consistent
    - lock granularity
      - db lock
-     - table lock
+     - table lock — at MySQL server; used when DDL, `LOCK TABLE` and more
      - page lock
-     - row lock
-   - intention locks — apply to the table, and are used to indicate what kind of lock the transaction intends to acquire on rows in the table
+     - row lock — at InnoDB engine
+   - table or row lock types
+     - S lock, aka read lock — shared
+     - X lock, aka write lock — exclusive
+   - intention locks — table-level locks that indicate which type of lock (shared or exclusive) a transaction requires later for a row in a table; do not block anything except table lock requests
      - IX lock — before a transaction can acquire an exclusive lock on a row in a table, it must first acquire an IX lock on the table
      - IS lock — before a transaction can acquire a shared lock on a row in a table, it must first acquire an IS lock or stronger on the table
-   - row locks
+   - insert intention lock — a type of gap lock set by `INSERT` operations prior to row insertion, signals the intent to insert, but does not block each other if not inserting at the same position within the gap
+   - `AUTO-INC` locks — a special table-level lock taken by transactions inserting into tables with `AUTO_INCREMENT` columns; can be in other mode, controlled by `innodb_autoinc_lock_mode`, trade off between predictable sequences of auto-increment values and concurrency, see [docs](https://dev.mysql.com/doc/refman/8.0/en/innodb-auto-increment-handling.html)
+   - predicate locks for `SPATIAL` indexes — tbd
+   - row locks — actually index-record locks
+     - row locking mechanism — a locking read, an `UPDATE`, or a `DELETE` generally set locks (normally next-key locks) on every index record that is scanned in the processing of the SQL statement
+       - secondary index — if a secondary index is used in a search and locks to set are exclusive, InnoDB also retrieves the corresponding clustered index records and sets locks on them
+       - no index — scan the entire table to process the statement, every row of the table becomes locked
+       - `INSERT` — sets an exclusive record lock on the inserted row after setting insert intention lock; if duplicate-key error, sets a shared lock on the duplicate index record and then sets the exclusive lock; see docs for possible deadlock
+       - `INSERT` with different clauses and other situations — see [docs](https://dev.mysql.com/doc/refman/8.0/en/innodb-locks-set.html)
      - record locks — a lock on an index record; if a table is defined with no indexes, InnoDB creates a hidden clustered index and uses this index for record locking
-     - gap locks — a lock on a gap between index records, or a lock on the gap before the first or after the last index record, not needed for statements that lock rows using a unique index to search for a unique row. (This does not include the case that the search condition includes only some columns of a multiple-column unique index; in that case, gap locking does occur.)
+     - gap locks — a lock on a gap between index records, or a lock on the gap before the first or after the last index record; a gap might span a single index value, multiple index values, or even be empty
+       - purely inhibitive — only purpose is to prevent other transactions from inserting to the gap
+       - not used in single row search on unique index — not needed for statements that lock rows using a unique index to search for a unique row. (This does not include the case that the search condition includes only some columns of a multiple-column unique index; in that case, gap locking does occur.)
+       - not conflicting — conflicting locks can be held on a gap by different transactions. The reason conflicting gap locks are allowed is that if a record is purged from an index, the gap locks held on the record by different transactions must be merged.
+       - can co-exist — a gap lock taken by one transaction does not prevent another transaction from taking a gap lock on the same gap; no difference between shared and exclusive gap locks
+       - disable — in `READ COMMITTED` or below gap locking is used only for foreign-key constraint checking and duplicate-key checking
      - next-key lock — a combination of a record lock on the index record and a gap lock on the gap before the index record; in `REPEATABLE READ`, InnoDB uses next-key locks for searches and index scans (if locking reads), which prevents phantom rows; for the range towards infinity, next-key is the “supremum” pseudo-record having a value higher than any value actually in the index
-       - example
-         ```SQL
-         --- definition
-         CREATE TABLE `test` (
-           `id` int(11) primary key auto_increment,
-           `xid` int, KEY `xid` (`xid`)
-         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-         INSERT INTO test (xid) VALUES (1), (3), (5), (8), (11);
-         ```
-         ```SQL
-         --- session A
-         START TRANSACTION;
-         SELECT * from test where xid = 8 FOR UPDATE;
-         --- (5, 8], (8, 11] in theory but actually [5, 8), [8, 11)
-         --- session B
-         START TRANSACTION;
-         INSERT INTO test (xid) VALUES (4);  --- not blocked
-         INSERT INTO test (xid) VALUES (11); --- not blocked
-         INSERT INTO test (xid) VALUES (5);  --- will block
-         INSERT INTO test (xid) VALUES (8);  --- will block
-         INSERT INTO test (xid) VALUES (10); --- will block
-         ```
-   - locks and latches
-     - locks — acquired on the key
-     - latches — guard the physical tree representation (page contents and the tree structure) during node splits and merges, and page content insert, update, and delete; can be implemented by read write lock on page
-       - latch crabbing, aka latch coupling — release latch when child node located or no merge or split expected, in contrast to grabbing all the latches on the way from the root to the target leaf
-       - latch upgrading — write operations first acquire exclusive locks only at the leaf level. If the leaf has to be split or merged, the algorithm walks up the tree and attempts to upgrade a shared lock to an exclusive one for necessary nodes
-   - more locks, see MySQL docs
+     - example
+       ```SQL
+       -- definition
+       CREATE TABLE `test` (
+         `id` INT(11) PRIMARY KEY AUTO_INCREMENT,
+         `xid` INT, KEY `xid` (`xid`),
+         `v` INT DEFAULT 1
+       ) ENGINE=InnoDB;
+       -- INSERT INTO test (xid) VALUES (1), (3), (5), (8), (11);
+       INSERT INTO test (xid, v) VALUES (1, 1), (3, 3), (5, 5), (8, 8), (11, 11);
+       ```
+       ```SQL
+       -- session A)
+       START TRANSACTION;
+       SELECT * from test where xid = 8 FOR UPDATE;
+       -- locked in xid: (5, 8], (8, 11)
+       -- session B)
+       START TRANSACTION;
+       INSERT INTO test (xid) VALUES (4);  -- not blocked
+       INSERT INTO test (xid) VALUES (11); -- not blocked
+       UPDATE test SET v = 0 where xid = 5 -- not blocked
+       UPDATE test SET v = 0 where xid = 11 -- not blocked
+       INSERT INTO test (xid) VALUES (5);  -- will block
+       INSERT INTO test (xid) VALUES (8);  -- will block
+       INSERT INTO test (xid) VALUES (10); -- will block
+       ```
+
+1. locks and latches
+   - locks — acquired on the key
+   - latches — guard the physical tree representation (page contents and the tree structure) during node splits and merges, and page content insert, update, and delete; can be implemented by read write lock on page
+     - latch crabbing, aka latch coupling — release latch when child node successfully located or no merge or split expected, in contrast to grabbing all the latches on the way from the root to the target leaf
+     - latch upgrading — write operations first acquire exclusive locks only at the leaf level. If the leaf has to be split or merged, the algorithm walks up the tree and attempts to upgrade a shared lock to an exclusive one for necessary nodes
 
 1. locking protocols
    - 三级封锁协议
