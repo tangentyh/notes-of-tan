@@ -27,15 +27,16 @@
      - no creation
 
 1. fallacies of distributed systems
-   - processing — not instantaneous
+   - latency
+     - processing — not instantaneous
+     - remote execution latency and other problems
    - clock and time — time drift
    - state consistency
-   - remote execution latency and other problems
    - network partition and partial failures
      - network partition — two or more servers cannot communicate with each other
      - partial failures — a part of a system is unavailable or functioning incorrectly
    - cascading failures — a failed node increase load on other nodes; recovery exhausting network resources; corruption that can propagate through standard delivery mechanisms
-     - alleviate — planning and coordinating execution (load balance), circuit breakers, jittered exponential backoff, checksumming and validation
+     - alleviate — planning and coordinating execution (load balance), circuit breakers, jittered exponential backoff, checksumming and validation (for bit rots)
 
 ## Failure Detection
 
@@ -166,7 +167,7 @@
      - motivation — replication with copy replicas only is storage costly
      - upgrade — in cases of write timeouts or copy replica failures, witness replicas can be upgraded to copy replicas
      - requirement for availability — n copy and m witness replicas has same availability guarantees as n + m copies, if W and R above majority and at least one replica is a copy replica in a quorum
-   - sloppy quorum — in case of replica failures, write operations can use additional healthy nodes from the node list for hinted handoff (see below)
+   - sloppy quorum — in case of replica failures, write operations can use additional healthy nodes from the node list for hinted handoff (see [Anti-Entropy](#Anti-Entropy))
 
 1. eventual consistency
    - BASE
@@ -202,8 +203,8 @@
 1. read repair — repair when reading: replicas send different responses, the coordinator sends missing updates to the replicas where they’re missing
    - asynchronous read repair
    - blocking read repair — ensures read monotonicity for quorum reads
-     - not every request needs to block — because of the read monotonicity of blocking repairs, we can also expect subsequent requests to return the same consistent results, as long as there was no write operation that has completed in the interim
-   - example: Cassandra — use specialized iterators with merge listeners, which reconstruct differences between the merged result and individual inputs. Its output is then used by the coordinator to notify replicas about the missing data
+     - no need to block every request — because of the read monotonicity of blocking repairs, we can also expect subsequent requests to return the same consistent results, as long as there was no write operation that has completed in the interim
+   - example: Cassandra — use specialized iterators with merge listeners, which reconstruct differences between the merged result and individual inputs. Its output is then used by the coordinator to notify replicas about the missing data.
 
 1. digest read — the coordinator compare the digest of replicas before issue full reads: can issue only one full read if replicas in sync; has to issue full reads to any replicas that responded with different digests and reconcile
 
@@ -548,7 +549,7 @@ Gossip — the reach of a broadcast and the reliability of anti-entropy
      - variant — the choice-of-2 算法，随机选取的两个节点进行打分，选择更优的节点
    - hash
      - mod hash
-     - consistent hashing — [zhihu](https://zhuanlan.zhihu.com/p/34985026)
+     - consistent hashing — tbd
 
 1. Redirect
    - HTTP 302 Found — one more roundtrip
