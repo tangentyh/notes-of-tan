@@ -25,6 +25,13 @@
      - natural key or surrogate key (aka. synthetic key, typically a primary key)
    - foreign key — help keep spread-out data consistent
 
+1. selectivity and cardinality
+   - selectivity — cardinality divided by the number of records in the table; High selectivity means that the column values are relatively unique, and can retrieved efficiently through an index
+   - cardinality — the number of different values in a table column; when queries refer to columns that have an associated index, the cardinality of each column influences which access method is most efficient
+     - inspect — `SHOW INDEX`, output includes an estimate of the number of unique values in the index
+     - index hints when uneven distribution — if the index have a very uneven distribution, the cardinality might not be a good way to determine the best query plan; might need to use index hints to pass along advice about which lookup method is more efficient for a particular query
+     - random dive — a technique for quickly estimating cardinality: InnoDB samples pages at random from the index and uses that data to estimate
+
 1. index optimization
    - large data update — bootstrap with delete indexes before and re-create after
    - covering index — an index that includes all the columns retrieved by a query. Instead of using the index values as pointers to find the full table rows, the query returns values from the index structure. Any column index or composite index could act as a covering index

@@ -471,6 +471,7 @@ Based on MySQL
      - `RESTRICT` or `NO ACTION` (default) — rejects the delete or update operation for the parent table if there is a related foreign key value in the referenced table
      - corresponding tables in `INFORMATION_SCHEMA` — `INFORMATION_SCHEMA.KEY_COLUMN_USAGE`, `INFORMATION_SCHEMA.INNODB_FOREIGN`, `INFORMATION_SCHEMA.INNODB_FOREIGN_COLS`
    - `FULLTEXT`, `SPATIAL` keys — tbd
+   - inspect — [`SHOW INDEX`](#SHOW)
 
 #### ALTER TABLE, DROP TABLE
 
