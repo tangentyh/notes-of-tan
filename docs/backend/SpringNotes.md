@@ -17,23 +17,20 @@
 
 1. philosophy
    - beans — Java objects that perform business logic, execute tasks, persist and retrieve persisted data, respond to HTTP requests, and more
-   - config — XML-based, Annotations, and JavaConfig-based approaches for configuring beans
-     - decorator when used as meta annotation — for example any annotation that is annotated with `@Component` becomes a component annotation, and so forth
-   - `-Aware` — `set-` methods for callback
+   - config — XML-based, annotations, and JavaConfig-based approaches for configuring beans
+     - can used as meta annotation — for example any annotation that is annotated with `@Component` becomes a component annotation, and so forth
+   - `-Aware` — `set-` methods for callbacks
+     - `org.springframework.context.EnvironmentAware` — `void setEnvironment(Environment environment)`
    - `-Capable`, `-edBean` — `get-` methods
      - `org.springframework.core.env.EnvironmentCapable` — `Environment getEnvironment()`
    - `Configurable-`: `ConfigurableApplicationContext`, `ConfigurableBeanFactory` — typically implement to configure
    - `Listable-`: `ListableBeanFactory` — can enumerate, rather than attempting bean lookup by name one by one
-   - `required` — `Exception` or `null`
-     - `Optional` — equivalent to `required` set `false`
-   - AOP — JDK proxy or CGLIB subclassing; CGLIB proxy instance is created through Objenesis, so constructor is not called twice
+   - parameters
+     - `boolean required` in annotation parameter — `Exception` or `null`
+     - `java.util.Optional` as method parameter — equivalent to `required` set `false`
+   - AOP — JDK proxy or CGLIB subclassing; CGLIB proxy instance is created through Objenesis, so constructor is not called twice since 4.0
 
-### Miscellaneous
-
-1. `org.springframework.beans.BeanUtils`
-   - `static void copyProperties(Object source, Object target)`
-
-1. `org.springframework.web.servlet.support.RequestContextUtils`
+### Utils
 
 1. create a new Spring project
    - [official docs: Getting Started · Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
@@ -43,17 +40,17 @@
      - `artifactId` — use hyphen as delimiters
    - create a project using maven
      ```shell
-     mvn archetype:generate -DgroupId=com.apress.todo -DartifactId=todo -Dversion=0.0.1-SNAPSHOT -DinteractiveMode=false -DarchetypeArtifactId=maven-archetype-webapp
+     mvn archetype:generate -DgroupId=com..todo -DartifactId=todo -Dversion=0.0.1-SNAPSHOT -DinteractiveMode=false -DarchetypeArtifactId=maven-archetype-webapp
      ```
    - maven configuration
-     - [properties for override individual dependencies](https://github.com/spring-projects/spring-boot/blob/v2.2.8.RELEASE/spring-boot-project/spring-boot-dependencies/pom.xml)
+     - [properties for dependencies versions](https://github.com/spring-projects/spring-boot/blob/bf9dc2f25c035803d54c1bfa4b5986a88122d5b2/spring-boot-project/spring-boot-dependencies/pom.xml#L34-L245)
      - [starters](https://docs.spring.io/spring-boot/docs/current/reference/html/using-boot-build-systems.html#using-boot-starter)
 
 1. [lombok](https://projectlombok.org/features/all)
 
 ## Servlet
 
-1. Maven artifact
+1. maven artifact
    ```xml
    <dependency>
        <groupId>javax.servlet</groupId>
@@ -81,17 +78,16 @@
    </web-app>
    ```
 
-### Servlet Container Initializer
-
-1. `interface javax.servlet.ServletContainerInitializer`
+1. `interface javax.servlet.ServletContainerInitializer` — support code-based configuration of the servlet container using Spring's WebApplicationInitializer SPI as opposed to (or possibly in combination with) the traditional `web.xml`-based approach
    - `void onStartup(Set<Class<?>> c, ServletContext ctx)` — on the startup of the application
-     - `c` — classes in `@HandlesTypes::value`, `null` if the implementation does not annotated with `@HandlesTypes` or `value` is empty
-     - `@javax.servlet.annotation.HandlesTypes`
-       ```java
-       @Target(value=TYPE) public @interface HandlesTypes
-       ```
-       - `Class<?>[] value`
+     - `c` — classes in `@javax.servlet.annotation.HandlesTypes::value` annotated on the implementation, `null` if not annotated with `@HandlesTypes` or `value` is empty
    - SPI — implementations as service provider in `META-INF/services` inside JAR files
+   - `org.springframework.web.SpringServletContainerInitializer` — Spring's implementation, defaults to delegating to all `WebApplicationInitializer::onStartup` with `servletContext`
+     ```java
+     @HandlesTypes(WebApplicationInitializer.class)
+     public class SpringServletContainerInitializer
+     implements ServletContainerInitializer
+     ```
 
 ### HTTP Servlet, ServletConfig and ServletContext
 
@@ -117,13 +113,20 @@
    - get config
      - `ServletConfig getServletConfig()`
      - `ServletContext getServletContext()`
-     - `javax.servlet.ServletConfig` — configures in `web.xml`
+     - `interface javax.servlet.ServletConfig` — configures in `web.xml`
        - `String getInitParameter(String name)`
        - `Enumeration<String> getInitParameterNames()`
        - `ServletContext getServletContext()`
        - `String getServletName()`
 
-1. config `HttpServlet`
+1. config `HttpServlet` — in `web.xml` or by annotations
+   - `@javax.servlet.annotation.WebServlet`
+     ```java
+     @Target(value=TYPE)
+     public @interface WebServlet
+     ```
+     - `boolean asyncSupported`, `String description`, `String displayName`, `WebInitParam[] initParams`, `String largeIcon`, `int loadOnStartup`, `String name`, `String smallIcon`, `String[] urlPatterns`, `String[] value`
+   - `@MultipartConfig`, see after
    - in `web.xml` — the same class can have multiple instances with different names
      ```xml
      <servlet>
@@ -158,13 +161,6 @@
            <url-pattern>*.jpg</url-pattern>
        </servlet-mapping>
        ```
-   - `@javax.servlet.annotation.WebServlet`
-     ```java
-     @Target(value=TYPE)
-     public @interface WebServlet
-     ```
-     - `boolean asyncSupported`, `String description`, `String displayName`, `WebInitParam[] initParams`, `String largeIcon`, `int loadOnStartup`, `String name`, `String smallIcon`, `String[] urlPatterns`, `String[] value`
-   - `@MultipartConfig`, see after
 
 1. `interface javax.servlet.ServletContext` — a set of methods that a servlet uses to communicate with its servlet container, one context per "web application" per JVM
    - context parameter
@@ -195,34 +191,22 @@
    ```java
    public interface HttpServletRequest extends ServletRequest
    ```
-   - get methods
+   - get request info — headers, URL and URL segments, sessions and cookies and more
      - `String getParameter(String name)` and more — query string or posted form data; when latter, `getInputStream()` used internally, later call to `getInputStream()` or `getReader` will throw `IllegalStateException`
      - `BufferedReader getReader()`, `ServletInputStream getInputStream()`
-       - `javax.servlet.ServletInputStream` — `setReadListener` method
-     - headers
-     - URL and URL segments
-     - sessions and cookies
+       - `javax.servlet.ServletInputStream` — can have `ReadListener` to notify when possible to read
    - file upload, or the `multipart/form-data` MIME type
      - `Part getPart(String name)`, `Collection<Part> getParts()`
      - `@javax.servlet.annotation.MultipartConfig` — annotated instances of the `Servlet` expect requests that conform to the `multipart/form-data` MIME type
-       ```java
-       @Target(value=TYPE) public @interface MultipartConfig
-       ```
-       - `int fileSizeThreshold`
+       - `int fileSizeThreshold` - `long maxFileSize` - `long maxRequestSize`
        - `String location` — file store location, can leave to container to determine
-       - `long maxFileSize`
-       - `long maxRequestSize`
    - serve HTML files, JSP files — include or forward to another resource (servlet, JSP file, or HTML file) from a request
      - `RequestDispatcher getRequestDispatcher(String path)`
      - `RequestDispatcher::forward`, `RequestDispatcher::include`
    - async
-     - `startAsync`, can wrap original request and response
-     - `isAsyncStarted`
-     - `isAsyncSupported`
-     - `getAsyncContext`
-   - `javax.servlet.ServletRequestWrapper`  
-     `javax.servlet.http.HttpServletRequestWrapper`  
-     — decorator pattern, a convenient implementation of the `ServletRequest` interface that can be subclassed
+     - `startAsync` — can wrap original request and response
+     - `isAsyncStarted` - `isAsyncSupported` - `getAsyncContext`
+   - customized implementation — `javax.servlet.ServletRequestWrapper`, `javax.servlet.http.HttpServletRequestWrapper` for extending
 
 1. sessions
    - `interface javax.servlet.http.HttpSession` — attribute getters, setters and more
@@ -249,9 +233,9 @@
          <tracking-mode>COOKIE</tracking-mode>
          <tracking-mode>URL</tracking-mode>
          <tracking-mode>SSL</tracking-mode>
+         <distributable/> <!-- enabling session replication -->
      </session-config>
      ```
-     - `<distributable/>` — enabling session replication
 
 1. `javax.servlet.http.HttpServletResponse`
    ```java
@@ -274,13 +258,7 @@
      - `void addCookie(Cookie cookie)`
      - header setters, adders — call before response body stream getter
        - `setContentLength`, `setContentLengthLong` — should leave to container
-   - `javax.servlet.ServletResponseWrapper`  
-     `javax.servlet.http.HttpServletResponseWrapper`  
-     — decorator pattern, a convenient implementation of the `ServletResponse` interface that can be subclassed
-     ```java
-     public class ServletResponseWrapper extends Object
-     implements ServletResponse
-     ```
+   - customized implementation — `javax.servlet.ServletResponseWrapper`, `javax.servlet.http.HttpServletResponseWrapper` for extending
 
 ### Servlet Listeners
 
@@ -317,8 +295,7 @@
      - to servlets
    - specify request types
      - normal requests
-     - `RequestDispatcher::forward`ed requests — handled internally as a separate request
-     - `RequestDispatcher::include`ed requests — handled internally as a separate request
+     - `RequestDispatcher::forward`ed and `RequestDispatcher::include`ed requests — handled internally as a separate request
      - error requests
      - `AsyncContext` dispatched requests
 
@@ -362,22 +339,23 @@
 
 1. spring container
    - `interface org.springframework.beans.factory.BeanFactory` - root interface for accessing a Spring bean container
-     - `getBean` method — get a bean with type, name and / or other args as parameter(s)
+     - `getBean` method — get a bean with type, name and/or other args as parameter(s)
      - `getBeanProvider` method — lazy load a bean, see `@Lazy`
+     - other methods
    - `interface org.springframework.context.ApplicationContext` — application context, manages a set of beans, which are eligible for dependency injection, message notification, scheduled method execution, bean validation, and other crucial Spring services
      ```java
      public interface ApplicationContext
      extends EnvironmentCapable, ListableBeanFactory, HierarchicalBeanFactory, MessageSource, ApplicationEventPublisher, ResourcePatternResolver
      ```
-     - `org.springframework.beans.factory.ListableBeanFactory` — bean factory methods for accessing application components
-     - `org.springframework.core.io.ResourceLoader` — the ability to load file resources in a generic fashion
-       - `org.springframework.core.io.support.ResourcePatternResolver`
-     - `org.springframework.context.ApplicationEventPublisher` — The ability to publish events to registered listeners
+     - `org.springframework.beans.factory.ListableBeanFactory` — `BeanFactory` but return iterable objects containing beans
+     - `org.springframework.context.ApplicationEventPublisher` — the ability to `publishEvent` to registered listeners
+     - `org.springframework.core.io.ResourceLoader` — the ability to load file or URL resources in a generic fashion
+       - `org.springframework.core.io.support.ResourcePatternResolver` — get `Resource` for location patterns
      - `org.springframework.context.MessageSource` — the ability to resolve messages, supporting internationalization
-     - `org.springframework.beans.factory.HierarchicalBeanFactory` — inheritance from a parent context. Definitions in a descendant context will always take priority. This means, for example, that a single parent context can be used by an entire web application, while each servlet has its own child context that is independent of that of any other servlet.
+     - `org.springframework.beans.factory.HierarchicalBeanFactory` — can have inheritance hierarchy
 
-1. application context traits
-   - `org.springframework.context.ConfigurableApplicationContext` — configurable, rather than not readonly, `ApplicationContext`
+1. application context derivations
+   - `org.springframework.context.ConfigurableApplicationContext` — `ApplicationContext` but configurable
      ```java
      public interface ConfigurableApplicationContext
      extends ApplicationContext, Lifecycle, Closeable
@@ -429,12 +407,12 @@
 1. programmatic configuration
    - `AnnotationConfigApplicationContext`
      - post processors — when using `AnnotationConfigApplicationContext`, annotation config processors are always registered
-     - `void register(Class<?>... componentClasses)` — register one or more component classes (typically `@Configurable`) to be processed
-     - `void scan(String... basePackages)`
      - constructors with parameters — methods combined
        - `AnnotationConfigApplicationContext(Class<?>... componentClasses)`
        - `AnnotationConfigApplicationContext(DefaultListableBeanFactory beanFactory)`
        - `AnnotationConfigApplicationContext(String... basePackages)`
+     - `void register(Class<?>... componentClasses)` — register one or more component classes (typically `@Configurable`) to be processed
+     - `void scan(String... basePackages)`
    - `ConfigurableApplicationContext::refresh` — load or refresh the persistent representation of the configuration, required to be called after above two methods
    - see `@Configuration` for configuration classes
 
@@ -457,6 +435,9 @@
      - `<context:annotation-config/>` or `<context:component-scan/>` — see `@Configuration`
 
 ## Beans
+
+1. `org.springframework.beans.BeanUtils` — for instantiating beans, checking bean property types, copying bean properties, etc.
+   - `static void copyProperties(Object source, Object target)`
 
 ### Bean Attributes
 
@@ -603,7 +584,7 @@
      - 'inter-bean references' are not supported — when one `@Bean`-method invokes another `@Bean`-method in lite mode, the invocation is a standard Java method invocation; Spring does not intercept the invocation via a CGLIB proxy
    - static `@Bean` methods for `BeanFactoryPostProcessor` — should be declared as a static method to be instantiated early in the container lifecycle, scoping and AOP semantics as trade off
 
-1. `@org.springframework.context.annotation.Configuration` — indicates that a class declares one or more `@Bean` methods, and / or property sources, feature switches
+1. `@org.springframework.context.annotation.Configuration` — indicates that a class declares one or more `@Bean` methods, and/or property sources, feature switches
    ```java
    @Target(value=TYPE)
     @Component
@@ -638,6 +619,7 @@
      - `String[] value`, `String[] basePackages` — defaults to declaring package, sub-packages also scanned
      - filters — defaults to include `@Component`
      - more
+   - ensure singleton scope if scope is singleton — `@Configuration` classes are subclassed at startup-time with CGLIB. In the subclass, the child method checks the container first for any cached (scoped) beans before it calls the parent method and creates a new instance
 
 1. `@org.springframework.stereotype.Component` — annotated classes are considered as candidates for auto-detection when using annotation-based configuration and classpath scanning
    ```java
@@ -648,7 +630,7 @@
    - `String value` bean name, defaults to class name in camelCase
    - in Java EE — `@javax.inject.Named`, but with a few subtle differences
    - special kind components, `@Component` meta annotated
-     - `@org.aspectj.lang.annotation.Aspect` — not meta annotated by `@Component`
+     - `@org.aspectj.lang.annotation.Aspect` — component but not meta annotated by `@Component`
      - `@Controller`
        - `@RestController` — `@Controller` with `@ResponseBody`
      - `@org.springframework.stereotype.Service` — "an operation offered as an interface that stands alone in the model, with no encapsulated state."
@@ -1018,6 +1000,8 @@
    - defaults — tbd
    - processing — tbd
 
+1. `org.springframework.web.servlet.support.RequestContextUtils` — lookup of current `WebApplicationContext`, `LocaleResolver`, `Locale`, `ThemeResolver`, `Theme`, and `MultipartResolver` etc. which has been set by the `DispatcherServlet`
+
 1. bootstrap web application contexts
    - example — see docs of `WebApplicationInitializer` and SpringMVC
    - `org.springframework.web.context.ContextLoaderListener` — bootstrap listener to start up and shut down Spring's root `WebApplicationContext`. Simply delegates to `ContextLoader` as well as to `ContextCleanupListener`.
@@ -1033,10 +1017,7 @@
          - `interface org.springframework.web.WebApplicationInitializer` — `void onStartup(ServletContext servletContext)` to configure the `ServletContext` programmatically
          - `org.springframework.web.context.AbstractContextLoaderInitializer` — register a `ContextLoaderListener` when `onStartup`, only abstract method `createRootApplicationContext()`
          - `org.springframework.web.servlet.support.AbstractDispatcherServletInitializer` — with abstract methods for HTTP servlet configs like filters, mappings, etc.
-     - `org.springframework.web.SpringServletContainerInitializer` — SPI configured class, when `onStartup` (see `ServletContainerInitializer::onStartup`), scan `WebApplicationInitializer` implementations and delegates to their `onStartup`
-       ```java
-       public class SpringServletContainerInitializer implements javax.servlet.ServletContainerInitializer
-       ```
+     - `org.springframework.web.SpringServletContainerInitializer` — see [Servlet](#Servlet)
    - `<init-param>`s of `DispatcherServlet`
      - `contextClass`, defaults to `XmlWebApplicationContext`
      - `contextConfigLocation`
