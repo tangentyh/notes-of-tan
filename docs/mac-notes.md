@@ -414,3 +414,8 @@
 ## Chrome
 
 1. drag text — hold for a while
+
+1. install extensions of old version
+   1. [Crx4Chrome - Download CRX for Chrome Apps & Extensions](https://www.crx4chrome.com/)
+   1. [CRX Viewer](https://robwu.nl/crxviewer/)
+   1. change `update_url` to `localhost` in `manifest.json`

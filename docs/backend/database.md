@@ -277,7 +277,7 @@
        - can co-exist — a gap lock taken by one transaction does not prevent another transaction from taking a gap lock on the same gap; no difference between shared and exclusive gap locks
        - disable — in `READ COMMITTED` or below gap locking is used only for foreign-key constraint checking and duplicate-key checking
      - next-key lock — a combination of a record lock on the index record and a gap lock on the gap before the index record; in `REPEATABLE READ`, InnoDB uses next-key locks for searches and index scans (if locking reads), which prevents phantom rows; for the range towards infinity, next-key is the “supremum” pseudo-record having a value higher than any value actually in the index
-     - example
+     - example — see [zhihu](https://zhuanlan.zhihu.com/p/149228460) for detailed
        ```SQL
        -- definition
        CREATE TABLE `test` (
