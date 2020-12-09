@@ -59,7 +59,7 @@ Based on MySQL
      - `--password[=password]`, `-p[password]`
    - privileges
      - `--skip-show-database` — sets the `skip_show_database` system variable that controls who is permitted to use
-   - case sensitivity — see after
+   - case sensitivity — see [Language Basics](#Basics)
      - `--lower-case-table-names[=#]`
    - autocomplete — `--auto-rehash`, `mysql> \#`, `mysql> rehash`
    - output format
@@ -90,20 +90,11 @@ Based on MySQL
      - The X DevAPI — work with both relational and document data
      - The AdminAPI — work with InnoDB cluster
 
-## Miscellanea
-
-1. case sensitivity
-   - SQL statements — case insensitive
-   - database, trigger, table names — depends on file system and CLI option `--lower-case-table-names[=#]` or system variable `lower_case_table_names`, `1` suggested with lowercase storing and insensitive comparisons
-   - table aliases — platform dependent
-
-1. index — start from 1
-
 ## Data Types
 
 1. numeric
    - attributes
-     - arithmetic operations — All arithmetic is done using signed `BIGINT` or `DOUBLE` values, bear overflow awareness in mind
+     - arithmetic operations — all arithmetic is done using signed `BIGINT` or `DOUBLE` values, bear overflow awareness in mind
      - string-to-number conversion — automatically, to `DOUBLE` or `BIGINT`
      - `SIGNED` by default, no effect when using
      - `UNSIGNED` — deprecated for columns of type `FLOAT`, `DOUBLE`, and `DECIMAL` (and any synonyms), use `CHECK` instead
@@ -114,7 +105,7 @@ Based on MySQL
      TINYINT[(M)] [UNSIGNED] [ZEROFILL]
      ```
      - `M` like in `TINYINT(1)` — the maximum display width, unrelated to the range of values a type can store
-     - `SERIAL` — `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE`
+     - `SERIAL` — equivalent to `BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE`
    - `BOOL`, `BOOLEAN` — `TINYINT(1)`, zero for `FALSE`, nonzero for true, `TRUE` is 1
    - `DECIMAL`, `NUMERIC`, `DEC`, `FIXED` — `M` for precision (total digits) up to 65 and defaults to 10, `D` for scale (fraction digits, no decimal point if 0), up to 30 and defaults to 0
      ```
@@ -125,7 +116,7 @@ Based on MySQL
    - `FLOAT`, `DOUBLE`, `DOUBLE PRECISION`
      - deprecated — `FLOAT(p)`, `FLOAT(M,D)`, `DOUBLE(M,D)`, `DOUBLE PRECISION[(M,D)]`
    - `BIT[(M)]` — `M` indicates the number of bits from 1 (default) to 64
-     - literal syntax — see after
+     - literal syntax — see [Literals](#Literals)
 
 1. date and time
    - attribute
@@ -145,8 +136,7 @@ Based on MySQL
      - automatic initialization and updating — `DEFAULT CURRENT_TIMESTAMP` and `ON UPDATE CURRENT_TIMESTAMP`, also synonyms of `CURRENT_TIMESTAMP`, the parameter as `fsp`
    - `TIMESTAMP[(fsp)]` — in UTC, from `'1970-01-01 00:00:01.000000'` to `'2038-01-19 03:14:07.999999'`
      - automatic initialization and updating — `DEFAULT CURRENT_TIMESTAMP` and `ON UPDATE CURRENT_TIMESTAMP`, also synonyms of `CURRENT_TIMESTAMP`, the parameter as `fsp`
-     - `explicit_defaults_for_timestamp` system variable — no automatic assignment of the `DEFAULT CURRENT_TIMESTAMP` or `ON UPDATE CURRENT_TIMESTAMP`
-       - if off, the first `TIMESTAMP` column has these properties and `TIMESTAMP` columns `NOT NULL` (`NULL` assigns the current timestamp)
+     - `explicit_defaults_for_timestamp` system variable — controls nonstandard behaviors for default values and `NULL`-value handling in `TIMESTAMP` columns
    - `TIME[(fsp)]` — from `'-838:59:59.000000'` to `'838:59:59.000000'`, can also used for elapsed time or a time interval
      - out of range value — clipped to the closest endpoint
      - invalid values — converted to the zero value which itself is valid
@@ -155,7 +145,7 @@ Based on MySQL
 
 1. string
    - attribute
-     - `CHARACTER SET`, `CHARSET` — see `SHOW CHARACTER SET`, defaults to `utf8mb4` from version 8, `latin1` previously
+     - `CHARACTER SET`, `CHARSET` — see [`SHOW CHARACTER SET`](#SHOW), defaults to `utf8mb4` from version 8, `latin1` previously
        ```SQL
        CREATE TABLE t
        (
@@ -178,7 +168,7 @@ Based on MySQL
          |                  1 |                  1 |
          +--------------------+--------------------+
          ```
-   - `CHAR` — space right padded with `M` from 0 to 255 default 1
+   - `CHAR` — space right padded, width `M` from 0 to 255 default 1
      ```
      CHAR[(M)] [CHARACTER SET charset_name] [COLLATE collation_name]
      ```
@@ -204,7 +194,6 @@ Based on MySQL
      - length information — stored with length prefix
      - when assigning size exceeded values — truncated with warning if not in strict mode, error in strict mode for truncation of non-space characters
        - excessive trailing spaces — truncated with warning regardless of strict mode
-     - `max_sort_length`, limitation when sorting or grouping `TEXT` — `max_sort_length` defaults to 1024, in bytes
      - padded for index comparisons — index entry comparisons are space-padded at the end
      - engine `MEMORY` does not support `TEXT` and `BLOB` — forced to use on-disk temporary tables when temporary tables with columns of these types being used
      - separately allocated object — represented internally by a separately allocated object, whereas for all other data types storage is allocated once per column when the table is opened
@@ -219,7 +208,7 @@ Based on MySQL
      ENUM('value1','value2',...) [CHARACTER SET charset_name] [COLLATE collation_name]
      ```
      - ordinal — represented internally as integers starting from 1, `NULL` as `NULL` and `''` as 0
-     - maximum element length — `M <= 255` and another constraint
+     - maximum element length — `M <= 255` and another constraint, where `M` is the element literal length
    - `SET` — `ENUM` but a string object that can have zero or more values, `NULL` or `''` not permitted, and up to 64 distinct members
      - bit vectors internally
      - literal — comma separated string, like `'a,b'`
@@ -231,12 +220,9 @@ Based on MySQL
 ## Statements
 
 1. statements
-   - SQL schema statements
-     - DDL — Data Definition Language
-   - SQL data statements
-     - DML — Data Manipulation Language
-   - SQL transaction statements
-     - TCL — Transaction Control Language
+   - DDL — Data Definition Language
+   - DML — Data Manipulation Language
+   - TCL — Transaction Control Language
    - DCL — Data Control Language, `GRANT`, `REVOKE`
 
 1. `USE db_name` — use the named database as the default (current) database for subsequent statements
@@ -249,6 +235,13 @@ Based on MySQL
 1. `SHOW` — provide information about databases, tables, columns, or status information about the server
    - correspond to tables in `INFORMATION_SCHEMA` — `SELECT` corresponding tables yields the same result
    - `WHERE` clause — evaluated against the column names in the result
+
+1. show server information
+   - `SHOW ENGINE`
+   - `SHOW VARIABLES` — see [System Variables](#System-Variables)
+   - `SHOW CHARACTER SET`
+     - corresponding table in `INFORMATION_SCHEMA` — `INFORMATION_SCHEMA.CHARACTER_SETS`
+     - hidden character set — `filename`, internal use only
 
 1. show database information
    - `SHOW DATABASES`, `SHOW SCHEMAS` — lists the databases on the MySQL server host
@@ -276,7 +269,7 @@ Based on MySQL
      - `FULL` — an additional `Table_type` column, with values `BASE TABLE`, `VIEW` and `SYSTEM VIEW` (only for `INFORMATION_SCHEMA`)
      - corresponding table in `INFORMATION_SCHEMA` — `INFORMATION_SCHEMA.TABLES`
      - CLI — `mysqlshow db_name`
-   - `SHOW TABLE STATUS` — works likes SHOW TABLES, but provides a lot of information
+   - `SHOW TABLE STATUS` — works likes `SHOW TABLES`, but provides a lot of information
      ```
      SHOW TABLE STATUS
          [{FROM | IN} db_name]
@@ -313,18 +306,10 @@ Based on MySQL
          tbl_name [col_name | wild]
      ```
 
-1. `SHOW CHARACTER SET`
-   - corresponding table in `INFORMATION_SCHEMA` — `INFORMATION_SCHEMA.CHARACTER_SETS`
-   - hidden character set — `filename`, internal use only
-
-1. `SHOW VARIABLES` — see [System Variables](#System-Variables)
-
-1. `SHOW ENGINE`
-
 #### EXPLAIN
 
 1. `EXPLAIN`, `DESCRIBE`, `DESC`
-   - see `SHOW COLUMNS`
+   - see [`SHOW COLUMNS`](#SHOW)
    - execution plan, usually `EXPLAIN` — displays information from the optimizer, i.e. how it would process the statement, including information about how tables are joined and in which order
      ```
      {EXPLAIN | DESCRIBE | DESC}
@@ -363,7 +348,8 @@ Based on MySQL
      SHOW STATUS LIKE 'last_query_cost';
      ```
 
-1. select optimization — tbd
+1. select optimization
+   - more tbd
    - big query refactor
      - 切分大查询 — 一个大查询如果一次性执行的话，可能一次锁住很多数据、占满整个事务日志、耗尽系统资源、阻塞很多小的但重要的查询。
      - 分解大连接查询 — 将一个大连接查询分解成对每一个表进行一次单表查询，然后在应用程序中进行关联，这样做的好处有：
@@ -396,7 +382,7 @@ Based on MySQL
        - more
    - more
 
-1. `create_definition`
+1. `create_definition` in `CREATE TABLE`, `ALTER TABLE`
    ```
      col_name column_definition
    | {INDEX|KEY} [index_name] [index_type] (key_part,...)
@@ -417,12 +403,12 @@ Based on MySQL
    - syntax — column definition with constraint attributes or a sole constraint or index definition
    - `key_part` — `{col_name [(length)] | (expr)} [ASC | DESC]`, order matters
      - `length` — up to 767 bytes long for InnoDB tables that use the `REDUNDANT` or `COMPACT` row format, 3072 bytes for `DYNAMIC` or `COMPRESSED` row format
-   - `check_constraint_definition`
+   - `check_constraint_definition` — also used in `column_definition`
      ```
      [CONSTRAINT [symbol]] CHECK (expr) [[NOT] ENFORCED]
      ```
 
-1. `column_definition`
+1. `column_definition` in `CREATE TABLE`, `ALTER TABLE`
    ```
      data_type [NOT NULL | NULL] [DEFAULT {literal | (expr)} ]
        [AUTO_INCREMENT] [UNIQUE [KEY]] [[PRIMARY] KEY]
@@ -442,7 +428,7 @@ Based on MySQL
        [check_constraint_definition]
    ```
 
-1. key / index
+1. key/index creation options
    ```
    index_type:
        USING {BTREE | HASH}
@@ -567,13 +553,13 @@ Based on MySQL
        [into_option]
    ```
    - in CTE — `SELECT` can start with a `WITH` clause to define common table expressions accessible within the `SELECT`
-   - modifiers — affect the operation of the statement, modifiers beginning with `SQL_` are MySQL extensions
+   - modifiers — affect the operation of the statement
      - `ALL` (default), `DISTINCT` — `DISTINCT` implicitly sorts the data, `DISTINCTROW` is an alias
-     - tbd — `HIGH_PRIORITY`, `STRAIGHT_JOIN`, `SQL_SMALL_RESULT`, `SQL_BIG_RESULT`, `SQL_BUFFER_RESULT`, `SQL_NO_CACHE`, `SQL_CALC_FOUND_ROWS`
+     - `other_modifiers` tbd, modifiers beginning with `SQL_` are MySQL extensions — `HIGH_PRIORITY`, `STRAIGHT_JOIN`, `SQL_SMALL_RESULT`, `SQL_BIG_RESULT`, `SQL_BUFFER_RESULT`, `SQL_NO_CACHE`, `SQL_CALC_FOUND_ROWS`
    - `position` — column index, non-standard, deprecated
    - `FOR UPDATE`, `FOR SHARE` — locking reads
 
-1. `select_expr` — the select list that indicates which columns to retrieve
+1. `select_expr` in `SELECT` — the select list that indicates which columns to retrieve
    ```
    col_name [[AS] alias_name]
    ```
@@ -585,9 +571,9 @@ Based on MySQL
      SELECT college, region AS r, seed AS s FROM tournament ORDER BY r, s;
      SELECT college, region, seed FROM tournament ORDER BY 2, 3;
      ```
-   - `OVER` — see `WINDOW`
+   - `OVER` — see [`WINDOW`](#WINDOW)
 
-1. `into_option`, `INTO`
+1. `into_option` in `SELECT`, `INTO`
    ```
    {
        INTO OUTFILE 'file_name' [CHARACTER SET charset_name] export_options
@@ -600,7 +586,7 @@ Based on MySQL
    - `DUMPFILE` — writes a single row to a file without any formatting
    - more
 
-1. execution order — gross, subject to optimizer
+1. execution order — below is gross, the actual subject to optimizer
    ```SQL
    SET @mysql_order := '';
    SELECT @mysql_order := CONCAT(@mysql_order," SELECT ")
@@ -733,6 +719,10 @@ Based on MySQL
    - see [Operators and Functions](#Operators-and-Functions)
 
 1. `GROUP BY`, `ORDER BY`
+   ```
+   [GROUP BY {col_name | expr | position}, ... [WITH ROLLUP]]
+   [ORDER BY {col_name | expr | position} [ASC | DESC], ... [WITH ROLLUP]]
+   ```
    - `ORDER BY` — defaults to `ACS`, outermost one take precedence if used in nested multiple subqueries
      - resolve unqualified column or alias — by searching in the `select_expr` values, then in the columns of the tables in the `FROM` clause
    - `GROUP BY`
@@ -767,20 +757,26 @@ Based on MySQL
        ```SQL
        SELECT Email FROM Person GROUP BY Email HAVING COUNT(Email) > 1;
        ```
-   - `max_sort_length` system variable — only `max_sort_length` bytes compared
+   - `max_sort_length` system variable — only `max_sort_length` bytes compared, defaults to 1024 bytes
 
 1. `HAVING`
+   ```
+   [HAVING where_condition]
+   ```
    - for filter after `GROUP BY` — must reference only columns in the `GROUP BY` clause or columns used in aggregate functions
      - extended in MySQL — permits `HAVING` to refer to columns in the `SELECT` list and columns in outer subqueries as well
      - applied nearly last (before `LIMIT`), with no optimization
 
 1. `LIMIT` — outermost one take precedence if used in nested multiple subqueries
+   ```
+   [LIMIT {[offset,] row_count | row_count OFFSET offset}]
+   ```
    - `offset` — use 0 to include first row
    - up to end — use a large number `row_count`
 
 ##### WINDOW
 
-1. `WINDOW` — windows for window functions, tbd
+1. `WINDOW` — windows for window functions
    - `WINDOW` clause in `SELECT`
      ```
      [WINDOW window_name AS (window_spec) [, window_name AS (window_spec)] ...]
@@ -922,48 +918,49 @@ Based on MySQL
          max_sale_customer.customer_name
        FROM
          salesperson,
-         — calculate maximum size, cache it in transient derived table max_sale
+         -- calculate maximum size, cache it in transient derived table max_sale
          LATERAL
          (SELECT MAX(amount) AS amount
            FROM all_sales
            WHERE all_sales.salesperson_id = salesperson.id)
          AS max_sale,
-         — find customer, reusing cached maximum size
+         -- find customer, reusing cached maximum size
          LATERAL
          (SELECT customer_name
            FROM all_sales
            WHERE all_sales.salesperson_id = salesperson.id
            AND all_sales.amount =
-               — the cached maximum size
+               -- the cached maximum size
                max_sale.amount)
          AS max_sale_customer;
        ```
 
-#### WITH (Common Table Expressions, CTE)
+#### WITH
 
-1. CTE — a named temporary result set that exists within the scope of a single statement, from MySQL 8.0
-   - use
-     - at the beginning of `SELECT`, `UPDATE`, and `DELETE` statements
-       ```
-       WITH ... SELECT ...
-       WITH ... UPDATE ...
-       WITH ... DELETE ...
-       ```
-       - CTE not updatable — need to refer to the original table to update / delete rows, use CTE in other clauses or joining CTE with original table one-to-one as workaround
-     - at the beginning of subqueries
-       ```
-       SELECT ... WHERE id IN (WITH ... SELECT ...) ...
-       SELECT * FROM (WITH ... SELECT ...) AS dt ...
-       ```
-     - immediately preceding SELECT for statements that include a SELECT statement
-       ```
-       INSERT ... WITH ... SELECT ...
-       REPLACE ... WITH ... SELECT ...
-       CREATE TABLE ... WITH ... SELECT ...
-       CREATE VIEW ... WITH ... SELECT ...
-       DECLARE CURSOR ... WITH ... SELECT ...
-       EXPLAIN ... WITH ... SELECT ...
-       ```
+1. Common Table Expressions, CTE — a named temporary result set that exists within the scope of a single statement, from MySQL 8.0
+
+1. CTE positions
+   - at the beginning of `SELECT`, `UPDATE`, and `DELETE` statements
+     ```
+     WITH ... SELECT ...
+     WITH ... UPDATE ...
+     WITH ... DELETE ...
+     ```
+     - CTE not updatable — need to refer to the original table to update / delete rows, use CTE in other clauses or joining CTE with original table one-to-one as workaround
+   - at the beginning of subqueries
+     ```
+     SELECT ... WHERE id IN (WITH ... SELECT ...) ...
+     SELECT * FROM (WITH ... SELECT ...) AS dt ...
+     ```
+   - immediately preceding `SELECT` for statements that include a `SELECT` statement
+     ```
+     INSERT ... WITH ... SELECT ...
+     REPLACE ... WITH ... SELECT ...
+     CREATE TABLE ... WITH ... SELECT ...
+     CREATE VIEW ... WITH ... SELECT ...
+     DECLARE CURSOR ... WITH ... SELECT ...
+     EXPLAIN ... WITH ... SELECT ...
+     ```
 
 1. `WITH`
    ```
@@ -987,7 +984,8 @@ Based on MySQL
 1. `DELETE` syntax
    - single table delete
      ```
-     DELETE [LOW_PRIORITY] [QUICK] [IGNORE] FROM tbl_name [[AS] tbl_alias]
+     DELETE [LOW_PRIORITY] [QUICK] [IGNORE]
+         FROM tbl_name [[AS] tbl_alias]
          [PARTITION (partition_name [, partition_name] ...)]
          [WHERE where_condition]
          [ORDER BY ...]
@@ -1017,14 +1015,14 @@ Based on MySQL
    - subqueries — cannot delete from a table and select from the same table in a subquery
      - workaround — intermediate cache
        ```SQL
-       delete from Person where Person.Id not in (select * from (select min(Id) from Person group by Email) as _temp);
+       DELETE FROM Person WHERE Person.Id NOT IN (SELECT * FROM (SELECT MIN(Id) FROM Person GROUP BY Email) AS _temp);
        ```
        - still error if optimizer optimize out the subquery — see [release notes](https://dev.mysql.com/doc/relnotes/mysql/5.7/en/news-5-7-6.html#mysqld-5-7-6-optimizer) for details and workarounds
      - workaround — use CTE
        ```SQL
-       with
-           rem as (select min(Id) as id from Person group by Email)
-       delete from Person where Person.Id not in (select * from rem);
+       WITH
+           rem AS (SELECT MIN(Id) AS id FROM Person GROUP BY Email)
+       DELETE FROM Person WHERE Person.Id NOT IN (SELECT * FROM rem);
        ```
    - modifiers — `LOW_PRIORITY`, `QUICK`, `IGNORE`, see docs
    - keep desired in lieu of delete unwanted
@@ -1037,14 +1035,6 @@ Based on MySQL
 #### UPDATE
 
 1. `UPDATE`
-   ```
-   value:
-       {expr | DEFAULT}
-   assignment:
-       col_name = value
-   assignment_list:
-       assignment [, assignment] ...
-   ```
    - single table `UPDATE`
      ```
      UPDATE [LOW_PRIORITY] [IGNORE] table_reference
@@ -1059,20 +1049,17 @@ Based on MySQL
          SET assignment_list
          [WHERE where_condition]
      ```
+   - `assignment_list`
+     ```
+     assignment_list:
+         assignment [, assignment] ...
+     assignment:
+         col_name = {expr | DEFAULT}
+     ```
 
 #### INSERT
 
 1. `INSERT` syntax
-   ```
-   value_list:
-       value [, value] ...
-   value:
-       {expr | DEFAULT}
-   assignment:
-       col_name = [row_alias.]value
-   assignment_list:
-       assignment [, assignment] ...
-   ```
    - `INSERT ... VALUES`
      ```
      INSERT [LOW_PRIORITY | HIGH_PRIORITY] [IGNORE]
@@ -1105,6 +1092,17 @@ Based on MySQL
          {SELECT ... | TABLE table_name}
          [ON DUPLICATE KEY UPDATE assignment_list]
      ```
+   - `value_list` and `assignment_list`
+     ```
+     value_list:
+         value [, value] ...
+     value:
+         {expr | DEFAULT}
+     assignment_list:
+         assignment [, assignment] ...
+     assignment:
+         col_name = [row_alias.]value
+     ```
 
 1. clauses in `INSERT`
    - resort to update when not permitted duplicates — update using `assignment_list` when a duplicate value in a `UNIQUE` index or `PRIMARY KEY`
@@ -1113,8 +1111,10 @@ Based on MySQL
      ```
    - refer to previous columns
      ```SQL
-     INSERT INTO tbl_name (col1,col2) VALUES(15,col1*2);
+     INSERT INTO tbl_name (col1,col2) VALUES (15,col1*2);
      ```
+
+1. `REPLACE` — MySQL extension, `INSERT` but if an old row in the table has the same value as a new row for a `PRIMARY KEY` or a `UNIQUE` index, the old row is deleted before the new row is inserted
 
 ### TCL
 
@@ -1214,6 +1214,8 @@ Based on MySQL
    ```
    - more
 
+1. other locks — see [Transaction](./database.md#Transaction)
+
 1. show lock
    - `SHOW ENGINE INNODB STATUS`
    - `SHOW OPEN TABLES`
@@ -1247,6 +1249,15 @@ Based on MySQL
 
 ## Language Structure
 
+### Basics
+
+1. case sensitivity
+   - SQL statements — case insensitive
+   - database, trigger, table names — depends on file system and CLI option `--lower-case-table-names[=#]` or system variable `lower_case_table_names`, `1` suggested with lowercase storing and insensitive comparisons
+   - table aliases — platform dependent
+
+1. index — start from 1
+
 ### Identifiers, User Variables and Comments
 
 1. comment
@@ -1266,7 +1277,7 @@ Based on MySQL
    - identifier characters
      - permitted characters when unquoted — `[$_0-9a-zA-Z\x80-\uFFFF]`, cannot be all numbers
      - permitted characters when quoted — `[\x01-\uFFFF]`
-     - Database, table, and column names cannot end with space characters
+     - space — database, table, and column names cannot end with space characters
    - qualifier — `schema_name.func_name()`, <code>\`my-table\`.\`my-column\`</code>
    - mapping to filenames — refer to docs
 
@@ -1328,7 +1339,7 @@ Based on MySQL
      [_charset_name] X'val' [COLLATE collation_name]
      ```
      - `X'val'`, `x'val'`, `val` must contain an even number of digits
-     - `0xval`, case sensitive not `0X`
+     - `0xval`, case sensitive, not `0X`
      - `charset_name` — defaults to `binary`
      - numeric contexts — treated like `BIGINT`, to ensure numeric treatment, `+0` or `CAST(X'41' AS UNSIGNED)`
      - bit operators — defaults to numeric context, for binary string context, use a `_binary` introducer for at least one of the arguments
