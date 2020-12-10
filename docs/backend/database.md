@@ -356,7 +356,15 @@
    - index uniqueness problem
      - use GUID — global index on whole table, local index on a single partition
      - ID range for each partition
-     - ID generator — snowflake, tbd
+     - ID generator
+       - UUID
+       - MySQL based
+         - single — a MySQL instance solely for generating `auto_increment` IDs
+         - cluster — several MySQL instances for generating `auto_increment` IDs, with `@@auto_increment_offset` and `@@auto_increment_increment` set
+         - ID range optimization — each time get a range of ID instead of a single ID, can use a field for optimistic locking
+       - Redis `INCR`
+       - snowflake — timestamp - machine ID - sequence, tbd
+         - backward time drift alleviation — switch off time synchronization; pause for some time and restart; throw error; allocate cyclic drift bits, incremented upon backwardness
 
 1. partition benefits
    - overcome physical partition limit — makes it possible to store more data in one table than can be held on a single disk or file system partition
