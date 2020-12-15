@@ -127,7 +127,7 @@
      } zskiplistNode;
      ```
      - level — height generated between 1 to 32 according to power law
-     - score — for sort, ascending, sort by `obj` lexicographically when equality
+     - score — for sort, ascending, sort by `ele` lexicographically when equality
 
 1. int set — encoding-adapting ordered distinct array, used in `OBJ_SET` if the cardinality is low
    ```c
@@ -176,13 +176,13 @@
      - operations like push an entry — O(N), the possibility of long cascade update is low, which needs consecutive entries of length between 250 to 253b
        - cascade update — `previous_entry_length` of an entry updates from 1b to 5b, triggering the `previous_entry_length` update of the next entry, O(N^2) in the worst case
 
-1. quicklist — doubly linked list, but its nodes contain a ziplist, used in `OBJ_LIST`, tbd
+1. quicklist — doubly linked list of ziplists, used in `OBJ_LIST`, tbd
 
 1. listpack — `unsigned char` array like ziplist, designed to replace ziplist, currently only used in `OBJ_STREAM`, tbd
 
 1. radix tree — used in `OBJ_STREAM` and more, tbd
 
-1. zipmap — String -> String Map data structure optimized for size, used in ??
+1. zipmap — String -> String Map data structure optimized for size
    ```
    <zmlen><len>"foo"<len><free>"bar"<len>"hello"<len><free>"world"
    ```
@@ -230,7 +230,7 @@
        - `OBJECT FREQ` — available when `maxmemory-policy` is set to an LFU policy
        - `DEBUG OBJECT`
      - `TYPE`
-     - see `redisDb`
+     - see [`redisDb`](#Server-and-Client)
 
 1. `OBJ_STRING`
    - corresponding `encoding`
@@ -248,7 +248,7 @@
        - `GET`, `MGET`
      - `APPEND` — amortized O(1)
      - `INCRBY`, `DECRBY`, `INCR`, `DECR` — only for signed 64 bit, start with 0 if key does not exist
-       - `INCRBYFLOAT` — output precision fixed 17 digits
+       - `INCRBYFLOAT` — output precision fixed to 17 digits
      - `SETRANGE`, `GETRANGE` — zero byte padded
      - `BITFIELD` — capable of addressing specific integer fields of varying bit widths and arbitrary non (necessary) aligned offset
      - `STRLEN`
@@ -370,6 +370,7 @@
        - `BZPOPMAX`, `BZPOPMIN`
      - `ZSCAN`
      - lexicographically — `ZRANGEBYLEX`, `ZREVRANGEBYLEX`, `ZREMRANGEBYLEX` and `ZLEXCOUNT`
+       - if different score — if the elements in the sorted set have different scores, the returned elements are unspecified
 
 1. Geo related — of type `OBJ_ZSET`
    - [Geohash - Wikipedia](https://en.wikipedia.org/wiki/Geohash) — latitude and longitude bits are interleaved in order to form an unique 52 bit integer, which does not lose precision when converted to `double`
@@ -409,7 +410,7 @@
      - fan out messages to multiple clients — multiple consumers see the new messages appended to the stream (the same way many `tail -f` processes can see what is added to a log)
      - time series store — get messages by ranges of time, or alternatively to iterate the messages using a cursor to incrementally check all the history; consumers will know what is a new message by remembering last `streamID`
      - consumer groups, like in Kafka but logical partitions — a stream of messages that can be partitioned to multiple consumers, possible to scale the message processing across different consumers; explicit acknowledgment of processed items, ability to inspect the pending items, claiming of unprocessed messages, and coherent history visibility for each single client
-       - latency — minimal, before returning to the event loop both the client calling XADD and the clients blocked to consume messages, will have their reply in the output buffers
+       - latency — minimal, before returning to the event loop both the client calling `XADD` and the clients blocked to consume messages, will have their reply in the output buffers
    - consumer group — like a pseudo consumer that gets data from a stream, and actually serves multiple consumers; within a consumer group:
      ```
      +----------------------------------------+
@@ -432,7 +433,7 @@
      - one message one customer
    - observability — see `XINFO`, get info like who is consuming messages, what messages are pending, the set of consumer groups active in a given stream
      - dead letter — when delivery count is abnormally height, it is probably wiser to put such messages in another stream and send a notification to the system administrator
-   - zero-length streams — zero-length stream keys are not keys in contrast to other collections, to preserve the state of customer groups
+   - zero-length streams — zero-length stream keys are not deleted in contrast to keys of other collections, to preserve the state of customer groups
    - related commands
      - `XADD key ID field value [field value ...]`
        - `MAXLEN` option — capped stream, with `~` for approximated cap but more efficient
@@ -458,9 +459,9 @@
        - `XACK`
        - `XPENDING` — inspect the list of pending messages, specify range to see idle time and delivery count
        - `XCLAIM` — changes the ownership of a pending message to the specified customer, claiming a message will reset its idle time, also increment its delivery count if not `JUSTID`; can be used in case of permanent consumer failure
-       - `XINFO`
-         - `CONSUMERS key groupname`
-         - `GROUPS key`
+       - `XINFO` — see `XINFO HELP`
+         - `XINFO CONSUMERS key groupname`
+         - `XINFO GROUPS key`
 
 ### Sort
 
@@ -544,8 +545,10 @@
        - `DBSIZE`
      - `SHUTDOWN [NOSAVE|SAVE]`
      - `DEBUG SEGFAULT`
-     - `SWAPDB index1 index2` — swap db index
      - `TIME`
+     - `SWAPDB index1 index2` — swap db index
+     - `MOVE key db` — between `redisServer.db`
+     - `FLUSHALL`
 
 1. `redisDb`
    ```c
@@ -568,7 +571,7 @@
      - expungement strategy
        - lazy — expunge when reading the key
        - periodic — expunge in some frequency with a time limit, continue from the last expunged `redisDb`, cycling `redisServer.db` array: examine and expunge 20 keys randomly selected from `redisDb->expires` until no more than 25% of selected 20 keys expunged
-     - replication related — key expungement of followers is controlled by the master, who sends `DEL` commands to followers
+     - key expiration in replicas — key expungement of followers is controlled by the master, who sends `DEL` commands to followers
      - persistence related
        - RDB
          - when `SAVE` or `BGSAVE` — expired keys filtered
@@ -580,16 +583,15 @@
        - `EXPIRE`, `PEXPIRE`, `SET` — TTL, in s or ms, untouched by altering commands like `INCR`, `LPUSH`, `HSET`, `RENAME`, overwritten for other write commands
        - `EXPIREAT`, `PEXPIREAT` — UNIX timestamp, in s or ms
        - `TTL`, `PTTL` — remaining time to live, in s or ms
-       - `PERSIST` — remove timestamp
+       - `PERSIST` — remove expiration
    - related commands
      - `DEL`
-       - `UNLINK` — GC left to do
+       - `UNLINK` — GC left to do, asynchronously in another thread
      - `DUMP`, `RESTORE` — serialize and deserialize, format is opaque and non-standard, with checksum and values are encoded in the same format used by RDB with RDB version
        - `MIGRATE` — see [Clustering](#Clustering)
-     - `MOVE key db` — between `redisServer.db`
      - `KEYS pattern` — support more glob pattern
      - `EXISTS key [key ...]`, `TOUCH key [key ...]`
-     - `FLUSHDB`, `FLUSHALL` — delete all the keys
+     - `FLUSHDB` — delete all the keys
      - `RANDOMKEY`
      - `DBSIZE`
      - `RENAME`, `RENAMENX`
@@ -617,8 +619,8 @@
      - more
    - related commands
      - `COMMAND` — details about all Redis commands
-       - `COMMAND COUNT`
-       - `COMMAND INFO command-name [command-name ...]` — `COMMAND` for specific commands
+     - `COMMAND COUNT`
+     - `COMMAND INFO command-name [command-name ...]` — `COMMAND` for specific commands
      - `COMMAND GETKEYS` — keys parsed from a full Redis command
 
 1. client
@@ -637,7 +639,7 @@
    ```
    - query buffer (hard non-configurable limit) or reply buffer overflow — the client will be closed
      - hard limit — close immediately
-     - soft limit — close after the time since `time_t obuf_soft_limit_reached_time` beyond configured, `client-output-buffer-limit` in configurations
+     - soft limit — close after the time elapsed since `client.obuf_soft_limit_reached_time` is beyond the configured, `client-output-buffer-limit` in configurations
    - `querybuf` related fields
      ```c
      size_t qb_pos;          /* The position we have read in querybuf. */
@@ -675,7 +677,7 @@
      - `ECHO`
      - `PING`
      - `QUIT`
-     - `MONITOR` — a debugging command that streams back every command processed by the Redis server, `REDIS_MONITOR` in `client.flags`
+     - `MONITOR` — a debugging command that streams back every command processed by the Redis server, `CLIENT_MONITOR` in `client.flags`
      - `CLIENT`
        - `CLIENT LIST`
        - `CLIENT GETNAME`, `CLIENT SETNAME`
@@ -684,14 +686,21 @@
        - `CLIENT PAUSE` — suspend all the Redis clients for the specified amount of time (in milliseconds)
        - `CLIENT REPLY ON|OFF|SKIP`
        - `CLIENT UNBLOCK`
-       - client caching, see [Publish and Subscribe](#Publish-and-Subscribe)
+       - client caching related commands, see [Publish and Subscribe](#Publish-and-Subscribe)
 
 ## Events
 
-1. event loop — [zhihu](https://zhuanlan.zhihu.com/p/144805500)
-   - file events — sockets
-   - time events — `serverCron`
-   - cluster and persistence logics like flush AOF buffer
+1. event loop, `aeMain` in `ae.c` — [zhihu](https://zhuanlan.zhihu.com/p/144805500)
+   - steps
+     1. in `beforesleep` call back
+        1. cluster and persistence logics like flush AOF buffer
+        1. `writeToClient`
+     1. `epoll_wait`
+     1. file events — sockets
+     1. time events
+   - limitations
+     - single core
+     - big key throttling
 
 1. file events — Reactor model, I/O multiplexing, event queuing at event dispatcher
    - event handlers
@@ -703,17 +712,14 @@
 
 1. time events — tbd
    - one time scheduled events
-   - periodic events
-     - `serverCron` — `hz` in configurations, defaults to 10, update statistics, expunge expired keys, close and clear sessions, AOF and RDB, follower replication, cluster synchronization and heartbeat
+   - periodic events `serverCron` — `hz` in configurations, defaults to 10, update statistics, expunge expired keys, close and clear sessions, AOF and RDB, follower replication, cluster synchronization and heartbeat
+     - update tasks
+       - update timestamp cache — timestamp cached in `redisServer.unixtime` and `redisServer.mstime` to reduce system calls for timestamp insensitive tasks like logging, deciding persistence time point, `EXPIRE` and slow query log not included
+       - update `redisServer.lruclock` timestamp cache, defaults to once every 10s
+       - update stats
+     - more tasks
 
-1. `serverCron`
-   - update tasks
-     - update timestamp cache — timestamp cached in `redisServer.unixtime` and `redisServer.mstime` to reduce system calls for timestamp insensitive tasks like logging, deciding persistence time point, `EXPIRE` and slow query log not included
-     - update `redisServer.lruclock` timestamp cache, defaults to once every 10s
-     - update stats
-   - more tasks
-
-1. multithread IO — [zhihu](https://zhuanlan.zhihu.com/p/144805500), dispatch tasks to IO threads for `read()` and `write()` system calls, main thread also does one tasks and spinning waiting for the completion of IO threads
+1. multithread IO, since 6.0 — [zhihu](https://zhuanlan.zhihu.com/p/144805500), dispatch tasks to IO threads for `read()` and `write()` system calls, main thread also does one tasks and spinning waiting for the completion of IO threads
 
 ## Publish and Subscribe
 
@@ -780,7 +786,7 @@
        Reading messages... (press Ctrl-C to quit)
        "psubscribe","__key*__:*",1
        ```
-   - node-specific — keyspace event notifications not broadcasted in cluster to receive all keyspace events of a cluster, clients need to subscribe to all nodes
+   - node-specific in a cluster — keyspace event notifications not broadcasted in a cluster to receive all keyspace events of a cluster, clients need to subscribe to all nodes
    - parameters
      - `event` — command name, like `del`
      - `key`, `dbid` — related key and db
@@ -842,9 +848,9 @@
 ## Persistence
 
 1. RDB — persistence of current snapshot in memory as a compressed binary file
-   - expired key handling — see `redisDb`
+   - expired key handling — see [`redisDb`](#Server-and-Client)
    - automatic load — if AOF switched off, RDB files are loaded automatically at start
-   - auto `BGSAVE` — `save` in configurations, triggered if `redisServer.dirty` more than configured during corresponding configured time duration, executed by `serverCron` function
+   - auto `BGSAVE` — `save <seconds> <changes>` in configurations, triggered if after `<seconds>` since `redisServer.lastsave` `redisServer.dirty` is more than `<changes>`, executed by `serverCron` function
      - `redisServer.dirty` — counter for changes to keys since last `SAVE` or `BGSAVE`, for example, the counter will +3 after `SADD` 3 elements on a key
      - `redisServer.lastsave` — timestamp of last successful `SAVE` or `BGSAVE`
    - RDB file format — tbd
@@ -863,10 +869,10 @@
      - `no` — no sync, sync handled by OS
    - AOF loading — fake client created, from which commands in AOF executed
    - AOF rewrite — deduplicate AOF, implemented by generating commands from current database state with care for client input buffer overflow
-     - avoid blocking — AOF rewrite is executed in a forked process, new commands during AOF rewrite are simultaneously saved in a separate buffer, which is flushed before the new AOF replace the previous one
-   - expired key handling — see `redisDb`
+     - non-blocking — AOF rewrite is executed in a forked process, new commands during AOF rewrite are simultaneously saved in a separate buffer besides the normal AOF buffer, which is flushed to the new AOF before the new AOF replace the previous one
+   - expired key handling — see [`redisDb`](#Server-and-Client)
    - related commands
-     - `BGREWRITEAOF` — non-blocking, but reject `BGSAVE` when executing
+     - `BGREWRITEAOF` — non-blocking, but reject `BGSAVE` and another `BGREWRITEAOF` when executing
 
 ## Clustering
 
@@ -877,14 +883,15 @@
      - sync
        - `SYNC` — used in old version, slave send `SYNC` to master, the master starts recording commands while `BGSAVE` for RDB file and send it to the slave, the slave load the file, and the master send commands since `BGSAVE` to the slave
        - `PSYNC` — full resynchronization as `SYNC` for initial replication, partial resynchronization as recovery, see below
-     - command propagate — propagate commands with side effects after `SYNC` asynchronously, use `WAIT` for synchronous replication
+       - diskless support —  the master can send RDB file to replicas without persisting it on the disk, `repl-diskless-sync` in configurations
+     - command propagate — propagate commands which are with side effects after `SYNC` asynchronously, use `WAIT` for synchronous replication
      - heartbeat — slaves will ping master with `REPLCONF ACK replication_offset` periodically, defaults to 1 Hz, `lag` in the output of `INFO replication`
        - anti-entropy — reconcile if the `replication_offset` received by master does not match its own, e.g. some command propagate message lost
        - related configurations — `min-slaves-to-write`, `min-slaves-max-lag`
-   - partial resynchronization implementation — by replication offset in master and slave, replication backlog in master as buffer, and server `run_id`
+   - partial resynchronization implementation — by replication offset in master and slave, replication backlog in master as buffer, and replication ID
      - replication offset — master adds n to its offset upon n bytes propagated, slave adds n to its offset upon n bytes received
      - replication backlog — fixed size FIFO queue defaults to 1 MB, saving propagated commands; if the command the replication offset in slave points to no longer in the queue, resort to full resynchronization
-     - replication ID — random string, marks a given history of the data set, generated every time an instance restarts from scratch as a master, or a replica is promoted to master (but also keep one old ID for partial sync since 4.0); slave will persist the ID after handshake, send back to master upon recovering, full resynchronization if replication ID not match
+     - replication ID — random string, marks a given history of the data set, generated every time an instance restarts from scratch as a master, or a replica is promoted to master (but also keep one old ID for partial sync since 4.0); slave will persist the ID after handshake, send back to master upon recovering, full resynchronization if no replication ID match
        - change replication ID after promotion — in case the old master is still working as a master because of some network partition
    - data safety
      - persistence and restart — it is strongly advised to have persistence turned on in the master and in the replicas, if not possible instances should be configured to avoid restarting automatically after a reboot, to avoid replication of the initial empty state after restart
@@ -930,8 +937,8 @@
        - loop: perception of other sentinels — sentinels can `PUBLISH` via command link and receive via their subscription, for piggybacked message, ignore if same ID as self in the message, update states according to the message if other sentinels
        - configuration propagation — as the above `__sentinel__:hello` loop, but only accept configurations with larger Raft epoch (see leader election below)
      - to master, slaves and other sentinels — sentinel `PING` other servers in 1 Hz, with possible response `+PONG`, `-LOADING`, `-MASTERDOWN`
-       - subjective down — if no valid response for `down-after-milliseconds` in sentinel configurations, `SRI_S_DOWN` will be ORed to flags; opinion may vary among sentinels
-       - objective down — ask other sentinels, `SRI_O_DOWN` ORed if subjective down for a quorum, `quorum` set in sentinel configurations and can vary among sentinels
+       - subjective down — if no valid response for `down-after-milliseconds` in sentinel configurations, `SRI_S_DOWN` will be ORed to flags; opinions may vary among sentinels
+       - objective down — after `SRI_S_DOWN` detected, the sentinel asks other sentinels, `SRI_O_DOWN` ORed if down for a quorum, `quorum` set in sentinel configurations and can vary among sentinels
          ```
          SENTINEL is-master-down-by-addr <ip> <port> <current_epoch> <run_id_or_star>
          ```
@@ -958,19 +965,15 @@
      - available commands — `PING`, pub/sub etc., also see `sentinelcmds[]` in `sentinel.c`
 
 1. cluster — database sharding
-   - enable cluster — `cluster-enabled` in configurations, a node can only `SELECT` 0, cluster bus port is always command port plus 1000, other cluster configurations are similarly `cluster–` prefixed
+   - enable cluster — `cluster-enabled` in configurations, other cluster configurations are similarly `cluster–` prefixed, a node can only `SELECT` 0, cluster bus port is always command port plus 1000
    - node
      - node attributes (`clusterState`) — own persistent ID, and information about other nodes such as ID, epoch, slots
      - complete graph link — all the cluster nodes are connected using a TCP bus and a binary protocol, called Redis Cluster Bus; but use Gossip to avoid exchanging too many messages between nodes during normal conditions
    - add node to cluster — three way handshake after `CLUSTER MEET` from the client: `MEET`, `PONG`, `PING`; then disseminate to other nodes via Gossip (heartbeats) to let them handshake the new node
-     ```
-     CLUSTER MEET <ip> <port>
-     ```
-   - structures in `cluster.h` — `clusterNode`, `clusterLink`, `clusterState`
+   <!-- - structures in `cluster.h` — `clusterNode`, `clusterLink`, `clusterState` -->
    - slots — `1 << 14` = 16384 slots, suggested max size of nodes is in the order of ~ 1000 nodes
      - delegate slots to a node — `CLUSTER ADDSLOTS`
-     - slot state store — as a `clusterNode` map in `clusterState.slots` and as a bit vector `slots` in `clusterNode` in `clusterState->nodes`
-     - broadcast `slots` — a node will broadcast its `slots` to other nodes, which is kept in `clusterState.slots` and `clusterNode` in `clusterState->nodes`
+     - broadcast `slots` — a node will broadcast its `slots` to other nodes, which is kept in `clusterState.slots` and `clusterNode.slots` in `clusterState->nodes`
        ```c
        typedef struct clusterState {
            clusterNode *myself;  /* This node */
@@ -1003,7 +1006,7 @@
      - re-sharding — adjust slot distribution and migrate slots
      - migrate slots — executed online by cluster management utility `redis-trib`, one slot by one slot
        1. send `CLUSTER SETSLOT <slot> IMPORTING <source_id>` to target node, setting its `clusterState.importing_slots_from[slot]` to source node
-       1. send `CLUSTER SETSLOT <slot> MIGRATING <target_id>` to source node, setting its `clusterState.migrating_slots_to[slot]` t target node
+       1. send `CLUSTER SETSLOT <slot> MIGRATING <target_id>` to source node, setting its `clusterState.migrating_slots_to[slot]` to target node
        1. send `CLUSTER GETKEYSINSLOT` to source node, for keys responded, send `MIGRATE` to source node; repeat until all keys migrated
        1. send `CLUSTER SETSLOT <slot> NODE <target_id>` to any node to disseminate the information to the cluster
      - command executing when migrating
@@ -1011,10 +1014,10 @@
        - `ASKING` — turn on `REDIS_ASKING` in `client.flags` for next command; a node will refrain from send `-MOVED` error and try to execute the command even if the slot is not delegated to the node if `REDIS_ASKING` on the client and `clusterState.importing_slots_from[slot]` is not `NULL`
        - `-TRYAGAIN` error — if keys split between the source and destination nodes for multiple key operations, clients can try again later or report the error
    - replication and failover — use replication for each node and select a slave as the new master if the original master is down
-     - set slave — `CLUSTER REPLICATE`, set `clusterState.myself.slaveof` and turn off `CLUSTER_NODE_MASTER` and turn on `CLUSTER_NODE_SLAVE` `clusterState.myself.flags`, then information disseminated via heartbeats, and other nodes update information in `clusterNode->slaves`, `clusterNode.numslaves`
+     - set slave — `CLUSTER REPLICATE`, set `clusterState.myself.slaveof` and turn off `CLUSTER_NODE_MASTER` and turn on `CLUSTER_NODE_SLAVE` in `clusterState.myself.flags`, then information disseminated via heartbeats, and other nodes update information in `clusterNode->slaves`, `clusterNode.numslaves`
      - cluster fail — `CLUSTER_FAIL` even if only one slot not handled
      - `CLUSTER_NODE_PFAIL` and `CLUSTER_NODE_FAIL`
-       - heartbeat and `CLUSTER_NODE_PFAIL` (probable fail) — nodes (masters and slaves) in cluster will periodically `PING` each other, if no `PONG` for more than `cluster-node-timeout`, mark `CLUSTER_NODE_PFAIL` for target node in `clusterState.nodes` and disseminate via heartbeat message; upon receiving such message, a node will append to `clusterNode->fail_reports` in `clusterState.nodes`
+       - heartbeat and `CLUSTER_NODE_PFAIL` (probable fail) — nodes (masters and slaves) in cluster will periodically `PING` each other, if no `PONG` for more than `cluster-node-timeout`, mark `CLUSTER_NODE_PFAIL` for target node in `clusterState.nodes` and disseminate via heartbeat message; upon receiving such message, a node will append it to `clusterNode->fail_reports` in `clusterState.nodes`
          - reconnect — nodes also try to reconnect the TCP link to avoid marking `CLUSTER_NODE_PFAIL` only because a TCP link problem
          - self protection — nodes refuse writes if cannot reach the majority for more than `cluster-node-timeout`
        - `CLUSTER_NODE_FAIL` — if a majority of master nodes mark one master node `CLUSTER_NODE_PFAIL` or `CLUSTER_NODE_FAIL` within `cluster-node-timeout` multiplied by a factor (2 currently), then that node will be marked `CLUSTER_NODE_FAIL`, and a `FAIL` message will be broadcasted
@@ -1031,7 +1034,7 @@
    - messages
      - type
        - `MEET`
-       - `PING` — once every second, every node selects 5 other random nodes to `PING`; besides, every node `PING` nodes whose last `PONG` till now is over half of `cluster-node-timeout`
+       - `PING` — in 1 Hz, every node selects 5 other random nodes to `PING`; besides, every node `PING` nodes whose last `PONG` till now is over half of `cluster-node-timeout`
        - `PONG` — response to `MEET` and `PING`, or voluntary broadcast
        - `FAIL` — broadcasted ASAP
        - `UPDATE` — if a receiver of a heartbeat packet finds the sender information is stale, it will `UPDATE` the stale node
@@ -1188,6 +1191,11 @@
        - `LATENCY DOCTOR` — replies with a human-readable latency analysis report
 
 1. distributed locks — see [distributed](./distributed.md#Distributed-Locks)
+
+1. big keys
+   - find big keys — `redis-cli --bigkeys`, `SCAN`
+   - check whether big key — `DEBUG OBJECT`, `STRLEN`, etc.
+   - delete bigkeys — `UNLINK`
 
 1. Redis modules — since 4.0, dynamic libraries, `loadmodule` in configurations or use `MODULE LOAD`
    - [tbd](https://redis.io/topics/modules-intro)
