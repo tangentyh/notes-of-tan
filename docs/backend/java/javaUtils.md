@@ -309,7 +309,7 @@
    public class ArrayDeque<E> extends AbstractCollection<E>
    implements Deque<E>, Cloneable, Serializable
    ```
-   - underlying implementation — circular array, no `null` elements
+   - underlying implementation — circular array
    - not implementing `List` and extends `AbstractCollection` but not `AbstractQueue` — [retrofit `ArrayDeque` to implement `List`](https://bugs.openjdk.java.net/browse/JDK-8143850)
    - no `null` support — `NullPointerException` for `null` elements
    - capacity

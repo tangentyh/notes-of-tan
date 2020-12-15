@@ -619,6 +619,7 @@
    - `boolean cancel(boolean mayInterruptIfRunning)`
    - `boolean isCancelled()`
    - `boolean isDone()`
+   - Spring extensions — `org.springframework.util.concurrent.ListenableFuture<T>`
 
 1. `java.util.concurrent.ScheduledFuture` — delayed `Future`
    ```java
@@ -694,11 +695,13 @@
    - constructing a new thread is expensive
    - throttle the number of concurrent threads — huge number of threads can greatly degrade performance and even crash the virtual machine
 
-1. `java.util.concurrent.Executor` — decoupling task submission from the mechanics of how each task will be run
-   ```java
-   public interface Executor
-   ```
+1. `interface java.util.concurrent.Executor` — decoupling task submission from the mechanics of how each task will be run
    - `void execute(Runnable command)`
+   - Spring encapsulation — `org.springframework.core.task.TaskExecutor`
+     ```java
+     @FunctionalInterface
+     public interface TaskExecutor extends Executor
+     ```
 
 1. `java.util.concurrent.ExecutorService` — `Executor` with methods to manage termination and produce `Future`
    ```java
@@ -765,6 +768,7 @@
      - `ThreadPoolExecutor.CallerRunsPolicy`
      - `ThreadPoolExecutor.DiscardOldestPolicy`
      - `ThreadPoolExecutor.DiscardPolicy`
+   - Spring extension — `org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor`, defaults to `LinkedBlockingQueue` and can `setQueueCapacity`, and more
    - more
 
 1. `java.util.concurrent.ScheduledThreadPoolExecutor` — `ThreadPoolExecutor` that can additionally schedule commands to run after a given delay, or to execute periodically, preferable to `java.util.Timer`
@@ -789,7 +793,7 @@
 1. `java.util.concurrent.ForkJoinPool` — see [Fork-Join](#Fork-Join)
 
 1. `java.util.concurrent.Executors` — factory and utility methods
-   - thread pools
+   - thread pools — note that underlying queue size is unbounded
      - `static ExecutorService newCachedThreadPool()` — new threads are created as needed; idle threads are kept for 60 seconds, queue is `SynchronousQueue`  
        `static ExecutorService newCachedThreadPool(ThreadFactory threadFactory)`
      - `static ExecutorService newFixedThreadPool(int nThreads)` — contains a fixed set of threads; tasks kept in a `LinkedBlockingQueue` when overloaded

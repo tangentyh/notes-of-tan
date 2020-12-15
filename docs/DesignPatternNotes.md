@@ -35,7 +35,7 @@ Creational design patterns abstract the instantiation process, They help make a 
 
 1. Singleton
    - other implementation — eager, lazy without thread safe, method synchronized lazy
-   - double `null` check
+   - `volatile` and double `null` check
      ```java
      public class Singleton {
          private volatile static Singleton uniqueInstance;

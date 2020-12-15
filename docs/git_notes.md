@@ -418,6 +418,9 @@
      ```
      git checkout [-q] [-f] [-m] [[-b|-B|--orphan] <new_branch>] [<start_point>]
      ```
+     ```
+     git checkout -b <branch> --track <remote>/<branch>
+     ```
      - `-B` — `-f -b`, reset to `<start_point>` if already exists
      - `--orphan` — the first commit made on this new branch will have no parents and it will be the root of a new history totally disconnected from all the other branches and commits
    - restore files

@@ -492,6 +492,7 @@ Based on MySQL
        ```
 
 1. `DROP TABLE`
+   - `TRUNCATE [TABLE] tbl_name` — empties a table completely, no trigger
 
 #### CREATE VIEW, PROCEDURE, FUNCTION, TRIGGER
 

@@ -175,6 +175,7 @@
      -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xloggc:/home/logs/gc.log
      ```
    - `-XX:+PrintCommandLineFlags` — print flags, can check used GC configurations
+   - `-XX:+HeapDumpOnOutOfMemoryError`
 
 ## Reference
 

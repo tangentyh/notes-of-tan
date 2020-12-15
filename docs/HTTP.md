@@ -21,23 +21,23 @@ Content-Location: /new.html
    - [en version](https://github.com/alex/what-happens-when)
 
 1. version history — for detail see [Evolution of HTTP | MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Evolution_of_HTTP)
-   - HTTP/0.9时代：短连接
+   - HTTP/0.9 时代：短连接
      - 每个HTTP请求都要经历一次DNS解析、三次握手、传输和四次挥手。反复创建和断开TCP连接的开销巨大，在现在看来，这种传输方式简直是糟糕透顶。
-   - HTTP/1.0时代：持久连接概念提出
-     - 人们认识到短连接的弊端，提出了持久连接的概念，在HTTP/1.0中得到了初步的支持。持久连接，即一个TCP连接服务多次请求：客户端在请求header中携带`Connection: Keep-Alive`，即是在向服务端请求持久连接。如果服务端接受持久连接，则会在响应header中同样携带`Connection: Keep-Alive`，这样客户端便会继续使用同一个TCP连接发送接下来的若干请求。（`Keep-Alive`的默认参数是[timout=5, max=100]，即一个TCP连接可以服务至多5秒内的100次请求）
+   - HTTP/1.0 时代：持久连接概念提出
+     - 人们认识到短连接的弊端，提出了持久连接的概念，在 HTTP/1.0 中得到了初步的支持。持久连接，即一个 TCP 连接服务多次请求：客户端在请求 header 中携带`Connection: Keep-Alive`，即是在向服务端请求持久连接。如果服务端接受持久连接，则会在响应 header 中同样携带`Connection: Keep-Alive`，这样客户端便会继续使用同一个TCP连接发送接下来的若干请求。（`Keep-Alive`的默认参数是[timout=5, max=100]，即一个TCP连接可以服务至多5秒内的100次请求）
      - 当服务端主动切断一个持久连接时（或服务端不支持持久连接），则会在header中携带`Connection: Close`，要求客户端停止使用这一连接。
-   - HTTP/1.1时代：持久连接成为默认的连接方式；提出pipelining概念
-     - HTTP/1.1开始，即使请求header中没有携带`Connection: Keep-Alive`，传输也会默认以持久连接的方式进行。
+   - HTTP/1.1 时代：持久连接成为默认的连接方式；提出 pipelining 概念
+     - HTTP/1.1 开始，即使请求 header 中没有携带`Connection: Keep-Alive`，传输也会默认以持久连接的方式进行。
      - 持久连接的弊端被提出 —— HOLB（Head of Line Blocking）: 即持久连接下一个连接中的请求仍然是串行的，如果某个请求出现网络阻塞等问题，会导致同一条连接上的后续请求被阻塞。
-     - 提出了pipelining概念，即客户端可以在一个请求发送完成后不等待响应便直接发起第二个请求，服务端在返回响应时会按请求到达的顺序依次返回。响应仍然是按请求的顺序串行返回的。所以pipelining并没有被广泛接受，几乎所有代理服务都不支持pipelining，部分浏览器不支持pipelining，支持的大部分也会将其默认关闭
-   - SPDY和HTTP/2：multiplexing — multiplexing即多路复用，在SPDY中提出，同时也在HTTP/2中实现。multiplexing技术能够让多个请求和响应的传输完全混杂在一起进行，通过streamId来互相区别。这彻底解决了holb问题，同时还允许给每个请求设置优先级，服务端会先响应优先级高的请求。
+     - 提出了 pipelining 概念，即客户端可以在一个请求发送完成后不等待响应便直接发起第二个请求，服务端在返回响应时会按请求到达的顺序依次返回。响应仍然是按请求的顺序串行返回的。所以 pipelining 并没有被广泛接受，几乎所有代理服务都不支持 pipelining，部分浏览器不支持 pipelining，支持的大部分也会将其默认关闭
+   - SPDY 和 HTTP/2：multiplexing — multiplexing 即多路复用，在 SPDY 中提出，同时也在 HTTP/2 中实现。multiplexing 技术能够让多个请求和响应的传输完全混杂在一起进行，通过 streamId 来互相区别。这彻底解决了 holb 问题，同时还允许给每个请求设置优先级，服务端会先响应优先级高的请求。
      - [multiplexing](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/14), binary, stream, message, frame
      - server push — populate data in a client cache, in advance of it being required. 例如客户端请求 page.html 页面，服务端就把 script.js 和 style.css 等与之相关的资源一起发给客户端
      - header compression and delta update — 客户端和服务器同时维护和更新一个包含之前见过的首部字段表以避免重复传输
 
 ## Methods
 
-1. request methods
+1. request method attributes
    - has body or not
    - safe — does not alter the state of server, implies idempotent; `GET`, `HEAD`, or `OPTIONS`
    - idempotent — an identical request can be made once or several times in a row with the same effect while leaving the server in the same state; safe methods and `PUT`, `DELETE`, conditionally `PATCH`
@@ -46,38 +46,38 @@ Content-Location: /new.html
      - cacheable status code — 200, 203, 204, 206, 300, 301, 404, 405, 410, 414, and 501
 
 1. `GET` — requests a representation of the specified resource
-   - traits — request has no body, response has body, safe, idempotent, cacheable, allowed in forms
+   - attributes — request has no body, response has body, safe, idempotent, cacheable, allowed in forms
 
 1. `HEAD` — requests the headers that would be returned if `GET`
-   - traits — no body, no body, safe, idempotent, cacheable, not in forms
+   - attributes — no body, no body, safe, idempotent, cacheable, not in forms
 
 1. `POST` — sends data to the server but not idempotent
-   - traits — has body, has body, not safe, not idempotent, typically not cacheable, allowed in forms
+   - attributes — has body, has body, not safe, not idempotent, typically not cacheable, allowed in forms
    - related responses
      - `201 Created`
 
 1. `PUT` — replaces all current representations of the target resource with the request payload or create new ones, idempotent
-   - traits — has body, no body, not safe, idempotent, not cacheable, not in forms
+   - attributes — has body, no body, not safe, idempotent, not cacheable, not in forms
    - related responses
      - `201 Created`
      - `200 OK` or `204 No Content`
 
 1. `DELETE`
-   - traits — may have body, may have body, not safe, idempotent, not cacheable, not in forms
+   - attributes — may have body, may have body, not safe, idempotent, not cacheable, not in forms
    - related responses
      - `202 Accepted` — the action will likely succeed but has not yet been enacted
      - `204 No Content` — the action has been enacted and no further information is to be supplied
      - `200 OK` — the action has been enacted and the response body includes a representation describing the status
 
 1. `PATCH` — apply partial modifications
-   - traits — has body, has body, not safe, not idempotent, not cacheable, not in forms
+   - attributes — has body, has body, not safe, not idempotent, not cacheable, not in forms
      - idempotent — can be idempotent if no something like an auto-incrementing counter field and no side-effects on other resources
    - related headers and response
      - `Accept-Patch` response header — advertises which media-type the server is able to understand, and means that `PATCH` is allowed on the resource identified by the Request-URI, can be together with `415`
      - `415 Unsupported Media Type` — response to a `PATCH` request with an unsupported media type
 
 1. `OPTIONS` — describe the communication options for the target resource, request URL can be `*` to refer to the entire server
-   - traits — no body, has body, safe, idempotent, not cacheable, not in forms
+   - attributes — no body, has body, safe, idempotent, not cacheable, not in forms
    - related
      - `Allow` response header
      - CORS preflight request method, and request headers `Access-Control-Request-Method` and `Access-Control-Request-Headers`
@@ -95,12 +95,12 @@ Content-Location: /new.html
      ```
 
 1. `TRACE` — message loop-back test along the path to the target resource
-   - traits — no body, no body, safe, idempotent, not cacheable, not in forms
+   - attributes — no body, no body, safe, idempotent, not cacheable, not in forms
    - response — `200 OK` with `Content-Type: message/http` with message of path along with way
      - `Max-Forwards` request header — minus one before forwarding, stop forwarding if zero
 
 1. `CONNECT` — hop-by-hop method in contrast to end-to-end method, establishes a tunnel to the server identified by the target resource, like SSL through a proxy
-   - traits — no body, has body, not safe, not idempotent, not cacheable, not in forms
+   - attributes — no body, has body, not safe, not idempotent, not cacheable, not in forms
    - related headers and responses
      - `Proxy-Authorization` request header — credentials to authenticate a user agent to a proxy server, usually after a `407` response
      - `407 Proxy Authentication Required`

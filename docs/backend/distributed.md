@@ -598,7 +598,7 @@ Gossip — the reach of a broadcast and the reliability of anti-entropy
    - 缓存穿透 — 对某个一定不存在的数据进行请求，该请求将会穿透缓存到达数据库
      - 方案
        - 对这些不存在的数据缓存一个空数据
-       - 对这类请求进行过滤
+       - 对这类请求进行过滤, bloom filter, counting filter
    - 缓存雪崩 — 由于数据没有被加载到缓存中，或者缓存数据在同一时间大面积失效（过期），又或者缓存服务器宕机，导致大量的请求都到达数据库
      - 方案
        - 合理设置缓存过期时间

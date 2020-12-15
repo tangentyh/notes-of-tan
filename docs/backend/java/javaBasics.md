@@ -498,7 +498,7 @@
    - `static double random()` — uses `java.util.Random` behind scenes
    - `min`, `max`
    - double
-     - `public static double ulp(double d)` — an ulp, unit in the last place, of a double value is the positive distance between this floating-point value and the double value next larger in magnitude
+     - `static double ulp(double d)` — an ulp, unit in the last place, of a double value is the positive distance between this floating-point value and the double value next larger in magnitude
    - rounding
      - `static double ceil(double a)`
      - `static long round(double a)`  
@@ -554,6 +554,7 @@
      - more
 
 1. `java.math.BigDecimal` — Immutable, arbitrary-precision signed decimal numbers, decimal version of `BigInteger`
+   - equality — use `BigDecimal::compare` instead of `BigDecimal::equals`, see [`Comparable`](#Common-Interfaces)
 
 ### Built-In Classes
 
