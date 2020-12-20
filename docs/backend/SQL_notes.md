@@ -300,7 +300,7 @@ Based on MySQL
      ```
      SHOW CREATE TABLE tbl_name
      ```
-   - `DESCRIBE`
+   - `EXPLAIN`, `DESCRIBE`, `DESC`
      ```
      {EXPLAIN | DESCRIBE | DESC}
          tbl_name [col_name | wild]
@@ -309,7 +309,7 @@ Based on MySQL
 #### EXPLAIN
 
 1. `EXPLAIN`, `DESCRIBE`, `DESC`
-   - see [`SHOW COLUMNS`](#SHOW)
+   - also can be used as [`SHOW COLUMNS`](#SHOW)
    - execution plan, usually `EXPLAIN` — displays information from the optimizer, i.e. how it would process the statement, including information about how tables are joined and in which order
      ```
      {EXPLAIN | DESCRIBE | DESC}
@@ -322,6 +322,13 @@ Based on MySQL
      - `FORMAT`
        - `TRADITIONAL` — tabular
        - `TREE` — the only format which shows hash join usage
+     - ouput — see [8.8.2 EXPLAIN Output Format](https://dev.mysql.com/doc/refman/8.0/en/explain-output.html#explain_ref)
+       - `type` (JSON name: `access_type`) in output, see docs for details
+         - `system`, `const`
+         - `eq_ref`, `unique_subquery`
+         - `ref`, `ref_or_null`, `index_subquery`
+         - `range` `index_merge`
+         - `index`, `ALL`
    - `EXPLAIN ANALYZE` — execution plan along with timing and additional, iterator-based, information about how the optimizer's expectations matched the actual execution
      ```
      {EXPLAIN | DESCRIBE | DESC} ANALYZE select_statement
@@ -333,7 +340,7 @@ Based on MySQL
      ```SQL
      SET profiling=1;
      SELECT SQL_NO_CACHE * FROM my_table;
-     --- ...
+     -- ...
      SHOW PROFILE;
      SET profiling=0;
      ```
@@ -409,7 +416,8 @@ Based on MySQL
      ```
 
 1. `column_definition` in `CREATE TABLE`, `ALTER TABLE`
-   ```
+   - vanilla column
+     ```
      data_type [NOT NULL | NULL] [DEFAULT {literal | (expr)} ]
        [AUTO_INCREMENT] [UNIQUE [KEY]] [[PRIMARY] KEY]
        [COMMENT 'string']
@@ -418,7 +426,10 @@ Based on MySQL
        [STORAGE {DISK|MEMORY}]
        [reference_definition]
        [check_constraint_definition]
-   | data_type
+     ```
+   - generated column — support secondary indexes and partition but not subqueries, stored procedures and more
+     ```
+     data_type
        [COLLATE collation_name]
        [GENERATED ALWAYS] AS (expr)
        [VIRTUAL | STORED] [NOT NULL | NULL]
@@ -426,7 +437,8 @@ Based on MySQL
        [COMMENT 'string']
        [reference_definition]
        [check_constraint_definition]
-   ```
+     ```
+     - example — `col1 LIKE '%xxx'` dose not use index search, create a reversed generated column to utilize index: `loc1 VARCHAR(200) GENERATED ALWAYS AS (REVERSE(col1))`, create index on this generated column to hit index with `loc1 LIKE REVERSE('%xxx')`
 
 1. key/index creation options
    ```

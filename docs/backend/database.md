@@ -26,7 +26,7 @@
    - foreign key — help keep spread-out data consistent
 
 1. selectivity and cardinality
-   - selectivity — cardinality divided by the number of records in the table; High selectivity means that the column values are relatively unique, and can retrieved efficiently through an index
+   - selectivity — cardinality divided by the number of records in the table; high selectivity means that the column values are relatively unique, and can retrieved efficiently through an index
    - cardinality — the number of different values in a table column; when queries refer to columns that have an associated index, the cardinality of each column influences which access method is most efficient
      - inspect — `SHOW INDEX`, output includes an estimate of the number of unique values in the index
      - index hints when uneven distribution — if the index have a very uneven distribution, the cardinality might not be a good way to determine the best query plan; might need to use index hints to pass along advice about which lookup method is more efficient for a particular query
@@ -35,9 +35,15 @@
 1. index optimization
    - large data update — bootstrap with delete indexes before and re-create after
    - covering index — an index that includes all the columns retrieved by a query. Instead of using the index values as pointers to find the full table rows, the query returns values from the index structure. Any column index or composite index could act as a covering index
-   - standalone column — `id + 1` does not utilize the index
+     - in `EXPLAIN` — `Using index` in the `Extra` column
+   - standalone column — `id + 1` and functions does not utilize the index, also implicit type or collation conversion which uses `CAST` function
    - composite index, aka. multiple-column index — prefixed index search capability; composite indexes outperform separated single column indexes; order matters, selective first or the most frequently used first
    - prefix indexing — `KEY_BLOCK_SIZE` like `max_sort_length`, for `BLOB`, `TEXT`, `VARCHAR`
+   - ordering of index
+   - index condition pushdown (ICP) — an optimization that, when searching secondary indexes, pushes part of a `WHERE` condition down to the storage engine if parts of the condition can be evaluated using fields from the index, can reduce the number of times the storage engine must access the base table and the number of times the MySQL server must access the storage engine, see [8.2.1.6 Index Condition Pushdown Optimization](https://dev.mysql.com/doc/refman/8.0/en/index-merge-optimization.html) for details
+     - in `EXPLAIN` — `Using index condition` in the `Extra` column
+   - [8.2.1.3 Index Merge Optimization](https://dev.mysql.com/doc/refman/8.0/en/index-merge-optimization.html) — retrieves rows with multiple `range` scans and merges their results into one
+     - in `EXPLAIN` — `index_merge` in the `type` column and more in `Extra` column
 
 1. index structure, delete and purge
    - indexes
@@ -125,7 +131,7 @@
    - B* tree — when splitting, instead of splitting a single node into two half-full ones, the algorithm splits two nodes into three nodes, each of which is two-thirds full
      - B link tree — on top of B* tree, add high keys and sibling link pointers
    - some drawbacks
-     - write amplification — see [OS notes](./OS-notes.md#Disk)
+     - write amplification — see [Disk](./OS-notes.md#Disk)
      - space amplification — extra space reserved to make updates possible
    - tbd
    <!-- TODO -->
@@ -176,8 +182,6 @@
          1. analysis phase — identifies dirty pages in the page cache and transactions that were in progress at the time of a crash
          1. redo phase — repeats the history up to the point of a crash and restores the database to the previous state, and WAL used for repeating history
          1. undo phase — rolls back all incomplete transactions and restores the database to the last consistent state
-     - InnoDB doublewrite buffer — a storage area in the system tablespace where InnoDB writes pages that are flushed from the buffer pool before writing them to their proper positions in the data file; if crashed in the middle of a page write, InnoDB can find a good copy of the page from the doublewrite buffer during crash recovery
-       - overhead — data is written to the doublewrite buffer as a large sequential chunk, with a single `fsync()` call to the OS
 
 1. concurrency control
    - optimistic concurrency control (OCC)
@@ -395,14 +399,30 @@
    - 崩溃恢复：MyISAM 崩溃后发生损坏的概率比 InnoDB 高很多，而且恢复的速度也更慢。
    - 其它特性：MyISAM 支持压缩表和空间数据索引。
 
-1. persistency locations
-   - databases — directories within `/data`
-   - tables — files
-   - triggers — files
+1. persistence
+   - locations
+     - databases — directories within `/data`
+     - tables — files
+     - triggers — files
+   - system tablespace — data files (ibdata files) containing the metadata for InnoDB-related objects, and the storage areas for the change buffer, and the doublewrite buffer. It may also contain table and index data for InnoDB tables if tables were created in the system tablespace instead of file-per-table or general tablespaces
+   - buffer
+     - change buffer — data structure that records DML changes to pages in nonunique secondary indexes: changes buffered when the relevant page from the secondary index is not in the buffer pool
+       - merge — when the relevant index page is brought into the buffer pool while associated changes are still in the change buffer, the changes for that page are applied in the buffer pool
+       - persistence — the change buffer is part of the system tablespace
+       - inspect — `SHOW ENGINE INNODB STATUS`
+     - InnoDB doublewrite buffer — a storage area in the system tablespace where InnoDB writes pages that are flushed from the buffer pool before writing them to their proper positions in the data file; if crashed in the middle of a page write, InnoDB can find a good copy of the page from the doublewrite buffer during crash recovery
+       - overhead — data is written to the doublewrite buffer as a large sequential chunk, with a single `fsync()` call to the OS
 
 1. page
    - default page size — 16 KB
    - stored off-page — not stored in page, does not effect main index, but a 20 B pointer is stored
+   - page flush points
+     - redo log checkpointing
+     - page eviction
+     - server shutting down
+     - background page flush — InnoDB attempts to perform tasks such as flushing dirty pages from the buffer pool and writing changes from the change buffer to the appropriate secondary indexes, in a way that does not adversely affect the normal working of the server
+       - variable `innodb_io_capacity` — InnoDB estimates the I/O bandwidth available for background tasks based on the set value
+       - variable `innodb_flush_neighbors` — set to 0 for SSD
 
 1. InnoDB row formats — tbd
 

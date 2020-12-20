@@ -73,8 +73,7 @@
      java -Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=8000,suspend=n \
        -jar target/myapplication-0.0.1-SNAPSHOT.jar # remote debug
      ```
-
-1. `javaw` — `java` without a shell window
+   - `javaw` — `java` without a shell window
 
 1. `javadoc` — generates HTML documentation from your source files
    - information source
@@ -110,9 +109,9 @@
 
 1. `jshell` — REPL from Java 9
 
-1. `jconsole` — Java Monitoring and Management Console
-
-1. `jmap` and `jhat` (deprecated) for heap dump and examining dump — see [Debugging](#Debugging)
+1. see [Debugging](#Debugging)
+   - `jconsole` — Java Monitoring and Management Console
+   - `jmap` and `jhat` (deprecated) for heap dump and examining dump
 
 1. `serialver` — get serial version ID
 
@@ -1078,6 +1077,8 @@
      }
      ```
 
+1. lambda at runtime — tbd
+
 1. lambda expression syntax
    - inline
      ```java
@@ -1524,6 +1525,8 @@
    - `jps`
    - `jstack`
    - `syslog`
+   - [`jvisualvm`](https://visualvm.github.io/)
+   - [`mat`](https://www.eclipse.org/mat/)
 
 ### Exceptions
 

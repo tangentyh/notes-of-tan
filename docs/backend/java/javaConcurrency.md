@@ -907,7 +907,7 @@
 
 ## Synchronizers
 
-1. Memory consistency effects — happen-before, see [volatile](#volatile-and-Atomics)
+1. memory consistency effects — happen-before, see [volatile](#volatile-and-Atomics)
 
 1. `java.util.concurrent.locks.AbstractQueuedSynchronizer` — tbd
    <!-- TODO -->

@@ -59,7 +59,7 @@
    - metaspace, replacement for permanent generation since JDK 8
      - held in native memory and not related to heap — PermGen had a fixed size, but `MaxMetaspaceSize` defaults to infinity, no more `java.lang.OutOfMemoryError: Permgen space` (`OutOfMemoryError` for metaspace is still possible)
      - GC — triggered once the `MaxMetaspaceSize` is reached
-     - CLI — `-XX:MetaspaceSize`, `-XX:MaxMetaspaceFreeRatio`, `-XX — MinMetaspaceFreeRatio`, `-XX — MaxMetaspaceSize`
+     - CLI — `-XX:MetaspaceSize`, `-XX:MaxMetaspaceFreeRatio`, `-XX:MinMetaspaceFreeRatio`, `-XX:MaxMetaspaceSize`
    - code cache — for JIT
      - CLI — `-XX:ReservedCodeCacheSize=128m`, `-XX:InitialCodeCacheSize`
    - `sun.nio.ch.DirectBuffer` — use native methods to manipulate non-heap memory, read and write directly to a memory address, used in NIO
