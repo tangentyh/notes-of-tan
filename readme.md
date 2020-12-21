@@ -50,7 +50,29 @@ So much knowledge :books: , so little time :hourglass_flowing_sand:.
 
 1. [Dash](https://kapeli.com/dash)
 
-## Other Repositories
+## Other Resources
+
+Blogs
+
+- [Google Developers Blog](https://developers.googleblog.com/)
+- [Unlocking new capabilities for the web  |  Web  |  Google Developers](https://developers.google.com/web/updates/capabilities)
+- [web.dev](https://web.dev/blog/)
+- [Chromium Blog](https://blog.chromium.org/)
+- [Google Cloud Blog | News, Features and Announcements](https://cloud.google.com/blog/)
+- [Developers | Twitch Blog](https://blog.twitch.tv/en/tags/developers)
+- [Twitter Dev (@TwitterDev) / Twitter](https://twitter.com/TwitterDev)
+- [Facebook Engineering](https://engineering.fb.com/)
+- [AWS Blog](https://aws.amazon.com/blogs)
+  - [AWS Architecture Blog](https://aws.amazon.com/blogs/architecture/)
+- [Blog | Amazon Science](https://www.amazon.science/blog)
+- [Netflix TechBlog](https://netflixtechblog.com/)
+- [美团技术团队](https://tech.meituan.com/)
+- [腾讯技术工程 - 知乎](https://www.zhihu.com/org/teng-xun-ji-zhu-gong-cheng)
+- [AlloyTeam | 腾讯全端 AlloyTeam 团队 Blog](http://www.alloyteam.com/page/0/)
+- [360 核心安全技术博客](https://blogs.360.cn/)
+- [阿里云开发者社区-云计算社区-阿里云](https://developer.aliyun.com/indexFeed/?spm=a2c6h.20345107.1364563.13.753717dbUfLoip)
+- [阿里云智能基础软件部-技术博客](https://kernel.taobao.org/)
+- [字节跳动技术团队 的个人主页](https://juejin.cn/user/1838039172387262)
 
 For reference:
 
