@@ -83,6 +83,7 @@ Blogs
   - [AWS Architecture Blog](https://aws.amazon.com/blogs/architecture/)
 - [Blog | Amazon Science](https://www.amazon.science/blog)
 - [Netflix TechBlog](https://netflixtechblog.com/)
+- [DevBlogs - Microsoft Developer Blogs](https://devblogs.microsoft.com/)
 - [美团技术团队](https://tech.meituan.com/)
 - [腾讯技术工程 - 知乎](https://www.zhihu.com/org/teng-xun-ji-zhu-gong-cheng)
 - [AlloyTeam | 腾讯全端 AlloyTeam 团队 Blog](http://www.alloyteam.com/page/0/)
