@@ -4,56 +4,41 @@
 
 1. `java.util.Arrays`
    - conversion
-     - `static String toString(type[] a)`
-     - `static String deepToString(Object[] a)`
-     - `static <T> List<T> asList(T... a)` — `return new ArrayList<>(a);`
+     - `asList(T... a)` — `return new ArrayList<>(a);`
        - `ArrayList` here is `Arrays$ArrayList` which implements `List`, a view on the original array with fixed size
        - if real `ArrayList` is desired — use this `Arrays$ArrayList` to construct
      - stream methods
    - `static int binarySearch(type[] a, type v)`  
      `static int binarySearch(type[] a, int start, int end, type v)`
-     - `Object[]` actually needs to be `Comparable[]`
+     - `Object[]` is required to be `Comparable[]`
    - copy
-     - `static type[] copyOf(type[] original, int newLength)` — uses `System::arraycopy` behind the scenes
-     - `static type[] copyOfRange(type[] a, int start, int end)`
+     - `copyOf(type[] original, int newLength)` — uses `System::arraycopy` behind the scenes
+     - `copyOfRange(type[] a, int start, int end)`
      - `System::arraycopy`
      - `T[]::clone`
    - initialization and modifications
-     - `static void fill(type[] a, type v)`
-     - `static void setAll(double[] array, IntToDoubleFunction generator)` — generator takes indices as parameter  
-       `static void setAll(int[] array, IntUnaryOperator generator)`  
-       `static void setAll(long[] array, IntToLongFunction generator)`  
-       `static <T> void setAll(T[] array, IntFunction<? extends T> generator)`
+     - `fill(type[] a, type v)`
+     - `setAll` — generator takes indices as parameter  
      - `parallelSetAll` — parallel version of `setAll`
      - `parallelPrefix` — prefix operators, like prefix sum
    - `Object` methods
-     - `static boolean equals(type[] a, type[] b)`
-     - `static int hashCode(Object[] a)`
-     - `static boolean deepEquals(Object[] a1, Object[] a2)`
-     - `static int deepHashCode(Object[] a)`
-     - `static String deepToString(Object[] a)`
+     - `toString` - `deepToString`
+     - `equals` - `deepEquals`
+     - `hashCode` - `deepHashCode`
      - `compare` — since JDK 9
-   - sort
+   - sort — `java.util.DualPivotQuickSort::sort` for primitive type arrays, `java.util.TimSort::sort` for others
      - `static void sort(type[] a)`  
        `static void sort(type[] a, int fromIndex, int toIndex)`  
        `static <T> void sort(T[] a, Comparator<? super T> c)`  
        `static <T> void sort(T[] a, int fromIndex, int toIndex, Comparator<? super T> c)`
        - `Object[]` actually needs to be `Comparable[]`
-       - `java.util.DualPivotQuickSort::sort` for primitive type arrays
-       - `java.util.TimSort::sort` for `T[]`
-     - `static void parallelSort(type[] a)`  
-       `static void parallelSort(type[] a, int fromIndex, int toIndex)` (no `Object[]`)  
-       `static <T extends Comparable<? super T>> void parallelSort(T[] a, int fromIndex, int toIndex)`  
-       `static <T> void parallelSort(T[] a, Comparator<? super T> cmp)`  
-       `static <T> void parallelSort(T[] a, int fromIndex, int toIndex, Comparator<? super T> cmp)`
-       - granularity — `private static final int MIN_ARRAY_SORT_GRAN = 1 << 13;`
+     - `parallelSort`
        - sequential sort (as `Arrays::sort`) when
          ```java
          if (n <= MIN_ARRAY_SORT_GRAN || (p = ForkJoinPool.getCommonPoolParallelism()) == 1)
          ```
-       - else parallel sort — uses threading (each thread gets a chunk of the list and sorts it in parallel. Later these sorted chunks are merged into a result)
-       - `java.util.DualPivotQuickSort::sort` for primitive type arrays
-       - `java.util.TimSort::sort` for `T[]`
+         - granularity — `private static final int MIN_ARRAY_SORT_GRAN = 1 << 13;`
+       - else parallel sort — uses `ForkJoinPool` (each thread gets a chunk of the list and sorts it in parallel. Later these sorted chunks are merged into a result)
 
 ## Event Handling
 
@@ -78,22 +63,16 @@
 
 ## Collections and Maps
 
-1. concurrent collections — see [Thread-Safe Collections](./javaConcurrency.md#Thread-Safe-Collections), and [`SynchronousQueue`](./javaConcurrency.md#Data-Exchange-Synchronizers)
+1. concurrent collections — see [Thread-Safe Collections](./javaConcurrency.md#Thread-Safe-Collections)
 
-1. `Iterable`
-   ```java
-   public interface Iterable<T>
-   ```
+1. `interface java.lang.Iterable<T>`
    - `default void forEach(Consumer<? super T> action)`
    - `Iterator<T> iterator()`
    - `default Spliterator<T> spliterator()`
    - foreach loop — needs to implement `Iterable`
      - behind the scenes — a loop with an iterator
 
-1. `java.util.Iterator<E>`
-   ```java
-   public interface Iterator<E>
-   ```
+1. `interface java.util.Iterator<E>`
    - fail fast — multiple readers, or a single reader and writer, otherwise `ConcurrentModificationException`
      - detection scheme — the count of modifications is keep in both the collection and the iterator
      - exception — `LinkedList::set` is not counted
@@ -109,12 +88,11 @@
 
 1. `java.util.Collection`
    ```java
-   public interface Collection<E>
-   extends Iterable<E>
+   public interface Collection<E> extends Iterable<E>
    ```
    - add
      - `boolean add(E e)` — `true` when success
-     - `boolean addAll(Collection<? extends E> c)`
+     - `boolean addAll(Collection<? extends E> c)` — return `true` if the collection changed
    - test
      - `boolean equals(Object o)`
      - `boolean contains(Object o)`
@@ -127,7 +105,7 @@
      - `boolean remove(Object o)`
      - `boolean retainAll(Collection<?> c)`
    - conversion
-     - `<T> T[] toArray(T[] a)` — no new array created if `a` is of the correct size
+     - `<T> T[] toArray(T[] a)` — no new array created if `a` is of the correct size, recommended to use a zero-size one in case of concurrent modifications
      - `default Stream<E> stream()`
      - `default Stream<E> parallelStream()`
    - get collection information
@@ -136,20 +114,16 @@
      - `default Spliterator<E> spliterator()`
    - `java.util.AbstractCollection` — a skeletal implementation of the `Collection` interface, to minimize the effort required to implement this interface
       ```java
-      public abstract class AbstractCollection<E> extends Object
-      implements Collection<E>
+      public abstract class AbstractCollection<E> implements Collection<E>
       ```
       - should have been replaced by default methods, but only new methods have default implementation
       - extends the abstract class and simultaneously implement the interface — only make a difference to clarity and reflection
 
 1. `java.util.Collections` — static helper
-   - `static <T> boolean addAll(Collection<? super T> c, T... elements)`
-   - `static boolean disjoint(Collection<?> c1, Collection<?> c2)` — `true` if the two specified collections have no elements in common
-   - `static int frequency(Collection<?> c, Object o)`
-   - `static <T extends Object & Comparable<? super T>> T max(Collection<? extends T> coll)`  
-     `static <T> T max(Collection<? extends T> coll, Comparator<? super T> comp)`  
-     `static <T extends Object & Comparable<? super T>> T min(Collection<? extends T> coll)`  
-     `static <T> T min(Collection<? extends T> coll, Comparator<? super T> comp)`
+   - `addAll(Collection<? super T> c, T... elements)` — return `true` if the collection changed
+   - `disjoint(Collection<?> c1, Collection<?> c2)` — `true` if the two specified collections have no elements in common
+   - `frequency(Collection<?> c, Object o)`
+   - `min`, `max` — support `Comparator`
    - `static <T> Comparator<T> reverseOrder()`  
      `static <T> Comparator<T> reverseOrder(Comparator<T> cmp)`
      - called by `Comparator::reverseOrder` and `Comparator::reversed`
@@ -202,24 +176,24 @@
    - `void set(E e)`
    - `Collections::emptyListIterator`
 
-1. `List` related methods in `Collections`
+1. `Collections` methods related to `List`
    - find
-     - `static <T> int binarySearch(List<? extends Comparable<? super T>> list, T key)` — return `(-(insertion point) - 1)` if no matching  
-       `static <T> int binarySearch(List<? extends T> list, T key, Comparator<? super T> c)`
+     - `binarySearch(List<? extends Comparable<? super T>> list, T key)` — return `(-(insertion point) - 1)` if no matching  
+       `binarySearch(List<? extends T> list, T key, Comparator<? super T> c)`
        - whether `indexedBinarySearch` or `iteratorBinarySearch` — checks `RandomAccess` or `BINARYSEARCH_THRESHOLD` to determine
-     - `static int indexOfSubList(List<?> source, List<?> target)`
-     - `static int lastIndexOfSubList(List<?> source, List<?> target)`
+     - `indexOfSubList(List<?> source, List<?> target)`
+     - `lastIndexOfSubList(List<?> source, List<?> target)`
    - modify
-     - `static <T> void copy(List<? super T> dest, List<? extends T> src)`
-     - `static <T> void fill(List<? super T> list, T obj)`
+     - `copy(List<? super T> dest, List<? extends T> src)`
+     - `fill(List<? super T> list, T obj)`
      - `static <T> boolean replaceAll(List<T> list, T oldVal, T newVal)`
-     - `static void reverse(List<?> list)`
-     - `static void rotate(List<?> list, int distance)`
-     - `static void shuffle(List<?> list)` — checks whether `RandomAccess` otherwise `toArray()`  
-       `static void shuffle(List<?> list, Random rnd)`
-     - `static <T extends Comparable<? super T>> void sort(List<T> list)`
-     - `static <T> void sort(List<T> list, Comparator<? super T> c)` — uses `List::sort`
-     - `static void swap(List<?> list, int i, int j)`
+     - `reverse(List<?> list)`
+     - `rotate(List<?> list, int distance)`
+     - `shuffle(List<?> list)` — checks whether `RandomAccess` otherwise `toArray()`  
+       `shuffle(List<?> list, Random rnd)`
+     - `sort(List<T> list)`  
+       `sort(List<T> list, Comparator<? super T> c)` — uses `List::sort`, consider using `ArrayList::sort` if possible
+     - `swap(List<?> list, int i, int j)`
    - views
      - `Arrays::asList`
      - `nCopies`
@@ -302,7 +276,7 @@
    | Examine | `getFirst()`, `element()`            | `peekFirst()`, `peek()` | `getLast()`            | `peekLast()`               |
    - usage — double ended queue, also should be used in preference to the legacy `Stack` class
 
-1. `LinkedList`
+1. `LinkedList` — see [`List`](#List) before
 
 1. `java.util.ArrayDeque`
    ```java
@@ -315,9 +289,6 @@
    - capacity
      - default initial capacity — 16
      - capacity grow policy — double capacity if small; else grow by 50%
-       ```java
-       int jump = (oldCapacity < 64) ? (oldCapacity + 2) : (oldCapacity >> 1);
-       ```
    - `ArrayDeque` vs `LinkedList` — `LinkedList`s iterate with more CPU cache miss, have the overhead of node allocations, and consume more memory, but supports `List`, `null` elements, and better remove-while-iterate
 
 1. `java.util.PriorityQueue`
@@ -463,7 +434,6 @@
      implements Map<K,V>
      ```
      - should have been replaced by default methods, but only new methods have default implementation
-     - extends the abstract class and simultaneously implement the interface — only make a difference to clarity and reflection
      - `AbstractMap.SimpleEntry`, `AbstractMap.SimpleImmutableEntry`
        ```java
        public static class AbstractMap.SimpleEntry<K,V> extends Object
@@ -527,8 +497,8 @@
    implements Map<K,V>
    ```
    - underlying implementation — `Entry` extends `WeakReference` and registered to a `ReferenceQueue` upon construction
-   - not count for gc — the presence of a mapping for a given key will not prevent the key from being discarded by the garbage collector
-     - `private final ReferenceQueue<Object> queue` — `WeakReference` keys are registered with a `queue` when created; when the referent of `WeakReference` is reclaimed by GC, `WeakReference::enqueue` is called at the same time or at some later time
+   - GC unreachable — the presence of a mapping for a given key will not prevent the key from being discarded by the garbage collector
+     - `private final ReferenceQueue<Object> queue` — `WeakReference` keys are registered with a `queue` when created; see [`ReferenceQueue`](./JVM.md#Reference)
      - `expungeStaleEntries()` — private method that scan `WeakReference` keys in `queue` and set corresponding values to `null`; called every time in access methods, `size()`, and internal resize method
    - `null` support — both keys and values
    - values with strong reference to the keys — prevent keys from gc, can be alleviated by wrapping values with `new WeakReference(value)`
@@ -542,7 +512,7 @@
    - constant-time performance for the basic operations (`get` and `put`) — assuming the system identity hash function (`System.identityHashCode(Object)`) disperses elements properly among the buckets
    - rehashing may be fairly expensive — initialize with large expected capacity
 
-1. views
+1. map views
    - `Collections::singletonMap`
    - empty views — `Collections::emptyMap`, `Collections::emptyNavigableMap`, `Collections::emptySortedMap`
    - unmodifiable views — `Collections::unmodifiableMap`, `Collections::unmodifiableNavigableMap`, `Collections::unmodifiableSortedMap`
@@ -556,7 +526,7 @@
 
 1. `Arrays::asList`
 
-1. `Collections`
+1. `Collections` views and wrappers
    - one for n wrapper — `static <T> List<T> nCopies(int n, T o)`
      - returns an immutable list consisting of n copies of the specified object, `o` is stored only once
    - stack view — `static <T> Queue<T> asLifoQueue(Deque<T> deque)`
@@ -608,7 +578,7 @@
      - `static <E> Set<E> checkedSet(Set<E> s, Class<E> type)`
      - `static <K,V> SortedMap<K,V> checkedSortedMap(SortedMap<K,V> m, Class<K> keyType, Class<V> valueType)`
      - `static <E> SortedSet<E> checkedSortedSet(SortedSet<E> s, Class<E> type)`
-   - `equals` and `hashCode`
+   - `equals` and `hashCode` of views and wrappers
      - unmodifiable, synchronized and checked views — returns a collection whose equals method does not invoke the `equals` method of the underlying collection but `Object::equals`, same for `hashCode`
      - exception — `unmodifiableSet` and `unmodifiableList` methods use the `equals` and `hashCode` methods of the underlying collections
 
@@ -982,7 +952,7 @@
 
 ## Other Utils
 
-1. date and time related — see [Time](./javaMisc.md#Time)
+1. legacy date and time related — see [Time](./javaMisc.md#Time)
 
 1. `java.util.PropertyPermission` — system property permissions
 

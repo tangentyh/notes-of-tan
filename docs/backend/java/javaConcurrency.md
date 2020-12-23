@@ -221,7 +221,7 @@
      - `void wait(long timeout)`
      - `void wait(long timeout, int nanos)`
    - monitor — intrinsic lock is the loose adaption of the monitor concept, see [Monitor (synchronization) - Wikipedia](https://en.wikipedia.org/wiki/Monitor_(synchronization))
-   - JVM optimization — see [zhihu](https://zhuanlan.zhihu.com/p/75880892), [CS-Notes/Java 并发.md at master · CyC2018/CS-Notes](https://github.com/CyC2018/CS-Notes/blob/master/notes/Java%20%E5%B9%B6%E5%8F%91.md#%E5%8D%81%E4%BA%8C%E9%94%81%E4%BC%98%E5%8C%96)
+   - JVM optimization — see [zhihu](https://zhuanlan.zhihu.com/p/75880892), [CS-Notes](https://github.com/CyC2018/CS-Notes/blob/master/notes/Java%20%E5%B9%B6%E5%8F%91.md#%E5%8D%81%E4%BA%8C%E9%94%81%E4%BC%98%E5%8C%96)
      - 锁膨胀 — unlocked, biased, lightweight, inflated
      - 锁消除, 锁粗化, 自适应自旋锁
 
