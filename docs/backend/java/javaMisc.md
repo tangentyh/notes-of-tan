@@ -834,7 +834,7 @@
        public abstract class DateFormat
        extends Format
        ```
-       - `java.text.SimpleDateFormat`
+       - `java.text.SimpleDateFormat` — not thread safe, use `ThreadLocal` to alleviate, see [Thread](./javaConcurrency.md#Thread)
 
 1. `java.time` — dates, times, instants, and durations
    - `java.time.temporal` — lower level access to the fields

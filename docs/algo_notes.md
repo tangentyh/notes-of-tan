@@ -30,25 +30,39 @@
 
 ## Math
 
-1. even or odd
-   ```cpp
-   (a & 1 == 1);
-   ```
+1. arithmetic
+   - positive modulo
+     ```javascript
+     ((a % b) + b) % b;
+     ```
+   - floor division converted to ceiling division and rounding division
+     ```java
+     (numerator + denominator - 1) / denominator;
+     (numerator - 1) / denominator + 1;
+     ```
+     ```java
+     (numerator + (denominator >>> 1)) / denominator;
+     ```
 
-1. positive modulo
-   ```javascript
-   ((a % b) + b) % b;
-   ```
-
-1. LSB, least significant bit
-   ```cpp
-   x & (-x);
-   ```
-
-1. two pointers, one from head and one from tail
-   ```python
-   nums[i] + nums[~i]
-   ```
+1. bit operation
+   - even or odd
+     ```cpp
+     (a & 1 == 1);
+     ```
+   - LSB, least significant bit
+     ```cpp
+     x & (-x);
+     ```
+   - `-(i + 1)` by `~`
+     ```python
+     # two pointers, one from head and one from tail
+     nums[i] + nums[~i]
+     ```
+     ```java
+     int i = Arrays.binarySearch(arr);
+     if (i < 0) i = ~i;
+     ```
+   - more tbd
 
 1. number of digits
    ```javascript

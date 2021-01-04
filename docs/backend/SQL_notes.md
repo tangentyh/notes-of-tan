@@ -92,6 +92,8 @@ Based on MySQL
 
 ## Data Types
 
+See [Literals](#Literals) for syntax.
+
 1. numeric
    - attributes
      - arithmetic operations — all arithmetic is done using signed `BIGINT` or `DOUBLE` values, bear overflow awareness in mind
@@ -126,10 +128,6 @@ Based on MySQL
      - `fsp` fractional seconds part — defaults to 0, up to 6 (microsecond, ANSI SQL default), rounded for excessive values, controlled by `sql_mode` `TIME_TRUNCATE_FRACTIONAL`
      - automatic initialization and updating — for `TIMESTAMP` or `DATETIME`
      - string and number — accept both string and number when assigning, but need to convert to numbers (`TIME_TO_SEC()`, `TO_DAYS()`) before `SUM()` and `AVG()`
-     - specify a time zone offset when inserting `TIMESTAMP` and `DATETIME` values — suffices like `+08:00`, from `-14:00` to `+14:00`
-       ```SQL
-       INSERT INTO ts (col) VALUES ('2020-01-01 10:10:10'), ('2020-01-01 10:10:10+05:30'), ('2020-01-01 10:10:10-08:00');
-       ```
      - conversion — missing date as `CURRENT_DATE()`, missing time part as `00:00:00`, rounding
    - `DATE` — from `'1000-01-01'` to `'9999-12-31'`
    - `DATETIME[(fsp)]` — from `1000-01-01 00:00:00.000000'` to `'9999-12-31 23:59:59.999999'`
@@ -1367,6 +1365,10 @@ Based on MySQL
      - `'YYYY-MM-DD'` or `'YY-MM-DD'`, `'YYYY-MM-DD hh:mm:ss'` or `'YY-MM-DD hh:mm:ss'`, any punctuation character may be used as the delimiter
      - `'YYYYMMDD'` or `'YYMMDD'`, `'YYYYMMDDhhmmss'` or `'YYMMDDhhmmss'`, `'hhmmss'`
      - `YYYYMMDD` or `YYMMDD`, `YYYYMMDDhhmmss`, `YYMMDDhhmmss`, `ss`, `mmss`, or `hhmmss` formatted numbers
+     - timezone offset — suffices like `+08:00`, from `-14:00` to `+14:00`
+       ```SQL
+       INSERT INTO ts (col) VALUES ('2020-01-01 10:10:10'), ('2020-01-01 10:10:10+05:30'), ('2020-01-01 10:10:10-08:00');
+       ```
      - trailing fractional seconds
      - preceding zeros in delimited strings — optional
      - `TIME` with or without days — `'D hh:mm:ss'`, `'hh:mm:ss'`, `'hh:mm'`, `'D hh:mm'`, `'D hh'`, or `'ss'`, `D` from 0 to 34 days

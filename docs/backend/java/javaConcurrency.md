@@ -195,6 +195,10 @@
      - `await` and `signal` methods can only be called if the thread owns the `Lock` of the `Condition`
    - wait set — a thread enters wait set and stays deactivated after the call to `await`, until `signal`ed by other threads
    - deadlock — when all threads are in wait set
+   - `wait` should always be used in a loop — interrupts and spurious wakeups are possible, also another thread may acquire the associated lock and make the condition false again before the awakened thread scheduled
+   - spurious wakeup — a thread can wake up without being notified, interrupted, or timing out, (due to `pthread` limitations??)
+   - lost wakeup — before one thread `wait`, another thread modified the condition and notified, but the `notify` does nothing because the target thread yet to `wait`
+     - prevention in Java — `IllegalMonitorStateException` if `await` or `notify` without the lock acquired
 
 1. `synchronized` — use intrinsic lock, a method or code block that is atomic to a thread, reentrant
    ```java
@@ -360,7 +364,7 @@
    - atomicity — volatile variables do not provide any atomicity, but makes read and write to `long` and `double` atomic
      - [JLS 17.7. Non-Atomic Treatment of double and long](https://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.7)  
        > For the purposes of the Java programming language memory model, a single write to a non-volatile `long` or `double` value is treated as two separate writes: one to each 32-bit half. This can result in a situation where a thread sees the first 32 bits of a 64-bit value from one write, and the second 32 bits from another write.
-   - also `synchronized` — changes visible before a variable is unlocked
+   - also `synchronized` — changes visible before a variable is unlocked; invalidate processor cache when acquiring, flush cache before releasing
 
 1. `java.util.concurrent.atomic` package — use efficient machine-level instructions to guarantee atomicity without using locks
    - optimistic update — `compareAndSet` method, or use lambda like `accumulateAndGet` method
