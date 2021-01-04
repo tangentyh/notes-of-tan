@@ -1209,6 +1209,8 @@ See [Literals](#Literals) for syntax.
 1. instance lock — prevents files from being created, renamed, or removed
    ```
    LOCK INSTANCE FOR BACKUP
+   ```
+   ```
    UNLOCK INSTANCE
    ```
 
@@ -1221,11 +1223,13 @@ See [Literals](#Literals) for syntax.
        READ [LOCAL]
      | [LOW_PRIORITY] WRITE
    }
+   ```
+   ```
    UNLOCK TABLES
    ```
    - more
 
-1. other locks — see [Transaction](./database.md#Transaction)
+1. other locks — see [Locks](./database.md#Locks)
 
 1. show lock
    - `SHOW ENGINE INNODB STATUS`

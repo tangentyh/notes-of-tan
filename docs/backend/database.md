@@ -1,14 +1,14 @@
 # Database Concepts
 
 1. reference
-   - Glossary part in MySQL docs.
+   - MySQL docs, especially Glossary
    - Database Internals
    - other
 
 1. DBMS taxonomy
-   - Online transaction processing (OLTP) databases
-   - Online analytical processing (OLAP) databases
-   - Hybrid transactional and analytical processing (HTAP) — combine properties of both OLTP and OLAP stores
+   - online transaction processing (OLTP) databases
+   - online analytical processing (OLAP) databases
+   - hybrid transactional and analytical processing (HTAP) — combine properties of both OLTP and OLAP stores
 
 ## Index
 
@@ -153,6 +153,81 @@
 
 ## Transaction
 
+### ACID and Transaction Levels
+
+1. ACID — transaction properties
+   - atomicity — when transaction ends, either all the changes succeed or all the changes undone
+   - consistency — in transactions, the database remains in a consistent state at all times, after each commit or rollback; queries never see mix of old and new values
+   - isolation — transactions cannot interfere with each other or see each other's uncommitted data; achieved through the locking mechanism
+   - durability — the changes made by transactions are safe from power failures, system crashes, race conditions, or other potential dangers that many non-database applications are vulnerable to
+
+1. isolation levels
+   - see [`SET TRANSACTION`](./SQL_notes.md#SET-TRANSACTION)
+   - snapshot isolation (SI) — [zhihu](https://zhuanlan.zhihu.com/p/54979396), read from the snapshot with values committed before the transaction’s start timestamp (no phantom read), first committer wins when write-write conflict
+     - example — Google Percolator, consistent read in MySQL
+
+1. read phenomena
+   - dirty read — read data that was updated by another transaction but not yet committed, possible in `READ UNCOMMITTED`
+   - non-repeatable read — within the same transaction, a later query retrieve data should be the same but changed by another transaction committing in the meantime, possible in `READ COMMITTED` and below
+   - phantom read — within the same transaction, a row that appears in the result set of a query, but not in the result set of an earlier query, possible in `REPEATABLE READ` and below
+     - gap lock needed, see next-key locks below — locking all the rows from the first query result set does not prevent the changes that cause the phantom to appear
+
+1. write anomalies
+   - lost update — transactions read the same value and update it respectively, but only the update that last committed take effect, other updates lost
+   - dirty write — write values that are dirty read
+   - write skew — each individual transaction respects the required invariants, but their combination does not satisfy these invariants; for example, two transaction withdraw $100 from an account with $150, making the balance negative while nonnegative for each transaction
+
+### Concurrency Control
+
+1. concurrency control
+   - optimistic concurrency control (OCC)
+     - three phases
+       - read phase — get transaction dependencies (read set), and the side effects (write set), in its own private context, without making any of the changes visible to other transactions
+       - validation phase — read and write set checked for conflicts, restart read phase if necessary
+         - backward-oriented and forward-oriented — checking for conflicts with the transactions that have already been committed (backward-oriented), or with the transactions that are currently in the validation phase (forward-oriented)
+       - write phase — if validation passed, commit write set from the private context to the database state
+     - atomicity — validation and write should be done automatically; critical section
+   - multiversion concurrency control (MVCC) — by allowing multiple record versions and using monotonically incremented transaction IDs or timestamps
+     - often used for implementing snapshot isolation
+   - pessimistic (aka conservative) concurrency control (PCC) — block or abort when conflicts
+     - implementations
+       - timestamp ordering implementation — lock free, whether or not transaction operations are allowed to be executed is determined by whether or not any transaction with an earlier timestamp has already been committed
+       - lock-based implementations, like two-phase locking (2PL)
+
+1. MVCC — multiversion concurrency control, technique used in consistent read
+   - read view — the trx ids of those transactions for which a consistent read should not see the modifications to the database, unchanged for `REPEATABLE READ` while refreshed for every read for `READ COMMITTED`
+     - related methods in class `MVCC` — `view_open` (allocate and create a view), `view_close`, `view_release` see [dev.mysql](https://dev.mysql.com/doc/dev/mysql-server/latest/classMVCC.html)
+     - some transaction ID attributes, see [dev.mysql](https://dev.mysql.com/doc/dev/mysql-server/latest/classReadView.html)
+       - `ids_t m_ids` — set of RW transactions that was active when this snapshot was taken
+       - `trx_id_t m_low_limit_id` — the read should not see any transaction with trx id >= this value
+       - `trx_id_t m_up_limit_id` — the read should see all trx ids < this value
+       - `trx_id_t m_creator_trx_id` — trx id of creating transaction, set to TRX_ID_MAX for free views
+       <!-- - `trx_id_t m_view_low_limit_no` — the read views don't need to access undo log records for MVCC for trx ids <= this value -->
+   - rollback segment — the storage area containing the undo logs
+   - undo log — the information necessary to rebuild the content of the row before it was updated
+     - insert undo log — only needed when rollback
+     - update undo log — for rollback and consistent reads, cannot be discarded if potentially required by any snapshot to build an earlier version
+   - three internal columns for each row
+     - `DB_TRX_ID` — 6 byte, transaction identifier, the last transaction that inserted or updated the row
+     - `DB_ROLL_PTR` — 7 byte, roll pointer, points to an undo log record written to the rollback segment
+     - `DB_ROW_ID` — 6 byte, a row ID that increases monotonically as new rows are inserted
+   - constructing a row with `DB_TRX_ID` and a read view when `SELECT`
+     - `DB_TRX_ID` < `m_up_limit_id`，表示该数据行快照时在当前所有未提交事务之前进行更改的，因此可以使用。
+     - `DB_TRX_ID` >= `m_low_limit_id`，表示该数据行快照是在事务启动之后被更改的，因此不可使用。
+     - `m_up_limit_id` <= `DB_TRX_ID` < `m_low_limit_id`, 需要根据隔离级别再进行判断：
+       - 提交读：如果 `DB_TRX_ID` 在 `m_ids` 列表中，表示该数据行快照对应的事务还未提交，则该快照不可使用。否则表示已经提交，可以使用。
+       - 可重复读：都不可以使用。因为如果可以使用的话，那么其它事务也可以读到这个数据行快照并进行修改，那么当前事务再去读这个数据行得到的值就会发生改变，也就是出现了不可重复读问题。
+     - 在数据行快照不可使用的情况下，需要沿着 Undo Log 的回滚指针 `DB_ROLL_PTR` 找到下一个快照，再进行上面的判断。
+
+1. consistent read and locking read
+   - consistent read — isolation: A read operation that uses snapshot information to present query results based on a point in time, regardless of changes performed by other transactions running at the same time
+     - related isolation level — `READ COMMITTED` and `REPEATABLE READ` isolation levels
+     - lock-free — because a consistent read does not set any locks on the tables it accesses, other sessions are free to modify those tables while a consistent read is being performed on the table
+     - undo log to mitigate lock congestion — If queried data has been changed by another transaction, the original data is reconstructed based on the contents of the undo log. This technique avoids some of the locking issues that can reduce concurrency by forcing transactions to wait for other transactions to finish.
+   - locking read — use locks, locks on newest data, which means read view will be refreshed even in `REPEATABLE READ`
+
+### Transaction Processing
+
 1. transaction processing and recovery
    - page cache
      - flush — flush when dirty page evicted; or a separate background process that cycles through the dirty pages that are likely to be evicted and flush them for quick eviction
@@ -183,129 +258,73 @@
          1. redo phase — repeats the history up to the point of a crash and restores the database to the previous state, and WAL used for repeating history
          1. undo phase — rolls back all incomplete transactions and restores the database to the last consistent state
 
-1. concurrency control
-   - optimistic concurrency control (OCC)
-     - three phases
-       - read phase — get transaction dependencies (read set), and the side effects (write set), in its own private context, without making any of the changes visible to other transactions
-       - validation phase — read and write set checked for conflicts, restart read phase if necessary
-         - backward-oriented and forward-oriented — checking for conflicts with the transactions that have already been committed (backward-oriented), or with the transactions that are currently in the validation phase (forward-oriented)
-       - write phase — if validation passed, commit write set from the private context to the database state
-     - atomicity — validation and write should be done automatically; critical section
-   - multiversion concurrency control (MVCC) — by allowing multiple record versions and using monotonically incremented transaction IDs or timestamps
-     - often used for implementing snapshot isolation
-   - pessimistic (aka conservative) concurrency control (PCC) — block or abort when conflicts
-     - implementations
-       - timestamp ordering implementation — lock free, whether or not transaction operations are allowed to be executed is determined by whether or not any transaction with an earlier timestamp has already been committed
-       - lock-based implementations, like two-phase locking (2PL)
-
-1. ACID — transaction properties
-   - atomicity — when transaction ends, either all the changes succeed or all the changes undone
-   - consistency — in transactions, the database remains in a consistent state at all times, after each commit or rollback; queries never see mix of old and new values
-   - isolation — transactions cannot interfere with each other or see each other's uncommitted data; achieved through the locking mechanism
-   - durability — the changes made by transactions are safe from power failures, system crashes, race conditions, or other potential dangers that many non-database applications are vulnerable to
-
-1. read phenomena
-   - dirty read — read data that was updated by another transaction but not yet committed, possible in `READ UNCOMMITTED`
-   - non-repeatable read — within the same transaction, a later query retrieve data should be the same but changed by another transaction committing in the meantime, possible in `READ COMMITTED` and below
-   - phantom read — within the same transaction, a row that appears in the result set of a query, but not in the result set of an earlier query, possible in `REPEATABLE READ` and below
-     - gap lock needed, see next-key locks below — locking all the rows from the first query result set does not prevent the changes that cause the phantom to appear
-
-1. write anomalies
-   - lost update — transactions read the same value and update it respectively, but only the update that last committed take effect, other updates lost
-   - dirty write — write values that are dirty read
-   - write skew — each individual transaction respects the required invariants, but their combination does not satisfy these invariants; for example, two transaction withdraw $100 from an account with $150, making the balance negative while nonnegative for each transaction
-
-1. isolation levels
-   - see [`SET TRANSACTION`](./SQL_notes.md#SET-TRANSACTION)
-   - snapshot isolation (SI) — [zhihu](https://zhuanlan.zhihu.com/p/54979396), read from the snapshot with values committed before the transaction’s start timestamp (no phantom read), first committer wins when write-write conflict
-     - example — Google Percolator, `REPEATABLE READ` in MySQL
-
-1. consistent read — isolation: A read operation that uses snapshot information to present query results based on a point in time, regardless of changes performed by other transactions running at the same time
-   - related isolation level — `READ COMMITTED` and `REPEATABLE READ` isolation levels
-   - lock-free — because a consistent read does not set any locks on the tables it accesses, other sessions are free to modify those tables while a consistent read is being performed on the table
-   - undo log to mitigate lock congestion — If queried data has been changed by another transaction, the original data is reconstructed based on the contents of the undo log. This technique avoids some of the locking issues that can reduce concurrency by forcing transactions to wait for other transactions to finish.
-   - locking read — use locks, locks on newest data, which means read view will be refreshed even in `REPEATABLE READ`
-
-1. MVCC — multiversion concurrency control, technique used in consistent read
-   - read view — the trx ids of those transactions for which a consistent read should not see the modifications to the database, unchanged for `REPEATABLE READ` while refreshed for every read for `READ COMMITTED`
-     - related methods in class `MVCC` — `view_open` (allocate and create a view), `view_close`, `view_release` see [dev.mysql](https://dev.mysql.com/doc/dev/mysql-server/latest/classMVCC.html)
-     - some transaction ID attributes, see [dev.mysql](https://dev.mysql.com/doc/dev/mysql-server/latest/classReadView.html)
-       - `ids_t m_ids` — set of RW transactions that was active when this snapshot was taken
-       - `trx_id_t m_low_limit_id` — the read should not see any transaction with trx id >= this value
-       - `trx_id_t m_up_limit_id` — the read should see all trx ids < this value
-       - `trx_id_t m_creator_trx_id` — trx id of creating transaction, set to TRX_ID_MAX for free views
-       <!-- - `trx_id_t m_view_low_limit_no` — the read views don't need to access undo log records for MVCC for trx ids <= this value -->
-   - rollback segment — the storage area containing the undo logs
-   - undo log — the information necessary to rebuild the content of the row before it was updated
-     - insert undo log — only needed when rollback
-     - update undo log — for rollback and consistent reads, cannot be discarded if potentially required by any snapshot to build an earlier version
-   - three internal columns for each row
-     - `DB_TRX_ID` — 6 byte, transaction identifier, the last transaction that inserted or updated the row
-     - `DB_ROLL_PTR` — 7 byte, roll pointer, points to an undo log record written to the rollback segment
-     - `DB_ROW_ID` — 6 byte, a row ID that increases monotonically as new rows are inserted
-   - constructing a row with `DB_TRX_ID` and a read view when `SELECT`
-     - `DB_TRX_ID` < `m_up_limit_id`，表示该数据行快照时在当前所有未提交事务之前进行更改的，因此可以使用。
-     - `DB_TRX_ID` >= `m_low_limit_id`，表示该数据行快照是在事务启动之后被更改的，因此不可使用。
-     - `m_up_limit_id` <= `DB_TRX_ID` < `m_low_limit_id`, 需要根据隔离级别再进行判断：
-       - 提交读：如果 `DB_TRX_ID` 在 `m_ids` 列表中，表示该数据行快照对应的事务还未提交，则该快照不可使用。否则表示已经提交，可以使用。
-       - 可重复读：都不可以使用。因为如果可以使用的话，那么其它事务也可以读到这个数据行快照并进行修改，那么当前事务再去读这个数据行得到的值就会发生改变，也就是出现了不可重复读问题。
-     - 在数据行快照不可使用的情况下，需要沿着 Undo Log 的回滚指针 `DB_ROLL_PTR` 找到下一个快照，再进行上面的判断。
+### Locks
 
 1. locks
    - lock granularity
+     - instance lock — see [`LOCK INSTANCE FOR BACKUP`](./SQL_notes.md#Locks)
      - db lock
-     - table lock — at MySQL server; used when DDL, `LOCK TABLE` and more
+     - table lock — at MySQL server
      - page lock
      - row lock — at InnoDB engine
-   - table or row lock types
+   - lock types, for table and row locks
      - S lock, aka read lock — shared
      - X lock, aka write lock — exclusive
+   - other locks
+     - predicate locks for `SPATIAL` indexes — tbd
+
+1. table locks
+   - vanilla table lock — used when DDL, see [`LOCK TABLE`](./SQL_notes.md#Locks) and more
    - intention locks — table-level locks that indicate which type of lock (shared or exclusive) a transaction requires later for a row in a table; do not block anything except table lock requests
      - IX lock — before a transaction can acquire an exclusive lock on a row in a table, it must first acquire an IX lock on the table
      - IS lock — before a transaction can acquire a shared lock on a row in a table, it must first acquire an IS lock or stronger on the table
-   - insert intention lock — a type of gap lock set by `INSERT` operations prior to row insertion, signals the intent to insert, but does not block each other if not inserting at the same position within the gap
    - `AUTO-INC` locks — a special table-level lock taken by transactions inserting into tables with `AUTO_INCREMENT` columns; can be in other mode, controlled by `innodb_autoinc_lock_mode`, trade off between predictable sequences of auto-increment values and concurrency, see [docs](https://dev.mysql.com/doc/refman/8.0/en/innodb-auto-increment-handling.html)
-   - predicate locks for `SPATIAL` indexes — tbd
-   - row locks — actually index-record locks
-     - row locking mechanism — a locking read, an `UPDATE`, or a `DELETE` generally set locks (normally next-key locks) on every index record that is scanned in the processing of the SQL statement
-       - secondary index — if a secondary index is used in a search and locks to set are exclusive, InnoDB also retrieves the corresponding clustered index records and sets locks on them
-       - no index — scan the entire table to process the statement, every row of the table becomes locked
-       - `INSERT` — sets an exclusive record lock on the inserted row after setting insert intention lock; if duplicate-key error, sets a shared lock on the duplicate index record and then sets the exclusive lock; see docs for possible deadlock
-       - `INSERT` with different clauses and other situations — see [docs](https://dev.mysql.com/doc/refman/8.0/en/innodb-locks-set.html)
-     - record locks — a lock on an index record; if a table is defined with no indexes, InnoDB creates a hidden clustered index and uses this index for record locking
-     - gap locks — a lock on a gap between index records, or a lock on the gap before the first or after the last index record; a gap might span a single index value, multiple index values, or even be empty
-       - purely inhibitive — only purpose is to prevent other transactions from inserting to the gap
-       - not used in single row search on unique index — not needed for statements that lock rows using a unique index to search for a unique row. (This does not include the case that the search condition includes only some columns of a multiple-column unique index; in that case, gap locking does occur.)
-       - not conflicting — conflicting locks can be held on a gap by different transactions. The reason conflicting gap locks are allowed is that if a record is purged from an index, the gap locks held on the record by different transactions must be merged.
-       - can co-exist — a gap lock taken by one transaction does not prevent another transaction from taking a gap lock on the same gap; no difference between shared and exclusive gap locks
-       - disable — in `READ COMMITTED` or below gap locking is used only for foreign-key constraint checking and duplicate-key checking
-     - next-key lock — a combination of a record lock on the index record and a gap lock on the gap before the index record; in `REPEATABLE READ`, InnoDB uses next-key locks for searches and index scans (if locking reads), which prevents phantom rows; for the range towards infinity, next-key is the “supremum” pseudo-record having a value higher than any value actually in the index
-     - example — see [zhihu](https://zhuanlan.zhihu.com/p/149228460) for detailed
-       ```SQL
-       -- definition
-       CREATE TABLE `test` (
-         `id` INT(11) PRIMARY KEY AUTO_INCREMENT,
-         `xid` INT, KEY `xid` (`xid`),
-         `v` INT DEFAULT 1
-       ) ENGINE=InnoDB;
-       -- INSERT INTO test (xid) VALUES (1), (3), (5), (8), (11);
-       INSERT INTO test (xid, v) VALUES (1, 1), (3, 3), (5, 5), (8, 8), (11, 11);
-       ```
-       ```SQL
-       -- session A)
-       START TRANSACTION;
-       SELECT * from test where xid = 8 FOR UPDATE;
-       -- locked in xid: (5, 8], (8, 11)
-       -- session B)
-       START TRANSACTION;
-       INSERT INTO test (xid) VALUES (4);  -- not blocked
-       INSERT INTO test (xid) VALUES (11); -- not blocked
-       UPDATE test SET v = 0 where xid = 5 -- not blocked
-       UPDATE test SET v = 0 where xid = 11 -- not blocked
-       INSERT INTO test (xid) VALUES (5);  -- will block
-       INSERT INTO test (xid) VALUES (8);  -- will block
-       INSERT INTO test (xid) VALUES (10); -- will block
-       ```
+
+1. row locks — actually index-record locks
+   - record locks — a lock on an index record; if a table is defined with no indexes, InnoDB creates a hidden clustered index and uses this index for record locking
+   - gap locks — a lock on a gap between index records, or a lock on the gap before the first or after the last index record; a gap might span a single index value, multiple index values, or even be empty
+     - purely inhibitive — only purpose is to prevent other transactions from inserting to the gap
+     - not used in single row search on unique index — not needed for statements that lock rows using a unique index to search for a unique row. (This does not include the case that the search condition includes only some columns of a multiple-column unique index; in that case, gap locking does occur.)
+     - not conflicting — conflicting locks can be held on a gap by different transactions. The reason conflicting gap locks are allowed is that if a record is purged from an index, the gap locks held on the record by different transactions must be merged.
+     - can co-exist — a gap lock taken by one transaction does not prevent another transaction from taking a gap lock on the same gap; no difference between shared and exclusive gap locks
+     - disable — in `READ COMMITTED` or below gap locking is used only for foreign-key constraint checking and duplicate-key checking
+   - next-key lock — a combination of a record lock on the index record and a gap lock on the gap before the index record; in `REPEATABLE READ`, InnoDB uses next-key locks for searches and index scans (if locking reads), which prevents phantom rows; for the range towards infinity, next-key is the “supremum” pseudo-record having a value higher than any value actually in the index
+   - insert intention lock — a type of gap lock set by `INSERT` operations prior to row insertion, signals the intent to insert, but does not block each other if not inserting at the same position within the gap
+
+1. row locking mechanism
+   - index
+     - lock on scanned index — a locking read, an `UPDATE`, or a `DELETE` generally set locks (normally next-key locks) on every index record that is scanned in the processing of the SQL statement
+     - secondary index — if a secondary index is used in a search and locks to set are exclusive, InnoDB also retrieves the corresponding clustered index records and sets locks on them
+     - no index — scan the entire table to process the statement, every row of the table becomes locked
+   - `INSERT` — see [docs](https://dev.mysql.com/doc/refman/8.0/en/innodb-locks-set.html) for more
+     - `INSERT` — sets an exclusive record lock on the inserted row after setting insert intention lock; if duplicate-key error, sets a shared lock on the duplicate index record and then sets the exclusive lock; see docs for possible deadlock
+     - `INSERT` with different clauses and other situations — see docs
+   - example — see [zhihu](https://zhuanlan.zhihu.com/p/149228460) for detailed
+     ```SQL
+     -- definition
+     CREATE TABLE `test` (
+       `id` INT(11) PRIMARY KEY AUTO_INCREMENT,
+       `xid` INT, KEY `xid` (`xid`),
+       `v` INT DEFAULT 1
+     ) ENGINE=InnoDB;
+     -- INSERT INTO test (xid) VALUES (1), (3), (5), (8), (11);
+     INSERT INTO test (xid, v) VALUES (1, 1), (3, 3), (5, 5), (8, 8), (11, 11);
+     ```
+     ```SQL
+     -- session A)
+     START TRANSACTION;
+     SELECT * from test where xid = 8 FOR UPDATE;
+     -- locked in xid: (5, 8], (8, 11)
+     -- session B)
+     START TRANSACTION;
+     INSERT INTO test (xid) VALUES (4);  -- not blocked
+     INSERT INTO test (xid) VALUES (11); -- not blocked
+     UPDATE test SET v = 0 where xid = 5 -- not blocked
+     UPDATE test SET v = 0 where xid = 11 -- not blocked
+     INSERT INTO test (xid) VALUES (5);  -- will block
+     INSERT INTO test (xid) VALUES (8);  -- will block
+     INSERT INTO test (xid) VALUES (10); -- will block
+     ```
 
 1. locks and latches
    - locks — acquired on the key
