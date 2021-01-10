@@ -876,42 +876,45 @@
 
 ## Clustering
 
+### Replication
+
 1. replication
-   - set slave — `SLAVEOF` command, or `slaveof` in configurations
-     - tree structure — replicas can also be connected to other replicas, forming sub-replicas; all the sub-replicas will receive exactly the same replication stream from the master since 4.0
-   - synchronization — sync and then command propagate
-     - sync
-       - `SYNC` — used in old version, slave send `SYNC` to master, the master starts recording commands while `BGSAVE` for RDB file and send it to the slave, the slave load the file, and the master send commands since `BGSAVE` to the slave
-       - `PSYNC` — full resynchronization as `SYNC` for initial replication, partial resynchronization as recovery, see below
-       - diskless support —  the master can send RDB file to replicas without persisting it on the disk, `repl-diskless-sync` in configurations
-     - command propagate — propagate commands which are with side effects after `SYNC` asynchronously, use `WAIT` for synchronous replication
-     - heartbeat — slaves will ping master with `REPLCONF ACK replication_offset` periodically, defaults to 1 Hz, `lag` in the output of `INFO replication`
-       - anti-entropy — reconcile if the `replication_offset` received by master does not match its own, e.g. some command propagate message lost
-       - related configurations — `min-slaves-to-write`, `min-slaves-max-lag`
-   - partial resynchronization implementation — by replication offset in master and slave, replication backlog in master as buffer, and replication ID
-     - replication offset — master adds n to its offset upon n bytes propagated, slave adds n to its offset upon n bytes received
-     - replication backlog — fixed size FIFO queue defaults to 1 MB, saving propagated commands; if the command the replication offset in slave points to no longer in the queue, resort to full resynchronization
-     - replication ID — random string, marks a given history of the data set, generated every time an instance restarts from scratch as a master, or a replica is promoted to master (but also keep one old ID for partial sync since 4.0); slave will persist the ID after handshake, send back to master upon recovering, full resynchronization if no replication ID match
-       - change replication ID after promotion — in case the old master is still working as a master because of some network partition
-   - data safety
-     - persistence and restart — it is strongly advised to have persistence turned on in the master and in the replicas, if not possible instances should be configured to avoid restarting automatically after a reboot, to avoid replication of the initial empty state after restart
-     - expire — replicas wait for `DEL` from the master for expiration, and the replica uses its logical clock to report that a key does not exist only for read operations that don't violate the consistency of the data set
+   - tree structure — replicas can also be connected to other replicas, forming sub-replicas; all the sub-replicas will receive exactly the same replication stream from the master since 4.0
    - read write
      - readonly replica — `replica-read-only` in configurations
-     - write master only when — `min-replicas-to-write` and `min-replicas-max-lag` in configurations
+     - write master only when — `min-replicas-to-write` and `min-replicas-max-lag` in configurations: if there are at least N replicas, with a lag less than M seconds, then the write will be accepted
    - related commands
-     - `SLAVEOF`, `REPLICAOF`
+     - `SLAVEOF`, `REPLICAOF`, `slaveof` in configurations
      - `SYNC`, `PSYNC` — internal command
      - `REPLCONF`
      - `INFO replication`
      - `WAIT` — blocks the current client until all the previous write commands are successfully transferred and acknowledged by at least the specified number of replicas
      - `ROLE`
 
-1. sentinel — monitor the cluster and pick new leader
-   - configurations — `sentinel`, see [redis.io](https://redis.io/topics/sentinel#configuring-sentinel)
+1. synchronization — initial sync and then command propagate
+   - initial sync
+     - `SYNC` — used in old version, slave send `SYNC` to master, the master starts recording commands while `BGSAVE` for RDB file and send it to the slave, the slave load the file, and the master send commands since `BGSAVE` to the slave
+     - `PSYNC` — full resynchronization as `SYNC` for initial replication, partial resynchronization as recovery, see below
+     - diskless support — the master can send RDB file to replicas without persisting it on the disk, `repl-diskless-sync` in configurations
+   - command propagate — after initial sync, asynchronously propagate commands which are with side effects, use `WAIT` for synchronous replication
+   - heartbeat — update replication offset, and last heartbeat time for lag
+     - heartbeat detail — slaves will ping master with `REPLCONF ACK replication_offset` periodically, defaults to 1 Hz, `lag` in the output of `INFO replication`
+     - anti-entropy — reconcile if the `replication_offset` received by master does not match its own, e.g. some command propagate message lost
+   - data safety
+     - persistence and restart — it is strongly advised to have persistence turned on in the master and in the replicas, if not possible instances should be configured to avoid restarting automatically after a reboot, to avoid replication of the initial empty state after restart
+     - expire — replicas wait for `DEL` from the master for expiration, and the replica uses its logical clock to report that a key does not exist only for read operations that don't violate the consistency of the data set
+
+1. partial resynchronization implementation — by replication offset in master and slave, replication backlog in master as buffer, and replication ID
+   - replication offset — master adds n to its offset upon n bytes propagated, slave adds n to its offset upon n bytes received
+   - replication backlog — fixed size FIFO queue defaults to 1 MB, saving propagated commands; if the command the replication offset in slave points to no longer in the queue, resort to full resynchronization
+   - replication ID — random string, marks a given history of the data set, generated every time an instance restarts from scratch as a master, or a replica is promoted to master (but also keep one old ID for partial sync since 4.0); slave will persist the ID after handshake, send back to master upon recovering, full resynchronization if no replication ID match
+     - change replication ID after promotion — in case the old master is still working as a master because of some network partition
+
+### Sentinel
+
+1. sentinel — monitor masters and slaves, and pick new leader
    - state
      ```c
-     /* Main state. */
      struct sentinelState {
          // ...
          uint64_t current_epoch;         /* Current epoch. */
@@ -922,133 +925,61 @@
      } sentinel;
      ```
      - `sentinelRedisInstance` — states of master, slave or another sentinel
-     - persistent state — sentinel state is persisted in the sentinel configuration file: every time a new configuration is received, or created (leader Sentinels), for a master, the configuration is persisted on disk together with the configuration epoch
-   - link — command link and subscribe link, first established to the master and then slaves
-     - channel — sentinels publish and subscribe via the channel `__sentinel__:hello`
-     - inter-sentinel communication — discovery each other sentinel by pub/sub (see below), then establish command links to each other
-     - sentinel as a Redis-compatible Pub/Sub server — for clients to get notified about sentinel events, see [redis.io](https://redis.io/topics/sentinel#pubsub-messages) for event list and message format
-   - heartbeat
-     - `INFO` master and slaves — sentinel will send `INFO` to master in 0.1 Hz, refreshing `run_id` and `slaves` accordingly, for newly added slaves, sentinel will create link to them and send heartbeats in the same manner, and extract `run_id`, `role`, `master_link_status`, `slave_priority`, `slave_repl_offset` etc. from `INFO`
-     - make master and slaves `PUBLISH` and piggyback — sentinel send `PUBLISH` to master and slave, defaults to 0.5 Hz
-       ```
-       PUBLISH __sentinel__:hello "<s_ip>,<s_port>,<s_runid>,<s_epoch>,<m_name>,<m_id>,<m_port>,<m_epoch>
-       ```
-       - `s_` for sentinel, `m_` for master
-       - loop: perception of other sentinels — sentinels can `PUBLISH` via command link and receive via their subscription, for piggybacked message, ignore if same ID as self in the message, update states according to the message if other sentinels
-       - configuration propagation — as the above `__sentinel__:hello` loop, but only accept configurations with larger Raft epoch (see leader election below)
-     - to master, slaves and other sentinels — sentinel `PING` other servers in 1 Hz, with possible response `+PONG`, `-LOADING`, `-MASTERDOWN`
-       - subjective down — if no valid response for `down-after-milliseconds` in sentinel configurations, `SRI_S_DOWN` will be ORed to flags; opinions may vary among sentinels
-       - objective down — after `SRI_S_DOWN` detected, the sentinel asks other sentinels, `SRI_O_DOWN` ORed if down for a quorum, `quorum` set in sentinel configurations and can vary among sentinels
-         ```
-         SENTINEL is-master-down-by-addr <ip> <port> <current_epoch> <run_id_or_star>
-         ```
-         response, where the last two only used for leader election
-         ```
-         1) <down_state>
-         2) <leader_runid>
-         3) <leader_epoch>
-         ```
-   - failover
-     - sentinel leader election (Raft) — after master server objective down, a sentinel will `SENTINEL is-master-down-by-addr` to other sentinels but with own `run_id`, the following runs like Raft
-     - promotion — after master failure, the leader sentinel selects a slave as the new master by sending `SLAVEOF no one`, then `INFO` in 1 Hz to see if `role` in response becomes `master`, and the `SLAVEOF` other slaves to set the new master, also `SLAVEOF` the old master once it come back
-       - selection for promotion — filter out down slaves, slaves with no response for `INFO` for 5s, slaves whose link with the old master broke for `down-after-milliseconds * 10`; then sort by `slave_priority`, `slave_repl_offset`, `run_id` and choose the best
-     - enforce configuration — even when no failover is in progress, sentinels will always try to set the current configuration on monitored instances with a delay, helping recovered instances to catch up
-       - delay — to reconfigure, the wrong configuration must be observed for some time, that is greater than the period used to broadcast new configurations
-   - eventual consistency — as configuration propagation, every partition will converge to the higher `configEpoch` configuration available (last-write-wins), use `min-replicas-to-write` and `min-replicas-max-lag` to bound the divergence
-     - proxies using CRDT — [Roshi](https://github.com/soundcloud/roshi), [Dynomite](https://github.com/Netflix/dynomite)
-   - TILT mode — time drift protection: in TILT mode the Sentinel will continue to monitor everything, but stop acting at all
-     - trigger — the Sentinel timer interrupt is normally called 10 times per second, if the call time difference is negative or over 2s, TILT mode entered for 30s or prolonged if already entered
+   - configurations — `sentinel`, see [redis.io](https://redis.io/topics/sentinel#configuring-sentinel)
    - commands, see [redis.io](https://redis.io/topics/sentinel#sentinel-commands)
      - related command
        - `SENTINEL` — monitor and configuration provider
        - `ROLE`
      - available commands — `PING`, pub/sub etc., also see `sentinelcmds[]` in `sentinel.c`
 
+1. links — command link and subscribe link, first established to the master and then slaves
+   - channel — sentinels publish and subscribe via the channel `__sentinel__:hello`
+   - inter-sentinel communication — discovery each other sentinel by pub/sub (see below), then establish command links to each other
+   - sentinel as a Redis-compatible Pub/Sub server — for clients to get notified about sentinel events, see [redis.io](https://redis.io/topics/sentinel#pubsub-messages) for event list and message format
+
+1. sentinel recovery, downgrade and anti-entropy
+   - persistent state — sentinel state is persisted in the sentinel configuration file: every time a new configuration is received, or created (leader Sentinels), for a master, the configuration is persisted on disk together with the configuration epoch
+   - TILT mode: time drift protection — in TILT mode the Sentinel will continue to monitor everything, but stop acting at all
+     - trigger — the Sentinel timer interrupt is normally called 10 times per second, if the call time difference is negative or over 2s, TILT mode entered for 30s or prolonged if already entered
+   - anti-entropy — periodically, see below
+     - eventual consistency — as configuration propagation, every partition will converge to the higher `configEpoch` configuration available (last-write-wins), use `min-replicas-to-write` and `min-replicas-max-lag` to bound the divergence
+       - proxies using CRDT — [Roshi](https://github.com/soundcloud/roshi), [Dynomite](https://github.com/Netflix/dynomite)
+
+1. heartbeat
+   - refresh `INFO`: `INFO` master and slaves — sentinel will send `INFO` to master in 0.1 Hz, refreshing `run_id` and `slaves` accordingly, for newly added slaves, sentinel will create link to them and thereafter send heartbeats in the same manner, and extract `run_id`, `role`, `master_link_status`, `slave_priority`, `slave_repl_offset` etc. from `INFO`
+   - reconcile and discover other sentinels: make master and slaves `PUBLISH` and piggyback — sentinel send `PUBLISH` to master and slave, defaults to 0.5 Hz
+     ```
+     PUBLISH __sentinel__:hello "<s_ip>,<s_port>,<s_runid>,<s_epoch>,<m_name>,<m_id>,<m_port>,<m_epoch>
+     ```
+     - `s_` for sentinel, `m_` for master
+     - loop: perception of other sentinels — sentinels can `PUBLISH` via command link and receive via their subscription, for piggybacked message, ignore if same ID as self in the message, update states according to the message if other sentinels
+     - configuration propagation — as the above `__sentinel__:hello` loop, but only accept configurations with larger Raft epoch (see anti-entropy above)
+   - failure detection: to master, slaves and other sentinels — sentinel `PING` other servers in 1 Hz, with possible response `+PONG`, `-LOADING`, `-MASTERDOWN`
+     - subjective down — if no valid response for `down-after-milliseconds` in sentinel configurations, `SRI_S_DOWN` will be ORed to flags; opinions may vary among sentinels
+     - objective down — after `SRI_S_DOWN` detected, the sentinel asks other sentinels, `SRI_O_DOWN` ORed if down for a quorum, `quorum` set in sentinel configurations and can vary among sentinels
+       ```
+       SENTINEL is-master-down-by-addr <ip> <port> <current_epoch> <run_id_or_star>
+       ```
+       response, where the last two only used for leader election
+       ```
+       1) <down_state>
+       2) <leader_runid>
+       3) <leader_epoch>
+       ```
+
+1. failover when objective down
+   - sentinel leader election (Raft) — after master server objective down, a sentinel will `SENTINEL is-master-down-by-addr` to other sentinels but with own `run_id`, the following runs like Raft
+   - promotion — after master failure, the leader sentinel selects a slave as the new master by sending `SLAVEOF no one`, then `INFO` in 1 Hz to see if `role` in response becomes `master`, and the `SLAVEOF` other slaves to set the new master, also `SLAVEOF` the old master once it come back
+     - selection for promotion — filter out down slaves, slaves with no response for `INFO` for 5s, slaves whose link with the old master broke for `down-after-milliseconds * 10`; then sort by `slave_priority`, `slave_repl_offset`, `run_id` and choose the best
+   - enforce configuration — even when no failover is in progress, sentinels will always try to set the current configuration on monitored instances with a delay, helping recovered instances to catch up
+     - delay — to reconfigure, the wrong configuration must be observed for some time, that is greater than the period used to broadcast new configurations
+
+### Redis Cluster
+
 1. cluster — database sharding
    - enable cluster — `cluster-enabled` in configurations, other cluster configurations are similarly `cluster–` prefixed, a node can only `SELECT` 0, cluster bus port is always command port plus 1000
-   - node
-     - node attributes (`clusterState`) — own persistent ID, and information about other nodes such as ID, epoch, slots
-     - complete graph link — all the cluster nodes are connected using a TCP bus and a binary protocol, called Redis Cluster Bus; but use Gossip to avoid exchanging too many messages between nodes during normal conditions
    - add node to cluster — three way handshake after `CLUSTER MEET` from the client: `MEET`, `PONG`, `PING`; then disseminate to other nodes via Gossip (heartbeats) to let them handshake the new node
-   <!-- - structures in `cluster.h` — `clusterNode`, `clusterLink`, `clusterState` -->
-   - slots — `1 << 14` = 16384 slots, suggested max size of nodes is in the order of ~ 1000 nodes
-     - delegate slots to a node — `CLUSTER ADDSLOTS`
-     - broadcast `slots` — a node will broadcast its `slots` to other nodes, which is kept in `clusterState.slots` and `clusterNode.slots` in `clusterState->nodes`
-       ```c
-       typedef struct clusterState {
-           clusterNode *myself;  /* This node */
-           // ...
-           dict *nodes;          /* Hash table of name -> clusterNode structures */
-           dict *nodes_black_list; /* Nodes we don't re-add for a few seconds. */
-           clusterNode *migrating_slots_to[CLUSTER_SLOTS];
-           clusterNode *importing_slots_from[CLUSTER_SLOTS];
-           clusterNode *slots[CLUSTER_SLOTS];
-           uint64_t slots_keys_count[CLUSTER_SLOTS];
-           rax *slots_to_keys;
-           // ...
-       } clusterState;
-       ```
-       ```c
-       typedef struct clusterNode {
-           // ...
-           unsigned char slots[CLUSTER_SLOTS/8]; /* slots handled by this node */
-           int numslots;   /* Number of slots handled by this node */
-           // ...
-       } clusterNode;
-       ```
-     - hash function — `CRC16(key) & 0x3fff`, command `CLUSTER KEYSLOT`
-       - `0x3fff` — bitmap for a node will be of size 2 KB, which saves bandwidth compared to 65536 slots, and 16384 slots are enough for clusters under 1000 nodes
-     - `slots_to_keys` — slot to key mapping as radix trees, support for commands like `CLUSTER GETKEYSINSLOT`
-     - multiple key operations — supported as long as all the keys involved all belong to the same hash slot, use hash tags to ensure
-     - hash tags — only hash the non-empty substring between the first `{}` in a key if possible, e.g., `this{foo}key` and `another{foo}key` are guaranteed to be in the same hash slot
-   - sharding and re-sharding
-     - redirect — execute if the right slot, otherwise redirect the client to the node the slot belongs to by a `-MOVED` error; eventually clients obtain an up-to-date representation of the cluster and directly contact the right nodes, by memorizing received `-MOVED` or issuing `CLUSTER NODE` or `CLUSTER SLOTS` upon every `-MOVED`
-     - re-sharding — adjust slot distribution and migrate slots
-     - migrate slots — executed online by cluster management utility `redis-trib`, one slot by one slot
-       1. send `CLUSTER SETSLOT <slot> IMPORTING <source_id>` to target node, setting its `clusterState.importing_slots_from[slot]` to source node
-       1. send `CLUSTER SETSLOT <slot> MIGRATING <target_id>` to source node, setting its `clusterState.migrating_slots_to[slot]` to target node
-       1. send `CLUSTER GETKEYSINSLOT` to source node, for keys responded, send `MIGRATE` to source node; repeat until all keys migrated
-       1. send `CLUSTER SETSLOT <slot> NODE <target_id>` to any node to disseminate the information to the cluster
-     - command executing when migrating
-       - `-ASK` error — if the key does not exist on the source node, send `-ASK` error to redirect the client to the target node, and client send `ASKING` to the redirected node before resending command
-       - `ASKING` — turn on `REDIS_ASKING` in `client.flags` for next command; a node will refrain from send `-MOVED` error and try to execute the command even if the slot is not delegated to the node if `REDIS_ASKING` on the client and `clusterState.importing_slots_from[slot]` is not `NULL`
-       - `-TRYAGAIN` error — if keys split between the source and destination nodes for multiple key operations, clients can try again later or report the error
-   - replication and failover — use replication for each node and select a slave as the new master if the original master is down
      - set slave — `CLUSTER REPLICATE`, set `clusterState.myself.slaveof` and turn off `CLUSTER_NODE_MASTER` and turn on `CLUSTER_NODE_SLAVE` in `clusterState.myself.flags`, then information disseminated via heartbeats, and other nodes update information in `clusterNode->slaves`, `clusterNode.numslaves`
-     - cluster fail — `CLUSTER_FAIL` even if only one slot not handled
-     - `CLUSTER_NODE_PFAIL` and `CLUSTER_NODE_FAIL`
-       - heartbeat and `CLUSTER_NODE_PFAIL` (probable fail) — nodes (masters and slaves) in cluster will periodically `PING` each other, if no `PONG` for more than `cluster-node-timeout`, mark `CLUSTER_NODE_PFAIL` for target node in `clusterState.nodes` and disseminate via heartbeat message; upon receiving such message, a node will append it to `clusterNode->fail_reports` in `clusterState.nodes`
-         - reconnect — nodes also try to reconnect the TCP link to avoid marking `CLUSTER_NODE_PFAIL` only because a TCP link problem
-         - self protection — nodes refuse writes if cannot reach the majority for more than `cluster-node-timeout`
-       - `CLUSTER_NODE_FAIL` — if a majority of master nodes mark one master node `CLUSTER_NODE_PFAIL` or `CLUSTER_NODE_FAIL` within `cluster-node-timeout` multiplied by a factor (2 currently), then that node will be marked `CLUSTER_NODE_FAIL`, and a `FAIL` message will be broadcasted
-     - failover — when the master fails, slaves can start elections and if a slave is elected, it is elected to `SLAVEOF no one`, cancel slots in the original master and add those slots for itself, then broadcast a `PONG` to inform the cluster
-       - prerequisites for a slave to start an election — when the master with positive `numslots` failed from the POV of the slave, and the time since slave's last interaction with the master is less than an amount configurable by `cluster-replica-validity-factor`, a slave node can start election after a jittered delay computed with slave rank
-       - slave rank — slaves exchange messages when the master is failing in order to establish a (best effort) rank, ranked by how updated the replication offset is. In this way the most updated slaves try to get elected before others.
-       - new master election — Raft like, other master nodes can vote but behave [a little differently](https://redis.io/topics/cluster-spec#masters-reply-to-slave-vote-request) compared to Raft, `currentEpoch` as term, upon winning a new unique and incremental `configEpoch` higher than any other master is created and new configuration is broadcasted to overwrite configurations with old ones
-       - clear `CLUSTER_NODE_FAIL` — if failed nodes reachable again for some time, clear directly if slave or no slot, otherwise rejoin the cluster
-       - rejoin — rejoining master nodes will be slave of the node that stole its last hash slot, rejoining slave nodes will be slave of the node that stole the last hash slot of its former master
-     - eventual consistency — due to asynchronous replication and partition like the one documented in sentinel above
-   - replica migration — guarantees that eventually every master will be backed by at least one slave
-     - process — if singled master detected, the slave among the masters with the maximum number of attached slaves, that is not in FAIL state and has the smallest node ID, will migrate to the singled master
-     - can try to migrate only when enough slaves left — `cluster-migration-barrier` in configurations
-   - messages
-     - type
-       - `MEET`
-       - `PING` — in 1 Hz, every node selects 5 other random nodes to `PING`; besides, every node `PING` nodes whose last `PONG` till now is over half of `cluster-node-timeout`
-       - `PONG` — response to `MEET` and `PING`, or voluntary broadcast
-       - `FAIL` — broadcasted ASAP
-       - `UPDATE` — if a receiver of a heartbeat packet finds the sender information is stale, it will `UPDATE` the stale node
-       - `PUBLISH` — clients can subscribe to every node, and can also publish to every other node; the current implementation will simply broadcast each published message to all other nodes, but at some point this will be optimized either using Bloom filters or other algorithms
-     - heartbeat — `PING`, `PONG`, also contain a Gossip section
-     - header common to all messages — `clusterMsg` in `cluster.h`, includes the sender's ID, `currentEpoch`, `configEpoch`, flags, slot bitmap, port, master ID, cluster state POV (`CLUSTER_OK` or `CLUSTER_FAIL`)
-     - Gossip section — for `MEET`, `PING` and `PONG` messages, offering a view of some random nodes from the cluster, including ID,<!-- last `PING` and `PONG` timestamps,--> address and flags, where the number of random nodes is proportional to the cluster size
-       ```c
-       /* PING, MEET and PONG */
-       struct {
-           /* Array of N clusterMsgDataGossip structures */
-           clusterMsgDataGossip gossip[1];
-       } ping;
-       ```
    - related commands
      - `MIGRATE` — `DUMP` + `DEL` in the source, `RESTORE` in the sink: atomically transfer a key from a source Redis instance to a destination Redis instance
      - `READONLY` — enables read queries for a connection to a Redis Cluster replica node, indicate the client is fine with possible stale data and will not write
@@ -1062,6 +993,91 @@
        - `CLUSTER GETKEYSINSLOT`
        - `CLUSTER REPLICATE`
        - `CLUSTER FAILOVER`
+
+1. nodes
+   ```c
+   typedef struct clusterState {
+       clusterNode *myself;  /* This node */
+       // ...
+       dict *nodes;          /* Hash table of name -> clusterNode structures */
+       dict *nodes_black_list; /* Nodes we don't re-add for a few seconds. */
+       clusterNode *migrating_slots_to[CLUSTER_SLOTS];
+       clusterNode *importing_slots_from[CLUSTER_SLOTS];
+       clusterNode *slots[CLUSTER_SLOTS];
+       uint64_t slots_keys_count[CLUSTER_SLOTS];
+       rax *slots_to_keys;
+       // ...
+   } clusterState;
+   ```
+   ```c
+   typedef struct clusterNode {
+       // ...
+       unsigned char slots[CLUSTER_SLOTS/8]; /* slots handled by this node */
+       int numslots;   /* Number of slots handled by this node */
+       // ...
+   } clusterNode;
+   ```
+   <!-- - structures in `cluster.h` — `clusterNode`, `clusterLink`, `clusterState` -->
+   - node attributes (`clusterState`) — own persistent ID, and information about other nodes such as ID, epoch, slots
+   - complete graph link — all the cluster nodes are connected using a TCP bus and a binary protocol, called Redis Cluster Bus; but use Gossip to avoid exchanging too many messages between nodes during normal conditions
+   - slots — `1 << 14` = 16384 slots, suggested max size of nodes is in the order of ~ 1000 nodes
+     - delegate slots to a node — `CLUSTER ADDSLOTS`
+     - broadcast `slots` — a node will broadcast its `slots` to other nodes, which is kept in `clusterState.slots` and `clusterNode.slots` in `clusterState->nodes`
+     - hash function — `CRC16(key) & 0x3fff`, command `CLUSTER KEYSLOT`
+       - `0x3fff` — bitmap for a node will be of size 2 KB, which saves bandwidth compared to 65536 slots, and 16384 slots are enough for clusters under 1000 nodes
+     - `slots_to_keys` — slot to key mapping as radix trees, support for commands like `CLUSTER GETKEYSINSLOT`
+     - multiple key operations — supported as long as all the keys involved all belong to the same hash slot, use hash tags to ensure
+     - hash tags — only hash the non-empty substring between the first `{}` in a key if possible, e.g., `this{foo}key` and `another{foo}key` are guaranteed to be in the same hash slot
+
+1. redirect and re-sharding
+   - redirect — execute if the right slot, otherwise redirect the client to the node the slot belongs to by a `-MOVED` error; eventually clients obtain an up-to-date representation of the cluster and directly contact the right nodes, by memorizing received `-MOVED` or issuing `CLUSTER NODE` or `CLUSTER SLOTS` upon every `-MOVED`
+   - re-sharding — adjust slot distribution and migrate slots
+   - migrate slots — executed online by cluster management utility `redis-trib`, one slot by one slot
+     1. send `CLUSTER SETSLOT <slot> IMPORTING <source_id>` to target node, setting its `clusterState.importing_slots_from[slot]` to source node
+     1. send `CLUSTER SETSLOT <slot> MIGRATING <target_id>` to source node, setting its `clusterState.migrating_slots_to[slot]` to target node
+     1. send `CLUSTER GETKEYSINSLOT` to source node, for keys responded, send `MIGRATE` to source node; repeat until all keys migrated
+     1. send `CLUSTER SETSLOT <slot> NODE <target_id>` to any node to disseminate the information to the cluster
+   - command executing when migrating
+     - `-ASK` error — if the key does not exist on the source node, send `-ASK` error to redirect the client to the target node, and client send `ASKING` to the redirected node before resending command
+     - `ASKING` — turn on `REDIS_ASKING` in `client.flags` for next command; a node will refrain from send `-MOVED` error and try to execute the command even if the slot is not delegated to the node if `REDIS_ASKING` on the client and `clusterState.importing_slots_from[slot]` is not `NULL`
+     - `-TRYAGAIN` error — if keys split between the source and destination nodes for multiple key operations, clients can try again later or report the error
+
+1. messages
+   - message types
+     - `MEET`
+     - `PING` — in 1 Hz, every node selects 5 other random nodes to `PING`; besides, every node `PING` nodes whose last `PONG` till now is over half of `cluster-node-timeout`
+     - `PONG` — response to `MEET` and `PING`, or voluntary broadcast
+     - `FAIL` — broadcasted ASAP
+     - `UPDATE` — if a receiver of a heartbeat packet finds the sender information is stale, it will `UPDATE` the stale node
+     - `PUBLISH` — clients can subscribe to every node, and can also publish to every other node; the current implementation will simply broadcast each published message to all other nodes, but at some point this will be optimized either using Bloom filters or other algorithms
+   - message header common to all messages — `clusterMsg` in `cluster.h`, includes the sender's ID, `currentEpoch`, `configEpoch`, flags, slot bitmap, port, master ID, cluster state POV (`CLUSTER_OK` or `CLUSTER_FAIL`)
+   - heartbeat — `PING`, `PONG`, also contain a Gossip section
+   - Gossip section — for `MEET`, `PING` and `PONG` messages, offering a view of some random nodes from the cluster, including ID,<!-- last `PING` and `PONG` timestamps,--> address and flags, where the number of random nodes is proportional to the cluster size
+     ```c
+     /* PING, MEET and PONG */
+     struct {
+         /* Array of N clusterMsgDataGossip structures */
+         clusterMsgDataGossip gossip[1];
+     } ping;
+     ```
+
+1. failover — use replication for each node and select a slave as the new master if the original master is down
+   - eventual consistency — due to asynchronous replication and partition like the one documented in sentinel above
+   - failure states
+     - cluster fail — `CLUSTER_FAIL` even if only one slot not handled
+     - heartbeat and `CLUSTER_NODE_PFAIL` (probable fail) — nodes (masters and slaves) in cluster will periodically `PING` each other, if no `PONG` for more than `cluster-node-timeout`, mark `CLUSTER_NODE_PFAIL` for target node in `clusterState.nodes` and disseminate via heartbeat message; upon receiving such message, a node will append it to `clusterNode->fail_reports` in `clusterState.nodes`
+       - reconnect — nodes also try to reconnect the TCP link to avoid marking `CLUSTER_NODE_PFAIL` only because a TCP link problem
+       - self protection — nodes refuse writes if cannot reach the majority for more than `cluster-node-timeout`
+     - `CLUSTER_NODE_FAIL` — if a majority of master nodes mark one master node `CLUSTER_NODE_PFAIL` or `CLUSTER_NODE_FAIL` within `cluster-node-timeout` multiplied by a factor (2 currently), then that node will be marked `CLUSTER_NODE_FAIL`, and a `FAIL` message will be broadcasted
+   - failover — when the master fails, slaves can start elections and if a slave is elected, it is elected to `SLAVEOF no one`, cancel slots in the original master and add those slots for itself, then broadcast a `PONG` to inform the cluster
+     - prerequisites for a slave to start an election — when the master with positive `numslots` failed from the POV of the slave, and the time since slave's last interaction with the master is less than an amount configurable by `cluster-replica-validity-factor`, a slave node can start election after a jittered delay computed with slave rank
+     - slave rank — slaves exchange messages when the master is failing in order to establish a (best effort) rank, ranked by how updated the replication offset is. In this way the most updated slaves try to get elected before others.
+     - new master election — Raft like, other master nodes can vote but behave [a little differently](https://redis.io/topics/cluster-spec#masters-reply-to-slave-vote-request) compared to Raft, `currentEpoch` as term, upon winning a new unique and incremental `configEpoch` higher than any other master is created and new configuration is broadcasted to overwrite configurations with old ones
+   - replica migration — guarantees that eventually every master will be backed by at least one slave
+     - process — if singled master detected, the slave among the masters with the maximum number of attached slaves, that is not in FAIL state and has the smallest node ID, will migrate to the singled master
+     - can try to migrate only when enough slaves left — `cluster-migration-barrier` in configurations
+   - recover and clear `CLUSTER_NODE_FAIL` — if failed nodes reachable again for some time, clear directly if slave or no slot, otherwise rejoin the cluster
+     - rejoin — rejoining master nodes will be slave of the node that stole its last hash slot, rejoining slave nodes will be slave of the node that stole the last hash slot of its former master
 
 1. proxy based
    - [twitter/twemproxy: A fast, light-weight proxy for memcached and redis](https://github.com/twitter/twemproxy)
