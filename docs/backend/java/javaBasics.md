@@ -1279,26 +1279,44 @@
      - inner interfaces are implicitly `static`
      - inner classes inside interfaces are automatically `static public`
 
-## Reflection
+## Metaprogramming
+
+### Reflection
 
 1. runtime type identification — used by VM for method resolution
    - `Object::getClass`
    - `Class::forName`
-   - `T.class` if `T` is any Java type (or `void.class`)
+   - `T.class` if `T` is any Java type (or `void.class`, `int.class` etc.)
    - type capturing — use `Class<T>` as a parameter for type match, when called with a class object, the type parameter `T` will be matched
 
-1. `interface java.lang.reflect.Type` — super interface for all types, implemented or extended by `Class<T>`, `GenericArrayType`, `ParameterizedType`, `TypeVariable<D>`, `WildcardType`
-   - `default String getTypeName()`
-   - generics reflection methods — in implementing classes or sub-Interfaces
-
-1. `interface java.lang.reflect.AnnotatedElement` — represents an annotated element with methods getting annotations
-
-1. `java.lang.reflect.GenericDeclaration` — entities that declare type variables
-   ```java
-   public interface GenericDeclaration
-   extends AnnotatedElement
-   ```
-   - `TypeVariable<?>[] getTypeParameters()`
+1. `java.lang.reflect` package (see [Proxy](#Proxy) for proxies)
+   - outside `java.lang.reflect` — `java.lang.Class`, `java.lang.Package` (implements `AnnotatedElement`)
+   - interface hierarchy
+     - `Member` — a field or a method or a constructor
+     - `AnnotatedElement` — represents an annotated element with methods getting annotations
+       - `AnnotatedType`
+         - `AnnotatedArrayType`
+         - `AnnotatedParameterizedType`
+         - `AnnotatedTypeVariable`
+         - `AnnotatedWildcardType`
+       - `GenericDeclaration`
+       - `TypeVariable<D>` (also extends `java.lang.reflect.Type)`
+     - `Type`
+       - `GenericArrayType`
+       - `ParameterizedType`
+       - `TypeVariable<D>` (also extends `java.lang.reflect.AnnotatedElement`)
+       - `WildcardType`
+   - class hierarchy
+     - implements `AnnotatedElement`
+       - `Parameter`
+       - `AccessibleObject` — allows suppression of access checks if the necessary `java.lang.reflect.ReflectPermission` is available
+         - implements `Member`
+           - `Executable` (implements `GenericDeclaration`)
+             - `Constructor<T>` — `T newInstance(Object... initargs)`
+             - `Method` — `Object invoke(Object obj, Object... args)`
+           - `Field` — get and set methods
+     - `Array` — get, set methods and `newInstance`
+     - `Modifier` — as a bit vector
 
 1. `Class`
    ```java
@@ -1339,83 +1357,6 @@
    - get resources, delegating to class loader
      - `URL getResource(String name)`
      - `InputStream getResourceAsStream(String name)`
-
-1. `java.lang.reflect.Field`  
-   `java.lang.reflect.Method`  
-   `java.lang.reflect.Constructor`
-   - `Class<?> getDeclaringClass()`
-   - `Class<?>[] getExceptionTypes()` (`Constructor` and `Method`)
-   - `Class<?>[] getParameterTypes()` (`Constructor` and `Method`)
-   - `int getModifiers()`
-   - `String getName()`
-   - inherited from `java.lang.reflect.AccessibleObject`
-     - `boolean isAccessible()`
-     - `void setAccessible()`
-
-1. `java.lang.reflect.Constructor`
-   ```java
-   public final class Constructor<T>
-   extends Executable
-   ```
-   - `T newInstance(Object... initargs)`
-
-1. `java.lang.reflect.Method`
-   ```java
-   public final class Method
-   extends Executable
-   ```
-   - `Object invoke(Object obj, Object... args)`
-     - For a static method, the first parameter is ignored, use `null`
-     - slow and as last resort
-   - `Class<?> getReturnType()`
-   - Generics
-     - `TypeVariable[] getTypeParameters()`
-     - `Type getGenericReturnType()`
-     - `Type[] getGenericParameterTypes()`
-
-1. `java.lang.reflect.Field`
-   ```java
-   public final class Field
-   extends AccessibleObject
-   implements Member
-   ```
-   - `Object get(Object obj)` — `obj.field`  
-     `type getType(Object obj)` — for primitive
-   - `void set(Object obj, Object value)`  
-     `type setType(Object obj, type value)`
-
-1. `java.lang.reflect.Modifier`
-   - `static String toString(int mod)`
-   - `static boolean isAbstract(int mod)`
-   - `static boolean isFinal(int mod)`
-   - `static boolean isInterface(int mod)`
-   - `static boolean isNative(int mod)`
-   - `static boolean isPrivate(int mod)`
-   - `static boolean isProtected(int mod)`
-   - `static boolean isPublic(int mod)`
-   - `static boolean isStatic(int mod)`
-   - `static boolean isStrict(int mod)`
-   - `static boolean isSynchronized(int mod)`
-   - `static boolean isVolatile(int mod)`
-
-1. `java.lang.reflect.Array`
-   ```java
-   public final class Array extends Object
-   ```
-   - `static Object newInstance(Class<?> componentType, int length)`  
-     `static Object newInstance(Class<?> componentType, int... dimensions)`
-     - in coordination with `ClassObj.getComponentType()`
-     - `type[]` can be converted to an `Object`, but not `Object[]`
-   - `static int getLength(Object array)`
-   - `static void set(Object array)`
-   - `static Object get(Object array)`
-   - `static type getType(Object array)`
-
-1. `Package`
-   ```java
-   public class Package extends Object
-   implements AnnotatedElement
-   ```
 
 ### Proxy
 
@@ -1477,6 +1418,10 @@
       }
    }
    ```
+
+### Method Handle
+
+1. `java.lang.invoke` package
 
 ## Error Handling
 
