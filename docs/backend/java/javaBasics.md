@@ -9,9 +9,16 @@
    - [JSR-000221 JDBC API 4.3 Maintenance Release 3](https://download.oracle.com/otndocs/jcp/jdbc-4_3-mrel3-spec/index.html)
    - [download](https://stackoverflow.com/questions/6986993/how-to-download-javadoc-to-read-offline/36497090)
      - [Java Development Kit 8 Documentation](https://www.oracle.com/technetwork/java/javase/documentation/jdk8-doc-downloads-2133158.html)
+   - [specification](http://docs.oracle.com/javase/specs)
+     - The Java® Language Specification
+     - The Java® Virtual Machine Specification
 
-1. [specification](http://docs.oracle.com/javase/specs)
-   - [The Java® Virtual Machine Specification](https://docs.oracle.com/javase/specs/jvms/se8/html/)
+1. source
+   - [AdoptOpenJDK/openjdk-jdk8u: JDK8u mirror from mercurial](https://github.com/AdoptOpenJDK/openjdk-jdk8u)
+   - [OpenJDK Mercurial Repositories](http://hg.openjdk.java.net/)
+     - [jdk8u](http://hg.openjdk.java.net/jdk8u)
+       - [jdk8u/jdk8u/hotspot: log](http://hg.openjdk.java.net/jdk8u/jdk8u/hotspot/)
+   - [openjdk/jdk: JDK main-line development](https://github.com/openjdk/jdk)
 
 ## CLI
 
@@ -748,7 +755,7 @@
      - `StringJoiner setEmptyValue(CharSequence emptyValue)`
      - `String toString()`
 
-#### Object Wrappers
+#### Wrappers
 
 1. wrappers
    - `Integer` , `Long` , `Float` , `Double` , `Short` , `Byte` , `Character` , and `Boolean`
@@ -860,7 +867,7 @@
    implements Serializable, Comparable<Boolean>
    ```
 
-## Inheritance
+## Inheritance and Object
 
 1. inheritance
    - `extends`

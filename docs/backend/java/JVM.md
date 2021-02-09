@@ -64,6 +64,111 @@
      - CLI — `-XX:ReservedCodeCacheSize=128m`, `-XX:InitialCodeCacheSize`
    - `sun.nio.ch.DirectBuffer` — use native methods to manipulate non-heap memory, read and write directly to a memory address, used in NIO
 
+1. an object at runtime
+   ```
+   Java object A          InstanceKlass       Java mirror
+   (instanceOopDesc)
+    [ _mark  ] 64b                            (java.lang.Class instance)
+    [ _klass ] 32b --->  [ ...          ] <-┐               
+    [ fields ]           [ _java_mirror ] --┼>  [ _mark   ]
+                         [ ...          ]   |   [ _klass  ]
+                                            |   [ fields  ]
+                                            └-- [ klass   ]
+                                                [ A.value ] (static field)
+   ```
+   - [OpenJDK: jol (Java Object Layout)](http://openjdk.java.net/projects/code-tools/jol/)
+     ```java
+     class A {
+       boolean b;
+       Object o1;
+     }
+     class B extends A {
+       int i;
+       long l;
+       Object o2;
+       float f;
+     }
+     class C extends B {
+       boolean b;
+     }
+     ```
+     ```shell
+     $ java -Xbootclasspath/a:. -jar ~/Downloads/jol-cli-0.5-full.jar internals C
+     # Running 64-bit HotSpot VM.
+     # Using compressed oop with 3-bit shift.
+     # Using compressed klass with 3-bit shift.
+     # Objects are 8 bytes aligned.
+     # Field sizes by type: 4, 1, 1, 2, 2, 4, 4, 8, 8 [bytes]
+     # Array element sizes: 4, 1, 1, 2, 2, 4, 4, 8, 8 [bytes]
+     
+     C object internals:
+      OFFSET  SIZE    TYPE DESCRIPTION                    VALUE
+           0     4         (object header)                09 00 00 00 (00001001 00000000 00000000 00000000) (9)
+           4     4         (object header)                00 00 00 00 (00000000 00000000 00000000 00000000) (0)
+           8     4         (object header)                be 3b 01 f8 (10111110 00111011 00000001 11111000) (-134136898)
+          12     1 boolean A.b                            false
+          13     3         (alignment/padding gap)        N/A
+          16     4  Object A.o1                           null
+          20     4     int B.i                            0
+          24     8    long B.l                            0
+          32     4   float B.f                            0.0
+          36     4  Object B.o2                           null
+          40     1 boolean C.b                            false
+          41     7         (loss due to the next object alignment)
+     Instance size: 48 bytes
+     Space losses: 3 bytes internal + 7 bytes external = 10 bytes total
+     ```
+   - [jdk/oop.hpp at master · openjdk/jdk](https://github.com/openjdk/jdk/blob/master/src/hotspot/share/oops/oop.hpp)
+     ```cpp
+     class oopDesc {
+       // ...
+      private:
+       volatile markWord _mark;
+       union _metadata {
+         Klass*      _klass;
+         narrowKlass _compressed_klass;
+       } _metadata;
+       // ...
+     }
+     ```
+     - [jdk/markWord.hpp at master · openjdk/jdk](https://github.com/openjdk/jdk/blob/master/src/hotspot/share/oops/markWord.hpp)
+       ```cpp
+       class markWord {
+        private:
+         uintptr_t _value;
+         // ...
+       }
+       ```
+     - [jdk/instanceKlass.hpp at master · openjdk/jdk](https://github.com/openjdk/jdk/blob/master/src/hotspot/share/oops/instanceKlass.hpp)
+       ```cpp
+       class InstanceKlass: public Klass {
+         // ...
+         // Method array.
+         Array<Method*>* _methods;
+         // ...
+         // Instance and static variable information, starts with 6-tuples of shorts
+         // [access, name index, sig index, initval index, low_offset, high_offset]
+         // for all fields, followed by the generic signature data at the end of
+         // the array. Only fields with generic signature attributes have the generic
+         // signature data set in the array. The fields array looks like following:
+         //
+         // f1: [access, name index, sig index, initial value index, low_offset, high_offset]
+         // f2: [access, name index, sig index, initial value index, low_offset, high_offset]
+         //      ...
+         // fn: [access, name index, sig index, initial value index, low_offset, high_offset]
+         //     [generic signature index]
+         //     [generic signature index]
+         //     ...
+         Array<u2>*      _fields;
+         // ...
+       }
+       ```
+     - [jdk/oop.inline.hpp at master · openjdk/jdk](https://github.com/openjdk/jdk/blob/master/src/hotspot/share/oops/oop.inline.hpp)
+       ```cpp
+       inline oop  oopDesc::obj_field(int offset) const                    { return HeapAccess<>::oop_load_at(as_oop(), offset);  }
+       inline jint oopDesc::int_field(int offset) const                    { return HeapAccess<>::load_at(as_oop(), offset);  }
+       ```
+
 ## GC
 
 1. GC
