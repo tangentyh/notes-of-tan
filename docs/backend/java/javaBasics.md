@@ -84,10 +84,10 @@
 
 1. `javadoc` — generates HTML documentation from your source files
    - information source
-     - Packages
-     - Public classes and interfaces
-     - Public and protected fields
-     - Public and protected constructors and methods
+     - packages
+     - public classes and interfaces
+     - public and protected fields
+     - public and protected constructors and methods
    - assets directory — `/doc-files` directory for assets
    - syntax
      - `/** ... */`
@@ -223,8 +223,12 @@
    - `collection` — an array or an object of a class that implements the `Iterable` interface
    - see [Collections](./javaUtils.md#Collections)
 
-1. vararg parameter — `...`
-   - if only an array passed, then that array is used, without nesting
+1. method
+   - vararg parameter — `...`
+     - if only an array passed, then that array is used, without nesting
+   - arity limit — JVM imposes on all methods and constructors of any kind an absolute limit of 255 stacked arguments
+     - `long` or `double` argument — counts (for purposes of arity limits) as two argument slots
+     - non-static methods, constructors, `MethodHandle::invoke` — argument slot overhead
 
 ### Package
 
@@ -627,7 +631,7 @@
 1. `String`
    ```java
    public final class String extends Object
-   implements Serializable, Comparable<String>, CharSequence
+   implements Serializable, Comparable<String>, CharSequence, Constable, ConstantDesc
    ```
    - length
      - `int length()`
@@ -791,7 +795,7 @@
    ```java
    public final class Integer
    extends Number
-   implements Comparable<Integer>
+   implements Comparable<Integer>, Constable, ConstantDesc
    ```
    - fields
      - `static int BYTES` — usually 4
@@ -1314,10 +1318,10 @@
        - `TypeVariable<D>` (also extends `java.lang.reflect.AnnotatedElement`)
        - `WildcardType`
    - class hierarchy
-     - implements `AnnotatedElement`
+     - `AnnotatedElement` interface
        - `Parameter`
-       - `AccessibleObject` — allows suppression of access checks if the necessary `java.lang.reflect.ReflectPermission` is available
-         - implements `Member`
+       - `AccessibleObject` — allows suppression of access checks if the necessary `java.lang.reflect.ReflectPermission` is available, access is checked every time a reflective method is invoked
+         - `Member` interface
            - `Executable` (implements `GenericDeclaration`)
              - `Constructor<T>` — `T newInstance(Object... initargs)`
              - `Method` — `Object invoke(Object obj, Object... args)`
@@ -1328,7 +1332,7 @@
 1. `Class`
    ```java
    public final class Class<T> extends Object
-   implements Serializable, GenericDeclaration, Type, AnnotatedElement
+   implements Serializable, GenericDeclaration, Type, AnnotatedElement, TypeDescriptor.OfField<Class<?>>, Constable
    ```
    - reflection
      - `String getName()`
@@ -1428,7 +1432,90 @@
 
 ### Method Handle
 
-1. `java.lang.invoke` package
+1. `java.lang.invoke` package special treatment by JVM
+   - `MethodHandle`, `VarHandle` — contain signature polymorphic methods which can be linked regardless of their type descriptor. The unusual part is that the symbolic type descriptor is derived from the actual argument and return types, not from the method declaration
+   - `MethodHandle`, `MethodType` — `interface java.lang.constant.Constable`, immediate constant support by JVM bytecode format. A new type of constant pool entry, `CONSTANT_MethodHandle`, refers directly to an associated `CONSTANT_Methodref`, `CONSTANT_InterfaceMethodref`, or `CONSTANT_Fieldref` constant pool entry
+   - `invokedynamic` instruction — makes use of bootstrap `MethodHandle` constants to dynamically resolve `CallSite` objects for custom method invocation behavior
+   - `ldc` instruction — makes use of bootstrap `MethodHandle` constants to dynamically resolve custom constant values
+
+1. `invokedynamic`
+   - `invokedynamic` instruction — dynamically-computed call sites
+     - initial unlinked state — no target method for the instruction to invoke; it is linked just before first execution
+     - link `invokedynamic` — by calling a bootstrap method which is given the static information content of the call, and which must produce a `CallSite` that gives the behavior of the invocation
+   - `invokedynamic` and `CONSTANT_Dynamic` — a `CONSTANT_Dynamic` is to a `invokedynamic` like a `CONSTANT_Fieldref` is to a `CONSTANT_Methodref`
+   - `CONSTANT_Dynamic` tagged constants in constant pool — dynamically-computed constants
+     - initial unresolved state — no value; resolved just before the first use
+     - value resolution — by calling a bootstrap method which is given the static information content of the constant, and which must produce a value of the constant's statically declared type
+
+1. bootstrap methods
+   - bootstrap method taxonomy
+     - bootstrap methods of `invokedynamic`
+       - as constant pool reference — each `invokedynamic` instruction statically specifies its own bootstrap method as a constant pool reference
+       - like `invokestatic` and other invoke instructions — specifies the invocation's name and method type descriptor
+     - bootstrap methods of `CONSTANT_Dynamic` constants
+       - as constant pool reference — each `CONSTANT_Dynamic` constant statically specifies its own bootstrap method as a constant pool reference
+       - like `getstatic` and the other field reference instructions — specifies the constant's name and field type descriptor
+   - bootstrap method execution — link `invokedynamic` or resolve `CONSTANT_Dynamic`
+     1. resolve the bootstrap method related constants in constant pool
+        - the bootstrap method, a `CONSTANT_MethodHandle`
+        - the `Class` or `MethodType` derived from type component of the `CONSTANT_NameAndType` descriptor
+        - static arguments, if any (note that static arguments can themselves be dynamically-computed constants)
+     1. invoke the bootstrap method with following args, as if by `MethodHandle::invoke`
+   - bootstrap method args
+     - `MethodHandles.Lookup` - a lookup object on the caller class in which dynamically-computed constant or call site occurs
+     - `CONSTANT_NameAndType` — a `String` the name, and a `MethodType` or `Class` the resolved type descriptor
+     - `Class`, if it is a dynamic constant — the resolved type descriptor of the constant
+     - the additional resolved static arguments, if any
+       - no type limitation — dynamically-computed constants can be provided as static arguments to bootstrap methods
+     - return — `CallSite` or the `Class` mentioned above
+   - thread safety — must take the usual precautions against race conditions; if several threads simultaneously execute a bootstrap method for a single dynamically-computed call site or constant, the JVM must choose one bootstrap method result and install it visibly to all threads
+
+1. `java.lang.invoke.MethodHandle` — a typed, immutable, directly executable reference to an underlying method, constructor, field, or similar low-level operation, with optional transformations of arguments or return values
+   ```java
+   public abstract class MethodHandle implements Constable
+   ```
+   - functional equivalent of a particular bytecode behavior — see lookup methods in `MethodHandles.Lookup`
+   - type
+     - `MethodType type()` — method handles are dynamically and strongly typed according to their parameter and return types
+     - type conversion
+       - `MethodHandle asType​(MethodType newType)` — produces an adapter method handle
+       - `MethodHandle bindTo​(Object x)` — curry
+       - other `as-` methods and more
+   - invoke
+     - `Object invoke​(Object... args) throws Throwable` — `invokeExact` if `type` match, otherwise may `asType` or may perform adaptations directly on the caller's arguments
+     - `Object invokeExact​(Object... args) throws Throwable` — requiring an exact `type` match
+     - more
+     - reflection of above methods — `UnsupportedOperationException` if invoked via `Method::invoke`, via JNI, or indirectly via `Lookup.unreflect`
+   - signature polymorphism
+     - compile — the Java compiler emits an `invokevirtual` instruction with the given symbolic type descriptor against the named method as usual, but the symbolic type descriptor is derived from the actual argument and return types, not from the method declaration
+     - at runtime — the JVM will successfully link any such call, regardless of its symbolic type descriptor. After type matching, a call to `invokeExact` directly and immediately invoke the method handle's underlying method (or other behavior, as the case may be).
+   - invocation check
+     - symbolic type descriptor check — the caller's one is matched against the one assigned when the method handle is created, after `invokevirtual` is linked
+     - access check — performed when the method handle is created; if `ldc`, access checking is performed as part of linking; methods like `asType` are not access checked
+
+1. `java.lang.invoke.MethodHandles` — utility class
+   - lookup methods
+     - `MethodHandles.Lookup lookup()`
+     - `MethodHandles.Lookup publicLookup()`
+   - method handle combine and transform methods
+   - other method handle factory methods
+     - `MethodHandle identity​(Class<?> type)`
+   - `java.lang.invoke.MethodHandles.Lookup` — access restrictions enforced against look up class, which is the class where this `Lookup` is created
+     - `Class<?> lookupClass()`
+     - lookup factory methods — see javadoc, correspond to all major use cases for methods, constructors, and fields
+     - `unreflect` — reflection to method handle
+     - lookup factory methods to bytecode behavior — see javadoc
+     - cross module — tbd
+
+1. `java.lang.invoke.CallSite` — hold a variable `target` of type `MethodHandle`
+   - `invokedynamic`
+     - call delegation — an invokedynamic instruction linked to a `CallSite` delegates all calls to the site's current target
+     - one to none or many — a `CallSite` may be associated with several `invokedynamic` instructions or none
+   - `MethodHandle dynamicInvoker()` — produces a method handle equivalent to an `invokedynamic` instruction which has been linked to this call site (equivalent to `getTarget` and then `invokeExact`)
+   - `void setTarget​(MethodHandle newTarget)` — the type of the new target must be equal to the type of the old target
+     - `java.lang.invoke.ConstantCallSite` — `UnsupportedOperationException` for `setTarget`
+     - `java.lang.invoke.MutableCallSite`
+     - `java.lang.invoke.VolatileCallSite` — `MutableCallSite` but the `target` is `volatile`
 
 ## Error Handling
 
