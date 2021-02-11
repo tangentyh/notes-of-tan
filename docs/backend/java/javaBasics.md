@@ -1517,6 +1517,54 @@
      - `java.lang.invoke.MutableCallSite`
      - `java.lang.invoke.VolatileCallSite` — `MutableCallSite` but the `target` is `volatile`
 
+#### VarHandle
+
+1. `java.lang.invoke.VarHandle` — a dynamically strongly typed reference to a variable, or to a parametrically-defined family of variables, including static fields, non-static fields, array elements, or components of an off-heap data structure
+   - properties
+     - immutable and stateless
+     - similar to `MethodHandle` — dynamic argument check and signature polymorphic, access check at creation
+   - `Class<?> varType()` — the type of every variable referenced
+     - `float` and `double` — compared bitwise, which differs from `==` and `equals`
+   - `List<Class<?>> coordinateTypes()` — the types of coordinate expressions that jointly locate a variable referenced by this `VarHandle`
+   - access mode method properties
+     - `enum VarHandle.AccessMode` — each member corresponds to an access method in `VarHandle`
+     - signature polymorphic — see before
+     - actual arguments — the coordinate types of a `VarHandle` instance, and the types for values of importance to the access mode, see example
+     - dynamic argument check — `MethodType accessModeType​(VarHandle.AccessMode accessMode)`
+     - invocation behaves as if `MethodHandle::invoke`, see javadoc for examples
+   - access mode methods
+     - atomicity and consistency properties, override declarations
+       - plain — bitwise atomic only for references and for primitive values of at most 32 bits
+       - opaque — bitwise atomic and coherently ordered with respect to accesses to the same variable
+       - acquire, release — opaque, and acquire mode reads and their subsequent accesses are ordered after matching release mode writes and their previous accesses
+       - volatile — acquire, release, and ordered with respect to each other
+     - taxonomy
+       - read — `get`, `getVolatile`, `getAcquire`, `getOpaque`
+       - write — `set`, `setVolatile`, `setRelease`, `setOpaque`
+       - atomic update — `compareAndSet`, `weakCompareAndSetPlain`, `weakCompareAndSet`, `weakCompareAndSetAcquire`, `weakCompareAndSetRelease`, `compareAndExchangeAcquire`, `compareAndExchange`, `compareAndExchangeRelease`, `getAndSet`, `getAndSetAcquire`, `getAndSetRelease`
+       - numeric atomic update — `getAndAdd`, `getAndAddAcquire`, `getAndAddRelease`
+       - bitwise atomic update — `getAndBitwiseOr`, `getAndBitwiseOrAcquire`, `getAndBitwiseOrRelease`, `getAndBitwiseAnd`, `getAndBitwiseAndAcquire`, `getAndBitwiseAndRelease`, `getAndBitwiseXor`, `getAndBitwiseXorAcquire`, `getAndBitwiseXorRelease`
+   - static memory fence methods — `fullFence()`, `acquireFence()`, `releaseFence()`, `loadLoadFence()` and `storeStoreFence()`
+   - creation — access modes supported according to javadoc
+     - in `MethodHandles.Lookup`
+       - `findVarHandle​(Class<?> recv, String name, Class<?> type)` — returns a `VarHandle` of a non-static `recv.name` of `type`; one coordinate type, `recv`
+       - `findStaticVarHandle​(Class<?> decl, String name, Class<?> type)` — returns a `VarHandle` of a static `recv.name` of `type`; no coordinate types
+       - `unreflectVarHandle​(Field f)`
+     - in `MethodHandles`
+       - `arrayElementVarHandle​(Class<?> arrayClass)` — the list of coordinate types is `(arrayClass, int)`
+       - `byteArrayViewVarHandle​`, `byteBufferViewVarHandle`
+   - to `MethodHandle`
+     - `MethodHandle toMethodHandle​(VarHandle.AccessMode accessMode)`
+     - `MethodHandles::varHandleInvoker`
+     - `MethodHandles::varHandleExactInvoker`
+     - `MethodHandles.lookup().findVirtual(VarHandle.class, ...)`
+   - example
+     ```java
+     String[] sa = ...
+     VarHandle avh = MethodHandles.arrayElementVarHandle(String[].class);
+     boolean r = avh.compareAndSet(sa, 10, "expected", "new");
+     ```
+
 ## Error Handling
 
 ### Debugging
