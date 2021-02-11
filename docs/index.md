@@ -95,20 +95,25 @@ Blogs
 For reference:
 
 - official docs
-- [OI Wiki](https://oi-wiki.org/)
+- algorithms
+  - [OI Wiki](https://oi-wiki.org/)
   - [Main Page - Competitive Programming Algorithms](https://cp-algorithms.com/)
-- books in [GitHub Arctic Code Vault: Tech Tree](https://github.com/github/archive-program/blob/master/TheTechTree.md)
-- [AobingJava/JavaFamily: 【Java面试+Java学习指南】 一份涵盖大部分Java程序员所需要掌握的核心知识。](https://github.com/AobingJava/JavaFamily)
-- [doocs/advanced-java: 😮 互联网 Java 工程师进阶知识完全扫盲：涵盖高并发、分布式、高可用、微服务、海量数据处理等领域知识，后端同学必看，前端同学也可学习](https://github.com/doocs/advanced-java)
-- [CyC2018/CS-Notes: 技术面试必备基础知识、Leetcode、计算机操作系统、计算机网络、系统设计、Java、Python、C++](https://github.com/CyC2018/CS-Notes)
-- [wx-chevalier (王下邀月熊)](https://github.com/wx-chevalier), for various topics
-- [kamranahmedse/developer-roadmap: Roadmap to becoming a web developer in 2020](https://github.com/kamranahmedse/developer-roadmap)
-- [dypsilon/frontend-dev-bookmarks: Manually curated collection of resources for frontend web developers.](https://github.com/dypsilon/frontend-dev-bookmarks), unmaintained now
-- [free-programming-books/free-programming-books.md at master · EbookFoundation/free-programming-books](https://github.com/EbookFoundation/free-programming-books/blob/master/free-programming-books.md)
-  - [中文版](https://github.com/EbookFoundation/free-programming-books/blob/master/free-programming-books-zh.md)
-- [donnemartin/system-design-primer: Learn how to design large-scale systems. Prep for the system design interview. Includes Anki flashcards.](https://github.com/donnemartin/system-design-primer)
-- [iluwatar/java-design-patterns: Design patterns implemented in Java](https://github.com/iluwatar/java-design-patterns)
-- [mtdvio/every-programmer-should-know: A collection of (mostly) technical things every software developer should know about](https://github.com/mtdvio/every-programmer-should-know)
-- [papers-we-love/papers-we-love: Papers from the computer science community to read and discuss.](https://github.com/papers-we-love/papers-we-love)
-- [lei-hsia/grokking-system-design: Grokking system design](https://github.com/lei-hsia/grokking-system-design)
+- books
+  - [GitHub Arctic Code Vault: Tech Tree](https://github.com/github/archive-program/blob/master/TheTechTree.md)
+  - [free-programming-books/free-programming-books.md at master · EbookFoundation/free-programming-books](https://github.com/EbookFoundation/free-programming-books/blob/master/free-programming-books.md)
+  - [papers-we-love/papers-we-love: Papers from the computer science community to read and discuss.](https://github.com/papers-we-love/papers-we-love)
+  - [dypsilon/frontend-dev-bookmarks: Manually curated collection of resources for frontend web developers.](https://github.com/dypsilon/frontend-dev-bookmarks), unmaintained now
+- summaries
+  - **[mtdvio/every-programmer-should-know: A collection of (mostly) technical things every software developer should know about](https://github.com/mtdvio/every-programmer-should-know)**
+  - [iluwatar/java-design-patterns: Design patterns implemented in Java](https://github.com/iluwatar/java-design-patterns)
+  - [AobingJava/JavaFamily: 【Java面试+Java学习指南】 一份涵盖大部分Java程序员所需要掌握的核心知识。](https://github.com/AobingJava/JavaFamily)
+  - [doocs/advanced-java: 😮 互联网 Java 工程师进阶知识完全扫盲：涵盖高并发、分布式、高可用、微服务、海量数据处理等领域知识，后端同学必看，前端同学也可学习](https://github.com/doocs/advanced-java)
+  - [CyC2018/CS-Notes: 技术面试必备基础知识、Leetcode、计算机操作系统、计算机网络、系统设计、Java、Python、C++](https://github.com/CyC2018/CS-Notes)
+  - [wx-chevalier (王下邀月熊)](https://github.com/wx-chevalier), for various topics
+  - system design
+    - [donnemartin/system-design-primer: Learn how to design large-scale systems. Prep for the system design interview. Includes Anki flashcards.](https://github.com/donnemartin/system-design-primer)
+    - [lei-hsia/grokking-system-design: Grokking system design](https://github.com/lei-hsia/grokking-system-design)
+- road maps
+  - [kamranahmedse/developer-roadmap: Roadmap to becoming a web developer in 2020](https://github.com/kamranahmedse/developer-roadmap)
+    - [中文版](https://github.com/EbookFoundation/free-programming-books/blob/master/free-programming-books-zh.md)
 - more...
