@@ -609,3 +609,5 @@ Gossip — the reach of a broadcast and the reliability of anti-entropy
      - 原因 — 随着缓存节点数目的增加，键值分布到更多的节点上，导致客户端一次批量操作会涉及多次网络操作，这意味着批量操作的耗时会随着节点数目的增加而不断增大。此外，网络连接数变多，对节点的性能也有一定影响
      - 方案
        - 减少网络通信次数 — 优化数据分布，优化 batch，使用长连接 / 连接池，NIO 等
+
+1. further optimization — 客户端缓存，batch，压缩，热点分桶，限流，异步化，微服务拆分，针对大流量 key 单独部署，etc.

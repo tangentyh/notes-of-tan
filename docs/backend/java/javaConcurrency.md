@@ -519,6 +519,8 @@
 1. [Disruptor](https://lmax-exchange.github.io/disruptor/) — ring buffer, lock free, tbd
    - [GitHub](https://github.com/LMAX-Exchange/disruptor)
 
+1. [akka](https://akka.io/) — implementation of the Actor Model on the JVM
+
 ### Concurrent Collections
 
 1. concurrent collections
