@@ -1065,30 +1065,6 @@
    - no block variable shadowing — illegal to declare a parameter or a local variable in the lambda that has the same name as a local variable
    - block scope — the same scope as a nested block
    - same `this` — `this` is the same as what outside the lambda
-   - number of instantiations — only one instantiation inside loops when no closure
-     ```java
-     static IntUnaryOperator oper = null;
-     static int opCounter = 0;
-     static int lambdaTest(IntUnaryOperator op) {
-         if (op != oper) ++opCounter;
-         oper = op;
-         return op.applyAsInt(3);
-     }
-     static void test() {
-         for (int i = 0; i < 100; ++i) {
-             lambdaTest(j -> j * j);
-         }
-         System.out.println(opCounter); // 1
-     }
-     static void test2(int num) {
-         for (int i = 0; i < 100; ++i) {
-             lambdaTest(j -> j * j * num);
-         }
-         System.out.println(opCounter); // 100
-     }
-     ```
-
-1. lambda at runtime — tbd
 
 1. lambda expression syntax
    - inline
@@ -1135,6 +1111,8 @@
      Object[] people = stream.toArray();
      Person[] people = stream.toArray(Person[]::new);
      ```
+
+1. lambda at runtime — see [Lambda at Runtime](#Lambda-at-Runtime)
 
 #### Common Functional Interfaces
 
@@ -1463,7 +1441,7 @@
      1. invoke the bootstrap method with following args, as if by `MethodHandle::invoke`
    - bootstrap method args
      - `MethodHandles.Lookup` - a lookup object on the caller class in which dynamically-computed constant or call site occurs
-     - `CONSTANT_NameAndType` — a `String` the name, and a `MethodType` or `Class` the resolved type descriptor
+     - `CONSTANT_NameAndType` — a `String` the name, and a `MethodType` or `Class`, the resolved type descriptor
      - `Class`, if it is a dynamic constant — the resolved type descriptor of the constant
      - the additional resolved static arguments, if any
        - no type limitation — dynamically-computed constants can be provided as static arguments to bootstrap methods
@@ -1526,6 +1504,9 @@
    - `Class<?> varType()` — the type of every variable referenced
      - `float` and `double` — compared bitwise, which differs from `==` and `equals`
    - `List<Class<?>> coordinateTypes()` — the types of coordinate expressions that jointly locate a variable referenced by this `VarHandle`
+   - static memory fence methods — `fullFence()`, `acquireFence()`, `releaseFence()`, `loadLoadFence()` and `storeStoreFence()`
+
+1. `VarHandle` access methods
    - access mode method properties
      - `enum VarHandle.AccessMode` — each member corresponds to an access method in `VarHandle`
      - signature polymorphic — see before
@@ -1544,7 +1525,8 @@
        - atomic update — `compareAndSet`, `weakCompareAndSetPlain`, `weakCompareAndSet`, `weakCompareAndSetAcquire`, `weakCompareAndSetRelease`, `compareAndExchangeAcquire`, `compareAndExchange`, `compareAndExchangeRelease`, `getAndSet`, `getAndSetAcquire`, `getAndSetRelease`
        - numeric atomic update — `getAndAdd`, `getAndAddAcquire`, `getAndAddRelease`
        - bitwise atomic update — `getAndBitwiseOr`, `getAndBitwiseOrAcquire`, `getAndBitwiseOrRelease`, `getAndBitwiseAnd`, `getAndBitwiseAndAcquire`, `getAndBitwiseAndRelease`, `getAndBitwiseXor`, `getAndBitwiseXorAcquire`, `getAndBitwiseXorRelease`
-   - static memory fence methods — `fullFence()`, `acquireFence()`, `releaseFence()`, `loadLoadFence()` and `storeStoreFence()`
+
+1. `VarHandle` creation and conversion
    - creation — access modes supported according to javadoc
      - in `MethodHandles.Lookup`
        - `findVarHandle​(Class<?> recv, String name, Class<?> type)` — returns a `VarHandle` of a non-static `recv.name` of `type`; one coordinate type, `recv`
@@ -1558,12 +1540,134 @@
      - `MethodHandles::varHandleInvoker`
      - `MethodHandles::varHandleExactInvoker`
      - `MethodHandles.lookup().findVirtual(VarHandle.class, ...)`
-   - example
+
+1. `VarHandle` example
+   ```java
+   String[] sa = ...
+   VarHandle avh = MethodHandles.arrayElementVarHandle(String[].class);
+   boolean r = avh.compareAndSet(sa, 10, "expected", "new");
+   ```
+
+#### Lambda at Runtime
+
+1. lambda at runtime reference — from [Translation of Lambda Expressions](http://cr.openjdk.java.net/~briangoetz/lambda/lambda-translation.html)
+
+1. desugar
+   - desugar to method — when the compiler encounters a lambda expression, it first lowers (desugars) the lambda body into a method whose argument list and return type match that of the lambda expression, possibly with some additional arguments (for values captured from the lexical scope, if any)
+   - desugar strategy — private, static over instance, in the innermost class in which the lambda expression appears, signatures should match the body signature of the lambda, extra arguments should be prepended on the front of the argument list for captured values, and would not desugar method references at all
+   - instance-capturing lambda — instance-capturing lambdas are desugared to private instance method; when capturing an instance-capturing lambda, the receiver (`this`) is specified as the first dynamic argument, meshes well with available implementation techniques (bound method handles)
+   - example: desugar of a method — see below
+   - example: deadlock caused by desugar — during class loading, other fork join threads will call desugared static method, which requires the class loaded
      ```java
-     String[] sa = ...
-     VarHandle avh = MethodHandles.arrayElementVarHandle(String[].class);
-     boolean r = avh.compareAndSet(sa, 10, "expected", "new");
+     public class Main {
+         public static void main(String[] args) {
+             System.out.println(Main.name);
+         }
+         public static String name;
+         static {
+             name = getName();
+         }
+         private static String getName() {
+             List<String> names = new ArrayList<>();
+             for (int i = 0; i < 10; i++) {
+                 names.add("a" + i);
+             }
+             names = names.parallelStream().filter(s -> s.equalsIgnoreCase("a9")).collect(Collectors.toList());
+             return names.get(0);
+         }
+     }
      ```
+
+1. `invokedynamic`
+   - `invokedynamic` call site, built by lambda factory — at the point at which the lambda expression would be captured, it generates an `invokedynamic` call site, which implements lambda capture as the dynamic argument list and, when invoked, returns an instance of the functional interface to which the lambda is being converted
+     - see [Method Handle](#Method-Handle)
+     - `java.lang.invoke.LambdaMetafactory::metafactory`, `LambdaMetafactory::altMetafactory`
+       ```java
+       static CallSite metafactory​(
+           // automatically stacked by the VM at CallSite linkage
+           MethodHandles.Lookup caller, String invokedName, MethodType invokedType,
+           MethodType samMethodType, // single abstract (functional interface) method
+           MethodHandle implMethod,  // the implementation method, may have extra arguments and may subtype or box
+           // enforced dynamically at invocation time; samMethodType, or may be a specialization of it
+           MethodType instantiatedMethodType)
+       ```
+       - `invokedType` — expected signature of the `CallSite`, the parameter types represent the types of capture variables; the return type is the functional interface; see number of instantiations below for example
+     - method references — treated the same way as lambda expressions, except that most method references do not need to be desugared into a new method; we can simply load a constant method handle for the referenced method and pass that to the metafactory
+   - number of instantiations — only one instantiation (`MethodHandles::constant`) if no capture
+     ```java
+     // called by bootstrap methods in LambdaMetafactory to build CallSite
+     CallSite buildCallSite() throws LambdaConversionException {
+         final Class<?> innerClass = spinInnerClass();
+         if (invokedType.parameterCount() == 0 && !disableEagerInitialization) {
+             // ...
+             try {
+                 Object inst = ctrs[0].newInstance();
+                 return new ConstantCallSite(MethodHandles.constant(samBase, inst));
+             }
+             // ...
+         } else {
+             try {
+                 if (!disableEagerInitialization) {
+                     UNSAFE.ensureClassInitialized(innerClass);
+                 }
+                 return new ConstantCallSite(
+                         MethodHandles.Lookup.IMPL_LOOKUP
+                              .findStatic(innerClass, NAME_FACTORY, invokedType));
+             }
+             // ...
+         }
+     }
+     ```
+     ```java
+     // number of instantiations test example
+     static IntUnaryOperator oper = null;
+     static int opCounter = 0;
+     static int lambdaTest(IntUnaryOperator op) {
+         if (op != oper) ++opCounter;
+         oper = op;
+         return op.applyAsInt(3);
+     }
+     static void test() {
+         opCounter = 0;
+         for (int i = 0; i < 100; ++i) {
+             lambdaTest(j -> j * j);
+         }
+         System.out.println(opCounter); // 1
+     }
+     static void test2(int num) {
+         opCounter = 0;
+         for (int i = 0; i < 100; ++i) {
+             lambdaTest(j -> j * j * num);
+         }
+         System.out.println(opCounter); // 100
+     }
+     ```
+
+1. example: desugar of a lambda with capturing and its `invokedynamic` call site
+   ```java
+   class B {
+       public void foo() {
+           List<Person> list = ...
+           final int bottom = ..., top = ...;
+           list.removeIf( p -> (p.size >= bottom && p.size <= top) );
+       }
+   }
+   ```
+   ```java
+   class B {
+       public void foo() {
+           List<Person> list = ...
+           final int bottom = ..., top = ...;
+           // invokedynamic: INDY((bootstrap, static args...)(dynamic args...))
+           // method handle: MH([refKind] class-name.method-name)
+           list.removeIf(indy((MH(metaFactory), MH(invokeVirtual Predicate.apply),
+                               MH(invokeStatic B.lambda$1))( bottom, top ))));
+       }
+       private static boolean lambda$1(int bottom, int top, Person p) {
+           return p.size >= bottom && p.size <= top;
+       }
+   }
+   ```
 
 ## Error Handling
 
