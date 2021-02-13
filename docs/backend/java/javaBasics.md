@@ -110,9 +110,12 @@
    - more
 
 1. `javap` — print java class information
-   - `-v` — verbose
-   - `-c` — Disassemble the code
-     - can be used to inspect if atomic
+   ```
+   javap -v -p ClassName
+   ```
+   - `-v` — verbose, some options combined
+     - `-c` — disassemble the code, can be used to inspect if atomic
+   - `-p` `-private` — show all classes and members
 
 1. `jshell` — REPL from Java 9
 
@@ -2088,38 +2091,62 @@ see [Logging](./javaMisc.md#Logging).
    }
    ```
 
-### Method Handle
+### Handles
 
 1. `java.lang.invoke` package special treatment by JVM
-   - `MethodHandle`, `VarHandle` — contain signature polymorphic methods which can be linked regardless of their type descriptor. The unusual part is that the symbolic type descriptor is derived from the actual argument and return types, not from the method declaration
-   - `MethodHandle`, `MethodType` — `interface java.lang.constant.Constable`, immediate constant support by JVM bytecode format. A new type of constant pool entry, `CONSTANT_MethodHandle`, refers directly to an associated `CONSTANT_Methodref`, `CONSTANT_InterfaceMethodref`, or `CONSTANT_Fieldref` constant pool entry
+   - signature polymorphism — for some methods in `MethodHandle`, `VarHandle`
+   - `Constable` — for `MethodHandle`, `VarHandle` and `MethodType`
    - `invokedynamic` instruction — makes use of bootstrap `MethodHandle` constants to dynamically resolve `CallSite` objects for custom method invocation behavior
    - `ldc` instruction — makes use of bootstrap `MethodHandle` constants to dynamically resolve custom constant values
 
-1. `invokedynamic`
-   - `invokedynamic` instruction — dynamically-computed call sites
+1. signature polymorphism
+   - signature polymorphism at compile and runtime
+     - compile — the Java compiler emits an `invokevirtual` instruction with the given symbolic type descriptor against the named method as usual, but the symbolic type descriptor is derived from the actual argument and return types, not from the method declaration
+     - at runtime — the JVM will successfully link any such call, regardless of its symbolic type descriptor. After type matching, a call to `invokeExact` directly and immediately invoke the method handle's underlying method (or other behavior, as the case may be).
+   - invocation check
+     - symbolic type descriptor check — the caller's one is matched against the one assigned when the method handle is created, after `invokevirtual` is linked
+     - access check — performed when the method handle is created; if `ldc`, access checking is performed as part of linking; methods like `asType` are not access checked
+
+1. `interface java.lang.constant.Constable` — immediate constant support by JVM bytecode format
+   - `CONSTANT_MethodHandle` — refers directly to an associated `CONSTANT_Methodref`, `CONSTANT_InterfaceMethodref`, or `CONSTANT_Fieldref` constant pool entry
+     ```
+     #29 = MethodHandle       6:#44          // REF_invokeStatic Solution.lambda$foo$0:(IILjava/lang/Integer;)Z
+     #44 = Methodref          #7.#54         // Solution.lambda$foo$0:(IILjava/lang/Integer;)Z
+     ```
+   - `CONSTANT_MethodType` — type is `(Integer) -> boolean` in the below example
+     ```
+     #30 = MethodType         #45            //  (Ljava/lang/Integer;)Z
+     #45 = Utf8               (Ljava/lang/Integer;)Z
+     ```
+   - `VarHandle` — tbd
+
+1. `invokedynamic` — dynamically-computed call sites
+   ```
+   22: invokedynamic #4,  0              // InvokeDynamic #0:test:(II)Ljava/util/function/Predicate;
+   #4 = InvokeDynamic      #0:#31         // #0:test:(II)Ljava/util/function/Predicate;
+   #31 = NameAndType        #46:#47        // test:(II)Ljava/util/function/Predicate;
+   ```
+   - `#0`: bootstrap method — each `invokedynamic` instruction statically specifies its own bootstrap method as a constant pool reference
+   - `#31 = NameAndType` — like `invokestatic` and other invoke instructions, specifies the invocation's name and method type descriptor
+   - linkage
      - initial unlinked state — no target method for the instruction to invoke; it is linked just before first execution
-     - link `invokedynamic` — by calling a bootstrap method which is given the static information content of the call, and which must produce a `CallSite` that gives the behavior of the invocation
-   - `invokedynamic` and `CONSTANT_Dynamic` — a `CONSTANT_Dynamic` is to a `invokedynamic` like a `CONSTANT_Fieldref` is to a `CONSTANT_Methodref`
-   - `CONSTANT_Dynamic` tagged constants in constant pool — dynamically-computed constants
-     - initial unresolved state — no value; resolved just before the first use
-     - value resolution — by calling a bootstrap method which is given the static information content of the constant, and which must produce a value of the constant's statically declared type
+     - link `invokedynamic` to a `CallSite` — by calling a bootstrap method which is given the static information content of the call, and which must produce a `CallSite`
+
+1. `CONSTANT_Dynamic` tagged constants in constant pool — dynamically-computed constants
+   - `CONSTANT_Dynamic` contents — like `InvokeDynamic`
+     - bootstrap method
+     - `NameAndType` — like `getstatic` and the other field reference instructions, specifies the constant's name and field type descriptor
+   - linkage — similar to `invokedynamic`, resolve to a value of declared type
+   - `InvokeDynamic` and `CONSTANT_Dynamic` — a `CONSTANT_Dynamic` is to a `InvokeDynamic` like a `CONSTANT_Fieldref` is to a `CONSTANT_Methodref`
 
 1. bootstrap methods
-   - bootstrap method taxonomy
-     - bootstrap methods of `invokedynamic`
-       - as constant pool reference — each `invokedynamic` instruction statically specifies its own bootstrap method as a constant pool reference
-       - like `invokestatic` and other invoke instructions — specifies the invocation's name and method type descriptor
-     - bootstrap methods of `CONSTANT_Dynamic` constants
-       - as constant pool reference — each `CONSTANT_Dynamic` constant statically specifies its own bootstrap method as a constant pool reference
-       - like `getstatic` and the other field reference instructions — specifies the constant's name and field type descriptor
    - bootstrap method execution — link `invokedynamic` or resolve `CONSTANT_Dynamic`
      1. resolve the bootstrap method related constants in constant pool
         - the bootstrap method, a `CONSTANT_MethodHandle`
         - the `Class` or `MethodType` derived from type component of the `CONSTANT_NameAndType` descriptor
         - static arguments, if any (note that static arguments can themselves be dynamically-computed constants)
      1. invoke the bootstrap method with following args, as if by `MethodHandle::invoke`
-   - bootstrap method args
+   - bootstrap method args — see [Lambda at Runtime](#Lambda-at-Runtime) for example
      - `MethodHandles.Lookup` - a lookup object on the caller class in which dynamically-computed constant or call site occurs
      - `CONSTANT_NameAndType` — a `String` the name, and a `MethodType` or `Class`, the resolved type descriptor
      - `Class`, if it is a dynamic constant — the resolved type descriptor of the constant
@@ -2127,6 +2154,8 @@ see [Logging](./javaMisc.md#Logging).
        - no type limitation — dynamically-computed constants can be provided as static arguments to bootstrap methods
      - return — `CallSite` or the `Class` mentioned above
    - thread safety — must take the usual precautions against race conditions; if several threads simultaneously execute a bootstrap method for a single dynamically-computed call site or constant, the JVM must choose one bootstrap method result and install it visibly to all threads
+
+#### Method Handle
 
 1. `java.lang.invoke.MethodHandle` — a typed, immutable, directly executable reference to an underlying method, constructor, field, or similar low-level operation, with optional transformations of arguments or return values
    ```java
@@ -2144,12 +2173,7 @@ see [Logging](./javaMisc.md#Logging).
      - `Object invokeExact​(Object... args) throws Throwable` — requiring an exact `type` match
      - more
      - reflection of above methods — `UnsupportedOperationException` if invoked via `Method::invoke`, via JNI, or indirectly via `Lookup.unreflect`
-   - signature polymorphism
-     - compile — the Java compiler emits an `invokevirtual` instruction with the given symbolic type descriptor against the named method as usual, but the symbolic type descriptor is derived from the actual argument and return types, not from the method declaration
-     - at runtime — the JVM will successfully link any such call, regardless of its symbolic type descriptor. After type matching, a call to `invokeExact` directly and immediately invoke the method handle's underlying method (or other behavior, as the case may be).
-   - invocation check
-     - symbolic type descriptor check — the caller's one is matched against the one assigned when the method handle is created, after `invokevirtual` is linked
-     - access check — performed when the method handle is created; if `ldc`, access checking is performed as part of linking; methods like `asType` are not access checked
+     - signature polymorphic — see before
 
 1. `java.lang.invoke.MethodHandles` — utility class
    - lookup methods
@@ -2260,7 +2284,7 @@ see [Logging](./javaMisc.md#Logging).
 
 1. `invokedynamic`
    - `invokedynamic` call site, built by lambda factory — at the point at which the lambda expression would be captured, it generates an `invokedynamic` call site, which implements lambda capture as the dynamic argument list and, when invoked, returns an instance of the functional interface to which the lambda is being converted
-     - see [Method Handle](#Method-Handle)
+     - see [Handles](#Handles) for `invokedynamic`
      - `java.lang.invoke.LambdaMetafactory::metafactory`, `LambdaMetafactory::altMetafactory`
        ```java
        static CallSite metafactory​(
@@ -2273,6 +2297,7 @@ see [Logging](./javaMisc.md#Logging).
        ```
        - `invokedType` — expected signature of the `CallSite`, the parameter types represent the types of capture variables; the return type is the functional interface; see number of instantiations below for example
      - method references — treated the same way as lambda expressions, except that most method references do not need to be desugared into a new method; we can simply load a constant method handle for the referenced method and pass that to the metafactory
+   - example: `invokedynamic` in bytecode — see below
    - number of instantiations — only one instantiation (`MethodHandles::constant`) if no capture
      ```java
      // called by bootstrap methods in LambdaMetafactory to build CallSite
@@ -2290,6 +2315,8 @@ see [Logging](./javaMisc.md#Logging).
                  if (!disableEagerInitialization) {
                      UNSAFE.ensureClassInitialized(innerClass);
                  }
+                 /* this CallSite calls innerClass::get$Lambda with method type
+                    invokedType every time to get an instance */
                  return new ConstantCallSite(
                          MethodHandles.Lookup.IMPL_LOOKUP
                               .findStatic(innerClass, NAME_FACTORY, invokedType));
@@ -2327,24 +2354,40 @@ see [Logging](./javaMisc.md#Logging).
    ```java
    class B {
        public void foo() {
-           List<Person> list = ...
-           final int bottom = ..., top = ...;
-           list.removeIf( p -> (p.size >= bottom && p.size <= top) );
+           List<Integer> list = List.of(20, 30);
+           int bottom = 0, top = 103;
+           // final int bottom = 0, top = 103; // no capture if final
+           list.removeIf( p -> (p >= bottom && p <= top) );
        }
    }
    ```
    ```java
    class B {
        public void foo() {
-           List<Person> list = ...
-           final int bottom = ..., top = ...;
-           // invokedynamic: INDY((bootstrap, static args...)(dynamic args...))
-           // method handle: MH([refKind] class-name.method-name)
-           list.removeIf(indy((MH(metaFactory), MH(invokeVirtual Predicate.apply),
-                               MH(invokeStatic B.lambda$1))( bottom, top ))));
+           List<Integer> list = List.of(20, 30);
+           int bottom = 0, top = 103;
+           list.removeIf(/* invokedynamic #4, 0 */);
        }
-       private static boolean lambda$1(int bottom, int top, Person p) {
-           return p.size >= bottom && p.size <= top;
+       private static boolean lambda$foo$0(int bottom, int top, Integer p) {
+           return p >= bottom && p <= top;
        }
    }
    ```
+   - constant pool contents and correspondences to the bootstrap method
+     ```
+     #4 = InvokeDynamic  #0:#31    // #0:test:(II)Ljava/util/function/Predicate;
+       #31 = NameAndType #46:#47   // test:(II)Ljava/util/function/Predicate;
+         #46 = Utf8      test                               /* invokedName */
+         #47 = Utf8      (II)Ljava/util/function/Predicate; /* invokedType */
+
+       0: #27 /* method handle of bootstrap method */
+       #27 REF_invokeStatic java/lang/invoke/LambdaMetafactory.metafactory:...
+         Method arguments:
+           #28 (Ljava/lang/Object;)Z                      /* samMethodType */
+           #29 REF_invokeStatic       B.lambda$foo$0:(IILjava/lang/Integer;)Z
+           #30 (Ljava/lang/Integer;)Z            /* instantiatedMethodType */
+     ```
+     - `#47` `(II)Ljava/util/function/Predicate;` — `MethodType` of `(int, int) -> Predicate`
+     - `#29` — argument `implMethod` in `LambdaMetafactory::metafactory`; a `MethodHandle` invoking `B::lambda$foo$0` and of `MethodType` of `(int, int, Integer) -> boolean`
+
+1. serialization — tbd
