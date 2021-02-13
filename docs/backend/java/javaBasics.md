@@ -1268,407 +1268,6 @@
      - inner interfaces are implicitly `static`
      - inner classes inside interfaces are automatically `static public`
 
-## Metaprogramming
-
-### Reflection
-
-1. runtime type identification — used by VM for method resolution
-   - `Object::getClass`
-   - `Class::forName`
-   - `T.class` if `T` is any Java type (or `void.class`, `int.class` etc.)
-   - type capturing — use `Class<T>` as a parameter for type match, when called with a class object, the type parameter `T` will be matched
-
-1. `java.lang.reflect` package (see [Proxy](#Proxy) for proxies)
-   - outside `java.lang.reflect` — `java.lang.Class`, `java.lang.Package` (implements `AnnotatedElement`)
-   - interface hierarchy
-     - `Member` — a field or a method or a constructor
-     - `AnnotatedElement` — represents an annotated element with methods getting annotations
-       - `AnnotatedType`
-         - `AnnotatedArrayType`
-         - `AnnotatedParameterizedType`
-         - `AnnotatedTypeVariable`
-         - `AnnotatedWildcardType`
-       - `GenericDeclaration`
-       - `TypeVariable<D>` (also extends `java.lang.reflect.Type)`
-     - `Type`
-       - `GenericArrayType`
-       - `ParameterizedType`
-       - `TypeVariable<D>` (also extends `java.lang.reflect.AnnotatedElement`)
-       - `WildcardType`
-   - class hierarchy
-     - `AnnotatedElement` interface
-       - `Parameter`
-       - `AccessibleObject` — allows suppression of access checks if the necessary `java.lang.reflect.ReflectPermission` is available, access is checked every time a reflective method is invoked
-         - `Member` interface
-           - `Executable` (implements `GenericDeclaration`)
-             - `Constructor<T>` — `T newInstance(Object... initargs)`
-             - `Method` — `Object invoke(Object obj, Object... args)`
-           - `Field` — get and set methods
-     - `Array` — get, set methods and `newInstance`
-     - `Modifier` — as a bit vector
-
-1. `Class`
-   ```java
-   public final class Class<T> extends Object
-   implements Serializable, GenericDeclaration, Type, AnnotatedElement, TypeDescriptor.OfField<Class<?>>, Constable
-   ```
-   - reflection
-     - `String getName()`
-     - `String getTypeName()`
-     - `String toString()`
-     - `Class<?> getComponentType()` — type of elements in an array, `null` if `this` is not an array
-     - `ClassLoader getClassLoader()`
-     - `T[] getEnumConstants()`
-     - `Class<? super T> getSuperclass()`
-   - instance creation
-     - `T newInstance()`
-     - `T cast(Object obj) throws ClassCastException`
-   - method reflection — from this class and superclasses, `declared-` only for this class
-     - `Field[] getFields()`
-     - `Field getField(String name)`
-     - `Field[] getDeclaredFields()`
-     - `Field getDeclaredField(String name)`
-     - `Method[] getMethods()`
-     - `Method getMethod(String name, Class<?>... parameterTypes)`
-     - `Method[] getDeclaredMethods()`
-     - `Method getDeclaredMethod(String name, Class<?>... parameterTypes)`
-     - `Constructor[] getConstructors()`
-     - `Constructor<T> getConstructor(Class<?>... parameterTypes)`
-     - `Constructor[] getDeclaredConstructors()`
-     - `Constructor<T> getDeclaredConstructor(Class<?>... parameterTypes)`
-   - inner class and outer class
-     - `Class<?>[] getClasses()`
-     - `Class<?> getEnclosingClass()`
-   - generics
-     - `Type[] getGenericInterfaces()`
-     - `Type getGenericSuperclass()`
-     - `TypeVariable<Class<T>>[] getTypeParameters()`
-   - get resources, delegating to class loader
-     - `URL getResource(String name)`
-     - `InputStream getResourceAsStream(String name)`
-
-### Proxy
-
-1. proxies
-   - usage — at runtime, create new classes that implement given interfaces, with a method invocation handler
-   - proxy class definition
-     - runtime defined class — proxy objects are of classes defined at runtime with names such as `$Proxy0`
-     - modifiers and inheritance — all proxies are `public final` and extends `Proxy`
-     - cached — only one proxy class for a particular class loader and ordered set of interfaces
-     - package — default package if given interfaces all public, else belongs to the package of given non-public interfaces
-   - proxying — all proxy classes override the `toString()`, `equals()`, and `hashCode()`, and given interface methods with `InvocationHandler::invoke`
-     - other methods in `Object` are untouched
-
-1. `interface java.lang.reflect.InvocationHandler` — invocation handlers
-   - `public Object invoke(Object proxy, Method method, Object[] args) throws Throwable`
-   - additional data is stored in the invocation handler
-
-1. `java.lang.reflect.Proxy`
-   ```java
-   public class Proxy extends Object
-   implements Serializable
-   ```
-   - creation
-     - `static Object newProxyInstance(ClassLoader loader, Class<?>[] interfaces, InvocationHandler h)`
-     - `static Class<?> getProxyClass(ClassLoader loader, Class<?>... interfaces)`
-   - `static InvocationHandler getInvocationHandler(Object proxy)`
-   - `static boolean isProxyClass(Class<?> cl)`
-
-1. use example
-   ```java
-   public class ProxyTest {
-       public static void main(String... args) {
-           Object[] elems = new Object[1000];
-           final Class[] clz = { Comparable.class };
-           Arrays.setAll(elems, i -> Proxy.newProxyInstance(null, clz, new TraceHandler(Integer.valueOf(i))));
-           Arrays.binarySearch(elems, Integer.valueOf(ThreadLocalRandom.current().nextInt(elements.length) + 1));
-       }
-   }
-   class TraceHandler implements InvocationHandler {
-      private Object target;
-      public TraceHandler(Object t) {
-         target = t;
-      }
-      public Object invoke(Object proxy, Method m, Object[] args) throws Throwable {
-         // print implicit argument
-         System.out.print(target);
-         // print method name
-         System.out.print("." + m.getName() + "(");
-         // print explicit arguments
-         if (args != null) {
-            for (int i = 0; i < args.length; i++) {
-               System.out.print(args[i]);
-               if (i < args.length - 1) System.out.print(", ");
-            }
-         }
-         System.out.println(")");
-         // invoke actual method
-         return m.invoke(target, args);
-      }
-   }
-   ```
-
-### Method Handle
-
-1. `java.lang.invoke` package special treatment by JVM
-   - `MethodHandle`, `VarHandle` — contain signature polymorphic methods which can be linked regardless of their type descriptor. The unusual part is that the symbolic type descriptor is derived from the actual argument and return types, not from the method declaration
-   - `MethodHandle`, `MethodType` — `interface java.lang.constant.Constable`, immediate constant support by JVM bytecode format. A new type of constant pool entry, `CONSTANT_MethodHandle`, refers directly to an associated `CONSTANT_Methodref`, `CONSTANT_InterfaceMethodref`, or `CONSTANT_Fieldref` constant pool entry
-   - `invokedynamic` instruction — makes use of bootstrap `MethodHandle` constants to dynamically resolve `CallSite` objects for custom method invocation behavior
-   - `ldc` instruction — makes use of bootstrap `MethodHandle` constants to dynamically resolve custom constant values
-
-1. `invokedynamic`
-   - `invokedynamic` instruction — dynamically-computed call sites
-     - initial unlinked state — no target method for the instruction to invoke; it is linked just before first execution
-     - link `invokedynamic` — by calling a bootstrap method which is given the static information content of the call, and which must produce a `CallSite` that gives the behavior of the invocation
-   - `invokedynamic` and `CONSTANT_Dynamic` — a `CONSTANT_Dynamic` is to a `invokedynamic` like a `CONSTANT_Fieldref` is to a `CONSTANT_Methodref`
-   - `CONSTANT_Dynamic` tagged constants in constant pool — dynamically-computed constants
-     - initial unresolved state — no value; resolved just before the first use
-     - value resolution — by calling a bootstrap method which is given the static information content of the constant, and which must produce a value of the constant's statically declared type
-
-1. bootstrap methods
-   - bootstrap method taxonomy
-     - bootstrap methods of `invokedynamic`
-       - as constant pool reference — each `invokedynamic` instruction statically specifies its own bootstrap method as a constant pool reference
-       - like `invokestatic` and other invoke instructions — specifies the invocation's name and method type descriptor
-     - bootstrap methods of `CONSTANT_Dynamic` constants
-       - as constant pool reference — each `CONSTANT_Dynamic` constant statically specifies its own bootstrap method as a constant pool reference
-       - like `getstatic` and the other field reference instructions — specifies the constant's name and field type descriptor
-   - bootstrap method execution — link `invokedynamic` or resolve `CONSTANT_Dynamic`
-     1. resolve the bootstrap method related constants in constant pool
-        - the bootstrap method, a `CONSTANT_MethodHandle`
-        - the `Class` or `MethodType` derived from type component of the `CONSTANT_NameAndType` descriptor
-        - static arguments, if any (note that static arguments can themselves be dynamically-computed constants)
-     1. invoke the bootstrap method with following args, as if by `MethodHandle::invoke`
-   - bootstrap method args
-     - `MethodHandles.Lookup` - a lookup object on the caller class in which dynamically-computed constant or call site occurs
-     - `CONSTANT_NameAndType` — a `String` the name, and a `MethodType` or `Class`, the resolved type descriptor
-     - `Class`, if it is a dynamic constant — the resolved type descriptor of the constant
-     - the additional resolved static arguments, if any
-       - no type limitation — dynamically-computed constants can be provided as static arguments to bootstrap methods
-     - return — `CallSite` or the `Class` mentioned above
-   - thread safety — must take the usual precautions against race conditions; if several threads simultaneously execute a bootstrap method for a single dynamically-computed call site or constant, the JVM must choose one bootstrap method result and install it visibly to all threads
-
-1. `java.lang.invoke.MethodHandle` — a typed, immutable, directly executable reference to an underlying method, constructor, field, or similar low-level operation, with optional transformations of arguments or return values
-   ```java
-   public abstract class MethodHandle implements Constable
-   ```
-   - functional equivalent of a particular bytecode behavior — see lookup methods in `MethodHandles.Lookup`
-   - type
-     - `MethodType type()` — method handles are dynamically and strongly typed according to their parameter and return types
-     - type conversion
-       - `MethodHandle asType​(MethodType newType)` — produces an adapter method handle
-       - `MethodHandle bindTo​(Object x)` — curry
-       - other `as-` methods and more
-   - invoke
-     - `Object invoke​(Object... args) throws Throwable` — `invokeExact` if `type` match, otherwise may `asType` or may perform adaptations directly on the caller's arguments
-     - `Object invokeExact​(Object... args) throws Throwable` — requiring an exact `type` match
-     - more
-     - reflection of above methods — `UnsupportedOperationException` if invoked via `Method::invoke`, via JNI, or indirectly via `Lookup.unreflect`
-   - signature polymorphism
-     - compile — the Java compiler emits an `invokevirtual` instruction with the given symbolic type descriptor against the named method as usual, but the symbolic type descriptor is derived from the actual argument and return types, not from the method declaration
-     - at runtime — the JVM will successfully link any such call, regardless of its symbolic type descriptor. After type matching, a call to `invokeExact` directly and immediately invoke the method handle's underlying method (or other behavior, as the case may be).
-   - invocation check
-     - symbolic type descriptor check — the caller's one is matched against the one assigned when the method handle is created, after `invokevirtual` is linked
-     - access check — performed when the method handle is created; if `ldc`, access checking is performed as part of linking; methods like `asType` are not access checked
-
-1. `java.lang.invoke.MethodHandles` — utility class
-   - lookup methods
-     - `MethodHandles.Lookup lookup()`
-     - `MethodHandles.Lookup publicLookup()`
-   - method handle combine and transform methods
-   - other method handle factory methods
-     - `MethodHandle identity​(Class<?> type)`
-   - `java.lang.invoke.MethodHandles.Lookup` — access restrictions enforced against look up class, which is the class where this `Lookup` is created
-     - `Class<?> lookupClass()`
-     - lookup factory methods — see javadoc, correspond to all major use cases for methods, constructors, and fields
-     - `unreflect` — reflection to method handle
-     - lookup factory methods to bytecode behavior — see javadoc
-     - cross module — tbd
-
-1. `java.lang.invoke.CallSite` — hold a variable `target` of type `MethodHandle`
-   - `invokedynamic`
-     - call delegation — an invokedynamic instruction linked to a `CallSite` delegates all calls to the site's current target
-     - one to none or many — a `CallSite` may be associated with several `invokedynamic` instructions or none
-   - `MethodHandle dynamicInvoker()` — produces a method handle equivalent to an `invokedynamic` instruction which has been linked to this call site (equivalent to `getTarget` and then `invokeExact`)
-   - `void setTarget​(MethodHandle newTarget)` — the type of the new target must be equal to the type of the old target
-     - `java.lang.invoke.ConstantCallSite` — `UnsupportedOperationException` for `setTarget`
-     - `java.lang.invoke.MutableCallSite`
-     - `java.lang.invoke.VolatileCallSite` — `MutableCallSite` but the `target` is `volatile`
-
-#### VarHandle
-
-1. `java.lang.invoke.VarHandle` — a dynamically strongly typed reference to a variable, or to a parametrically-defined family of variables, including static fields, non-static fields, array elements, or components of an off-heap data structure
-   - properties
-     - immutable and stateless
-     - similar to `MethodHandle` — dynamic argument check and signature polymorphic, access check at creation
-   - `Class<?> varType()` — the type of every variable referenced
-     - `float` and `double` — compared bitwise, which differs from `==` and `equals`
-   - `List<Class<?>> coordinateTypes()` — the types of coordinate expressions that jointly locate a variable referenced by this `VarHandle`
-   - static memory fence methods — `fullFence()`, `acquireFence()`, `releaseFence()`, `loadLoadFence()` and `storeStoreFence()`
-
-1. `VarHandle` access methods
-   - access mode method properties
-     - `enum VarHandle.AccessMode` — each member corresponds to an access method in `VarHandle`
-     - signature polymorphic — see before
-     - actual arguments — the coordinate types of a `VarHandle` instance, and the types for values of importance to the access mode, see example
-     - dynamic argument check — `MethodType accessModeType​(VarHandle.AccessMode accessMode)`
-     - invocation behaves as if `MethodHandle::invoke`, see javadoc for examples
-   - access mode methods
-     - atomicity and consistency properties, override declarations
-       - plain — bitwise atomic only for references and for primitive values of at most 32 bits
-       - opaque — bitwise atomic and coherently ordered with respect to accesses to the same variable
-       - acquire, release — opaque, and acquire mode reads and their subsequent accesses are ordered after matching release mode writes and their previous accesses
-       - volatile — acquire, release, and ordered with respect to each other
-     - taxonomy
-       - read — `get`, `getVolatile`, `getAcquire`, `getOpaque`
-       - write — `set`, `setVolatile`, `setRelease`, `setOpaque`
-       - atomic update — `compareAndSet`, `weakCompareAndSetPlain`, `weakCompareAndSet`, `weakCompareAndSetAcquire`, `weakCompareAndSetRelease`, `compareAndExchangeAcquire`, `compareAndExchange`, `compareAndExchangeRelease`, `getAndSet`, `getAndSetAcquire`, `getAndSetRelease`
-       - numeric atomic update — `getAndAdd`, `getAndAddAcquire`, `getAndAddRelease`
-       - bitwise atomic update — `getAndBitwiseOr`, `getAndBitwiseOrAcquire`, `getAndBitwiseOrRelease`, `getAndBitwiseAnd`, `getAndBitwiseAndAcquire`, `getAndBitwiseAndRelease`, `getAndBitwiseXor`, `getAndBitwiseXorAcquire`, `getAndBitwiseXorRelease`
-
-1. `VarHandle` creation and conversion
-   - creation — access modes supported according to javadoc
-     - in `MethodHandles.Lookup`
-       - `findVarHandle​(Class<?> recv, String name, Class<?> type)` — returns a `VarHandle` of a non-static `recv.name` of `type`; one coordinate type, `recv`
-       - `findStaticVarHandle​(Class<?> decl, String name, Class<?> type)` — returns a `VarHandle` of a static `recv.name` of `type`; no coordinate types
-       - `unreflectVarHandle​(Field f)`
-     - in `MethodHandles`
-       - `arrayElementVarHandle​(Class<?> arrayClass)` — the list of coordinate types is `(arrayClass, int)`
-       - `byteArrayViewVarHandle​`, `byteBufferViewVarHandle`
-   - to `MethodHandle`
-     - `MethodHandle toMethodHandle​(VarHandle.AccessMode accessMode)`
-     - `MethodHandles::varHandleInvoker`
-     - `MethodHandles::varHandleExactInvoker`
-     - `MethodHandles.lookup().findVirtual(VarHandle.class, ...)`
-
-1. `VarHandle` example
-   ```java
-   String[] sa = ...
-   VarHandle avh = MethodHandles.arrayElementVarHandle(String[].class);
-   boolean r = avh.compareAndSet(sa, 10, "expected", "new");
-   ```
-
-#### Lambda at Runtime
-
-1. lambda at runtime reference — from [Translation of Lambda Expressions](http://cr.openjdk.java.net/~briangoetz/lambda/lambda-translation.html)
-
-1. desugar
-   - desugar to method — when the compiler encounters a lambda expression, it first lowers (desugars) the lambda body into a method whose argument list and return type match that of the lambda expression, possibly with some additional arguments (for values captured from the lexical scope, if any)
-   - desugar strategy — private, static over instance, in the innermost class in which the lambda expression appears, signatures should match the body signature of the lambda, extra arguments should be prepended on the front of the argument list for captured values, and would not desugar method references at all
-   - instance-capturing lambda — instance-capturing lambdas are desugared to private instance method; when capturing an instance-capturing lambda, the receiver (`this`) is specified as the first dynamic argument, meshes well with available implementation techniques (bound method handles)
-   - example: desugar of a method — see below
-   - example: deadlock caused by desugar — during class loading, other fork join threads will call desugared static method, which requires the class loaded
-     ```java
-     public class Main {
-         public static void main(String[] args) {
-             System.out.println(Main.name);
-         }
-         public static String name;
-         static {
-             name = getName();
-         }
-         private static String getName() {
-             List<String> names = new ArrayList<>();
-             for (int i = 0; i < 10; i++) {
-                 names.add("a" + i);
-             }
-             names = names.parallelStream().filter(s -> s.equalsIgnoreCase("a9")).collect(Collectors.toList());
-             return names.get(0);
-         }
-     }
-     ```
-
-1. `invokedynamic`
-   - `invokedynamic` call site, built by lambda factory — at the point at which the lambda expression would be captured, it generates an `invokedynamic` call site, which implements lambda capture as the dynamic argument list and, when invoked, returns an instance of the functional interface to which the lambda is being converted
-     - see [Method Handle](#Method-Handle)
-     - `java.lang.invoke.LambdaMetafactory::metafactory`, `LambdaMetafactory::altMetafactory`
-       ```java
-       static CallSite metafactory​(
-           // automatically stacked by the VM at CallSite linkage
-           MethodHandles.Lookup caller, String invokedName, MethodType invokedType,
-           MethodType samMethodType, // single abstract (functional interface) method
-           MethodHandle implMethod,  // the implementation method, may have extra arguments and may subtype or box
-           // enforced dynamically at invocation time; samMethodType, or may be a specialization of it
-           MethodType instantiatedMethodType)
-       ```
-       - `invokedType` — expected signature of the `CallSite`, the parameter types represent the types of capture variables; the return type is the functional interface; see number of instantiations below for example
-     - method references — treated the same way as lambda expressions, except that most method references do not need to be desugared into a new method; we can simply load a constant method handle for the referenced method and pass that to the metafactory
-   - number of instantiations — only one instantiation (`MethodHandles::constant`) if no capture
-     ```java
-     // called by bootstrap methods in LambdaMetafactory to build CallSite
-     CallSite buildCallSite() throws LambdaConversionException {
-         final Class<?> innerClass = spinInnerClass();
-         if (invokedType.parameterCount() == 0 && !disableEagerInitialization) {
-             // ...
-             try {
-                 Object inst = ctrs[0].newInstance();
-                 return new ConstantCallSite(MethodHandles.constant(samBase, inst));
-             }
-             // ...
-         } else {
-             try {
-                 if (!disableEagerInitialization) {
-                     UNSAFE.ensureClassInitialized(innerClass);
-                 }
-                 return new ConstantCallSite(
-                         MethodHandles.Lookup.IMPL_LOOKUP
-                              .findStatic(innerClass, NAME_FACTORY, invokedType));
-             }
-             // ...
-         }
-     }
-     ```
-     ```java
-     // number of instantiations test example
-     static IntUnaryOperator oper = null;
-     static int opCounter = 0;
-     static int lambdaTest(IntUnaryOperator op) {
-         if (op != oper) ++opCounter;
-         oper = op;
-         return op.applyAsInt(3);
-     }
-     static void test() {
-         opCounter = 0;
-         for (int i = 0; i < 100; ++i) {
-             lambdaTest(j -> j * j);
-         }
-         System.out.println(opCounter); // 1
-     }
-     static void test2(int num) {
-         opCounter = 0;
-         for (int i = 0; i < 100; ++i) {
-             lambdaTest(j -> j * j * num);
-         }
-         System.out.println(opCounter); // 100
-     }
-     ```
-
-1. example: desugar of a lambda with capturing and its `invokedynamic` call site
-   ```java
-   class B {
-       public void foo() {
-           List<Person> list = ...
-           final int bottom = ..., top = ...;
-           list.removeIf( p -> (p.size >= bottom && p.size <= top) );
-       }
-   }
-   ```
-   ```java
-   class B {
-       public void foo() {
-           List<Person> list = ...
-           final int bottom = ..., top = ...;
-           // invokedynamic: INDY((bootstrap, static args...)(dynamic args...))
-           // method handle: MH([refKind] class-name.method-name)
-           list.removeIf(indy((MH(metaFactory), MH(invokeVirtual Predicate.apply),
-                               MH(invokeStatic B.lambda$1))( bottom, top ))));
-       }
-       private static boolean lambda$1(int bottom, int top, Person p) {
-           return p.size >= bottom && p.size <= top;
-       }
-   }
-   ```
-
 ## Error Handling
 
 ### Debugging
@@ -2348,3 +1947,404 @@ see [Logging](./javaMisc.md#Logging).
 
 1. language model (AST) — `javax.lang.model`
    - `javax.lang.model.element.Element` — AST nodes
+
+## Metaprogramming
+
+### Reflection
+
+1. runtime type identification — used by VM for method resolution
+   - `Object::getClass`
+   - `Class::forName`
+   - `T.class` if `T` is any Java type (or `void.class`, `int.class` etc.)
+   - type capturing — use `Class<T>` as a parameter for type match, when called with a class object, the type parameter `T` will be matched
+
+1. `java.lang.reflect` package (see [Proxy](#Proxy) for proxies)
+   - outside `java.lang.reflect` — `java.lang.Class`, `java.lang.Package` (implements `AnnotatedElement`)
+   - interface hierarchy
+     - `Member` — a field or a method or a constructor
+     - `AnnotatedElement` — represents an annotated element with methods getting annotations
+       - `AnnotatedType`
+         - `AnnotatedArrayType`
+         - `AnnotatedParameterizedType`
+         - `AnnotatedTypeVariable`
+         - `AnnotatedWildcardType`
+       - `GenericDeclaration`
+       - `TypeVariable<D>` (also extends `java.lang.reflect.Type)`
+     - `Type`
+       - `GenericArrayType`
+       - `ParameterizedType`
+       - `TypeVariable<D>` (also extends `java.lang.reflect.AnnotatedElement`)
+       - `WildcardType`
+   - class hierarchy
+     - `AnnotatedElement` interface
+       - `Parameter`
+       - `AccessibleObject` — allows suppression of access checks if the necessary `java.lang.reflect.ReflectPermission` is available, access is checked every time a reflective method is invoked
+         - `Member` interface
+           - `Executable` (implements `GenericDeclaration`)
+             - `Constructor<T>` — `T newInstance(Object... initargs)`
+             - `Method` — `Object invoke(Object obj, Object... args)`
+           - `Field` — get and set methods
+     - `Array` — get, set methods and `newInstance`
+     - `Modifier` — as a bit vector
+
+1. `Class`
+   ```java
+   public final class Class<T> extends Object
+   implements Serializable, GenericDeclaration, Type, AnnotatedElement, TypeDescriptor.OfField<Class<?>>, Constable
+   ```
+   - reflection
+     - `String getName()`
+     - `String getTypeName()`
+     - `String toString()`
+     - `Class<?> getComponentType()` — type of elements in an array, `null` if `this` is not an array
+     - `ClassLoader getClassLoader()`
+     - `T[] getEnumConstants()`
+     - `Class<? super T> getSuperclass()`
+   - instance creation
+     - `T newInstance()`
+     - `T cast(Object obj) throws ClassCastException`
+   - method reflection — from this class and superclasses, `declared-` only for this class
+     - `Field[] getFields()`
+     - `Field getField(String name)`
+     - `Field[] getDeclaredFields()`
+     - `Field getDeclaredField(String name)`
+     - `Method[] getMethods()`
+     - `Method getMethod(String name, Class<?>... parameterTypes)`
+     - `Method[] getDeclaredMethods()`
+     - `Method getDeclaredMethod(String name, Class<?>... parameterTypes)`
+     - `Constructor[] getConstructors()`
+     - `Constructor<T> getConstructor(Class<?>... parameterTypes)`
+     - `Constructor[] getDeclaredConstructors()`
+     - `Constructor<T> getDeclaredConstructor(Class<?>... parameterTypes)`
+   - inner class and outer class
+     - `Class<?>[] getClasses()`
+     - `Class<?> getEnclosingClass()`
+   - generics
+     - `Type[] getGenericInterfaces()`
+     - `Type getGenericSuperclass()`
+     - `TypeVariable<Class<T>>[] getTypeParameters()`
+   - get resources, delegating to class loader
+     - `URL getResource(String name)`
+     - `InputStream getResourceAsStream(String name)`
+
+### Proxy
+
+1. proxies
+   - usage — at runtime, create new classes that implement given interfaces, with a method invocation handler
+   - proxy class definition
+     - runtime defined class — proxy objects are of classes defined at runtime with names such as `$Proxy0`
+     - modifiers and inheritance — all proxies are `public final` and extends `Proxy`
+     - cached — only one proxy class for a particular class loader and ordered set of interfaces
+     - package — default package if given interfaces all public, else belongs to the package of given non-public interfaces
+   - proxying — all proxy classes override the `toString()`, `equals()`, and `hashCode()`, and given interface methods with `InvocationHandler::invoke`
+     - other methods in `Object` are untouched
+
+1. `interface java.lang.reflect.InvocationHandler` — invocation handlers
+   - `public Object invoke(Object proxy, Method method, Object[] args) throws Throwable`
+   - additional data is stored in the invocation handler
+
+1. `java.lang.reflect.Proxy`
+   ```java
+   public class Proxy extends Object
+   implements Serializable
+   ```
+   - creation
+     - `static Object newProxyInstance(ClassLoader loader, Class<?>[] interfaces, InvocationHandler h)`
+     - `static Class<?> getProxyClass(ClassLoader loader, Class<?>... interfaces)`
+   - `static InvocationHandler getInvocationHandler(Object proxy)`
+   - `static boolean isProxyClass(Class<?> cl)`
+
+1. use example
+   ```java
+   public class ProxyTest {
+       public static void main(String... args) {
+           Object[] elems = new Object[1000];
+           final Class[] clz = { Comparable.class };
+           Arrays.setAll(elems, i -> Proxy.newProxyInstance(null, clz, new TraceHandler(Integer.valueOf(i))));
+           Arrays.binarySearch(elems, Integer.valueOf(ThreadLocalRandom.current().nextInt(elements.length) + 1));
+       }
+   }
+   class TraceHandler implements InvocationHandler {
+      private Object target;
+      public TraceHandler(Object t) {
+         target = t;
+      }
+      public Object invoke(Object proxy, Method m, Object[] args) throws Throwable {
+         // print implicit argument
+         System.out.print(target);
+         // print method name
+         System.out.print("." + m.getName() + "(");
+         // print explicit arguments
+         if (args != null) {
+            for (int i = 0; i < args.length; i++) {
+               System.out.print(args[i]);
+               if (i < args.length - 1) System.out.print(", ");
+            }
+         }
+         System.out.println(")");
+         // invoke actual method
+         return m.invoke(target, args);
+      }
+   }
+   ```
+
+### Method Handle
+
+1. `java.lang.invoke` package special treatment by JVM
+   - `MethodHandle`, `VarHandle` — contain signature polymorphic methods which can be linked regardless of their type descriptor. The unusual part is that the symbolic type descriptor is derived from the actual argument and return types, not from the method declaration
+   - `MethodHandle`, `MethodType` — `interface java.lang.constant.Constable`, immediate constant support by JVM bytecode format. A new type of constant pool entry, `CONSTANT_MethodHandle`, refers directly to an associated `CONSTANT_Methodref`, `CONSTANT_InterfaceMethodref`, or `CONSTANT_Fieldref` constant pool entry
+   - `invokedynamic` instruction — makes use of bootstrap `MethodHandle` constants to dynamically resolve `CallSite` objects for custom method invocation behavior
+   - `ldc` instruction — makes use of bootstrap `MethodHandle` constants to dynamically resolve custom constant values
+
+1. `invokedynamic`
+   - `invokedynamic` instruction — dynamically-computed call sites
+     - initial unlinked state — no target method for the instruction to invoke; it is linked just before first execution
+     - link `invokedynamic` — by calling a bootstrap method which is given the static information content of the call, and which must produce a `CallSite` that gives the behavior of the invocation
+   - `invokedynamic` and `CONSTANT_Dynamic` — a `CONSTANT_Dynamic` is to a `invokedynamic` like a `CONSTANT_Fieldref` is to a `CONSTANT_Methodref`
+   - `CONSTANT_Dynamic` tagged constants in constant pool — dynamically-computed constants
+     - initial unresolved state — no value; resolved just before the first use
+     - value resolution — by calling a bootstrap method which is given the static information content of the constant, and which must produce a value of the constant's statically declared type
+
+1. bootstrap methods
+   - bootstrap method taxonomy
+     - bootstrap methods of `invokedynamic`
+       - as constant pool reference — each `invokedynamic` instruction statically specifies its own bootstrap method as a constant pool reference
+       - like `invokestatic` and other invoke instructions — specifies the invocation's name and method type descriptor
+     - bootstrap methods of `CONSTANT_Dynamic` constants
+       - as constant pool reference — each `CONSTANT_Dynamic` constant statically specifies its own bootstrap method as a constant pool reference
+       - like `getstatic` and the other field reference instructions — specifies the constant's name and field type descriptor
+   - bootstrap method execution — link `invokedynamic` or resolve `CONSTANT_Dynamic`
+     1. resolve the bootstrap method related constants in constant pool
+        - the bootstrap method, a `CONSTANT_MethodHandle`
+        - the `Class` or `MethodType` derived from type component of the `CONSTANT_NameAndType` descriptor
+        - static arguments, if any (note that static arguments can themselves be dynamically-computed constants)
+     1. invoke the bootstrap method with following args, as if by `MethodHandle::invoke`
+   - bootstrap method args
+     - `MethodHandles.Lookup` - a lookup object on the caller class in which dynamically-computed constant or call site occurs
+     - `CONSTANT_NameAndType` — a `String` the name, and a `MethodType` or `Class`, the resolved type descriptor
+     - `Class`, if it is a dynamic constant — the resolved type descriptor of the constant
+     - the additional resolved static arguments, if any
+       - no type limitation — dynamically-computed constants can be provided as static arguments to bootstrap methods
+     - return — `CallSite` or the `Class` mentioned above
+   - thread safety — must take the usual precautions against race conditions; if several threads simultaneously execute a bootstrap method for a single dynamically-computed call site or constant, the JVM must choose one bootstrap method result and install it visibly to all threads
+
+1. `java.lang.invoke.MethodHandle` — a typed, immutable, directly executable reference to an underlying method, constructor, field, or similar low-level operation, with optional transformations of arguments or return values
+   ```java
+   public abstract class MethodHandle implements Constable
+   ```
+   - functional equivalent of a particular bytecode behavior — see lookup methods in `MethodHandles.Lookup`
+   - type
+     - `MethodType type()` — method handles are dynamically and strongly typed according to their parameter and return types
+     - type conversion
+       - `MethodHandle asType​(MethodType newType)` — produces an adapter method handle
+       - `MethodHandle bindTo​(Object x)` — curry
+       - other `as-` methods and more
+   - invoke
+     - `Object invoke​(Object... args) throws Throwable` — `invokeExact` if `type` match, otherwise may `asType` or may perform adaptations directly on the caller's arguments
+     - `Object invokeExact​(Object... args) throws Throwable` — requiring an exact `type` match
+     - more
+     - reflection of above methods — `UnsupportedOperationException` if invoked via `Method::invoke`, via JNI, or indirectly via `Lookup.unreflect`
+   - signature polymorphism
+     - compile — the Java compiler emits an `invokevirtual` instruction with the given symbolic type descriptor against the named method as usual, but the symbolic type descriptor is derived from the actual argument and return types, not from the method declaration
+     - at runtime — the JVM will successfully link any such call, regardless of its symbolic type descriptor. After type matching, a call to `invokeExact` directly and immediately invoke the method handle's underlying method (or other behavior, as the case may be).
+   - invocation check
+     - symbolic type descriptor check — the caller's one is matched against the one assigned when the method handle is created, after `invokevirtual` is linked
+     - access check — performed when the method handle is created; if `ldc`, access checking is performed as part of linking; methods like `asType` are not access checked
+
+1. `java.lang.invoke.MethodHandles` — utility class
+   - lookup methods
+     - `MethodHandles.Lookup lookup()`
+     - `MethodHandles.Lookup publicLookup()`
+   - method handle combine and transform methods
+   - other method handle factory methods
+     - `MethodHandle identity​(Class<?> type)`
+   - `java.lang.invoke.MethodHandles.Lookup` — access restrictions enforced against look up class, which is the class where this `Lookup` is created
+     - `Class<?> lookupClass()`
+     - lookup factory methods — see javadoc, correspond to all major use cases for methods, constructors, and fields
+     - `unreflect` — reflection to method handle
+     - lookup factory methods to bytecode behavior — see javadoc
+     - cross module — tbd
+
+1. `java.lang.invoke.CallSite` — hold a variable `target` of type `MethodHandle`
+   - `invokedynamic`
+     - call delegation — an invokedynamic instruction linked to a `CallSite` delegates all calls to the site's current target
+     - one to none or many — a `CallSite` may be associated with several `invokedynamic` instructions or none
+   - `MethodHandle dynamicInvoker()` — produces a method handle equivalent to an `invokedynamic` instruction which has been linked to this call site (equivalent to `getTarget` and then `invokeExact`)
+   - `void setTarget​(MethodHandle newTarget)` — the type of the new target must be equal to the type of the old target
+     - `java.lang.invoke.ConstantCallSite` — `UnsupportedOperationException` for `setTarget`
+     - `java.lang.invoke.MutableCallSite`
+     - `java.lang.invoke.VolatileCallSite` — `MutableCallSite` but the `target` is `volatile`
+
+#### VarHandle
+
+1. `java.lang.invoke.VarHandle` — a dynamically strongly typed reference to a variable, or to a parametrically-defined family of variables, including static fields, non-static fields, array elements, or components of an off-heap data structure
+   - properties
+     - immutable and stateless
+     - similar to `MethodHandle` — dynamic argument check and signature polymorphic, access check at creation
+   - `Class<?> varType()` — the type of every variable referenced
+     - `float` and `double` — compared bitwise, which differs from `==` and `equals`
+   - `List<Class<?>> coordinateTypes()` — the types of coordinate expressions that jointly locate a variable referenced by this `VarHandle`
+   - static memory fence methods — `fullFence()`, `acquireFence()`, `releaseFence()`, `loadLoadFence()` and `storeStoreFence()`
+
+1. `VarHandle` access methods
+   - access mode method properties
+     - `enum VarHandle.AccessMode` — each member corresponds to an access method in `VarHandle`
+     - signature polymorphic — see before
+     - actual arguments — the coordinate types of a `VarHandle` instance, and the types for values of importance to the access mode, see example
+     - dynamic argument check — `MethodType accessModeType​(VarHandle.AccessMode accessMode)`
+     - invocation behaves as if `MethodHandle::invoke`, see javadoc for examples
+   - access mode methods
+     - atomicity and consistency properties, override declarations
+       - plain — bitwise atomic only for references and for primitive values of at most 32 bits
+       - opaque — bitwise atomic and coherently ordered with respect to accesses to the same variable
+       - acquire, release — opaque, and acquire mode reads and their subsequent accesses are ordered after matching release mode writes and their previous accesses
+       - volatile — acquire, release, and ordered with respect to each other
+     - taxonomy
+       - read — `get`, `getVolatile`, `getAcquire`, `getOpaque`
+       - write — `set`, `setVolatile`, `setRelease`, `setOpaque`
+       - atomic update — `compareAndSet`, `weakCompareAndSetPlain`, `weakCompareAndSet`, `weakCompareAndSetAcquire`, `weakCompareAndSetRelease`, `compareAndExchangeAcquire`, `compareAndExchange`, `compareAndExchangeRelease`, `getAndSet`, `getAndSetAcquire`, `getAndSetRelease`
+       - numeric atomic update — `getAndAdd`, `getAndAddAcquire`, `getAndAddRelease`
+       - bitwise atomic update — `getAndBitwiseOr`, `getAndBitwiseOrAcquire`, `getAndBitwiseOrRelease`, `getAndBitwiseAnd`, `getAndBitwiseAndAcquire`, `getAndBitwiseAndRelease`, `getAndBitwiseXor`, `getAndBitwiseXorAcquire`, `getAndBitwiseXorRelease`
+
+1. `VarHandle` creation and conversion
+   - creation — access modes supported according to javadoc
+     - in `MethodHandles.Lookup`
+       - `findVarHandle​(Class<?> recv, String name, Class<?> type)` — returns a `VarHandle` of a non-static `recv.name` of `type`; one coordinate type, `recv`
+       - `findStaticVarHandle​(Class<?> decl, String name, Class<?> type)` — returns a `VarHandle` of a static `recv.name` of `type`; no coordinate types
+       - `unreflectVarHandle​(Field f)`
+     - in `MethodHandles`
+       - `arrayElementVarHandle​(Class<?> arrayClass)` — the list of coordinate types is `(arrayClass, int)`
+       - `byteArrayViewVarHandle​`, `byteBufferViewVarHandle`
+   - to `MethodHandle`
+     - `MethodHandle toMethodHandle​(VarHandle.AccessMode accessMode)`
+     - `MethodHandles::varHandleInvoker`
+     - `MethodHandles::varHandleExactInvoker`
+     - `MethodHandles.lookup().findVirtual(VarHandle.class, ...)`
+
+1. `VarHandle` example
+   ```java
+   String[] sa = ...
+   VarHandle avh = MethodHandles.arrayElementVarHandle(String[].class);
+   boolean r = avh.compareAndSet(sa, 10, "expected", "new");
+   ```
+
+#### Lambda at Runtime
+
+1. lambda at runtime reference — from [Translation of Lambda Expressions](http://cr.openjdk.java.net/~briangoetz/lambda/lambda-translation.html)
+
+1. desugar
+   - desugar to method — when the compiler encounters a lambda expression, it first lowers (desugars) the lambda body into a method whose argument list and return type match that of the lambda expression, possibly with some additional arguments (for values captured from the lexical scope, if any)
+   - desugar strategy — private, static over instance, in the innermost class in which the lambda expression appears, signatures should match the body signature of the lambda, extra arguments should be prepended on the front of the argument list for captured values, and would not desugar method references at all
+   - instance-capturing lambda — instance-capturing lambdas are desugared to private instance method; when capturing an instance-capturing lambda, the receiver (`this`) is specified as the first dynamic argument, meshes well with available implementation techniques (bound method handles)
+   - example: desugar of a method — see below
+   - example: deadlock caused by desugar — during class loading, other fork join threads will call desugared static method, which requires the class loaded
+     ```java
+     public class Main {
+         public static void main(String[] args) {
+             System.out.println(Main.name);
+         }
+         public static String name;
+         static {
+             name = getName();
+         }
+         private static String getName() {
+             List<String> names = new ArrayList<>();
+             for (int i = 0; i < 10; i++) {
+                 names.add("a" + i);
+             }
+             names = names.parallelStream().filter(s -> s.equalsIgnoreCase("a9")).collect(Collectors.toList());
+             return names.get(0);
+         }
+     }
+     ```
+
+1. `invokedynamic`
+   - `invokedynamic` call site, built by lambda factory — at the point at which the lambda expression would be captured, it generates an `invokedynamic` call site, which implements lambda capture as the dynamic argument list and, when invoked, returns an instance of the functional interface to which the lambda is being converted
+     - see [Method Handle](#Method-Handle)
+     - `java.lang.invoke.LambdaMetafactory::metafactory`, `LambdaMetafactory::altMetafactory`
+       ```java
+       static CallSite metafactory​(
+           // automatically stacked by the VM at CallSite linkage
+           MethodHandles.Lookup caller, String invokedName, MethodType invokedType,
+           MethodType samMethodType, // single abstract (functional interface) method
+           MethodHandle implMethod,  // the implementation method, may have extra arguments and may subtype or box
+           // enforced dynamically at invocation time; samMethodType, or may be a specialization of it
+           MethodType instantiatedMethodType)
+       ```
+       - `invokedType` — expected signature of the `CallSite`, the parameter types represent the types of capture variables; the return type is the functional interface; see number of instantiations below for example
+     - method references — treated the same way as lambda expressions, except that most method references do not need to be desugared into a new method; we can simply load a constant method handle for the referenced method and pass that to the metafactory
+   - number of instantiations — only one instantiation (`MethodHandles::constant`) if no capture
+     ```java
+     // called by bootstrap methods in LambdaMetafactory to build CallSite
+     CallSite buildCallSite() throws LambdaConversionException {
+         final Class<?> innerClass = spinInnerClass();
+         if (invokedType.parameterCount() == 0 && !disableEagerInitialization) {
+             // ...
+             try {
+                 Object inst = ctrs[0].newInstance();
+                 return new ConstantCallSite(MethodHandles.constant(samBase, inst));
+             }
+             // ...
+         } else {
+             try {
+                 if (!disableEagerInitialization) {
+                     UNSAFE.ensureClassInitialized(innerClass);
+                 }
+                 return new ConstantCallSite(
+                         MethodHandles.Lookup.IMPL_LOOKUP
+                              .findStatic(innerClass, NAME_FACTORY, invokedType));
+             }
+             // ...
+         }
+     }
+     ```
+     ```java
+     // number of instantiations test example
+     static IntUnaryOperator oper = null;
+     static int opCounter = 0;
+     static int lambdaTest(IntUnaryOperator op) {
+         if (op != oper) ++opCounter;
+         oper = op;
+         return op.applyAsInt(3);
+     }
+     static void test() {
+         opCounter = 0;
+         for (int i = 0; i < 100; ++i) {
+             lambdaTest(j -> j * j);
+         }
+         System.out.println(opCounter); // 1
+     }
+     static void test2(int num) {
+         opCounter = 0;
+         for (int i = 0; i < 100; ++i) {
+             lambdaTest(j -> j * j * num);
+         }
+         System.out.println(opCounter); // 100
+     }
+     ```
+
+1. example: desugar of a lambda with capturing and its `invokedynamic` call site
+   ```java
+   class B {
+       public void foo() {
+           List<Person> list = ...
+           final int bottom = ..., top = ...;
+           list.removeIf( p -> (p.size >= bottom && p.size <= top) );
+       }
+   }
+   ```
+   ```java
+   class B {
+       public void foo() {
+           List<Person> list = ...
+           final int bottom = ..., top = ...;
+           // invokedynamic: INDY((bootstrap, static args...)(dynamic args...))
+           // method handle: MH([refKind] class-name.method-name)
+           list.removeIf(indy((MH(metaFactory), MH(invokeVirtual Predicate.apply),
+                               MH(invokeStatic B.lambda$1))( bottom, top ))));
+       }
+       private static boolean lambda$1(int bottom, int top, Person p) {
+           return p.size >= bottom && p.size <= top;
+       }
+   }
+   ```
