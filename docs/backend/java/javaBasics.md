@@ -4,8 +4,10 @@
 
 1. docs
    - [oracle JDK 1.8](https://docs.oracle.com/javase/8/docs/api/index.html)
-   - [jshell](https://docs.oracle.com/javase/9/jshell/toc.htm)
-   - [Java Platform, Standard Edition Tools Reference for Oracle JDK on Solaris, Linux, and OS X, Release 8](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/toc.html)
+   - CLI tools
+     - [jshell](https://docs.oracle.com/javase/9/jshell/toc.htm)
+     - [Java Platform, Standard Edition Tools Reference for Oracle JDK on Solaris, Linux, and OS X, Release 8](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/toc.html)
+     - [Java Platform, Standard Edition Tools Reference, Release 11](https://docs.oracle.com/en/java/javase/11/tools/index.html)
    - [JSR-000221 JDBC API 4.3 Maintenance Release 3](https://download.oracle.com/otndocs/jcp/jdbc-4_3-mrel3-spec/index.html)
    - [download](https://stackoverflow.com/questions/6986993/how-to-download-javadoc-to-read-offline/36497090)
      - [Java Development Kit 8 Documentation](https://www.oracle.com/technetwork/java/javase/documentation/jdk8-doc-downloads-2133158.html)
@@ -22,7 +24,7 @@
 
 ## CLI
 
-1. `javac` — compile
+1. `javac` — compile, [`javac` docs](https://docs.oracle.com/en/java/javase/11/tools/javac.html)
    - timestamps aware — auto compile dependencies and recompile when source file updated according to timestamps
    - extra options — `--help-extra`, `-X`
    - `-Xlint:<key>(,<key>)*` — enable warnings
@@ -35,7 +37,7 @@
      - `-Xlint:serial` — Warns about serializable classes without `serialVersionUID`
      - `-Xlint:unchecked` — Warns of unsafe conversions between generic and raw types
 
-1. `java` — execute
+1. `java` — execute, [`java` docs](https://docs.oracle.com/en/java/javase/11/tools/java.html)
    - synopsis
      ```
      java [options] <mainclass> [args...]
@@ -70,8 +72,9 @@
      - `-XshowSettings:properties`, `-XshowSettings:locale`
      - `-Xverify:none`, or `-noverify` — turn off verification when loading classes
      - memory related — see [JVM](./JVM.md#Memory)
-   - enable and disable assertion — see [Assertion](#Assertion)
-   - system properties — `-D`, `System::getProperty`, `System::getProperties`
+   - `-XX` — [`-XX` docs](https://docs.oracle.com/en/java/javase/11/troubleshoot/command-line-options1.html)
+   - `-ea`, enable and disable assertion — see [Assertion](#Assertion)
+   - `-D`, system properties — `System::getProperty`, `System::getProperties`
      - log related — see [Logging](#Logging)
        - log configuration file location — `-Djava.util.logging.config.file=configFile`
      - see [`Properties`](./javaUtils.md#Legacy-Collections) for list of system properties
@@ -82,7 +85,7 @@
      ```
    - `javaw` — `java` without a shell window
 
-1. `javadoc` — generates HTML documentation from your source files
+1. `javadoc` — generates HTML documentation from your source files, [`javadoc` docs](https://docs.oracle.com/en/java/javase/11/tools/javadoc.html)
    - information source
      - packages
      - public classes and interfaces
@@ -109,7 +112,7 @@
      ```
    - more
 
-1. `javap` — print java class information
+1. `javap` — print java class information, [`javap` docs](https://docs.oracle.com/en/java/javase/11/tools/javap.html)
    ```
    javap -v -p ClassName
    ```
@@ -117,20 +120,18 @@
      - `-c` — disassemble the code, can be used to inspect if atomic
    - `-p` `-private` — show all classes and members
 
-1. `jshell` — REPL from Java 9
+1. `jshell` — REPL from Java 9, [`jshell` docs](https://docs.oracle.com/en/java/javase/11/tools/jshell.html)
 
-1. see [Debugging](#Debugging)
-   - `jconsole` — Java Monitoring and Management Console
-   - `jmap` and `jhat` (deprecated) for heap dump and examining dump
+1. monitoring and troubleshooting tools — see [Debugging](#Debugging)
 
-1. `serialver` — get serial version ID
+1. `serialver` — get serial version ID, [`serialver` docs](https://docs.oracle.com/en/java/javase/11/tools/serialver.html)
 
-1. sign
+1. sign — [Security Tools and Commands](https://docs.oracle.com/en/java/javase/11/tools/security-tools-and-commands.html)
    - `keytool` — signatures, certificates
      - password for cacerts — `changeit`
    - `jarsigner` — add a signature to a (jar) file
 
-1. `javah` — produces a C header file from class files for `native` methods
+1. `javah` — produces a C header file from class files for `native` methods, superseded by superior functionality in `javac`, removed since JDK 10
 
 ### JAR
 
@@ -1302,24 +1303,29 @@
    - `ctrl` + `\` — get thread dump when the program hangs??
    - `java`
      - use `-verbose` when launching JVM for diagnosing class path problems
-     - use `Xprof` for profiling, note that support was removed in 10.0
-     - `-XX:+HeapDumpOnOutOfMemoryError`
-   - use `-Xlint:all` when `javac`
-   - use `jconsole` to track memory consumption, thread usage, class loading
-   - `jmap` and `jhat` (`jhat` removed in JDK 9) — `jmap` to get a heap dump and `jhat` to examine
-     ```java
-     jmap -dump:format=b,file=dumpFileName processID
-     jhat dumpFileName
-     ```
-     - at `localhost:7000`
-   - `jstat`
-   - `jcmd`
-   - `hprof`
-   - `jps`
-   - `jstack`
+     - `-XX:+HeapDumpOnOutOfMemoryError`, `-XX:HeapDumpPath=<file-or-dir-path>`
+   - `javac` with `-Xlint:all`
+   - monitoring — [Monitoring Tools and Commands](https://docs.oracle.com/en/java/javase/11/tools/monitoring-tools-and-commands.html)
+     - `jconsole` — start a graphical console to monitor and manage Java applications, to track memory consumption, thread usage, class loading
+     - experimental — unsupported and might not be available in future JDK releases
+       - `jps` — list the instrumented JVMs on the target system
+       - `jstat` — monitor JVM statistics
+       - `jstatd` — monitor the creation and termination of instrumented Java HotSpot VMs
+   - troubleshooting — [Troubleshooting Tools and Commands](https://docs.oracle.com/en/java/javase/11/tools/troubleshooting-tools-and-commands.html)
+     - `jcmd`: send diagnostic command requests to a running Java Virtual Machine (JVM).
+     - `jdb`: find and fix bugs in Java platform programs.
+     - `jhsdb`: attach to a Java process or to a core dump from a crashed Java Virtual Machine (JVM).
+     - experimental — unsupported and might not be available in future JDK releases
+       - `jinfo`: generate Java configuration information for a specified Java process. For core files use `jhsdb jinfo`.
+       - `jmap`: print details of a specified process. For core files use `jhsdb jmap`.
+       - `jstack`: print Java stack traces of Java threads for a specified Java process. For core files use `jhsdb jstack`.
+   - deprecated
+     - `jhat` — examining dump by `jmap`, removed since JDK 9
+     - `java -Xprof` for profiling, removed since JDK 10
+     - `-agentlib:hprof` — heap and CPU profiling, removed since JDK 9
    - `syslog`
-   - [`jvisualvm`](https://visualvm.github.io/)
-   - [`mat`](https://www.eclipse.org/mat/)
+   - [`jvisualvm`](https://visualvm.github.io/) — VisualVM is a visual tool integrating commandline JDK tools and lightweight profiling capabilities.
+   - [`mat`](https://www.eclipse.org/mat/) — The Eclipse Memory Analyzer is a fast and feature-rich Java heap analyzer that helps you find memory leaks and reduce memory consumption
 
 ### Exceptions
 

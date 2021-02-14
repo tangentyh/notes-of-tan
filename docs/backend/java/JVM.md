@@ -26,7 +26,7 @@
    - program counter (PC) — address of the current instruction (or opcode), or undefined if the current method is native, typically incremented after each instruction; pointing at a memory address in the Method Area
    - native stack — for JNI
    - stack — LIFO queue for frames for each method executing on the thread; no direct manipulation except pop and push, so frame objects may be allocated in the Heap and the memory does not need to be contiguous
-     - CLI — `-Xss`, e.g. `-Xss64m`
+     - CLI — `-Xss<size>`, e.g. `-Xss64m`
    - frame — element in stack, fixed size after creation
      - local variable array — containing `this` if not static, method parameters and local variables (primitive types, reference and return address)
      - return value
@@ -39,9 +39,9 @@
      - young generation
        - Eden
        - survivor
-       - CLI — `-Xmn`, `-XX:SurvivorRatio=8`
+       - CLI — `-Xmn<size>`, `-XX:SurvivorRatio=8`
      - old (or tenure) generation
-     - CLI — `-Xms` for initial value, `-Xmx` for max value
+     - CLI — `-Xms<size>` for initial value, `-Xmx<size>` for max value
    - permanent generation (removed since JDK 8), allocated as part of contiguous memory as the Java heap
      - interned strings (string table), can be explicitly interned by `String::intern`, moved to heap since JDK 8
        - CLI — `-XX:+PrintStringTableStatistics`
@@ -226,7 +226,7 @@
    - ParNew — serial GC but multithread
    - parallel scavenge — similar to ParNew, but throughput (user CPU time versus total CPU time) first in contrast to minimizing pause time, better UX being more responsive with small pause time although smaller young generation and more frequent GC
      - parallel old — parallel scavenge for tenure generation
-     - GC ergonomics — with `-XX:+UseAdaptiveSizePolicy`, 不需要手工指定新生代的大小（-Xmn）、Eden 和 Survivor 区的比例、晋升老年代对象年龄等细节参数了。JVM 会根据当前系统的运行情况收集性能监控信息，动态调整这些参数以提供最合适的停顿时间或者最大的吞吐量, `-XX:AdaptiveSizePolicyOutputInterval=1` for logging
+     - GC ergonomics — with `-XX:+UseAdaptiveSizePolicy`, 不需要手工指定新生代的大小（`-Xmn`）、Eden 和 Survivor 区的比例、晋升老年代对象年龄等细节参数了。JVM 会根据当前系统的运行情况收集性能监控信息，动态调整这些参数以提供最合适的停顿时间或者最大的吞吐量, `-XX:AdaptiveSizePolicyOutputInterval=1` for logging
    - CMS, concurrent mark sweep — [blog](https://plumbr.io/handbook/garbage-collection-algorithms-implementations/concurrent-mark-and-sweep)
      - disadvantages
        - low throughput
@@ -280,7 +280,6 @@
      -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xloggc:/home/logs/gc.log
      ```
    - `-XX:+PrintCommandLineFlags` — print flags, can check used GC configurations
-   - `-XX:+HeapDumpOnOutOfMemoryError`
 
 ## Reference
 
