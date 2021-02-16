@@ -454,3 +454,52 @@
      - slow query log
      - DDL log (metadata log)
      - transaction related logs
+
+1. join in MySQL
+   - rules of thumb — 小表驱动大表，禁止三张表以上的 join 操作
+   - nested loop join
+     - index nested loop join
+       ```
+       Table   Join Type
+       t1      range
+       t2      ref
+       t3      ALL
+       ```
+       ```
+       for each row in t1 matching range {
+         for each row in t2 matching reference key {
+           for each row in t3 {
+             if row satisfies join conditions, send to client
+           }
+         }
+       }
+       ```
+     - block nested loop join — use join buffer in outer loops to reduce the number of times that tables in inner loops must be read. For example, if 10 rows are read into a buffer and the buffer is passed to the next inner loop, each row read in the inner loop can be compared against all 10 rows in the buffer.
+       ```
+       for each row in t1 matching range {
+         for each row in t2 matching reference key {
+           store used columns from t1, t2 in join buffer
+           if buffer is full {
+             for each row in t3 {
+               for each t1, t2 combination in join buffer {
+                 if row satisfies join conditions, send to client
+               }
+             }
+             empty join buffer
+           }
+         }
+       }
+       
+       if buffer is not empty {
+         for each row in t3 {
+           for each t1, t2 combination in join buffer {
+             if row satisfies join conditions, send to client
+           }
+         }
+       }
+       ```
+       - used when — prior to MySQL 8.0.18, this algorithm was applied for equi-joins when no indexes could be used (`ALL`, `index` or `range`); hashed join since then
+       - join buffer — one buffer is allocated for each join that can be buffered and freed after query, size by system variable `join_buffer_size`
+   - hash join — block nested loop join but the join buffer is a hash table
+     - used when — see block nested loop join
+   - sorted merge join — used in other databases
