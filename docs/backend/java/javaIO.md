@@ -1049,7 +1049,7 @@ Use new classes in `java.nio` like `Files`, `Paths` instead when possible.
    - get and put methods — content can be heterogeneous or homogeneous, big-endian or little-endian
    - creation
      - `static ByteBuffer allocate(int capacity)`
-     - `static ByteBuffer allocateDirect(int capacity)`
+     - `static ByteBuffer allocateDirect(int capacity)` — direct buffer, which uses a subclass of `java.nio.MappedByteBuffer`
      - `static ByteBuffer wrap(byte[] array)`
      - `static ByteBuffer wrap(byte[] array, int offset, int length)`
    - manipulate
@@ -1062,6 +1062,7 @@ Use new classes in `java.nio` like `Files`, `Paths` instead when possible.
      extends ByteBuffer
      ```
      - `FileChannel::map`
+     - `ByteBuffer::allocateDirect` — return type is `ByteBuffer` but actual type is a subclass of `MappedByteBuffer`
    - attributes
      - direct buffers
        - no intermediate buffer — JVM will attempt to avoid copying the buffer's content to (or from) an intermediate buffer before (or after) each invocation of one of the underlying operating system's native I/O operations

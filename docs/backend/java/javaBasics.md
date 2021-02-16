@@ -2,15 +2,14 @@
 
 ## Docs
 
-1. docs
+1. docs — [JDK 11 Documentation - Home](https://docs.oracle.com/en/java/javase/11/index.html)
    - [oracle JDK 1.8](https://docs.oracle.com/javase/8/docs/api/index.html)
    - CLI tools
      - [jshell](https://docs.oracle.com/javase/9/jshell/toc.htm)
      - [Java Platform, Standard Edition Tools Reference for Oracle JDK on Solaris, Linux, and OS X, Release 8](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/toc.html)
      - [Java Platform, Standard Edition Tools Reference, Release 11](https://docs.oracle.com/en/java/javase/11/tools/index.html)
+   - [Java Platform, Standard Edition HotSpot Virtual Machine Garbage Collection Tuning Guide, Release 11](https://docs.oracle.com/en/java/javase/11/gctuning/index.html)
    - [JSR-000221 JDBC API 4.3 Maintenance Release 3](https://download.oracle.com/otndocs/jcp/jdbc-4_3-mrel3-spec/index.html)
-   - [download](https://stackoverflow.com/questions/6986993/how-to-download-javadoc-to-read-offline/36497090)
-     - [Java Development Kit 8 Documentation](https://www.oracle.com/technetwork/java/javase/documentation/jdk8-doc-downloads-2133158.html)
    - [specification](http://docs.oracle.com/javase/specs)
      - The Java® Language Specification
      - The Java® Virtual Machine Specification
@@ -72,7 +71,9 @@
      - `-XshowSettings:properties`, `-XshowSettings:locale`
      - `-Xverify:none`, or `-noverify` — turn off verification when loading classes
      - memory related — see [JVM](./JVM.md#Memory)
-   - `-XX` — [`-XX` docs](https://docs.oracle.com/en/java/javase/11/troubleshoot/command-line-options1.html)
+   - `-XX` — [`-XX` docs](https://docs.oracle.com/en/java/javase/11/troubleshoot/command-line-options1.html), [GC Tuning Guide, Release 11](https://docs.oracle.com/en/java/javase/11/gctuning/index.html)
+     - `-XX:+PrintFlagsFinal` — print options, `java -XX:+PrintFlagsFinal --version`
+     - `-XX:+PrintCommandLineFlags` — print flags, can check used GC configurations
    - `-ea`, enable and disable assertion — see [Assertion](#Assertion)
    - `-D`, system properties — `System::getProperty`, `System::getProperties`
      - log related — see [Logging](#Logging)
@@ -1276,11 +1277,6 @@
 
 ### Debugging
 
-1. debugging
-   - use debugger
-   - test with main method, or unit test tools
-   - print or log
-
 1. print or log
    - debug by print concatenated or formatted string
    - logging proxy — anonymous inner class overriding methods of interest with logger
@@ -1312,9 +1308,10 @@
        - `jstat` — monitor JVM statistics
        - `jstatd` — monitor the creation and termination of instrumented Java HotSpot VMs
    - troubleshooting — [Troubleshooting Tools and Commands](https://docs.oracle.com/en/java/javase/11/tools/troubleshooting-tools-and-commands.html)
-     - `jcmd`: send diagnostic command requests to a running Java Virtual Machine (JVM).
-     - `jdb`: find and fix bugs in Java platform programs.
-     - `jhsdb`: attach to a Java process or to a core dump from a crashed Java Virtual Machine (JVM).
+     - `jcmd`: send diagnostic command requests to a running Java Virtual Machine (JVM)
+       - example: NMT — see [#Memory](./JVM.md#Memory)
+     - `jdb`: find and fix bugs in Java platform programs
+     - `jhsdb`: attach to a Java process or to a core dump from a crashed Java Virtual Machine (JVM)
      - experimental — unsupported and might not be available in future JDK releases
        - `jinfo`: generate Java configuration information for a specified Java process. For core files use `jhsdb jinfo`.
        - `jmap`: print details of a specified process. For core files use `jhsdb jmap`.

@@ -25,9 +25,10 @@
 1. memory model per thread
    - program counter (PC) — address of the current instruction (or opcode), or undefined if the current method is native, typically incremented after each instruction; pointing at a memory address in the Method Area
    - native stack — for JNI
-   - stack — LIFO queue for frames for each method executing on the thread; no direct manipulation except pop and push, so frame objects may be allocated in the Heap and the memory does not need to be contiguous
+   - stack — LIFO queue for frames for each method executing on the thread; no direct manipulation except pop and push
      - CLI — `-Xss<size>`, e.g. `-Xss64m`
    - frame — element in stack, fixed size after creation
+     - may be allocated in the heap — no direct stack manipulation except pop and push, so frame objects may be allocated in the heap and the memory does not need to be contiguous
      - local variable array — containing `this` if not static, method parameters and local variables (primitive types, reference and return address)
      - return value
      - operand stack — analogous to general purpose registers used in CPU; most JVM byte code spends its time manipulating the operand stack by pushing, popping, duplicating, swapping, or executing operations that produce or consume values, as well as move values between the local variable array and the operand stack
@@ -39,12 +40,15 @@
      - young generation
        - Eden
        - survivor
-       - CLI — `-Xmn<size>`, `-XX:SurvivorRatio=8`
      - old (or tenure) generation
-     - CLI — `-Xms<size>` for initial value, `-Xmx<size>` for max value
+     - CLI
+       - heap size — `-Xms<size>` for initial value, `-Xmx<size>` for max value
+       - new (young) generation size — `-Xmn<size>` (`-XX:NewSize` and `-XX:MaxNewSize`), not needed if `-XX:+UseAdaptiveSizePolicy`
+         - `-XX:SurvivorRatio=8` — incompatible with `-XX:+UseAdaptiveSizePolicy`
+       - new old generation ratio — `-XX:NewRatio=2`
    - permanent generation (removed since JDK 8), allocated as part of contiguous memory as the Java heap
      - interned strings (string table), can be explicitly interned by `String::intern`, moved to heap since JDK 8
-       - CLI — `-XX:+PrintStringTableStatistics`
+       - CLI — `-XX:+PrintStringTableStatistics`, `-XX:StringTableSize`
      - method area — must be thread-safe
        - class loader reference
        - runtime constant pool — numeric constants - field references - method references - attributes
@@ -62,7 +66,30 @@
      - CLI — `-XX:MetaspaceSize`, `-XX:MaxMetaspaceFreeRatio`, `-XX:MinMetaspaceFreeRatio`, `-XX:MaxMetaspaceSize`
    - code cache — for JIT
      - CLI — `-XX:ReservedCodeCacheSize=128m`, `-XX:InitialCodeCacheSize`
-   - `sun.nio.ch.DirectBuffer` — use native methods to manipulate non-heap memory, read and write directly to a memory address, used in NIO
+   - `java.nio.MappedByteBuffer` (direct buffer) — use native methods to manipulate non-heap memory, read and write directly to a memory address, used in NIO
+     - CLI — `-XX:MaxDirectMemorySize`??
+
+1. native memory tracking (NMT) — non-heap memory tracking
+   - docs — [JVM Guide](https://docs.oracle.com/en/java/javase/11/vm/native-memory-tracking.html), [Troubleshooting — Diagnostic Tools](https://docs.oracle.com/en/java/javase/11/troubleshoot/diagnostic-tools.html#GUID-1F53A50E-86FF-491D-A023-8EC4F1D1AC77)
+   - CLI
+     - enable NMT (5% -10% performance overhead) — `-XX:NativeMemoryTracking=off|summary|detail`
+     - print NMT statistics at JVM exit — `-XX:+UnlockDiagnosticVMOptions -XX:+PrintNMTStatistics`
+   - make JVM print NMT statistics, with the above option enabled
+     ```
+     jcmd <pid> VM.native_memory [summary | detail | baseline | summary.diff | detail.diff | shutdown] [scale= KB | MB | GB]
+     ```
+     - NMT snapshot
+       ```shell
+       jps -l # list JVM pids
+       jcmd <pid> VM.native_memory
+       ```
+     - NMT over time
+       ```shell
+       $ jcmd <pid> VM.native_memory baseline
+       Baseline succeeded
+       # after some time
+       $ jcmd <pid> VM.native_memory summary.diff
+       ```
 
 1. an object at runtime
    ```
@@ -171,6 +198,8 @@
 
 ## GC
 
+1. [Java Platform, Standard Edition HotSpot Virtual Machine Garbage Collection Tuning Guide, Release 11](https://docs.oracle.com/en/java/javase/11/gctuning/index.html)
+
 1. GC
    - GC target detection
      - reference count — not used by JVM due to circular reference
@@ -187,25 +216,32 @@
      - not enough space in old or permanent generation
      - promotion guarantee failed, see below
      - concurrent mode failure in CMS
-   - memory management strategies
-     - `new` objects — created in Eden, minor GC if not enough space
-     - pretenure — large `new` objects directly created in tenure generation, specified as `-XX:PretenureSizeThreshold`
-     - promotion by age — every move to Survivor increments the age by 1, move to tenure generation when age `-XX:MaxTenuringThreshold`
-     - dynamic promotion — 如果在 Survivor 中相同年龄所有对象大小的总和大于 Survivor 空间的一半，则年龄大于或等于该年龄的对象可以直接进入老年代，无需等到 `MaxTenuringThreshold`
-     - promotion guarantee — 在发生 Minor GC 之前，虚拟机先检查老年代最大可用的连续空间是否大于新生代所有对象总空间，如果条件成立的话，那么 Minor GC 可以确认是安全的; after JDK 6, `-XX:-HandlePromotionFailure` removed，只要老年代的连续空间大于新生代对象的总大小或者历次晋升到老年代的对象的平均大小就进行 minor GC，否则 full GC
-   - GC algorithm
-     - mark sweep
-       - steps
-         - mark — mark reachable objects, stop-the-world
-         - sweep — collected the unmarked and erase marks, merge if contiguous to the previous free block, freed space added to a single linked list called free list
-       - free list — searched when allocate new objects to find enough space
-       - disadvantages — segmentation; low performance
-     - mark compact
-       - compact — move active objects to one end, no segmentation but stop-the-world
-     - mark copy — divide memory into two regions
-       - copy — copies all alive objects to the other region
-     - mark copy in HotSpot — Eden:survivor defaults to 8:(1 + 1), copy from Eden and one survivor to the other survivor, if not enough space, move to tenure generation
-     - hybrid — mark copy for young generation, mark sweep or compact for tenure generation
+
+1. GC algorithm
+   - mark sweep
+     - steps
+       - mark — mark reachable objects, stop-the-world
+       - sweep — collected the unmarked and erase marks, merge if contiguous to the previous free block, freed space added to a single linked list called free list
+     - free list — searched when allocate new objects to find enough space
+     - disadvantages — segmentation; low performance
+   - mark compact
+     - compact — move active objects to one end, no segmentation but stop-the-world
+   - mark copy — divide memory into two regions
+     - copy — copies all alive objects to the other region
+   - mark copy in HotSpot — Eden:survivor defaults to 8:(1 + 1), copy from Eden and one survivor to the other survivor, if not enough space, move to tenure generation
+   - hybrid — mark copy for young generation, mark sweep or compact for tenure generation
+
+1. memory management strategies
+   - `new` objects — created in Eden, minor GC if not enough space
+   - pretenure — large `new` objects directly created in tenure generation, specified as `-XX:PretenureSizeThreshold`
+   - promotion by age — every move to Survivor increments the age by 1, move to tenure generation when age `-XX:MaxTenuringThreshold`
+   - dynamic promotion — 如果在 Survivor 中相同年龄所有对象大小的总和大于 Survivor 空间的一半，则年龄大于或等于该年龄的对象可以直接进入老年代，无需等到 `MaxTenuringThreshold`
+   - promotion guarantee — 在发生 Minor GC 之前，虚拟机先检查老年代最大可用的连续空间是否大于新生代所有对象总空间，如果条件成立的话，那么 Minor GC 可以确认是安全的; after JDK 6, `-XX:-HandlePromotionFailure` removed，只要老年代的连续空间大于新生代对象的总大小或者历次晋升到老年代的对象的平均大小就进行 minor GC，否则 full GC
+   - GC ergonomics with `-XX:+UseAdaptiveSizePolicy` — 不需要手工指定新生代的大小（`-Xmn`）、Eden 和 Survivor 区的比例、晋升老年代对象年龄等细节参数了。JVM 会根据当前系统的运行情况收集性能监控信息，动态调整这些参数 to achieve pause/throughput/footprint goals
+     - logging — `-XX:AdaptiveSizePolicyOutputInterval=1`, `-XX:+PrintAdaptiveSizePolicy`
+     - pause time goal — `-XX:MaxGCPauseMillis=<nnn>`, a hint to the garbage collector that a pause-time of `<nnn>` milliseconds or fewer is desired
+     - throughput goal — `-XX:GCTimeRatio=nnn`, a hint to the garbage collector that no more than `1 / (1 + nnn)` of time should be spent on GC
+     - footprint goal — if the throughput and maximum pause-time goals have been met, then the garbage collector reduces the size of the heap until one of the goals (invariably the throughput goal) can't be met or minimum reached
 
 1. garbage collectors
    - categorization
@@ -226,7 +262,6 @@
    - ParNew — serial GC but multithread
    - parallel scavenge — similar to ParNew, but throughput (user CPU time versus total CPU time) first in contrast to minimizing pause time, better UX being more responsive with small pause time although smaller young generation and more frequent GC
      - parallel old — parallel scavenge for tenure generation
-     - GC ergonomics — with `-XX:+UseAdaptiveSizePolicy`, 不需要手工指定新生代的大小（`-Xmn`）、Eden 和 Survivor 区的比例、晋升老年代对象年龄等细节参数了。JVM 会根据当前系统的运行情况收集性能监控信息，动态调整这些参数以提供最合适的停顿时间或者最大的吞吐量, `-XX:AdaptiveSizePolicyOutputInterval=1` for logging
    - CMS, concurrent mark sweep — [blog](https://plumbr.io/handbook/garbage-collection-algorithms-implementations/concurrent-mark-and-sweep)
      - disadvantages
        - low throughput
@@ -271,15 +306,17 @@
    - `-XX:+UseShenandoahGC`
    - `-XX:ParallelGCThreads` — 设置用于垃圾回收的线程数
    - `-XX:ConcGCThreads` — 并发回收垃圾的线程。默认是总核数的12.5%，8核CPU默认是1。调大后GC变快，但会占用程序运行时的CPU资源，吞吐会受到影响。
-   - `-XX:MaxGCPauseMillis`
-   - `-XX:PretenureSizeThreshold`
-   - `-XX:InitiatingHeapOccupancyPercent`
+   - `-XX:InitiatingHeapOccupancyPercent` — percentage of the (entire) heap occupancy to start a concurrent GC cycle
    - `-Xlog` — 设置GC日志中的内容、格式、位置以及每个日志的大小
      ```
      -Xlog:safepoint,classhisto*=trace,age*,gc*=info:file=/opt/logs/logs/gc-%t.log:time,tid,tags:filecount=5,filesize=50m
      -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xloggc:/home/logs/gc.log
      ```
    - `-XX:+PrintCommandLineFlags` — print flags, can check used GC configurations
+   - limits
+     - `-XX:GCHeapFreeLimit` — minimum percentage of free space after a full GC before OOM
+     - `-XX:MinHeapFreeRatio=40` and `-XX:MaxHeapFreeRatio=70` — virtual space percentage of total (virtual + committed) space in a generation
+       - reduce memory footprint — lowering `-XX:MaxHeapFreeRatio` to as low as 10% and `-XX:MinHeapFreeRatio` has shown to successfully reduce the heap size without too much performance degradation; however, results may vary greatly
 
 ## Reference
 
