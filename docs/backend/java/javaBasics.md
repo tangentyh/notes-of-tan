@@ -1323,6 +1323,7 @@
    - `syslog`
    - [`jvisualvm`](https://visualvm.github.io/) — VisualVM is a visual tool integrating commandline JDK tools and lightweight profiling capabilities.
    - [`mat`](https://www.eclipse.org/mat/) — The Eclipse Memory Analyzer is a fast and feature-rich Java heap analyzer that helps you find memory leaks and reduce memory consumption
+   - [Java Profiler - JProfiler](https://www.ej-technologies.com/products/jprofiler/overview.html)
 
 ### Exceptions
 
