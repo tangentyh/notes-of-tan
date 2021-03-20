@@ -1,16 +1,16 @@
 ---
 home: true
-heroImage: https://v1.vuepress.vuejs.org/hero.png
+heroImage: https://raw.githubusercontent.com/tangentyh/notes-of-tan/master/docs/images/data-model-land.jpg
 heroText: Notes
 tagline: of Tan
 actionText: Start Reading →️
-actionLink: ./#notes-of-tan
+actionLink: ./#Notes-of-Tan
 features:
 - title: No Duplicates
   details: Once and for all.
 - title: Hierarchical
   details: Knowledge graph but in simple plain style.
-- title: Neat
+- title: Concise
   details: Wording as short as possible, as long as understandable.
 footer: CC BY-NC-SA 4.0 Licensed | Copyright © 2020-present tangentyh
 ---
