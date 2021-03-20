@@ -443,7 +443,7 @@
      - user
    - by specificity — by which browsers decide which CSS property values are the most relevant to an element and, therefore, will be applied
      - later defined is more specific
-     - directly target is more specific than inherited
+     - directly targeted is more specific than inherited
      - selector type, ascending order
        - Type selectors, and pseudo-elements, 1.
        - Class selectors, attributes selectors, and pseudo-classes, 1-0.

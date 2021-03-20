@@ -117,3 +117,5 @@ For reference:
   - [kamranahmedse/developer-roadmap: Roadmap to becoming a web developer in 2020](https://github.com/kamranahmedse/developer-roadmap)
     - [中文版](https://github.com/EbookFoundation/free-programming-books/blob/master/free-programming-books-zh.md)
 - more...
+
+Cover from <https://www.oreilly.com/library/view/designing-data-intensive-applications/9781491903063/ch02.html>.
