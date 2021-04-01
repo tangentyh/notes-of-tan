@@ -1633,7 +1633,9 @@ see [Logging](./javaMisc.md#Logging).
      - interface bound and class bound — arbitrary number of interfaces, but at most one class
      - `&`
    - wildcards — `?`
-     - `?` — for a variable of type `?`, can only assign when left value is `Object`, or right value is `null`
+     - wildcard type `?` — for a variable of type `?`, can only assign when left value is `Object`, or right value is `null`
+       - example — `Collection<?>` can be used as a super type for any `Collection` while `Collection<Object>` cannot; can read `Object` from but can only add `null` to
+       - problem when nested: signature `Iterable<Map<String, ?>>` not applicable for argument `Iterable<Map<String, Object>>` or anything similar — use `Iterable<? extends Map<String, ?>>`
      - `? extends SomeType` — including; a variable of this type can only be right value
        ```java
        Pair<Manager> managerBuddies = new Pair<>(ceo, cfo);
