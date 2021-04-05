@@ -1,5 +1,139 @@
 # Java Concurrency
 
+## Concurrency Concepts
+
+### Concurrency and Parallelism
+
+1. concurrency vs parallelism
+   - concurrency — multitask at once, possible even for one core/thread; nondeterministic
+   - parallelism — multiple execution at once; deterministic
+     - hyperthread — surplus thread of a core, squeeze pipeline bubbles (idle cycles)
+     - [Amdahl's law - Wikipedia](https://en.wikipedia.org/wiki/Amdahl%27s_law) — theoretical speedup when using multiple processors is determined by the portion cannot be parallelized
+
+1. parallel architecture
+   - bit level — 8 bit, 16 bit, 32 bit, to 64 bit
+   - instruction level — pipelining, out-of-order execution, and speculative execution
+   - data level — single instruction, multiple data, (aka. SIMD) like image processing of modern GPUs
+   - task level — shared-memory or distributed-memory
+
+### Concurrency Models
+
+1. threads and locks
+   - mutex and memory visibility
+   - fork join and work-stealing
+   - problems
+     - deadlock — see [OS notes](../OS-notes.md#Dead-Lock)
+       - careful of alien method — when alien method call while holding a lock, it may require other locks, possible for deadlock; use techniques like copy on write to alleviate
+     - livelock — `tryLock` of threads timeout simultaneously and then contention
+     - thread pool problem — blocking makes a thread unavailable; can be solved by event-driven programming, which however breaks the nature control flow and may introduce excessive global states
+
+1. functional programming
+   - imperative programming — problems with shared mutable state
+     - hidden state — `java.text.SimpleDateFormat`
+     - escaped state
+       ```java
+       public class Tournament {
+           private List<Player> players = new LinkedList<Player>();
+           public synchronized void addPlayer(Player p) { players.add(p); }
+           public synchronized Iterator<Player> getPlayerIterator() {
+              return players.iterator(); // escaped state
+           }
+       }
+       ```
+   - functional programming — from shared mutable state to shared immutable state
+     - first-class — can be manipulated like any other value
+     - pure function — side effect free
+   - shared mutable states in Clojure
+     - atomics — CAS
+       - validators — called whenever an attempt is made to change the value of the atom
+       - watchers — called after the value has changed and will only be called once
+     - persistent data structure — like copy on write, but space efficient, `PersistentVector` and `PersistentHashMap`; a separation of identity and state
+     - `agent` — encapsulates a reference to a single value, value can only be modified by `send` function and arguments, concurrent `send`s are serialized, sent functions are evaluated asynchronously
+       ```clojure
+       (send my-agent + 2)
+       ```
+       - `await` function — blocks until all actions dispatched from the current thread to the given agent(s) have completed
+       - error handling — by validator and watcher, stop when error and exception persisted, can restart manually or automatically
+     - software transactional memory (STM) — ACID without D, retry if conflict, functions should be pure
+
+1. actors — from shared mutable state to unshared mutable state, communicates with each other by exchanging messages
+   - [akka](https://akka.io/) — implementation of the Actor Model on the JVM
+   - messages — sent asynchronously and queued in a mailbox, processed sequentially
+     - poison pill message — tell an actor to stop
+     - event messages
+       - death watch — register to receive notification message when an actor stopped
+       - distributed cluster member events — register to be notified when new members join or existing members leave or fail
+     - coupled independent mailboxes — one mailbox for one actor, yet unhandled messages reside in a mailbox and not lost on restart
+     - dead letter mailbox — messages sent to actors that have terminated are sent to a virtual dead letter mailbox
+   - hierarchical supervision
+     - hierarchical — tree-like, can retrieve by path, like `"/user/an-actor/a-child"`, `"/user/an-actor/*"`
+     - supervision — parent as supervisor, act when exception in supervised actors
+     - action mode — one-for-one or all-for-one
+       - one-for-one — only the child that experienced the error is restarted or terminated
+       - all-for-one — all of the supervisor’s children are restarted or terminated when a single child experiences an error
+     - actions when exception while processing message
+       - resume — discards the message and maintains the internal state of the actor
+       - restart — discards the message and restart the actor, resetting the internal state
+         - factory — `actorOf()` in akka takes an actor factory, new instances can be created on demand
+         - reference — `actorOf()` and `actorFor()` in akka return a reference, the same actor reference can be used even if restarted
+       - terminate — terminates the actor, further messages in the actor’s mailbox will not be processed
+       - escalate — escalate the decision to the supervisor’s supervisor, the supervisor itself may be restarted or terminated
+     - lifecycle hooks — `preStart`, `preRestart`, `postRestart`, `postStop`
+   - error kernel pattern — the part that must be correct if the system is to function correctly, should be small and simple
+     - error kernel and actor — an actor's error kernel are its top-level actors, an actor system forms an error kernel hierarchy where risky operations are pushed down to the lower-level actors
+   - let it crash
+     - defensive programming — try to anticipate possible bugs, `null` guard for example, but any code triggers the `null` guard may have bugs itself which remains to be a threat
+     - let it crash — allowing the fault tolerance mechanisms to handle defensive programming
+     - let it crash and actor
+       - simpler code
+       - failure of an actor is logged, and no failure cascade due to state isolation
+       - recovery by error kernel
+
+1. communicating sequential processes
+   - channels
+     - first class — instead of each process being tightly coupled to a single mailbox as in actor, channels can be independently created, written to, read from, and passed between processes
+     - transfer queue like
+     - channels with buffer — bounded blocking queue like
+       - strategy when full — block, drop, sliding window
+       - no unbounded buffer —
+         >whenever you have an “inexhaustible” resource, sooner or later you will exhaust it
+     - sequence like — `map`, `filter` and so on
+     - other
+       - many to many channel — read/write multiple channels for one go block
+       - timeout channel — channels auto close after a timeout
+   - go block — event-driven but with nature control flow, by transparently rewriting sequential code into event-driven code under the hood
+     - state machines can park — go blocks translated to state machines, which can relinquish control of the thread by parking instead of blocking
+     - park — when park instead of block, the thread the go block is running on can be used by another go block
+     - inversion of control — framework multiplex many go blocks over a limited thread pool
+
+1. lambda architecture
+   ```
+   raw data -> batch layer -> batch views -> serving layer
+      ↑                                       ↑
+   new data -> speed layer -> realtime views -┘
+   ```
+   - raw data in contrast to derived data
+     - raw data — immutable
+     - example: Wikipedia page — edits are the raw data from which pages are derived
+     - example: bank account — balance of a bank account is derived from a sequence of raw debits and credits
+   - batch layer — running indefinitely to create batch views, can be implemented by MapReduce
+     - MapReduce
+       - map — input to key-value pairs
+       - reduce — values for each key reduced, the same key handled by the same reducer
+     - incremental batch layer — update batch views incrementally instead of recomputing; can be useful, but can never be a replacement for recomputation
+   - batch view — contains the derived data that will be returned by queries or contains data that can easily be combined to create it
+   - serving layer — for storing, indexing and querying batch views
+   - speed layer
+     - batch layer latency problem — batch layer takes time to update batch view
+     - speed layer — generates real-time views from new data, which is appended to raw data simultaneously
+     - real-time views — combined with batch views to create fully up-to-date answers to queries
+     - example — Apache Storm
+
+1. other concurrency models
+   - general purpose GPU programming — OpenCL, CUDA
+   - dataflow — for example, futures and promises, VHDL and Verilog
+   - reactive programing — automatically react to the propagation of changes, see [http://reactivex.io/intro.html](http://reactivex.io/intro.html)
+
 ## Thread
 
 1. multithread
@@ -518,8 +652,6 @@
 
 1. [Disruptor](https://lmax-exchange.github.io/disruptor/) — ring buffer, lock free, tbd
    - [GitHub](https://github.com/LMAX-Exchange/disruptor)
-
-1. [akka](https://akka.io/) — implementation of the Actor Model on the JVM
 
 ### Concurrent Collections
 
