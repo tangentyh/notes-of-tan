@@ -124,12 +124,13 @@
 
 1. paged binary trees — improve locality by grouping nodes into pages, making next nodes on the same page for some nodes; operations are nontrivial
 
-1. B-tree — increase node fanout, to reduce tree height, the number of node pointers, and the frequency of balancing operations
+1. B-tree — increase node fanout (branching factor), to reduce tree height, the number of node pointers, and the frequency of balancing operations
    - leaf level sibling node pointers — simplify range scans, double-linked in some implementations
    - from bottom to top — the number of leaf nodes grows, which propagates to higher levels and increases the number of internal nodes and tree height
-   - B+ tree — store values only in leaf nodes, affect higher level nodes only during splits and merges
+   - B+ tree — store values only in leaf nodes, higher fanout lower level and affect higher level nodes only during splits and merges
    - B* tree — when splitting, instead of splitting a single node into two half-full ones, the algorithm splits two nodes into three nodes, each of which is two-thirds full
-     - B link tree — on top of B* tree, add high keys and sibling link pointers
+     - B link tree — on top of B* tree, add high keys and sibling link pointers, which allows scanning keys in order without jumping back to parent pages
+     - leaf page order on disk — many implementations try to make leaf pages sequential on disk for large range query, but it is difficult to maintain that order on the contrary of LSM-trees
    - some drawbacks
      - write amplification — see [Disk](./OS-notes.md#Disk)
      - space amplification — extra space reserved to make updates possible
@@ -139,12 +140,13 @@
 
 1. B-tree variants — tbd
    <!-- TODO -->
-   - Copy-on-write B-Tree — immutable nodes
+   - Copy-on-write B-Tree — immutable nodes, a modified page is written to a different location, and a new version of the parent pages in the tree is created, pointing at the new location
    - Lazy B-Tree — reduce the number of I/O requests from subsequent same-node writes by buffering updates to nodes
      - example — WiredTiger
    - Flash Disk Tree (FD-Tree) — buffer updates in a small B-Tree; fractional cascading
    - Buzzword-Tree (Bw-Tree) — separate B-Tree nodes into several smaller parts that are written in an append-only manner
    - Cache-oblivious B-Tree — allow treating on-disk data structures in a way that is very similar to how we build in-memory ones
+   - fractal tree — borrows from LSM tree idea to reduce disk seeks
 
 1. Log-Structured Storage — immutable storage, append-only modification, records have to be reconstructed from multiple files
    - Log-Structured Merge Trees (LSM Trees) — append-only storage and merge reconciliation
@@ -236,7 +238,7 @@
        - pinning — pinned pages are kept in memory for a longer time, like nodes near a B-tree root
        - eviction strategy — like page replacement algorithms in operating systems
    - recovery
-     - write-ahead log (WAL, aka commit log) — append-only, persisted before page modified and until page flushed
+     - write-ahead log (WAL, aka commit log, redo log) — append-only, persisted before page modified and until page flushed
        - order — log sequence number (LSN), an internal counter or a timestamp
        - checkpoint and trim — when a checkpoint reached, WAL trimmed since log records up to a certain mark are fully persisted and not required anymore
          - sync checkpoint — forces all dirty pages to be flushed on disk
@@ -328,7 +330,7 @@
 
 1. locks and latches
    - locks — acquired on the key
-   - latches — guard the physical tree representation (page contents and the tree structure) during node splits and merges, and page content insert, update, and delete; can be implemented by read write lock on page
+   - latches — concurrency control on the physical tree representation (page contents and the tree structure) during node splits and merges, and page content insert, update, and delete; can be implemented by read write lock on page
      - latch crabbing, aka latch coupling — release latch when child node successfully located or no merge or split expected, in contrast to grabbing all the latches on the way from the root to the target leaf
      - latch upgrading — write operations first acquire exclusive locks only at the leaf level. If the leaf has to be split or merged, the algorithm walks up the tree and attempts to upgrade a shared lock to an exclusive one for necessary nodes
 
