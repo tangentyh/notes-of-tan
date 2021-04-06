@@ -594,20 +594,19 @@ Gossip — the reach of a broadcast and the reliability of anti-entropy
      - write through — applications write to cache, cache update itself if cache hit and then write to DB synchronously; alternatively, in the same transaction to trade latency for consistency
    - write behind — write to cache first, and asynchronously write to DB, possibly in batch
 
-1. 缓存问题
-   - 缓存穿透 — 对某个一定不存在的数据进行请求，该请求将会穿透缓存到达数据库
-     - 方案
-       - 对这些不存在的数据缓存一个空数据
-       - 对这类请求进行过滤, bloom filter, counting filter
-   - 缓存雪崩 — 由于数据没有被加载到缓存中，或者缓存数据在同一时间大面积失效（过期），又或者缓存服务器宕机，导致大量的请求都到达数据库
-     - 方案
-       - 合理设置缓存过期时间
-       - 高可用
-       - 缓存预热
-   - 缓存一致性
+1. cache problems and solutions
+   - cache penetration — query for non-exist data eventually hits DB
+     - empty result cache with short expiration
+     - bloom filter, counting filter
+   - cache consistency
+   - cache breakdown — some hot data expired, then a large number of concurrent requests for the hot data hit DB
+     - lock or queues — lock on the key or use queues to ensure single thread update on one key, so latter concurrent queries will read newly updated value in cache instead of reach DB
+   - cache avalanche — lots of cached data expire at the same time or the cache service is down
+     - high availability like clustering
+     - properly set expiration so not simultaneous
+     - preload data to cache after start/restart
    - 缓存 “无底洞” 现象 — 添加了大量缓存节点，但是性能不但没有好转反而下降的现象
      - 原因 — 随着缓存节点数目的增加，键值分布到更多的节点上，导致客户端一次批量操作会涉及多次网络操作，这意味着批量操作的耗时会随着节点数目的增加而不断增大。此外，网络连接数变多，对节点的性能也有一定影响
-     - 方案
-       - 减少网络通信次数 — 优化数据分布，优化 batch，使用长连接 / 连接池，NIO 等
+     - 方案 — 减少网络通信次数：优化数据分布，优化 batch，使用长连接 / 连接池，NIO 等
 
 1. further optimization — 客户端缓存，batch，压缩，热点分桶，限流，异步化，微服务拆分，针对大流量 key 单独部署，etc.
