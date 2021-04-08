@@ -412,36 +412,42 @@ Gossip — the reach of a broadcast and the reliability of anti-entropy
 ### Message Queues
 
 1. message queue
+   - purpose
+     - decoupling
+     - pipelining — requests in different stages are processed by independent parts of the system. The subsystem responsible for receiving messages doesn’t have to block until the previous message is fully processed.
+     - absorbing short-time bursts
    - model
      - point to point — JMS queues, like producer / consumer or load balance model, message can only be acknowledged once
      - publish / subscribe — JMS topics, like events
        - durable and non-durable subscriber — whether message persisted for unreachable subscribes
      - 集群订阅 — publish / subscribe for clusters, PTP for nodes in clusters
+
+1. message queue posting and delivery
    - message acknowledgement in `javax.jms.Session`
      - `AUTO_ACKNOWLEDGE` — after the reception of message (when the session has successfully returned from a call to `receive` or when the message listener called to process the message successfully returns)
      - `CLIENT_ACKNOWLEDGE` — after `javax.jms.Message::acknowledge`
      - `DUPS_OK_ACKNOWLEDGE` — batched, sends a client acknowledgment each time received a fixed number of messages, or when a fixed time interval has elapsed since the last acknowledgment was sent; the broker may redeliver the same message more than once
      - `SESSION_TRANSACTED` — deliver and consume messages in a local transaction
-   - purpose
-     - decoupling
-     - pipelining — requests in different stages are processed by independent parts of the system. The subsystem responsible for receiving messages doesn’t have to block until the previous message is fully processed.
-     - absorbing short-time bursts
-   - 可靠性
-     - 发送端的可靠性 — 发送端完成操作后一定能将消息成功发送到消息队列中
-       - implementation: 使用本地事务 — 利用本地事务来保证对本地消息表与业务数据表的操作满足事务特性：将消息表中的消息转移到消息队列中，若转移消息成功则删除消息表中的数据，否则继续重传
-         - 限制：有时发送消息和业务操作难以集成在一个本地事务 — resort to distributed transactions
-       - implementation: message middleware with message state
-         - send message
-           1. producer send message with pending state to message middleware
-           1. message middleware store the message and ACK
-           1. producer do business logics
-           1. producer send the result of business logics to the message middleware, also complete the message content if necessary
-           1. message middleware change the message state accordingly: enable consuming for the message if success, delete the message otherwise
-         - the message middleware polls for message state periodically to see if the producer failed to update the message state
-     - 接收端的可靠性 — no duplicated consumption
-       - possible implementation
-         - idempotent message consuming
-         - 保证消息具有唯一编号，并使用一张日志表来记录已经消费的消息编号
+   - 发送端的可靠性 — 发送端完成操作后一定能将消息成功发送到消息队列中
+     - implementation: 使用本地事务 — 利用本地事务来保证对本地消息表与业务数据表的操作满足事务特性：将消息表中的消息转移到消息队列中，若转移消息成功则删除消息表中的数据，否则继续重传
+       - 限制：有时发送消息和业务操作难以集成在一个本地事务 — resort to distributed transactions
+     - implementation: message middleware with message state
+       - send message
+         1. producer send message with pending state to message middleware
+         1. message middleware store the message and ACK
+         1. producer do business logics
+         1. producer send the result of business logics to the message middleware, also complete the message content if necessary
+         1. message middleware change the message state accordingly: enable consuming for the message if success, delete the message otherwise
+       - the message middleware polls for message state periodically to see if the producer failed to update the message state
+   - 接收端的可靠性 — no duplicated consumption
+     - idempotent message consuming
+     - 保证消息具有唯一编号，并使用一张日志表来记录已经消费的消息编号
+   - ordered consumption — one queue/partition and one consumer
+
+1. message queue availability and performance
+   - distribution in Kafka
+     - partition — one topic distributed in multiple partitions, one broker has one or more partitions
+     - leader / follower — read / write from the leader, with failure detection and reelection
    - optimization
      - producer
        - asynchronous sending — do not wait ACK after message sent
