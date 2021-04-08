@@ -71,6 +71,7 @@ So much knowledge :books: , so little time :hourglass_flowing_sand:.
 
 Blogs
 
+- [The GitHub Blog](https://github.blog/)
 - [Google Developers Blog](https://developers.googleblog.com/)
 - [Unlocking new capabilities for the web  |  Web  |  Google Developers](https://developers.google.com/web/updates/capabilities)
 - [web.dev](https://web.dev/blog/)
