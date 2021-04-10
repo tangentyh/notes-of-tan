@@ -26,15 +26,15 @@
 1. `javac` — compile, [`javac` docs](https://docs.oracle.com/en/java/javase/11/tools/javac.html)
    - timestamps aware — auto compile dependencies and recompile when source file updated according to timestamps
    - extra options — `--help-extra`, `-X`
-   - `-Xlint:<key>(,<key>)*` — enable warnings
+   - warnings — `-Xlint:<key>(,<key>)*`
      - `-Xlint` or `-Xlint:all` — all checks
-     - `-Xlint:deprecation` — Same as `-deprecation`, checks for deprecated methods
-     - `-Xlint:fallthrough` — Checks for missing `break` statements in `switch` statements
-     - `-Xlint:finally` — Warns about finally clauses that cannot complete normally
-     - `-Xlint:none` — Carries out none of the checks
-     - `-Xlint:path` — Checks that all directories on the class path and source path exist
-     - `-Xlint:serial` — Warns about serializable classes without `serialVersionUID`
-     - `-Xlint:unchecked` — Warns of unsafe conversions between generic and raw types
+     - `-Xlint:deprecation` — same as `-deprecation`, checks for deprecated methods
+     - `-Xlint:fallthrough` — checks for missing `break` statements in `switch` statements
+     - `-Xlint:finally` — warns about finally clauses that cannot complete normally
+     - `-Xlint:none` — carries out none of the checks
+     - `-Xlint:path` — checks that all directories on the class path and source path exist
+     - `-Xlint:serial` — warns about serializable classes without `serialVersionUID`
+     - `-Xlint:unchecked` — warns of unsafe conversions between generic and raw types
 
 1. `java` — execute, [`java` docs](https://docs.oracle.com/en/java/javase/11/tools/java.html)
    - synopsis
@@ -57,9 +57,6 @@
      - single source file program — compile and run, no `.class` file generated
        ```
        java [options] <sourcefile> [args]
-       ```
-       ```shell
-       java ClassName.java
        ```
    - `-cp` or `-classpath` — specify the class path
      ```shell
@@ -197,14 +194,12 @@
 
 1. curly braces and semicolons
 
-1. initialize local variables before read otherwise compilation error
-
-1. does not have operator overloading
-
-### Control Flow
+1. no operator overloading
 
 1. no block variable shadowing — may not declare identically named variables in two nested blocks
    - in JS and C++ inner one shadows outer one
+
+### Control Flow
 
 1. `switch`
    - A case label can be
@@ -362,8 +357,7 @@
      - surrogates area — high-surrogates range `U+D800` to `U+DBFF` for the first code unit, low-surrogates range `U+DC00` to `U+DFFF` for the second code unit
 
 1. `boolean`
-   - cannot convert between integers and boolean values
-   - `if (x = 0)` does not compile
+   - cannot convert between integers and boolean values — `if (x = 0)` does not compile
    - stored as `int`
 
 ##### primitive type conversion
@@ -881,7 +875,6 @@
 1. inheritance
    - `extends`
    - `super`
-     <!-- - special keyword, cannot be assigned -->
    - `super()`
      - first statement — the call using `super` must be the first statement in the constructor for the subclass
      - default no-arg constructor — if the subclass constructor does not call a superclass constructor explicitly, the no-argument `super()` is invoked
@@ -2100,20 +2093,33 @@ see [Logging](./javaMisc.md#Logging).
 ### Handles
 
 1. `java.lang.invoke` package special treatment by JVM
-   - signature polymorphism — for some methods in `MethodHandle`, `VarHandle`
-   - `Constable` — for `MethodHandle`, `VarHandle` and `MethodType`
+   - signature polymorphism — for some methods in `MethodHandle`, `VarHandle`, see below
+   - `Constable` — for `MethodHandle`, `VarHandle` and `MethodType`, see below
    - `invokedynamic` instruction — makes use of bootstrap `MethodHandle` constants to dynamically resolve `CallSite` objects for custom method invocation behavior
    - `ldc` instruction — makes use of bootstrap `MethodHandle` constants to dynamically resolve custom constant values
 
-1. signature polymorphism
-   - signature polymorphism at compile and runtime
+1. signature polymorphism — for example, methods of other signatures can be invoked from `MethodHandle.invoke(Object... args)`
+   - signature polymorphism method calls at compile and runtime
      - compile — the Java compiler emits an `invokevirtual` instruction with the given symbolic type descriptor against the named method as usual, but the symbolic type descriptor is derived from the actual argument and return types, not from the method declaration
-     - at runtime — the JVM will successfully link any such call, regardless of its symbolic type descriptor. After type matching, a call to `invokeExact` directly and immediately invoke the method handle's underlying method (or other behavior, as the case may be).
-   - invocation check
-     - symbolic type descriptor check — the caller's one is matched against the one assigned when the method handle is created, after `invokevirtual` is linked
-     - access check — performed when the method handle is created; if `ldc`, access checking is performed as part of linking; methods like `asType` are not access checked
+       ```java
+       (int) mh.invoke(7);
+       // compiles to
+       // 23: invokevirtual #8                  // Method java/lang/invoke/MethodHandle.invoke:(I)I
+       ```
+       ```java
+       mh.invoke(7);
+       // compiles to
+       // 24: invokevirtual #10                 // Method java/lang/invoke/MethodHandle.invoke:(D)Ljava/lang/Object;
+       ```
+     - at runtime
+       - link if the first time — as usual `invokevirtual`, but the JVM will successfully link any such call, regardless of its symbolic type descriptor
+       - invocation check — see below
+       - invoke — optionally adjust types, then invoke the method handle's underlying method (or other behavior, as the case may be)
+   - invocation check — `NoSuchMethodException`, `IllegalAccessException`
+     - symbolic type descriptor check — the caller's one is matched against the one assigned when the method handle is created after `invokevirtual` is linked; `NoSuchMethodException` upon failure
+     - access check — performed when the method handle is created; if `ldc`, access checking is performed as part of linking; `IllegalAccessException` upon failure
 
-1. `interface java.lang.constant.Constable` — immediate constant support by JVM bytecode format
+1. `interface java.lang.constant.Constable` — immediate constant support by JVM bytecode format for `MethodHandle`, `VarHandle` and `MethodType`
    - `CONSTANT_MethodHandle` — refers directly to an associated `CONSTANT_Methodref`, `CONSTANT_InterfaceMethodref`, or `CONSTANT_Fieldref` constant pool entry
      ```
      #29 = MethodHandle       6:#44          // REF_invokeStatic Solution.lambda$foo$0:(IILjava/lang/Integer;)Z
@@ -2126,22 +2132,25 @@ see [Logging](./javaMisc.md#Logging).
      ```
    - `VarHandle` — tbd
 
-1. `invokedynamic` — dynamically-computed call sites
+#### Dynamically-Computed CallSite and Constant
+
+1. dynamically-computed call sites — `invokedynamic` instruction
    ```
    22: invokedynamic #4,  0              // InvokeDynamic #0:test:(II)Ljava/util/function/Predicate;
    #4 = InvokeDynamic      #0:#31         // #0:test:(II)Ljava/util/function/Predicate;
    #31 = NameAndType        #46:#47        // test:(II)Ljava/util/function/Predicate;
    ```
+   - `#4 = InvokeDynamic`
    - `#0`: bootstrap method — each `invokedynamic` instruction statically specifies its own bootstrap method as a constant pool reference
    - `#31 = NameAndType` — like `invokestatic` and other invoke instructions, specifies the invocation's name and method type descriptor
    - linkage
      - initial unlinked state — no target method for the instruction to invoke; it is linked just before first execution
      - link `invokedynamic` to a `CallSite` — by calling a bootstrap method which is given the static information content of the call, and which must produce a `CallSite`
 
-1. `CONSTANT_Dynamic` tagged constants in constant pool — dynamically-computed constants
-   - `CONSTANT_Dynamic` contents — like `InvokeDynamic`
+1. dynamically-computed constants — `CONSTANT_Dynamic` tagged constants in constant pool
+   - `CONSTANT_Dynamic` contents — like the `InvokeDynamic` above
      - bootstrap method
-     - `NameAndType` — like `getstatic` and the other field reference instructions, specifies the constant's name and field type descriptor
+     - `NameAndType` — like `getstatic` instruction and the other field reference instructions, specifies the constant's name and field type descriptor
    - linkage — similar to `invokedynamic`, resolve to a value of declared type
    - `InvokeDynamic` and `CONSTANT_Dynamic` — a `CONSTANT_Dynamic` is to a `InvokeDynamic` like a `CONSTANT_Fieldref` is to a `CONSTANT_Methodref`
 
@@ -2288,7 +2297,7 @@ see [Logging](./javaMisc.md#Logging).
      }
      ```
 
-1. `invokedynamic`
+1. `CallSite` from `invokedynamic`
    - `invokedynamic` call site, built by lambda factory — at the point at which the lambda expression would be captured, it generates an `invokedynamic` call site, which implements lambda capture as the dynamic argument list and, when invoked, returns an instance of the functional interface to which the lambda is being converted
      - see [Handles](#Handles) for `invokedynamic`
      - `java.lang.invoke.LambdaMetafactory::metafactory`, `LambdaMetafactory::altMetafactory`
@@ -2310,6 +2319,8 @@ see [Logging](./javaMisc.md#Logging).
      CallSite buildCallSite() throws LambdaConversionException {
          final Class<?> innerClass = spinInnerClass();
          if (invokedType.parameterCount() == 0 && !disableEagerInitialization) {
+             // In the case of a non-capturing lambda, we optimize linkage by pre-computing a single instance,
+             // unless we've suppressed eager initialization
              // ...
              try {
                  Object inst = ctrs[0].newInstance();
