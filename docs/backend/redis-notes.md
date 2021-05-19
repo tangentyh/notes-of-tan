@@ -902,7 +902,8 @@
      - anti-entropy — reconcile if the `replication_offset` received by master does not match its own, e.g. some command propagate message lost
    - data safety
      - persistence and restart — it is strongly advised to have persistence turned on in the master and in the replicas, if not possible instances should be configured to avoid restarting automatically after a reboot, to avoid replication of the initial empty state after restart
-     - expire — replicas wait for `DEL` from the master for expiration, and the replica uses its logical clock to report that a key does not exist only for read operations that don't violate the consistency of the data set
+     - expire — replicas wait for `DEL` from the master for expiration, and the replica uses its physical clock to report that a key does not exist only for read operations that don't violate the consistency of the data set??
+       - example — [How we scaled the GitHub API with a sharded, replicated rate limiter in Redis - The GitHub Blog](https://github.blog/2021-04-05-how-we-scaled-github-api-sharded-replicated-rate-limiter-redis/)
 
 1. partial resynchronization implementation — by replication offset in master and slave, replication backlog in master as buffer, and replication ID
    - replication offset — master adds n to its offset upon n bytes propagated, slave adds n to its offset upon n bytes received
@@ -979,7 +980,7 @@
 1. cluster — database sharding
    - enable cluster — `cluster-enabled` in configurations, other cluster configurations are similarly `cluster–` prefixed, a node can only `SELECT` 0, cluster bus port is always command port plus 1000
    - add node to cluster — three way handshake after `CLUSTER MEET` from the client: `MEET`, `PONG`, `PING`; then disseminate to other nodes via Gossip (heartbeats) to let them handshake the new node
-     - set slave — `CLUSTER REPLICATE`, set `clusterState.myself.slaveof` and turn off `CLUSTER_NODE_MASTER` and turn on `CLUSTER_NODE_SLAVE` in `clusterState.myself.flags`, then information disseminated via heartbeats, and other nodes update information in `clusterNode->slaves`, `clusterNode.numslaves`
+     - set slave — `CLUSTER REPLICATE`: set `clusterState.myself.slaveof` and turn off `CLUSTER_NODE_MASTER` and turn on `CLUSTER_NODE_SLAVE` in `clusterState.myself.flags`, then information disseminated via heartbeats, and other nodes update information in `clusterNode->slaves`, `clusterNode.numslaves`
    - related commands
      - `MIGRATE` — `DUMP` + `DEL` in the source, `RESTORE` in the sink: atomically transfer a key from a source Redis instance to a destination Redis instance
      - `READONLY` — enables read queries for a connection to a Redis Cluster replica node, indicate the client is fine with possible stale data and will not write

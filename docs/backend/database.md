@@ -7,7 +7,7 @@
 
 1. DBMS taxonomy
    - online transaction processing (OLTP) databases
-   - online analytical processing (OLAP) databases
+   - online analytical processing (OLAP) databases, data warehouses
    - hybrid transactional and analytical processing (HTAP) — combine properties of both OLTP and OLAP stores
 
 ## Index
@@ -47,7 +47,7 @@
 
 1. index structure, delete and purge
    - indexes
-     - clustered indexes — primary key index, where data records held at left nodes; updated in-place, have hidden system columns
+     - clustered indexes — primary key index, where data records in the same file; updated in-place, have hidden system columns
      - secondary indexes — nodes hold pointers to clustered index nodes, no hidden system columns, when updated, old secondary index records are delete-marked, new records are inserted, and delete-marked records are eventually purged; when undo, cluster index looked up, covering index technique not used
    - index queries — fewer rows to scan; help `ORDER BY` and `GROUP BY` even save temporary tables; random IO to sequential IO
    - delete and purge
@@ -87,9 +87,12 @@
    ![](./images/sql3.png)
    - memory based, disk based
      - durability of memory based stores — logs and checkpointing
+     - performance advantage of in-memory databases — can avoid the overheads of encoding in-memory data structures in a form that can be written to disk, not due to the fact that they don’t need to read from disk
+     - data model advantage — in-memory databases can provide data models that are difficult to implement with disk-based indexes
+     - anti-caching in in-memory store — a technique like virtual memory and swap files, by evicting the least recently used data from memory to disk and load back when needed
    - column oriented or row oriented — how the data is stored on disk: row- or column-wise
      - column oriented stores — values for the same column are stored contiguously on disk, a good fit for analytical workloads that compute aggregates
-       - two pioneer column-oriented stores — MonetDB and C-Store
+       - example — MonetDB and C-Store
        - redundant row ID or virtual ID — row ID kept for each value or use offset as implicit ID, to reconstruct the row for things like joins, filtering, and multirow aggregates
      - wide column stores — e.g. BigTable, HBase, as a multidimensional map, columns are grouped into column families (usually storing data of the same type), and inside each column family, data is stored row-wise, no relation with column oriented stores
    - storage structure variables — buffering, immutability, and ordering
@@ -175,7 +178,7 @@
      - gap lock needed, see next-key locks below — locking all the rows from the first query result set does not prevent the changes that cause the phantom to appear
 
 1. write anomalies
-   - lost update — transactions read the same value and update it respectively, but only the update that last committed take effect, other updates lost
+   - lost update — transactions read the same value and update it respectively, but only the update that last committed take effect, and other updates are lost
    - dirty write — write values that are dirty read
    - write skew — each individual transaction respects the required invariants, but their combination does not satisfy these invariants; for example, two transaction withdraw $100 from an account with $150, making the balance negative while nonnegative for each transaction
 
@@ -230,35 +233,36 @@
 
 ### Transaction Processing
 
-1. transaction processing and recovery
-   - page cache
-     - flush — flush when dirty page evicted; or a separate background process that cycles through the dirty pages that are likely to be evicted and flush them for quick eviction
-     - durability — coordinated by the checkpoint process: ensure the write-ahead log (WAL) and page cache work in lockstep
-     - optimization
-       - pinning — pinned pages are kept in memory for a longer time, like nodes near a B-tree root
-       - eviction strategy — like page replacement algorithms in operating systems
-   - recovery
-     - write-ahead log (WAL, aka commit log, redo log) — append-only, persisted before page modified and until page flushed
-       - order — log sequence number (LSN), an internal counter or a timestamp
-       - checkpoint and trim — when a checkpoint reached, WAL trimmed since log records up to a certain mark are fully persisted and not required anymore
-         - sync checkpoint — forces all dirty pages to be flushed on disk
-         - fuzzy checkpoint — pages flushed asynchronously from `begin_checkpoint` log record to `end_checkpoint` log record; the `last_checkpoint` pointer stored in the log header contains the information about the last successful checkpoint, from which the recovery process will start
-     - operation (logical) log and physical log
-       - operation log, or logical log — stores operations that have to be performed against the current state
-       - physical log — stores complete page state or byte-wise changes to it
-     - steal and force
-       - steal policy — a recovery method that allows flushing a page modified by the transaction even before the transaction has committed
-       - no-steal policy — does not allow flushing any uncommitted transaction contents on disk; only redo log required for recovery
-       - force policy — all pages modified by the transactions to be flushed on disk before the transaction commits; no additional work required for recovery with overhead when committing
-       - no-force policy — allows a transaction to commit even if some pages modified during this transaction were not yet flushed on disk
-     - ARIES (Algorithm for Recovery and Isolation Exploiting Semantics) — a steal/no-force recovery algorithm
-       - physical redo — changes can be installed quicker when recovery
-       - logical undo — improve concurrency during normal operation
-         - compensation log records (CLR) — the undo process is logged as well to avoid repeating them
-       - three phase
-         1. analysis phase — identifies dirty pages in the page cache and transactions that were in progress at the time of a crash
-         1. redo phase — repeats the history up to the point of a crash and restores the database to the previous state, and WAL used for repeating history
-         1. undo phase — rolls back all incomplete transactions and restores the database to the last consistent state
+1. page cache
+   - flush — flush when dirty page evicted; or a separate background process that cycles through the dirty pages that are likely to be evicted and flush them for quick eviction
+   - durability — coordinated by the checkpoint process: ensure the write-ahead log (WAL) and page cache work in lockstep
+   - optimization
+     - pinning — pinned pages are kept in memory for a longer time, like nodes near a B-tree root
+     - eviction strategy — like page replacement algorithms in operating systems
+
+1. recovery
+   - write-ahead log (WAL, aka commit log, redo log) — append-only, persisted before page modified and until page flushed
+     - order — log sequence number (LSN), an internal counter or a timestamp
+     - checkpoint and trim — when a checkpoint reached, WAL trimmed since log records up to a certain mark are fully persisted and not required anymore
+       - sync checkpoint — forces all dirty pages to be flushed on disk
+       - fuzzy checkpoint — pages flushed asynchronously from `begin_checkpoint` log record to `end_checkpoint` log record; the `last_checkpoint` pointer stored in the log header contains the information about the last successful checkpoint, from which the recovery process will start
+   - operation (logical) log and physical log
+     - operation log, or logical log — stores operations that have to be performed against the current state
+     - physical log — stores complete page state or byte-wise changes to it
+   - steal and force
+     - steal policy — a recovery method that allows flushing a page modified by the transaction even before the transaction has committed
+     - no-steal policy — does not allow flushing any uncommitted transaction contents on disk; only redo log required for recovery
+     - force policy — all pages modified by the transactions to be flushed on disk before the transaction commits; no additional work required for recovery with overhead when committing
+     - no-force policy — allows a transaction to commit even if some pages modified during this transaction were not yet flushed on disk
+
+1. ARIES (Algorithm for Recovery and Isolation Exploiting Semantics) — a steal/no-force recovery algorithm
+   - physical redo — changes can be installed quicker when recovery
+   - logical undo — improve concurrency during normal operation
+     - compensation log records (CLR) — the undo process is logged as well to avoid repeating them
+   - three phase
+     1. analysis phase — identifies dirty pages in the page cache and transactions that were in progress at the time of a crash
+     1. redo phase — repeats the history up to the point of a crash and restores the database to the previous state, and WAL used for repeating history
+     1. undo phase — rolls back all incomplete transactions and restores the database to the last consistent state
 
 ### Locks
 
@@ -276,7 +280,7 @@
      - predicate locks for `SPATIAL` indexes — tbd
 
 1. table locks
-   - vanilla table lock — used when DDL, see [`LOCK TABLE`](./SQL_notes.md#Locks) and more
+   - vanilla table lock — used when DDL, see [`LOCK TABLE`](./SQL_notes.md#Locks) and more, can be X or S
    - intention locks — table-level locks that indicate which type of lock (shared or exclusive) a transaction requires later for a row in a table; do not block anything except table lock requests
      - IX lock — before a transaction can acquire an exclusive lock on a row in a table, it must first acquire an IX lock on the table
      - IS lock — before a transaction can acquire a shared lock on a row in a table, it must first acquire an IS lock or stronger on the table

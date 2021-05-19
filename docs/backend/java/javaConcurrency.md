@@ -519,14 +519,14 @@
      - `identity` in parameters — initial value, also used when `accumulate()`
 
 1. classes in `java.util.concurrent.atomic`
-   - `java.util.concurrent.atomic.AtomicBoolean` (implements `Serializable`)
-   - `java.util.concurrent.atomic.AtomicIntegerArray` (implements `Serializable`)
+   - `java.util.concurrent.atomic.AtomicBoolean`
+   - `java.util.concurrent.atomic.AtomicIntegerArray`
    - `java.util.concurrent.atomic.AtomicIntegerFieldUpdater<T>` — a reflection-based utility that enables atomic updates to designated `volatile int` fields of designated classes
-   - `java.util.concurrent.atomic.AtomicLongArray` (implements `Serializable`)
+   - `java.util.concurrent.atomic.AtomicLongArray`
    - `java.util.concurrent.atomic.AtomicLongFieldUpdater<T>`
    - `java.util.concurrent.atomic.AtomicMarkableReference<V>` — maintains markable references by creating internal objects representing "boxed" [reference, boolean] pairs
-   - `java.util.concurrent.atomic.AtomicReference<V>` (implements `Serializable`)
-   - `java.util.concurrent.atomic.AtomicReferenceArray<E>` (implements `Serializable`)
+   - `java.util.concurrent.atomic.AtomicReference<V>`
+   - `java.util.concurrent.atomic.AtomicReferenceArray<E>`
    - `java.util.concurrent.atomic.AtomicReferenceFieldUpdater<T,V>`
    - `java.util.concurrent.atomic.AtomicStampedReference<V>`
    - `java.lang.Number`
@@ -636,7 +636,7 @@
    public class LinkedTransferQueue<E> extends AbstractQueue<E>
    implements TransferQueue<E>, Serializable
    ```
-   - `java.util.concurrent.TransferQueue` — A `BlockingQueue` in which producers may wait for consumers to receive elements
+   - `java.util.concurrent.TransferQueue` — a `BlockingQueue` in which producers may wait for consumers to receive elements
      ```java
      public interface TransferQueue<E> extends BlockingQueue<E>
      ```
@@ -698,10 +698,10 @@
    - `concurrencyLevel` — the estimated number of concurrently updating threads, defaults to 16, other write threads will be blocked if the number exceeded
    - `long mappingCount()` — used in lieu of `size()` for `long`; an estimate, the actual count may differ if there are concurrent insertions or removals
    - atomicity
-     - value non-null — `null` is for absent; if also for value, incompatible with the operation that use `synchronized` on the old value
-     - put — `synchronized` on the old value, CAS if `null`
-     - replace — `synchronized` on the old value
-     - lambda — `synchronized` on the old value, if `null`, CAS put a dummy value and `synchronized` on the dummy value, compute lambda, set computed value, then exit
+     - non-null key and value — `null` is for absent
+     - put — `synchronized` on the old node, CAS if `null`
+     - replace — `synchronized` on the old node
+     - lambda — `synchronized` on the old node, compute lambda, set computed value, then exit; if `null`, CAS put a dummy node and `synchronized` on the dummy node
      - use `ConcurrentHashMap<String, LongAdder>` with `putIfAbsent`
        ```java
        map.putIfAbsent(word, new LongAdder()).increment();

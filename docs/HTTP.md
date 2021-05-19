@@ -241,6 +241,7 @@ Content-Location: /new.html
    - `501 Not Implemented` — the server does not support the functionality required to fulfill the request; also `405` but it is not intentional that the server does not support method
    - `502 Bad Gateway` — the server, while acting as a gateway or proxy, received an invalid response from the upstream server
    - `503 Service Unavailable` — server is not ready to handle the request, could be due to maintenance or being overloaded, use with `Retry-After` if possible
+   - `504 Gateway timeout` — the server is acting as a proxy and did not receive a response from the upstream server
 
 ## Frontend Related
 

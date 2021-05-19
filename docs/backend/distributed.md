@@ -176,6 +176,7 @@
      - eventual consistency — if there are no additional updates performed against the data item, eventually all accesses return the latest written value
    - strong eventual consistency — updates are allowed to propagate to servers late or out of order, but when all updates finally propagate to target nodes, conflicts between them can be resolved and they can be merged to produce the same valid state
      - example: Conflict-Free Replicated Data Types (CRDTs), used in [Redis Enterprise](https://redis.io/documentation#other-distributed-systems-based-on-redis) — specialized data structures that preclude the existence of conflict and allow operations on these data types to be applied in any order without changing the result
+       - example: [collaborated editing](https://zhuanlan.zhihu.com/p/48229762)
        - Commutative Replicated Data Types (CmRDTs) — tbd
        - unordered grow-only set (G-Set) — to reconstruct the current state of the set, all elements contained in the removal set are subtracted from the addition set, tbd
 
