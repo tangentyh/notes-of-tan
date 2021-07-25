@@ -617,3 +617,40 @@ Gossip — the reach of a broadcast and the reliability of anti-entropy
      - 方案 — 减少网络通信次数：优化数据分布，优化 batch，使用长连接 / 连接池，NIO 等
 
 1. further optimization — 客户端缓存，batch，压缩，热点分桶，限流，异步化，微服务拆分，针对大流量 key 单独部署，etc.
+
+## Rate Limit
+
+1. rate limit concepts
+   - protection goal — application instance resources (CPU, memory), external resources like IO and backing services
+   - limit target
+     - request rate per user (session, IP address) or tenant (sub domain)
+     - concurrently processed requests
+     - request specific costs (access to dependent services, request size in MB)
+   - rate — fixed rate or dynamic rate
+   - limiting
+     - shed load — reject: limit the number of allowed concurrent calls
+     - rate throttling — delay or queue
+   - intercept place for Spring — general rule: apply rate limitation as early as possible in the request processing chain to avoid unnecessary consumption of resources
+     - servlet container filter, e.g. [Tomcat valve](http://tomcat.apache.org/tomcat-8.0-doc/config/valve.html)
+     - servlet filter
+     - `org.springframework.web.servlet.HandlerInterceptor`
+     - method level — perform rate limiting directly in the method that requires protected resources
+
+1. rate limit algorithms
+   - fixed window — periodically resetting counter, counter increment value can vary, can be implemented by key with expiration in Redis
+   - sliding window log — maintain a list and compare the timestamp of the head and the tail, append multiple times for time-consuming requests
+   - token bucket — keep a token count and a timestamp, upon a new request, refill the tokens based on elapsed time, and then take tokens and update timestamp; number of tokens taken can vary, and reject if not enough token
+   - semaphore — concurrent rate limit
+
+1. possible HTTP response for rejected requests
+   - 429 Too many requests
+   - 503 Service not available
+   - header `RetryAfter: <delay-seconds|http-date>`
+
+1. Java libraries
+   - [Jetty QoS Filter](https://www.eclipse.org/jetty/documentation/9.4.x/qos-filter.html) — semaphore, only for prioritization, only one semaphore for all requests
+   - [Jetty DoS Filter](https://www.eclipse.org/jetty/documentation/9.4.x/dos-filter.html) — sliding window
+   - [Bucket4J](https://github.com/vladimir-bukhtoyarov/bucket4j) — token bucket
+   - [Resilience4J rate limiter](https://github.com/resilience4j/resilience4j/tree/master/resilience4j-ratelimiter) — fixed window
+   - [Guava RateLimiter](https://github.com/google/guava/blob/master/guava/src/com/google/common/util/concurrent/RateLimiter.java)
+   - [Spring Cloud Zuul RateLimit](https://github.com/marcosbarbero/spring-cloud-zuul-ratelimit)
