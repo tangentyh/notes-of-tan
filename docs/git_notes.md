@@ -309,6 +309,10 @@
          [--intent-to-add | -N] [--refresh] [--ignore-errors] [--ignore-missing] [--renormalize]
          [--chmod=(+|-)x] [--] [<pathspec>…​]
    ```
+   - `-i`, `--interactive` — interactive mode, see docs
+   - stage part of the file
+     - `-e`, `--edit` — edit diff
+     - `-p`, `--patch` — `-i` and `patch`
 
 1. `git commit`
    - commit message
@@ -740,6 +744,9 @@
    - `git shortlog` — Summarize `git log` output
    - `-g` `--walk-reflogs` — Instead of walking the commit ancestry chain, walk reflog entries from the most recent one to older ones
 
+1. `git reflog` — the tips of branches and other references were updated in the local repository
+   - `git reflog show` — default, same options as `git log`
+
 1. `git show` — show one or more objects (blobs, trees, tags and commits)
    ```shell
    git show [<options>] [<object>…​]
@@ -821,8 +828,6 @@
      ```
 
 1. `git bundle` — `git archive` but with `.git` folder
-
-1. `git reflog` — the tips of branches and other references were updated in the local repository
 
 1. `git stash`
    - location — the latest stored in `refs/stash`, other stored in the reflog, `stash@{<n>}`, `stash@{<date>}`
