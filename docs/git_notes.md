@@ -743,6 +743,10 @@
      - more
    - `git shortlog` — Summarize `git log` output
    - `-g` `--walk-reflogs` — Instead of walking the commit ancestry chain, walk reflog entries from the most recent one to older ones
+   - find at which commit a file is deleted
+     ```
+     git log --full-history -1 -- [file path]
+     ```
 
 1. `git reflog` — the tips of branches and other references were updated in the local repository
    - `git reflog show` — default, same options as `git log`
