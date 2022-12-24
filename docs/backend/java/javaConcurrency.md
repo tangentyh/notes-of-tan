@@ -659,7 +659,7 @@
    - generally non-blocking algorithm
    - some are non-null
    - inaccurate `size()` — `size()` is O(n) and maybe inaccurate, due to non-data nodes and concurrency
-   - atomicity for bulk operations — bulk operations `addAll`, `removeAll`, `retainAll`, `containsAll`, `equals`, and `toArray` are not guaranteed to be performed atomically
+   - no guaranteed atomicity for bulk operations — bulk operations `addAll`, `removeAll`, `retainAll`, `containsAll`, `equals`, and `toArray` are not guaranteed to be performed atomically
    - iterators are weakly consistent — may or may not reflect all modifications after construction, but will not return a value twice
 
 1. `java.util.concurrent.ConcurrentLinkedQueue`
