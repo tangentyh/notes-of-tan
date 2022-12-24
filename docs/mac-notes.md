@@ -91,6 +91,8 @@
      - en dash — `option` `-`
      - em dash — `shift` `option` `-`
      - Windows — `alt` `0150` and `alt` `0151`
+   - Chinese input method
+     - 拆字 — `shift + ␣`
 
 1. edit in Terminal — `bindkey -M main`, `⌥` or `esc` (`^[`) as meta key
    - docs
