@@ -328,6 +328,38 @@
      - `--no-edit` — keep commit message
    - [Angular Team Git Commit Guidelines](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#commit)
 
+1. `git tag`
+   - list tags
+     ```shell
+     git tag
+     git tag [-n[<num>]] -l [--contains <commit>] [--no-contains <commit>]
+         [--points-at <object>] [--column[=<options>] | --no-column]
+         [--create-reflog] [--sort=<key>] [--format=<format>]
+         [--[no-]merged [<commit>]] [<pattern>…​]
+     ```
+   - create lightweight tags — pointers to specific `<object>`s, meant for private or temporary object labels
+     ```shell
+     git tag <tagname> [<commit> | <object>]
+     ```
+   - create annotated tags — stored as full `<object>`, meant for release, containing a creation date, the tagger name and e-mail, a tagging message, and an optional GnuPG signature
+     ```shell
+     git tag [-a | -s | -u <keyid>]
+             [-f]
+             [-m <msg> | -F <file>] [-e]
+         <tagname>
+         [<commit> | <object>]
+     ```
+     - `-a` `--annotate` — Make an unsigned, annotated tag object
+     - `<tagname>` — `<refname>`
+   - push tags — have to explicitly push tags to a shared server after creation or deletion
+     - `git push <repository> <refspec>…​`
+     - `git push <repository> --tags`
+     - `git push origin --delete <tagname>`
+   - delete
+     ```shell
+     git tag -d <tagname>…​
+     ```
+
 #### Deletion
 
 1. `git rm` — Remove files from the working tree and from the index
@@ -465,6 +497,10 @@
      - `[(--merged | --no-merged) [<commit>]]`
    - remote related — see [Remote](#Remote)
 
+1. `git worktree` — Manage multiple working trees
+
+### Merge & Patching
+
 1. `git merge`
    ```
    git merge [-n] [--stat] [--no-commit] [--squash] [--[no-]edit]
@@ -500,40 +536,6 @@
    - `git rerere` — Reuse recorded resolution of conflicted merges
      - config — `rerere.enabled`
    - `git merge-file` — incorporates all changes that lead from the `<base-file>` to `<other-file>` into `<current-file>`
-
-1. `git tag`
-   - list tags
-     ```shell
-     git tag
-     git tag [-n[<num>]] -l [--contains <commit>] [--no-contains <commit>]
-         [--points-at <object>] [--column[=<options>] | --no-column]
-         [--create-reflog] [--sort=<key>] [--format=<format>]
-         [--[no-]merged [<commit>]] [<pattern>…​]
-     ```
-   - create lightweight tags — pointers to specific `<object>`s, meant for private or temporary object labels
-     ```shell
-     git tag <tagname> [<commit> | <object>]
-     ```
-   - create annotated tags — stored as full `<object>`, meant for release, containing a creation date, the tagger name and e-mail, a tagging message, and an optional GnuPG signature
-     ```shell
-     git tag [-a | -s | -u <keyid>]
-             [-f]
-             [-m <msg> | -F <file>] [-e]
-         <tagname>
-         [<commit> | <object>]
-     ```
-     - `-a` `--annotate` — Make an unsigned, annotated tag object
-     - `<tagname>` — `<refname>`
-   - push tags — have to explicitly push tags to a shared server after creation or deletion
-     - `git push <repository> <refspec>…​`
-     - `git push <repository> --tags`
-     - `git push origin --delete <tagname>`
-   - delete
-     ```shell
-     git tag -d <tagname>…​
-     ```
-
-### Patching
 
 1. `git rebase` — Reapply commits on top of another base tip
    ```
