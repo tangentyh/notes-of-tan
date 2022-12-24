@@ -1,4 +1,5 @@
-.vscode
+.vscode/**/*
+!.vscode/extensions.json
 pids
 logs
 node_modules
