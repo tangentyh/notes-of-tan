@@ -1,6 +1,6 @@
 # Notes of Tan
 
-The repo is intended for personal notes keeping :yum:.
+This repo is intended for personal notes keeping :yum:.
 
 So much knowledge :books: , so little time :hourglass_flowing_sand:.
 

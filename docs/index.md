@@ -19,7 +19,7 @@ footer: CC BY-NC-SA 4.0 Licensed | Copyright © 2020-present tangentyh
 
 ⚠️❗️ No IE support❗️⚠️
 
-The repo is intended for personal notes keeping :yum:.
+This repo is intended for personal notes keeping :yum:.
 
 So much knowledge :books: , so little time :hourglass_flowing_sand:.
 
