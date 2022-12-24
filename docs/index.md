@@ -4,7 +4,7 @@ heroImage: https://raw.githubusercontent.com/tangentyh/notes-of-tan/master/docs/
 heroText: Notes
 tagline: of Tan
 actionText: Start Reading →️
-actionLink: ./#Notes-of-Tan
+actionLink: ./#notes-of-tan
 features:
 - title: No Duplicates
   details: Once and for all.

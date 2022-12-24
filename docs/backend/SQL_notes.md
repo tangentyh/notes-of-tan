@@ -59,7 +59,7 @@ Based on MySQL
      - `--password[=password]`, `-p[password]`
    - privileges
      - `--skip-show-database` — sets the `skip_show_database` system variable that controls who is permitted to use
-   - case sensitivity — see [Language Basics](#Basics)
+   - case sensitivity — see [Language Basics](#basics)
      - `--lower-case-table-names[=#]`
    - autocomplete — `--auto-rehash`, `mysql> \#`, `mysql> rehash`
    - output format
@@ -92,7 +92,7 @@ Based on MySQL
 
 ## Data Types
 
-See [Literals](#Literals) for syntax.
+See [Literals](#literals) for syntax.
 
 1. numeric
    - attributes
@@ -118,7 +118,7 @@ See [Literals](#Literals) for syntax.
    - `FLOAT`, `DOUBLE`, `DOUBLE PRECISION`
      - deprecated — `FLOAT(p)`, `FLOAT(M,D)`, `DOUBLE(M,D)`, `DOUBLE PRECISION[(M,D)]`
    - `BIT[(M)]` — `M` indicates the number of bits from 1 (default) to 64
-     - literal syntax — see [Literals](#Literals)
+     - literal syntax — see [Literals](#literals)
 
 1. date and time
    - attribute
@@ -143,7 +143,7 @@ See [Literals](#Literals) for syntax.
 
 1. string
    - attribute
-     - `CHARACTER SET`, `CHARSET` — see [`SHOW CHARACTER SET`](#SHOW), defaults to `utf8mb4` from version 8, `latin1` previously
+     - `CHARACTER SET`, `CHARSET` — see [`SHOW CHARACTER SET`](#show), defaults to `utf8mb4` from version 8, `latin1` previously
        ```SQL
        CREATE TABLE t
        (
@@ -236,7 +236,7 @@ See [Literals](#Literals) for syntax.
 
 1. show server information
    - `SHOW ENGINE`
-   - `SHOW VARIABLES` — see [System Variables](#System-Variables)
+   - `SHOW VARIABLES` — see [System Variables](#system-variables)
    - `SHOW CHARACTER SET`
      - corresponding table in `INFORMATION_SCHEMA` — `INFORMATION_SCHEMA.CHARACTER_SETS`
      - hidden character set — `filename`, internal use only
@@ -307,7 +307,7 @@ See [Literals](#Literals) for syntax.
 #### EXPLAIN
 
 1. `EXPLAIN`, `DESCRIBE`, `DESC`
-   - also can be used as [`SHOW COLUMNS`](#SHOW)
+   - also can be used as [`SHOW COLUMNS`](#show)
    - execution plan, usually `EXPLAIN` — displays information from the optimizer, i.e. how it would process the statement, including information about how tables are joined and in which order
      ```
      {EXPLAIN | DESCRIBE | DESC}
@@ -467,7 +467,7 @@ See [Literals](#Literals) for syntax.
      - `RESTRICT` or `NO ACTION` (default) — rejects the delete or update operation for the parent table if there is a related foreign key value in the referenced table
      - corresponding tables in `INFORMATION_SCHEMA` — `INFORMATION_SCHEMA.KEY_COLUMN_USAGE`, `INFORMATION_SCHEMA.INNODB_FOREIGN`, `INFORMATION_SCHEMA.INNODB_FOREIGN_COLS`
    - `FULLTEXT`, `SPATIAL` keys — tbd
-   - inspect — [`SHOW INDEX`](#SHOW)
+   - inspect — [`SHOW INDEX`](#show)
 
 #### ALTER TABLE, DROP TABLE
 
@@ -582,7 +582,7 @@ See [Literals](#Literals) for syntax.
      SELECT college, region AS r, seed AS s FROM tournament ORDER BY r, s;
      SELECT college, region, seed FROM tournament ORDER BY 2, 3;
      ```
-   - `OVER` — see [`WINDOW`](#WINDOW)
+   - `OVER` — see [`WINDOW`](#window)
 
 1. `into_option` in `SELECT`, `INTO`
    ```
@@ -727,7 +727,7 @@ See [Literals](#Literals) for syntax.
 
 1. `WHERE` `where_condition` — an expression that evaluates to true for each row to be selected
    - no aggregate functions — can use any of the functions and operators, except for aggregate (summary) functions
-   - see [Operators and Functions](#Operators-and-Functions)
+   - see [Operators and Functions](#operators-and-functions)
 
 1. `GROUP BY`, `ORDER BY`
    ```
@@ -1229,7 +1229,7 @@ See [Literals](#Literals) for syntax.
    ```
    - more
 
-1. other locks — see [Locks](./database.md#Locks)
+1. other locks — see [Locks](./database.md#locks)
 
 1. show lock
    - `SHOW ENGINE INNODB STATUS`

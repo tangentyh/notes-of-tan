@@ -593,7 +593,7 @@
    - `String value` — `@AliasFor(annotation=Component.class)`
    - `boolean proxyBeanMethods` — see modes in `@Bean`
    - bootstrapping
-     - `AnnotationConfigApplicationContext::register`, see [Configure Contexts](#Configure-Contexts)
+     - `AnnotationConfigApplicationContext::register`, see [Configure Contexts](#configure-contexts)
      - use `<context:component-scan/>`, which has an `annotation-config` attribute
        - `<context:annotation-config/>` — enable `org.springframework.context.annotation.ConfigurationClassPostProcessor` and other annotation-related post processors for bootstrapping processing of `@Configuration` classes
          ```xml
@@ -1017,7 +1017,7 @@
          - `interface org.springframework.web.WebApplicationInitializer` — `void onStartup(ServletContext servletContext)` to configure the `ServletContext` programmatically
          - `org.springframework.web.context.AbstractContextLoaderInitializer` — register a `ContextLoaderListener` when `onStartup`, only abstract method `createRootApplicationContext()`
          - `org.springframework.web.servlet.support.AbstractDispatcherServletInitializer` — with abstract methods for HTTP servlet configs like filters, mappings, etc.
-     - `org.springframework.web.SpringServletContainerInitializer` — see [Servlet](#Servlet)
+     - `org.springframework.web.SpringServletContainerInitializer` — see [Servlet](#servlet)
    - `<init-param>`s of `DispatcherServlet`
      - `contextClass`, defaults to `XmlWebApplicationContext`
      - `contextConfigLocation`

@@ -22,7 +22,7 @@
    - mutex and memory visibility
    - fork join and work-stealing
    - problems
-     - deadlock — see [OS notes](../OS-notes.md#Dead-Lock)
+     - deadlock — see [OS notes](../OS-notes.md#dead-lock)
        - careful of alien method — when alien method call while holding a lock, it may require other locks, possible for deadlock; use techniques like copy on write to alleviate
      - livelock — `tryLock` of threads timeout simultaneously and then contention
      - thread pool problem — blocking makes a thread unavailable; can be solved by event-driven programming, which however breaks the nature control flow and may introduce excessive global states
@@ -190,7 +190,7 @@
        void run();
    }
    ```
-   - see [Callable and Future](#Callable-and-Future) for more
+   - see [Callable and Future](#callable-and-future) for more
    - conversion to `Callable` — `Executors::callable`
 
 1. `Thread`
@@ -779,7 +779,7 @@
      - `FutureTask(Callable<V> callable)`
      - `FutureTask(Runnable runnable, V result)`
 
-1. `java.util.concurrent.ForkJoinTask` — see [Fork-Join](#Fork-Join)
+1. `java.util.concurrent.ForkJoinTask` — see [Fork-Join](#fork-join)
 
 1. `java.util.concurrent.CompletableFuture` — A `Future` that may be explicitly completed (setting its value and status), and may be used as a `CompletionStage`, supporting dependent functions and actions that trigger upon its completion (`Promise.then` in JS), can be async
    ```java
@@ -928,7 +928,7 @@
        }
        ```
 
-1. `java.util.concurrent.ForkJoinPool` — see [Fork-Join](#Fork-Join)
+1. `java.util.concurrent.ForkJoinPool` — see [Fork-Join](#fork-join)
 
 1. `java.util.concurrent.Executors` — factory and utility methods
    - thread pools — note that underlying queue size is unbounded
@@ -1045,7 +1045,7 @@
 
 ## Synchronizers
 
-1. memory consistency effects — happen-before, see [volatile](#volatile-and-Atomics)
+1. memory consistency effects — happen-before, see [volatile](#volatile-and-atomics)
 
 1. `java.util.concurrent.locks.AbstractQueuedSynchronizer` — tbd
    <!-- TODO -->

@@ -167,7 +167,7 @@
      - motivation — replication with copy replicas only is storage costly
      - upgrade — in cases of write timeouts or copy replica failures, witness replicas can be upgraded to copy replicas
      - requirement for availability — n copy and m witness replicas has same availability guarantees as n + m copies, if W and R above majority and at least one replica is a copy replica in a quorum
-   - sloppy quorum — in case of replica failures, write operations can use additional healthy nodes from the node list for hinted handoff (see [Anti-Entropy](#Anti-Entropy))
+   - sloppy quorum — in case of replica failures, write operations can use additional healthy nodes from the node list for hinted handoff (see [Anti-Entropy](#anti-entropy))
 
 1. eventual consistency
    - BASE
@@ -189,7 +189,7 @@
 1. dissemination
    - usage example — quick and reliable propagation may be less applicable to data records and more important for the cluster-wide metadata
    - ways
-     - broadcast — see [Consensus](#Consensus)
+     - broadcast — see [Consensus](#consensus)
      - anti-entropy — periodic peer-to-peer information exchange
      - gossip — message recipients become broadcasters and help to spread the information quicker and more reliably
 

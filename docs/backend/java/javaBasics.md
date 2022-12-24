@@ -50,7 +50,7 @@
        java Message -g cruel world
        # args: ["-g", "cruel", "world"]
        ```
-     - jar — `java -jar MyProgram.jar`, see [Jar](#JAR)
+     - jar — `java -jar MyProgram.jar`, see [Jar](#jar)
        ```
        java [options] -jar <jarfile> [args...]
        ```
@@ -67,15 +67,15 @@
      - `-Xprof` — profiling, support was removed in JDK 10
      - `-XshowSettings:properties`, `-XshowSettings:locale`
      - `-Xverify:none`, or `-noverify` — turn off verification when loading classes
-     - memory related — see [JVM](./JVM.md#Memory)
+     - memory related — see [JVM](./JVM.md#memory)
    - `-XX` — [`-XX` docs](https://docs.oracle.com/en/java/javase/11/troubleshoot/command-line-options1.html), [GC Tuning Guide, Release 11](https://docs.oracle.com/en/java/javase/11/gctuning/index.html)
      - `-XX:+PrintFlagsFinal` — print options, `java -XX:+PrintFlagsFinal --version`
      - `-XX:+PrintCommandLineFlags` — print flags, can check used GC configurations
-   - `-ea`, enable and disable assertion — see [Assertion](#Assertion)
+   - `-ea`, enable and disable assertion — see [Assertion](#assertion)
    - `-D`, system properties — `System::getProperty`, `System::getProperties`
-     - log related — see [Logging](#Logging)
+     - log related — see [Logging](#logging)
        - log configuration file location — `-Djava.util.logging.config.file=configFile`
-     - see [`Properties`](./javaUtils.md#Legacy-Collections) for list of system properties
+     - see [`Properties`](./javaUtils.md#legacy-collections) for list of system properties
    - remote debug
      ```shell
      java -Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=8000,suspend=n \
@@ -120,7 +120,7 @@
 
 1. `jshell` — REPL from Java 9, [`jshell` docs](https://docs.oracle.com/en/java/javase/11/tools/jshell.html)
 
-1. monitoring and troubleshooting tools — see [Debugging](#Debugging)
+1. monitoring and troubleshooting tools — see [Debugging](#debugging)
 
 1. `serialver` — get serial version ID, [`serialver` docs](https://docs.oracle.com/en/java/javase/11/tools/serialver.html)
 
@@ -221,7 +221,7 @@
 
 1. iterator — `for (variable : collection) statement`
    - `collection` — an array or an object of a class that implements the `Iterable` interface
-   - see [Collections](./javaUtils.md#Collections)
+   - see [Collections](./javaUtils.md#collections)
 
 1. method
    - vararg parameter — `...`
@@ -474,7 +474,7 @@
      - return clone for mutable objects — If you need to return a reference to a mutable object, return a clone
    - destructor
      - garbage collection — Java does automatic garbage collection, does not support destructors
-     - `Object::finalize` deprecated since JDK 9 and `java.lang.ref.PhantomReference` — see [JVM](./JVM.md#Reference), and javadoc of `Object::finalize` tbd
+     - `Object::finalize` deprecated since JDK 9 and `java.lang.ref.PhantomReference` — see [JVM](./JVM.md#reference), and javadoc of `Object::finalize` tbd
      - `Runtime::addShutdownHook` — when JVM shutdown
 
 1. access modifiers
@@ -563,7 +563,7 @@
      - more
 
 1. `java.math.BigDecimal` — Immutable, arbitrary-precision signed decimal numbers, decimal version of `BigInteger`
-   - equality — use `BigDecimal::compare` instead of `BigDecimal::equals`, see [`Comparable`](#Common-Interfaces)
+   - equality — use `BigDecimal::compare` instead of `BigDecimal::equals`, see [`Comparable`](#common-interfaces)
 
 ### Built-In Classes
 
@@ -588,7 +588,7 @@
      - `static long currentTimeMillis()`
      - `static long nanoTime()`
      - `static native int identityHashCode(Object x)` — `Object::hashCode` regardless of overriden or not, 0 for `null`
-   - system property — see [Legacy Collections](./javaUtils.md#Legacy-Collections) for the list of system properties
+   - system property — see [Legacy Collections](./javaUtils.md#legacy-collections) for the list of system properties
      - `static Properties getProperties()`
      - `static String getProperty(String key)`  
        `static String getProperty(String key, String def)`
@@ -597,7 +597,7 @@
        `static String setProperty(String key, String value)`
      - `static String clearProperty(String key)`
      - `static String lineSeparator()` — equivalent to `System.getProperty("line.separator")`
-       - see [`File`](./javaIO.md#File-Classes) for other separators
+       - see [`File`](./javaIO.md#file-classes) for other separators
    - environment
      - `static Map<String,String> getenv()`
      - `static String getenv(String name)`
@@ -941,7 +941,7 @@
      - for arrays — arrays will come up with something like `"[I@1a46e30"`, where `[I` denotes an array of integers <!-- ]] -->
    - `Class<?> getClass()`
    - `protected Object clone()`
-   - `protected void finalize()` — deprecated in JDK 9, see [before](#Classes-and-Modifiers)
+   - `protected void finalize()` — deprecated in JDK 9, see [before](#classes-and-modifiers)
    - concurrency related — see [Concurrency](./javaConcurrency.md)
    - methods in utility class `Objects`
 
@@ -1091,7 +1091,7 @@
    - for conversion from lambdas — conversion to a functional interface is the only function for lambdas
    - object instance used behind the scenes — methods like `Arrays::sort` receives an object of some class that implements the interface, lambda is executed when invoking the method of that interface
    - `@FunctionalInterface` — optional annotation
-   - lambda expression holders (also function interface) — see [Common Functional Interfaces](#Common-Functional-Interfaces) for `java.util.function`
+   - lambda expression holders (also function interface) — see [Common Functional Interfaces](#common-functional-interfaces) for `java.util.function`
 
 1. method reference — use as lambdas
    ```java
@@ -1110,7 +1110,7 @@
      Person[] people = stream.toArray(Person[]::new);
      ```
 
-1. lambda at runtime — see [Lambda at Runtime](#Lambda-at-Runtime)
+1. lambda at runtime — see [Lambda at Runtime](#lambda-at-runtime)
 
 #### Common Functional Interfaces
 
@@ -1302,7 +1302,7 @@
        - `jstatd` — monitor the creation and termination of instrumented Java HotSpot VMs
    - troubleshooting — [Troubleshooting Tools and Commands](https://docs.oracle.com/en/java/javase/11/tools/troubleshooting-tools-and-commands.html)
      - `jcmd`: send diagnostic command requests to a running Java Virtual Machine (JVM)
-       - example: NMT — see [#Memory](./JVM.md#Memory)
+       - example: NMT — see [#Memory](./JVM.md#memory)
      - `jdb`: find and fix bugs in Java platform programs
      - `jhsdb`: attach to a Java process or to a core dump from a crashed Java Virtual Machine (JVM)
      - experimental — unsupported and might not be available in future JDK releases
@@ -1450,7 +1450,7 @@
      - exception wrapping — use `Throwable::initCause` to throw as another wrapped type and `Throwable::getCause` for original failure
      - bypass exception specification limit — rethrow a wrapped `RuntimeException` if a method cannot throw checked exception
        - for `IOException` — `java.io.UncheckedIOException` is designed to wrap `IOException`
-     - use generics to make checked exceptions unchecked, see [Generics](#Generics)
+     - use generics to make checked exceptions unchecked, see [Generics](#generics)
    - smart narrowing — when rethrow any exception
      ```java
      public void updateRecord() throws SQLException {
@@ -1579,7 +1579,7 @@
 
 ### Logging
 
-see [Logging](./javaMisc.md#Logging).
+see [Logging](./javaMisc.md#logging).
 
 ## Generics
 
@@ -1960,7 +1960,7 @@ see [Logging](./javaMisc.md#Logging).
    - `T.class` if `T` is any Java type (or `void.class`, `int.class` etc.)
    - type capturing — use `Class<T>` as a parameter for type match, when called with a class object, the type parameter `T` will be matched
 
-1. `java.lang.reflect` package (see [Proxy](#Proxy) for proxies)
+1. `java.lang.reflect` package (see [Proxy](#proxy) for proxies)
    - outside `java.lang.reflect` — `java.lang.Class`, `java.lang.Package` (implements `AnnotatedElement`)
    - interface hierarchy
      - `Member` — a field or a method or a constructor
@@ -2161,7 +2161,7 @@ see [Logging](./javaMisc.md#Logging).
         - the `Class` or `MethodType` derived from type component of the `CONSTANT_NameAndType` descriptor
         - static arguments, if any (note that static arguments can themselves be dynamically-computed constants)
      1. invoke the bootstrap method with following args, as if by `MethodHandle::invoke`
-   - bootstrap method args — see [Lambda at Runtime](#Lambda-at-Runtime) for example
+   - bootstrap method args — see [Lambda at Runtime](#lambda-at-runtime) for example
      - `MethodHandles.Lookup` - a lookup object on the caller class in which dynamically-computed constant or call site occurs
      - `CONSTANT_NameAndType` — a `String` the name, and a `MethodType` or `Class`, the resolved type descriptor
      - `Class`, if it is a dynamic constant — the resolved type descriptor of the constant
@@ -2299,7 +2299,7 @@ see [Logging](./javaMisc.md#Logging).
 
 1. `CallSite` from `invokedynamic`
    - `invokedynamic` call site, built by lambda factory — at the point at which the lambda expression would be captured, it generates an `invokedynamic` call site, which implements lambda capture as the dynamic argument list and, when invoked, returns an instance of the functional interface to which the lambda is being converted
-     - see [Handles](#Handles) for `invokedynamic`
+     - see [Handles](#handles) for `invokedynamic`
      - `java.lang.invoke.LambdaMetafactory::metafactory`, `LambdaMetafactory::altMetafactory`
        ```java
        static CallSite metafactory​(

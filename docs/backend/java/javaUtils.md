@@ -63,7 +63,7 @@
 
 ## Collections and Maps
 
-1. concurrent collections — see [Thread-Safe Collections](./javaConcurrency.md#Thread-Safe-Collections)
+1. concurrent collections — see [Thread-Safe Collections](./javaConcurrency.md#thread-safe-collections)
 
 1. `interface java.lang.Iterable<T>`
    - `default void forEach(Consumer<? super T> action)`
@@ -127,8 +127,8 @@
    - `static <T> Comparator<T> reverseOrder()`  
      `static <T> Comparator<T> reverseOrder(Comparator<T> cmp)`
      - called by `Comparator::reverseOrder` and `Comparator::reversed`
-   - list related — see [List](#List)
-   - views and wrappers — see [Views and Wrappers](#Views-and-Wrappers)
+   - list related — see [List](#list)
+   - views and wrappers — see [Views and Wrappers](#views-and-wrappers)
      - `Collections::unmodifiableCollection`
      - `Collections::synchronizedCollection`
      - `Collections::checkedCollection`
@@ -276,7 +276,7 @@
    | Examine | `getFirst()`, `element()`            | `peekFirst()`, `peek()` | `getLast()`            | `peekLast()`               |
    - usage — double ended queue, also should be used in preference to the legacy `Stack` class
 
-1. `LinkedList` — see [`List`](#List) before
+1. `LinkedList` — see [`List`](#list) before
 
 1. `java.util.ArrayDeque`
    ```java
@@ -381,7 +381,7 @@
    - checked views
    - subset methods
 
-1. `BitSet` — see [Legacy Collections](#Legacy-Collections)
+1. `BitSet` — see [Legacy Collections](#legacy-collections)
 
 ### Maps
 
@@ -498,7 +498,7 @@
    ```
    - underlying implementation — `Entry` extends `WeakReference` and registered to a `ReferenceQueue` upon construction
    - GC unreachable — the presence of a mapping for a given key will not prevent the key from being discarded by the garbage collector
-     - `private final ReferenceQueue<Object> queue` — `WeakReference` keys are registered with a `queue` when created; see [`ReferenceQueue`](./JVM.md#Reference)
+     - `private final ReferenceQueue<Object> queue` — `WeakReference` keys are registered with a `queue` when created; see [`ReferenceQueue`](./JVM.md#reference)
      - `expungeStaleEntries()` — private method that scan `WeakReference` keys in `queue` and set corresponding values to `null`; called every time in access methods, `size()`, and internal resize method
    - `null` support — both keys and values
    - values with strong reference to the keys — prevent keys from gc, can be alleviated by wrapping values with `new WeakReference(value)`
@@ -530,7 +530,7 @@
    - one for n wrapper — `static <T> List<T> nCopies(int n, T o)`
      - returns an immutable list consisting of n copies of the specified object, `o` is stored only once
    - stack view — `static <T> Queue<T> asLifoQueue(Deque<T> deque)`
-   - set view from map, see [Set](#Set) — `static <E> Set<E> newSetFromMap(Map<E,Boolean> map)`
+   - set view from map, see [Set](#set) — `static <E> Set<E> newSetFromMap(Map<E,Boolean> map)`
    - wrappers containing only one element — immutable, instance of inner class in `Collections`, containing only one element
      - `static <T> Set<T> singleton(T o)`
      - `static <T> List<T> singletonList(T o)`
@@ -606,7 +606,7 @@
      - `Properties(Properties defaults)`
      - `String getProperty(String key)`
      - `String getProperty(String key, String defaultValue)` — `defaultValue` only when no secondary `Properties` and `key` absent
-   - system properties — see `java` in [CLI](./javaBasics.md#CLI), find accessible names in `$JAVA_HOME/conf/security/java.policy`
+   - system properties — see `java` in [CLI](./javaBasics.md#cli), find accessible names in `$JAVA_HOME/conf/security/java.policy`
      ```shell
      # jshell> System.getProperties().forEach((k, v) -> System.out.printf("%s=%s\n", k, v))
      $ java -XshowSettings:properties --version
@@ -952,7 +952,7 @@
 
 ## Other Utils
 
-1. legacy date and time related — see [Time](./javaMisc.md#Time)
+1. legacy date and time related — see [Time](./javaMisc.md#time)
 
 1. `java.util.PropertyPermission` — system property permissions
 
@@ -1032,7 +1032,7 @@
    ```
    - `interface java.util.zip.Checksum`
 
-1. ZIP streams — see [ZIP Streams](./javaIO.md#ZIP-Streams)
+1. ZIP streams — see [ZIP Streams](./javaIO.md#zip-streams)
 
 1. `java.security.MessageDigest` — MD5, SHA-1, SHA-256, SHA-384, and SHA-512
    ```java

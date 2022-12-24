@@ -2,7 +2,7 @@
 
 ## Text
 
-1. `String` — see [`String`](./javaBasics.md#String)
+1. `String` — see [`String`](./javaBasics.md#string)
 
 1. `Character` — see also [char](./javaBasics.md#primitive-types)
    ```java
@@ -834,7 +834,7 @@
        public abstract class DateFormat
        extends Format
        ```
-       - `java.text.SimpleDateFormat` — not thread safe, use `ThreadLocal` to alleviate, see [Thread](./javaConcurrency.md#Thread)
+       - `java.text.SimpleDateFormat` — not thread safe, use `ThreadLocal` to alleviate, see [Thread](./javaConcurrency.md#thread)
 
 1. `java.time` — dates, times, instants, and durations
    - `java.time.temporal` — lower level access to the fields
@@ -1068,7 +1068,7 @@
      - `String getSymbol(Locale locale)`
      - `String toString()`
 
-1. `java.time.format.DateTimeFormatter` — see [Time](#Time)
+1. `java.time.format.DateTimeFormatter` — see [Time](#time)
 
 ### Collator and Normalizer
 

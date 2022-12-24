@@ -135,7 +135,7 @@
      - B link tree — on top of B* tree, add high keys and sibling link pointers, which allows scanning keys in order without jumping back to parent pages
      - leaf page order on disk — many implementations try to make leaf pages sequential on disk for large range query, but it is difficult to maintain that order on the contrary of LSM-trees
    - some drawbacks
-     - write amplification — see [Disk](./OS-notes.md#Disk)
+     - write amplification — see [Disk](./OS-notes.md#disk)
      - space amplification — extra space reserved to make updates possible
    - tbd
    <!-- TODO -->
@@ -167,7 +167,7 @@
    - durability — the changes made by transactions are safe from power failures, system crashes, race conditions, or other potential dangers that many non-database applications are vulnerable to
 
 1. isolation levels
-   - see [`SET TRANSACTION`](./SQL_notes.md#SET-TRANSACTION)
+   - see [`SET TRANSACTION`](./SQL_notes.md#set-transaction)
    - snapshot isolation (SI) — [zhihu](https://zhuanlan.zhihu.com/p/54979396), read from the snapshot with values committed before the transaction’s start timestamp (no phantom read), first committer wins when write-write conflict
      - example — Google Percolator, consistent read in MySQL
 
@@ -268,7 +268,7 @@
 
 1. locks
    - lock granularity
-     - instance lock — see [`LOCK INSTANCE FOR BACKUP`](./SQL_notes.md#Locks)
+     - instance lock — see [`LOCK INSTANCE FOR BACKUP`](./SQL_notes.md#locks)
      - db lock
      - table lock — at MySQL server
      - page lock
@@ -280,7 +280,7 @@
      - predicate locks for `SPATIAL` indexes — tbd
 
 1. table locks
-   - vanilla table lock — used when DDL, see [`LOCK TABLE`](./SQL_notes.md#Locks) and more, can be X or S
+   - vanilla table lock — used when DDL, see [`LOCK TABLE`](./SQL_notes.md#locks) and more, can be X or S
    - intention locks — table-level locks that indicate which type of lock (shared or exclusive) a transaction requires later for a row in a table; do not block anything except table lock requests
      - IX lock — before a transaction can acquire an exclusive lock on a row in a table, it must first acquire an IX lock on the table
      - IS lock — before a transaction can acquire a shared lock on a row in a table, it must first acquire an IS lock or stronger on the table

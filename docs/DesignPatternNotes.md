@@ -10,13 +10,13 @@
      - object
 
 1. index
-   - [creational](#Creational)
+   - [creational](#creational)
      - class — Factory Method
      - object — Abstract Factory, Builder, Prototype, Singleton
-   - [structural](#Structural)
+   - [structural](#structural)
      - class and object — Adapter
      - object — Bridge, Composite, Decorator, Facade, Flyweight, Proxy
-   - [behavioral](#Behavioral)
+   - [behavioral](#behavioral)
      - class — Interpreter, Template Method
      - object — Chain of Responsibility, Command, Iterator, Mediator, Memento, Observer, State, Strategy, Visitor
 
@@ -244,7 +244,7 @@ Structural patterns are concerned with how classes and objects are composed to f
 
 1. Observer — Define a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically.
    - examples — `java.util.EventListener`, `java.util.concurrent.Flow`, [RxJava](https://github.com/ReactiveX/RxJava)
-     - `java.util.Observer`, `java.util.Observable` — deprecated since JDK 9, see [Event Handling](./backend/java/javaUtils.md#Event-Handling)
+     - `java.util.Observer`, `java.util.Observable` — deprecated since JDK 9, see [Event Handling](./backend/java/javaUtils.md#event-handling)
 
 1. State — Allow an object to alter its behavior when its internal state changes. The object will appear to change its class.
    ```java

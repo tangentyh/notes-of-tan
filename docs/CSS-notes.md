@@ -392,7 +392,7 @@
    - must precede all other types of rules, except `@charset` rules
    - cannot be used inside conditional group at-rules
 
-1. `@media` — apply part of a style sheet based on the result of one or more media queries, see [Media Queries](#Media-Queries)
+1. `@media` — apply part of a style sheet based on the result of one or more media queries, see [Media Queries](#media-queries)
    ```
    @media <media-query-list> {
      <group-rule-body>
@@ -1916,9 +1916,7 @@
 
 1. container collapsing
    - why — Floated elements don't use any height, need to fix float elements overflow the container  
-     ![][p12]
-
-     [p12]: ./images/12.png
+     ![](./images/12.png)
    - occur when — If an element contains only floated elements, or contains width limited floated elements
    - fix
      - flex fix — wrap the container with a new `display: flex` container
@@ -1944,9 +1942,7 @@
        ```
 
 1. Unexpected “float catching”  
-   ![][p13]
-
-   [p13]: ./images/13.png
+   ![](./images/13.png)
    ```CSS
    .media:nth-child(odd) {
      clear: left;
@@ -2062,9 +2058,7 @@
 
 1. flex container alignment
    - `align-items` — In Flexbox it controls the alignment of items on the Cross Axis, sets the `align-self` value on all direct children as a group  
-     ![][p14]
-
-     [p14]: ./images/14.png
+     ![](./images/14.png)
      ```
      normal | stretch | <baseline-position> | [ <overflow-position>? <self-position> ]
      where
@@ -2410,7 +2404,7 @@
 
 1. utilities
    - [necolas/normalize.css: A modern alternative to CSS resets](https://github.com/necolas/normalize.css)
-   - see [Flex](#Flex)
+   - see [Flex](#flex)
 
 1. fix `<main>` inline by default in some browsers
    ```CSS

@@ -672,7 +672,7 @@
      - If an empty text node is found, it is removed
      - if text nodes are immediate siblings, they are joined into a single text node
 
-#### The Document Type {#doc-type}
+#### The Document Type
 
 1. `document` or `window.document`
    - an instance of `HTMLDocument`, which inherits from `Document`
@@ -755,7 +755,7 @@
    - `Document.visibilityState: VisibilityState`
      - `'visible'` — The page content may be at least partially visible. In practice this means that the page is the foreground tab of a non-minimized window
      - `'hidden'` — The page content is not visible to the user. In practice this means that the document is either a background tab or part of a minimized window, or the OS screen lock is active
-     - `'prerender'` — The page content is being prerendered and is not visible to the user (considered hidden for purposes of document.hidden). The document may start in this state, but will never transition to it from another value. Note: browser support is optional
+     - `'prerender'` — The page content is being pre-rendered and is not visible to the user (considered hidden for purposes of document.hidden). The document may start in this state, but will never transition to it from another value. Note: browser support is optional
    - `visibilitychange` event
      - interface: `Event`
      - `bubbles`: `true`
@@ -848,7 +848,7 @@
        ```
        access limited based on cross-domain security restrictions
 
-1. Manipulating Attributes: see also [The `Attr` Type](#The-Attr-Type)
+1. Manipulating Attributes: see also [The `Attr` Type](#the-attr-type)
    - work on any attribute, including those defined as properties
    - All all recognized (non-custom) attributes on an element are also accessible as properties
      - not only the five properties defined on `HTMLElement`
@@ -1038,7 +1038,7 @@
    - Child nodes are not supported in HTML
    - Child nodes may be `Text` or `EntityReference` in XML
 
-1. add an attribute: see also [The `Element` Type](#The-Element-Type)
+1. add an attribute: see also [The `Element` Type](#the-element-type)
    ```javascript
    var attr = document.createAttribute("align");
    attr.value = "left";
@@ -1509,12 +1509,8 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - which incorporate all of the visual space that an element takes up on the screen, made up of height and width, including all padding, scrollbars, and borders (but not including margins and those of pseudo elements)
    - calculated each time as they are accessed???
    - `HTMLElement.offsetHeight` Read only  
-     ![][p1]
-
-     [p1]: ./images/1.png
-     ![][p2]
-
-     [p2]: ./images/2.png
+     ![](./images/1.png)
+     ![](./images/2.png)
      - Returns a number containing the height of an element, relative to the layout
    - `HTMLElement.offsetLeft` Read only
      - Returns a double, the distance from this element's left border to its `offsetParent`'s left border
@@ -1527,9 +1523,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 
 1. Client Dimensions
    - comprise the space occupied by the element’s content and its padding  
-     ![][p3]
-
-     [p3]: ./images/3.png
+     ![](./images/3.png)
      - the space taken up by scrollbars is not counted
    - are read-only and are calculated each time they are accessed
    - `Element.clientWidth`
@@ -1662,9 +1656,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 
 1. Selection
    - select node
-     ![][p4]
-
-     [p4]: ./images/4.png
+     ![](./images/4.png)
      - `Range.selectNode(node: Node): void`: Sets the Range to contain the `Node` and its contents
      - `Range.selectNodeContents(node: Node): void`: Sets the Range to contain the contents of a `Node`
    - before or after
@@ -1937,7 +1929,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - for browsers without support, it has been suggested that a timeout should be set during page loading with a millisecond delay of 0
    - `readystatechange`
      - fired when the `readyState` attribute of a document has changed
-     - see before [HTML5](#HTML5) DOM Extensions
+     - see before [HTML5](#html5) DOM Extensions
 
 1. View Events
    - `fullscreenchange`
@@ -2856,9 +2848,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - [cheat sheet](https://simon.html5.org/dump/html5-canvas-cheat-sheet.html)
 
 1. The Grid  
-   ![][p5]
-
-   [p5]: ./images/5.png
+   ![](./images/5.png)
 
 1. Fills and Strokes
    - Fill automatically fills in the shape with a specific style (color, gradient, or image) while stroke colors only the edges
@@ -2877,13 +2867,9 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - `CanvasRenderingContext2D.lineWidth` — Width of lines. Default 1.0
        - zero, negative, `Infinity` and `NaN` values are ignored
      - `CanvasRenderingContext2D.lineCap` — Type of endings on the end of lines. Possible values: `butt` (default), `round`, `square`  
-       ![][p6]
-
-       [p6]: ./images/6.png
+       ![](./images/6.png)
      - `CanvasRenderingContext2D.lineJoin` — Defines the type of corners where two lines meet. Possible values: round, bevel, miter (default)  
-       ![][p7]
-
-       [p7]: ./images/7.png
+       ![](./images/7.png)
      - `CanvasRenderingContext2D.miterLimit` — Miter limit ratio. Default 10
        - zero, negative, `Infinity` and `NaN` values are ignored
        - how far the outside connection point can be placed from the inside connection point
@@ -2933,9 +2919,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - Adds an arc to the path which is centered at (x, y) position with radius r starting at startAngle and ending at endAngle going in the given direction (defaulting to clockwise)
      - angles in radian
    - `CanvasRenderingContext2D.arcTo()` — Adds an arc to the path with the given control points and radius, connected to the previous point by a straight line  
-     ![][p8]
-
-     [p8]: ./images/8.png
+     ![](./images/8.png)
      - never elliptical. Typical use could be making a rounded corner
      - The arc is tangential
    - `CanvasRenderingContext2D.ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise?: boolean): void` — Adds an ellipse to the path which is centered at (x, y) position with the radii radiusX and radiusY starting at startAngle and ending at endAngle going in the given direction
@@ -2972,17 +2956,13 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - `CanvasRenderingContext2D.font` — Font setting. CSS `font` value. Default value `10px sans-serif`
    - `CanvasRenderingContext2D.textAlign` — Text alignment setting. Possible values: `start` (default), `end`, `left`, `right` or `center`
    - `CanvasRenderingContext2D.textBaseline` — Baseline alignment setting. Possible values: `top`, `hanging`, `middle`, `alphabetic` (default), `ideographic`, `bottom`  
-     ![][p9]
-
-     [p9]: ./images/9.png
+     ![](./images/9.png)
    - `CanvasRenderingContext2D.direction` — text direction. Possible values: `ltr`, `rtl`, `inherit` (default)
 
 1. Drawing text
    - `CanvasRenderingContext2D.fillText(text, x, y, maxWidth?): void` — Draws (fills) a given text at the given (x,y) position
      - maxWidth  
-       ![][p10]
-
-       [p10]: ./images/10.png
+       ![](./images/10.png)
        - when `undefined`, no limit
        - else the user agent will adjust the kerning
    - `CanvasRenderingContext2D.strokeText(text, x, y, maxWidth?): void` — Draws (strokes) a given text at the given (x, y) position
@@ -3033,9 +3013,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
        - up to `HTMLImageElement.crossOrigin`
        - when tainted, one can no longer pull data back out of the canvas
    - sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight  
-     ![][p11]
-
-     [p11]: ./images/11.png
+     ![](./images/11.png)
 
 1. Image smoothing
    - `CanvasRenderingContext2D.imageSmoothingEnabled` — Image smoothing mode; if disabled, images will not be smoothed if scaled, defaults to `true`
@@ -3127,7 +3105,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
      - each constant is available on the WebGL context object without the `GL_` prefix
    - Method Naming
      - many methods will indicate the number of arguments (1 through 4) followed by the data type
-       - `WebGLRenderingContext.uniform[1234][fi][v]()`
+       - `WebGLRenderingContext.uniform4i(location, v0, v1, v2, v3)`, `WebGLRenderingContext.uniform4fv(location, value)`
        - f for float, i for integer, v for vector (array)
 
 1. draw
@@ -3247,7 +3225,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
 
 ## XML
 
-1. `Document.implementation.createDocument()`: see [before](#doc-type)
+1. `Document.implementation.createDocument()`: see [before](#the-document-type)
 
 1. `DOMParser`
    - provides the ability to parse XML or HTML source code from a string into a DOM `Document`
@@ -3536,7 +3514,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
        - The `lastIndex` field of `RegExp` objects is not preserved.
        - Property descriptors, setters, and getters (as well as similar metadata-like features) are not duplicated. For example, if an object is marked read-only using a property descriptor, it will be read-write in the duplicate, since that's the default condition.
        - The prototype chain does not get walked and duplicated
-   - handle the event: see [events](#sec-message-events)
+   - handle the event: see [events](#message-events)
    - schedules the `MessageEvent` to be dispatched only after all pending execution contexts have finished
      - For example, if `postMessage()` is invoked in an event handler, that event handler will run to completion, as will any remaining handlers for that same event, before the `MessageEvent` is dispatched
 
@@ -3758,7 +3736,7 @@ CSS Object Model (CSSOM) View Module: WD Working Draft
    - specify what should be stored in the page’s appcache by providing a manifest file listing the resources to download and cache
      ```
      CACHE MANIFEST
-     #Comment
+     # Comment
      file.js
      file.css
      ```

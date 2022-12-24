@@ -173,8 +173,7 @@
 1. comment
    - Commenting out whitespace between inline elements
      ```html
-     <a href="#">I hope there will be no extra whitespace after this!</a><!--
-     --><button>Foo</button>
+     <a href="#">I hope there will be no extra whitespace after this!</a><!-- --><button>Foo</button>
      ```
 
 1. grouping and encapsulating other elements — `<div></div>` block, `<span></span>` inline
@@ -193,7 +192,7 @@
      - behaves like the zero-width space `&ZeroWidthSpace;`
      - hyphen — does not introduce a hyphen at the line break point. To make a hyphen appear only at the end of a line, use the soft hyphen character entity (`&shy;`) instead
 
-1. text formating
+1. text formatting
    - `<mark></mark>`
    - `<strong></strong>`, `<b></b>`
    - `<em></em>`, `<i></i>`
@@ -205,7 +204,7 @@
    - `<del>Deleted Text</del>`
    - `<s>Struck-through text here</s>`
    - `<sup></sup>`, `<sub></sub>`
-   - code formating
+   - code formatting
      - `<kbd></kbd>`
      - `<pre></pre>`
      - `<code></code>`

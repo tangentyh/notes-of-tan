@@ -219,7 +219,7 @@
      ```
    - polymorphism — the same command works for different types and/or encodings
    - GC — reference counting
-   - `lru` — last accessed timestamp, see [Other](#Other)
+   - `lru` — last accessed timestamp, see [Other](#other)
    - flyweight — for integers from 0 to 9999
    - empty collections — when add like `LPUSH`, an empty collection is prepared; empty collections will be garbage collected, except stream; read commands like `LLEN` and some write commands on an empty key behave like an empty collection held on the key
    - related commands
@@ -230,7 +230,7 @@
        - `OBJECT FREQ` — available when `maxmemory-policy` is set to an LFU policy
        - `DEBUG OBJECT`
      - `TYPE`
-     - see [`redisDb`](#Server-and-Client)
+     - see [`redisDb`](#server-and-client)
 
 1. `OBJ_STRING`
    - corresponding `encoding`
@@ -588,7 +588,7 @@
      - `DEL`
        - `UNLINK` — GC left to do, asynchronously in another thread
      - `DUMP`, `RESTORE` — serialize and deserialize, format is opaque and non-standard, with checksum and values are encoded in the same format used by RDB with RDB version
-       - `MIGRATE` — see [Clustering](#Clustering)
+       - `MIGRATE` — see [Clustering](#clustering)
      - `KEYS pattern` — support more glob pattern
      - `EXISTS key [key ...]`, `TOUCH key [key ...]`
      - `FLUSHDB` — delete all the keys
@@ -670,7 +670,7 @@
      #define CLIENT_UNIX_SOCKET (1<<11) /* Client connected via Unix domain socket */
      // more
      ```
-   - client side caching — see [Publish and Subscribe](#Publish-and-Subscribe)
+   - client side caching — see [Publish and Subscribe](#publish-and-subscribe)
    - more
    - related commands
      - `SELECT`
@@ -686,7 +686,7 @@
        - `CLIENT PAUSE` — suspend all the Redis clients for the specified amount of time (in milliseconds)
        - `CLIENT REPLY ON|OFF|SKIP`
        - `CLIENT UNBLOCK`
-       - client caching related commands, see [Publish and Subscribe](#Publish-and-Subscribe)
+       - client caching related commands, see [Publish and Subscribe](#publish-and-subscribe)
 
 ## Events
 
@@ -848,7 +848,7 @@
 ## Persistence
 
 1. RDB — persistence of current snapshot in memory as a compressed binary file
-   - expired key handling — see [`redisDb`](#Server-and-Client)
+   - expired key handling — see [`redisDb`](#server-and-client)
    - automatic load — if AOF switched off, RDB files are loaded automatically at start
    - auto `BGSAVE` — `save <seconds> <changes>` in configurations, triggered if after `<seconds>` since `redisServer.lastsave` `redisServer.dirty` is more than `<changes>`, executed by `serverCron` function
      - `redisServer.dirty` — counter for changes to keys since last `SAVE` or `BGSAVE`, for example, the counter will +3 after `SADD` 3 elements on a key
@@ -870,7 +870,7 @@
    - AOF loading — fake client created, from which commands in AOF executed
    - AOF rewrite — deduplicate AOF, implemented by generating commands from current database state with care for client input buffer overflow
      - non-blocking — AOF rewrite is executed in a forked process, new commands during AOF rewrite are simultaneously saved in a separate buffer besides the normal AOF buffer, which is flushed to the new AOF before the new AOF replace the previous one
-   - expired key handling — see [`redisDb`](#Server-and-Client)
+   - expired key handling — see [`redisDb`](#server-and-client)
    - related commands
      - `BGREWRITEAOF` — non-blocking, but reject `BGSAVE` and another `BGREWRITEAOF` when executing
 
@@ -1207,7 +1207,7 @@
        - `LATENCY GRAPH` — renders an ASCII-art graph of an event's latency samples
        - `LATENCY DOCTOR` — replies with a human-readable latency analysis report
 
-1. distributed locks — see [distributed](./distributed.md#Distributed-Locks)
+1. distributed locks — see [distributed](./distributed.md#distributed-locks)
 
 1. big keys
    - find big keys — `redis-cli --bigkeys`, `SCAN`

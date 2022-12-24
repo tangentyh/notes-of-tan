@@ -126,18 +126,16 @@ Content-Location: /new.html
 1. cache
    - [blog](https://www.jianshu.com/p/54cc04190252)
    - HTTP header  
-     ![][p1]
-
-     [p1]: ./images/http-1.png
+     ![](./images/http-1.png)
      - 强缓存 — 可以理解为无须验证的缓存策略。对强缓存来说，响应头中有两个字段 `Expires`/`Cache-Control` 来表明规则。
        - `Expires` — 指缓存过期的时间，超过了这个时间点就代表资源过期。有一个问题是由于使用具体时间，如果时间表示出错或者没有转换到正确的时区都可能造成缓存生命周期出错。并且 `Expires` 是 HTTP/1.0 的标准，现在更倾向于用 HTTP/1.1 中定义的 `Cache-Control`。两个同时存在时也是 `Cache-Control` 的优先级更高。
        - `Cache-Control` — `Cache-Control` 可以由多个字段组合而成
          1. `max-age` 指定一个时间长度，在这个时间段内缓存是有效的，单位是s。例如设置 `Cache-Control:max-age=31536000`
-         2. `s-maxage` 同 `max-age`，覆盖 `max-age`、`Expires`，但仅适用于共享缓存，在私有缓存中被忽略。
-         3. `public` 表明响应可以被任何对象（发送请求的客户端、代理服务器等等）缓存。
-         4. `private` 表明响应只能被单个用户（可能是操作系统用户、浏览器用户）缓存，是非共享的，不能被代理服务器缓存。
-         5. `no-cache` 强制所有缓存了该响应的用户，在使用已缓存的数据前，发送带验证器的请求到服务器。不是字面意思上的不缓存。
-         6. `no-store` 禁止缓存，每次请求都要向服务器重新获取数据。
+         1. `s-maxage` 同 `max-age`，覆盖 `max-age`、`Expires`，但仅适用于共享缓存，在私有缓存中被忽略。
+         1. `public` 表明响应可以被任何对象（发送请求的客户端、代理服务器等等）缓存。
+         1. `private` 表明响应只能被单个用户（可能是操作系统用户、浏览器用户）缓存，是非共享的，不能被代理服务器缓存。
+         1. `no-cache` 强制所有缓存了该响应的用户，在使用已缓存的数据前，发送带验证器的请求到服务器。不是字面意思上的不缓存。
+         1. `no-store` 禁止缓存，每次请求都要向服务器重新获取数据。
        - other headers — `Pragma`, `Warning` and more
      - 协商缓存 — 客户端和服务器端通过某种验证机制验证当前请求资源是否可以使用缓存
        - `Last-modified` / `If-Modified-Since`
@@ -245,14 +243,14 @@ Content-Location: /new.html
 
 ## Frontend Related
 
-1. [Ajax](./BOM_DOM_notes.md#Ajax)
+1. [Ajax](./BOM_DOM_notes.md#ajax)
 
-1. [server push](./BOM_DOM_notes.md#Server-Push)
+1. [server push](./BOM_DOM_notes.md#server-push)
 
-1. [CORS](./BOM_DOM_notes.md#CORS)
-   - [bypass CORS](./BOM_DOM_notes.md#Bypass-CORS)
+1. [CORS](./BOM_DOM_notes.md#cors)
+   - [bypass CORS](./BOM_DOM_notes.md#bypass-cors)
 
-1. [cookies](./BOM_DOM_notes.md#Cookies)
+1. [cookies](./BOM_DOM_notes.md#cookies)
 
 1. 为什么通常在发送数据埋点请求的时候使用的是 1x1 像素的透明 gif 图片 — [github](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/87)
    - `Navigator.sendBeacon()`

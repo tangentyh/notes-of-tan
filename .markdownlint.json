@@ -1,0 +1,16 @@
+{
+    "default": true,
+    "heading-style": {
+        "style": "atx"
+    },
+    "ul-style": {
+        "style": "consistent"
+    },
+    "ol-prefix": {
+        "style": "one"
+    },
+    "line-length": false,
+    "fenced-code-language": false,
+    "blanks-around-fences": false,
+    "no-alt-text": false
+}
