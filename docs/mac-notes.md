@@ -1,6 +1,6 @@
 # MacOS
 
-## Miscellanea
+## Introduction
 
 1. docs
    - [Mac keyboard shortcuts - Apple Support](https://support.apple.com/en-us/HT201236)
@@ -10,9 +10,6 @@
    - [What’s it called on my Mac? - Apple Support](https://support.apple.com/guide/mac-help/whats-it-called-on-my-mac-cpmh0038/mac)
    - [zsh: Table of Contents](http://zsh.sourceforge.net/Doc/Release/zsh_toc.html)
      - [zsh/Completion/Base/Widget at master · johan/zsh](https://github.com/johan/zsh/tree/master/Completion/Base/Widget)
-
-1. customize
-   - [pqrs-org/Karabiner-Elements: Karabiner-Elements is a powerful utility for keyboard customization on macOS Sierra (10.12) or later.](https://github.com/pqrs-org/Karabiner-Elements)
 
 ## Commons
 
@@ -421,3 +418,14 @@
    1. [Crx4Chrome - Download CRX for Chrome Apps & Extensions](https://www.crx4chrome.com/)
    1. [CRX Viewer](https://robwu.nl/crxviewer/)
    1. change `update_url` to `localhost` in `manifest.json`
+
+## Other
+
+1. customize shortcuts
+   - [pqrs-org/Karabiner-Elements: Karabiner-Elements is a powerful utility for keyboard customization on macOS Sierra (10.12) or later.](https://github.com/pqrs-org/Karabiner-Elements)
+
+1. PDF
+   - PDF to image use ghostscript
+     ```
+     gs -dNOPAUSE -sDEVICE=jpeg -r300 -dJPEGQ=100 -dBATCH -sOutputFile=$PDF-%02d.jpg "$PDF.pdf"
+     ```
